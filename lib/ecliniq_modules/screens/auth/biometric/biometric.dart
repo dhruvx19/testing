@@ -1,5 +1,4 @@
 import 'package:ecliniq/ecliniq_core/auth/secure_storage.dart';
-import 'package:ecliniq/ecliniq_modules/screens/details/user_details.dart';
 import 'package:ecliniq/ecliniq_modules/screens/home/home_screen.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
 import 'package:flutter/material.dart';
