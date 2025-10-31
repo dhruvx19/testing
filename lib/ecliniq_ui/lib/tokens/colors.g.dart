@@ -109,6 +109,7 @@ class Primitives {
   static const lightBlue = Color.fromARGB(255, 150, 191, 255);
   static const lightBackground = Color.fromARGB(255, 248, 250, 255);
   static const brightBlue = Color.fromARGB(255, 35, 114, 236);
+
 }
 
 class EcliniqColors {

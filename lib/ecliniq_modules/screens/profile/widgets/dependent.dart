@@ -1,10 +1,13 @@
+import 'package:ecliniq/ecliniq_ui/lib/tokens/colors.g.dart';
 import 'package:flutter/material.dart';
+
+import '../add_dependent/add_dependent.dart';
 
 class DependentsSection extends StatelessWidget {
   final List<Dependent> dependents;
   final VoidCallback? onAddDependent;
   final Function(Dependent)? onDependentTap;
-  
+
   const DependentsSection({
     Key? key,
     required this.dependents,
@@ -12,10 +15,12 @@ class DependentsSection extends StatelessWidget {
     this.onDependentTap,
   }) : super(key: key);
 
+
+
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 5),
@@ -23,27 +28,26 @@ class DependentsSection extends StatelessWidget {
             "Add Dependents",
             style: TextStyle(
               fontSize: 16,
-              color: Colors.grey[700],
+              color: Primitives.gray700,
               fontWeight: FontWeight.w500,
             ),
           ),
         ),
         const SizedBox(height: 15),
         Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ...dependents.map((dep) => Padding(
-              padding: const EdgeInsets.only(right: 15),
-              child: _DependentCard(
-                label: dep.relation,
-                isAdded: true,
-                onTap: () => onDependentTap?.call(dep),
+            ...dependents.map(
+              (dep) => Padding(
+                padding: const EdgeInsets.only(right: 15),
+                child: _DependentCard(
+                  label: dep.relation,
+                  isAdded: true,
+                  onTap: () => onDependentTap?.call(dep),
+                ),
               ),
-            )),
-            _DependentCard(
-              label: "Add",
-              isAdded: false,
-              onTap: onAddDependent,
             ),
+            _DependentCard(label: "Add", isAdded: false, onTap: onAddDependent),
           ],
         ),
       ],
@@ -55,24 +59,33 @@ class Dependent {
   final String id;
   final String name;
   final String relation;
-  
-  Dependent({
-    required this.id,
-    required this.name,
-    required this.relation,
-  });
+
+  Dependent({required this.id, required this.name, required this.relation});
 }
 
 class _DependentCard extends StatelessWidget {
   final String label;
   final bool isAdded;
   final VoidCallback? onTap;
-  
+
   const _DependentCard({
     required this.label,
     required this.isAdded,
     this.onTap,
   });
+  void _showAddDependentSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.9,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (_, controller) => AddDependentBottomSheet(),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +102,10 @@ class _DependentCard extends StatelessWidget {
             ),
             child: isAdded
                 ? Icon(Icons.person, size: 35, color: Colors.orange[700])
-                : Icon(Icons.add, size: 30, color: Colors.grey[600]),
+                : InkWell(
+              onTap: ()=> _showAddDependentSheet(context),
+                    child: Icon(Icons.add, size: 30, color: Colors.grey[600]),
+                  ),
           ),
           const SizedBox(height: 8),
           Text(
@@ -105,12 +121,11 @@ class _DependentCard extends StatelessWidget {
   }
 }
 
-
 class AppUpdateBanner extends StatelessWidget {
   final String currentVersion;
   final String? newVersion;
   final VoidCallback? onUpdate;
-  
+
   const AppUpdateBanner({
     Key? key,
     required this.currentVersion,
@@ -124,10 +139,7 @@ class AppUpdateBanner extends StatelessWidget {
       onTap: onUpdate,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 15,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
         decoration: BoxDecoration(
           color: const Color(0xFF2372EC),
           borderRadius: BorderRadius.circular(8),
@@ -135,11 +147,7 @@ class AppUpdateBanner extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.refresh,
-              color: Colors.white,
-              size: 20,
-            ),
+            const Icon(Icons.refresh, color: Colors.white, size: 20),
             const SizedBox(width: 10),
             const Text(
               "App Update Available",
@@ -151,10 +159,7 @@ class AppUpdateBanner extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 2,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
@@ -169,11 +174,7 @@ class AppUpdateBanner extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 5),
-            const Icon(
-              Icons.arrow_forward_ios,
-              color: Colors.white,
-              size: 16,
-            ),
+            const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
           ],
         ),
       ),

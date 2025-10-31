@@ -18,19 +18,6 @@ class UserInfoSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
-          padding: const EdgeInsets.all(3),
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white,
-          ),
-          child: CircleAvatar(
-            radius: 50,
-            backgroundColor: Colors.orange[100],
-
-            child: Icon(Icons.person, size: 50, color: Colors.orange[400]),
-          ),
-        ),
         Text(
           name,
           style: const TextStyle(

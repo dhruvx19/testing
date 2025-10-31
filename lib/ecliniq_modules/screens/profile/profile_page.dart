@@ -78,8 +78,9 @@ class _ProfilePageState extends State<ProfilePage>
         return EcliniqScaffold(
           body: Stack(
             children: [
+
               Container(
-                height: 200,
+                height: 250,
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     colors: [Color(0xFF2372EC), Color(0xFFDFE8FF)],
@@ -88,6 +89,8 @@ class _ProfilePageState extends State<ProfilePage>
                   ),
                 ),
               ),
+
+
               Positioned(
                 top: 0,
                 left: 0,
@@ -103,169 +106,230 @@ class _ProfilePageState extends State<ProfilePage>
                   ),
                 ),
               ),
-          
+
               Column(
                 children: [
-                 
+                  // Header
                   ProfileHeader(
                     onSettingsPressed: _handleSettings,
-                    
                   ),
-          
-                 
+
+
                   Expanded(
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(30),
-                          topRight: Radius.circular(30),
+                    child: ClipPath(
+                      clipper: _CircleCutoutClipper(
+                        cutoutRadius: 52,
+                        cutoutCenter: Offset(
+                          MediaQuery.of(context).size.width / 2,
+                          3,
                         ),
                       ),
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 10),
-          
-                            UserInfoSection(
-                              name: userName,
-                              phone: userPhone,
-                              email: userEmail,
-                              isPhoneVerified: isPhoneVerified,
-                            ),
-          
-                            const SizedBox(height: 30),
-          
-                            BasicInfoCards(
-                              age: age,
-                              gender: gender,
-                              bloodGroup: bloodGroup,
-                            ),
-          
-                            const SizedBox(height: 30),
-          
-                            PhysicalHealthCard(
-                              status: healthStatus,
-                              bmi: bmi,
-                              height: height,
-                              weight: weight,
-                            ),
-          
-                            const SizedBox(height: 30),
-          
-                            DependentsSection(
-                              dependents: dependents,
-                              onAddDependent: _handleAddDependent,
-                              onDependentTap: _handleDependentTap,
-                            ),
-          
-                            const SizedBox(height: 30),
-          
-                            AppUpdateBanner(
-                              currentVersion: currentVersion,
-                              newVersion: newVersion,
-                              onUpdate: _handleAppUpdate,
-                            ),
-          
-                            const SizedBox(height: 20),
-          
-                            AccountSettingsMenu(
-                              onPersonalDetailsPressed:
-                                  _navigateToPersonalDetails,
-                              onCreateAbhaPressed: _navigateToCreateAbha,
-                              onMedicalRecordsPressed:
-                                  _navigateToMedicalRecords,
-                              onSecuritySettingsPressed:
-                                  _navigateToSecuritySettings,
-                            ),
-          
-                            const SizedBox(height: 20),
-          
-                            NotificationsSettingsWidget(
-                              onSettingsChanged: (settings) {},
-                            ),
-          
-                            const SizedBox(height: 20),
-          
-                            MoreSettingsMenuWidget(
-                              appVersion: 'v1.0.0',
-                              supportEmail: 'Support@eclinicq.com',
-                              onReferEarnPressed: () {
-                              },
-                              onHelpSupportPressed: () {
-                              },
-                              onTermsPressed: () {
-                              },
-                              onPrivacyPressed: () {
-                              },
-                              onFaqPressed: () {
-                              },
-                              onAboutPressed: () {
-                              },
-                              onLogoutPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    title: const Text('Logout'),
-                                    content: const Text(
-                                      'Are you sure you want to logout?',
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(context),
-                                        child: const Text('Cancel'),
+                      child: Container(
+                        padding: EdgeInsets.only(
+                          top: 60,),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(25),
+                            topRight: Radius.circular(25),
+                          ),
+                        ),
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            children: [
+                              UserInfoSection(
+                                name: userName,
+                                phone: userPhone,
+                                email: userEmail,
+                                isPhoneVerified: isPhoneVerified,
+                              ),
+
+                              const SizedBox(height: 30),
+
+                              BasicInfoCards(
+                                age: age,
+                                gender: gender,
+                                bloodGroup: bloodGroup,
+                              ),
+
+                              const SizedBox(height: 30),
+
+                              PhysicalHealthCard(
+                                status: healthStatus,
+                                bmi: bmi,
+                                height: height,
+                                weight: weight,
+                              ),
+
+                              const SizedBox(height: 30),
+
+                              DependentsSection(
+                                dependents: dependents,
+                                onAddDependent: _handleAddDependent,
+                                onDependentTap: _handleDependentTap,
+                              ),
+
+                              const SizedBox(height: 30),
+
+                              AppUpdateBanner(
+                                currentVersion: currentVersion,
+                                newVersion: newVersion,
+                                onUpdate: _handleAppUpdate,
+                              ),
+
+                              const SizedBox(height: 20),
+
+                              AccountSettingsMenu(
+                                onPersonalDetailsPressed:
+                                _navigateToPersonalDetails,
+                                onCreateAbhaPressed: _navigateToCreateAbha,
+                                onMedicalRecordsPressed:
+                                _navigateToMedicalRecords,
+                                onSecuritySettingsPressed:
+                                _navigateToSecuritySettings,
+                              ),
+
+                              const SizedBox(height: 20),
+
+                              NotificationsSettingsWidget(
+                                onSettingsChanged: (settings) {},
+                              ),
+
+                              const SizedBox(height: 20),
+
+                              MoreSettingsMenuWidget(
+                                appVersion: 'v1.0.0',
+                                supportEmail: 'Support@eclinicq.com',
+                                onReferEarnPressed: () {},
+                                onHelpSupportPressed: () {},
+                                onTermsPressed: () {},
+                                onPrivacyPressed: () {},
+                                onFaqPressed: () {},
+                                onAboutPressed: () {},
+                                onLogoutPressed: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('Logout'),
+                                      content: const Text(
+                                        'Are you sure you want to logout?',
                                       ),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        },
-                                        child: const Text('Logout'),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                              onDeleteAccountPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    title: const Text('Delete Account'),
-                                    content: const Text(
-                                      'Are you sure you want to delete your account? This action cannot be undone.',
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(context),
-                                        child: const Text('Cancel'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        },
-                                        child: const Text(
-                                          'Delete',
-                                          style: TextStyle(color: Colors.red),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context),
+                                          child: const Text('Cancel'),
                                         ),
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                          child: const Text('Logout'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                                onDeleteAccountPressed: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('Delete Account'),
+                                      content: const Text(
+                                        'Are you sure you want to delete your account? This action cannot be undone.',
                                       ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context),
+                                          child: const Text('Cancel'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                          child: const Text(
+                                            'Delete',
+                                            style: TextStyle(color: Colors.red),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ],
               ),
+
+
+              Positioned(
+                top: 150,
+                left: (MediaQuery.of(context).size.width / 2) - 45,
+                child: Container(
+                  height: 90,
+                  width: 90,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: CircleAvatar(
+                    radius: 50,
+                    backgroundColor: Colors.orange[100],
+                    child: Image.asset('lib/ecliniq_icons/assets/specs/Group.svg', fit: BoxFit.cover,),
+                  ),
+                ),
+              ),
             ],
           ),
         );
       },
     );
+  }
+}
+
+
+class _CircleCutoutClipper extends CustomClipper<Path> {
+  final double cutoutRadius;
+  final Offset cutoutCenter;
+
+  _CircleCutoutClipper({
+    required this.cutoutRadius,
+    required this.cutoutCenter,
+  });
+
+  @override
+  Path getClip(Size size) {
+    final path = Path()
+      ..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
+
+
+    final circlePath = Path()
+      ..addOval(Rect.fromCircle(
+        center: cutoutCenter,
+        radius: cutoutRadius,
+      ));
+
+
+    return Path.combine(PathOperation.difference, path, circlePath);
+  }
+
+  @override
+  bool shouldReclip(_CircleCutoutClipper oldClipper) {
+    return oldClipper.cutoutRadius != cutoutRadius ||
+        oldClipper.cutoutCenter != cutoutCenter;
   }
 }

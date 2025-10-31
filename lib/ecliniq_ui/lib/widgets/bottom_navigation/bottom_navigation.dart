@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 /// Shared bottom navigation bar widget used across main screens
 /// Supports visual selection state and tap handling
+///
 class EcliniqBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
