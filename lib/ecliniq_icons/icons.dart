@@ -48,7 +48,9 @@ enum EcliniqIcons {
   pdf('$_base/pdf.svg'),
   threeDots('$_base/MenuDots.svg'),
   star('$_base/Star.svg'),
+  abhaIdLogo('$_base/abha_logo.png'),
   call('$_base/Incoming Call.png');
+
 
   //speciality
 

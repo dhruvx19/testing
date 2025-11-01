@@ -9,6 +9,7 @@ import 'package:ecliniq/ecliniq_modules/screens/profile/widgets/physical_card.da
 import 'package:ecliniq/ecliniq_modules/screens/profile/widgets/user_info.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -80,10 +81,10 @@ class _ProfilePageState extends State<ProfilePage>
             children: [
 
               Container(
-                height: 250,
+                height: (MediaQuery.of(context).size.height/3),
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Color(0xFF2372EC), Color(0xFFDFE8FF)],
+                    colors: [Color(0xFF2372EC), Color(0xFFF3F5FF)],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                   ),
@@ -95,7 +96,7 @@ class _ProfilePageState extends State<ProfilePage>
                 top: 0,
                 left: 0,
                 right: 0,
-                height: 200,
+                height: (MediaQuery.of(context).size.height/3),
                 child: Opacity(
                   opacity: 0.3,
                   child: Image.asset(
@@ -270,7 +271,7 @@ class _ProfilePageState extends State<ProfilePage>
 
 
               Positioned(
-                top: 150,
+                top: (MediaQuery.of(context).size.height /5),
                 left: (MediaQuery.of(context).size.width / 2) - 45,
                 child: Container(
                   height: 90,
@@ -288,8 +289,9 @@ class _ProfilePageState extends State<ProfilePage>
                   ),
                   child: CircleAvatar(
                     radius: 50,
-                    backgroundColor: Colors.orange[100],
-                    child: Image.asset('lib/ecliniq_icons/assets/specs/Group.svg', fit: BoxFit.cover,),
+                    backgroundColor: Color(0xFFDFE8FF),
+                    child: SvgPicture.asset('lib/ecliniq_icons/assets/Group.svg',
+                      width: 80,)
                   ),
                 ),
               ),

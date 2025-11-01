@@ -101,28 +101,28 @@ class ProfileHeader extends StatelessWidget {
               ),
             ),
           ),
-          
-          // const SizedBox(height: 10),
-          
 
-          ShaderMask(
-            shaderCallback: (bounds) {
-              return LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.white.withOpacity(1.0),
-                  Colors.white.withOpacity(0.0),
-                ],
-              ).createShader(bounds);
-            },
-            child: const Text(
-              "Profile",
-              style: TextStyle(
-                fontSize: 74,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 1,
-                color: Colors.white,
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: ShaderMask(
+              shaderCallback: (bounds) {
+                return LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.white.withOpacity(1.0),
+                    Colors.white.withOpacity(0.0),
+                  ],
+                ).createShader(bounds);
+              },
+              child: const Text(
+                "Profile",
+                style: TextStyle(
+                  fontSize: 74,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),

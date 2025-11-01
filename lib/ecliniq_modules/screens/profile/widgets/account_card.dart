@@ -40,7 +40,7 @@ class AccountSettingsMenu extends StatelessWidget {
           ),
           _buildDivider(),
           _buildMenuItem(
-            iconPath: 'assets/icons/badge_outlined.png',
+            iconPath: EcliniqIcons.abhaIdLogo.assetPath,
             iconColor: Colors.purple,
             title: 'Create My ABHA ID',
             onTap: onCreateAbhaPressed,

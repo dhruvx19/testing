@@ -4,6 +4,7 @@ import 'package:ecliniq/ecliniq_modules/screens/health_files/health_files.dart';
 import 'package:ecliniq/ecliniq_modules/screens/home/home_screen.dart';
 import 'package:ecliniq/ecliniq_modules/screens/home/provider/doctor_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/home/provider/hospital_provider.dart';
+import 'package:ecliniq/ecliniq_modules/screens/profile/add_dependent/provider/dependent_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -18,6 +19,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => HospitalProvider()),
         ChangeNotifierProvider(create: (_) => DoctorProvider()),
+        ChangeNotifierProvider(create: (_)=> AddDependentProvider())
       ],
       child: const MyApp(),
     ),
