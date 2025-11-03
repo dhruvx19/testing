@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../model/dependent_model.dart';
+
 class AddDependentProvider extends ChangeNotifier {
   // blood group provider
   String _selectedBloodGroup = '';
@@ -13,9 +14,10 @@ class AddDependentProvider extends ChangeNotifier {
     _selectedBloodGroup = '';
     notifyListeners();
   }
+
   // gender selection provider
   String? _selectedGender;
- String? get selectedGender => _selectedGender;
+  String? get selectedGender => _selectedGender;
   void selectGender(String value){
     _selectedGender = value;
     notifyListeners();
@@ -24,6 +26,7 @@ class AddDependentProvider extends ChangeNotifier {
     _selectedGender = null;
     notifyListeners();
   }
+
   // relation selection provider
   String? _selectedRelation;
   String? get selectedRelation => _selectedRelation;
@@ -49,7 +52,6 @@ class AddDependentProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
 
-
   String? get photoUrl => _photoUrl;
   String get firstName => _firstName;
   String get lastName => _lastName;
@@ -62,7 +64,15 @@ class AddDependentProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-
+  // Add getter to check if all mandatory fields are filled
+  bool get isFormValid {
+    return _firstName.trim().isNotEmpty &&
+        _lastName.trim().isNotEmpty &&
+        _gender != null &&
+        _dateOfBirth != null &&
+        _relation != null &&
+        _contactNumber.trim().isNotEmpty;
+  }
 
   void setPhotoUrl(String? url) {
     _photoUrl = url;
@@ -109,7 +119,6 @@ class AddDependentProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-
   bool validate() {
     if (_firstName.trim().isEmpty) {
       _errorMessage = 'First name is required';
@@ -145,7 +154,6 @@ class AddDependentProvider extends ChangeNotifier {
     return true;
   }
 
-
   Future<bool> saveDependent() async {
     if (!validate()) {
       return false;
@@ -155,7 +163,6 @@ class AddDependentProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-
       await Future.delayed(const Duration(seconds: 1));
 
       final dependent = DependentModel(
@@ -183,7 +190,6 @@ class AddDependentProvider extends ChangeNotifier {
       return false;
     }
   }
-
 
   void reset() {
     _photoUrl = null;

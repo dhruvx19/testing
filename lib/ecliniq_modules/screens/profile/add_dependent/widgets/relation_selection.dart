@@ -2,8 +2,8 @@ import 'package:ecliniq/ecliniq_modules/screens/profile/add_dependent/provider/d
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../../ecliniq_ui/lib/tokens/colors.g.dart';
-import '../../../../../ecliniq_ui/lib/tokens/styles.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/colors.g.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 
 class RelationSelectionSheet extends StatelessWidget {
   const RelationSelectionSheet({Key? key}) : super(key: key);
@@ -34,22 +34,27 @@ class RelationSelectionSheet extends StatelessWidget {
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              margin: const EdgeInsets.only(top: 12),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: EcliniqColors.light.strokeNeutralSubtle,
-                borderRadius: BorderRadius.circular(2),
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(top: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: EcliniqColors.light.strokeNeutralSubtle,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.only(top: 15, left: 15, ),
               child: Text(
                 'Select Relation',
                 style: EcliniqTextStyles.headlineBMedium.copyWith(
                   color: EcliniqColors.light.textPrimary,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 18,
                 ),
               ),
             ),
@@ -58,6 +63,9 @@ class RelationSelectionSheet extends StatelessWidget {
                 return Column(
                   children: relations.map((relation) {
                     final isSelected = watch.selectedRelation == relation;
+                    void SetRelation(String relation) {
+                      watch.selectRelation(relation);
+                    }
                     return ListTile(
                       leading: Container(
                         height: 20,
@@ -85,14 +93,16 @@ class RelationSelectionSheet extends StatelessWidget {
                         relation,
                         style: EcliniqTextStyles.bodyMedium.copyWith(
                           color: EcliniqColors.light.textPrimary,
+                          fontWeight: FontWeight.w400,
+                          fontSize: 18,
                         ),
                       ),
                       onTap: () {
                         Future.delayed(
-                          const Duration(milliseconds: 100),
+                          const Duration(milliseconds: 300),
                               () => Navigator.pop(context, relation),
                         );
-                        watch.selectRelation(relation);
+                        SetRelation(relation);
                       },
                     );
                   }).toList(),

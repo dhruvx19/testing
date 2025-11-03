@@ -21,22 +21,27 @@ class GenderSelectionSheet extends StatelessWidget {
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              margin: const EdgeInsets.only(top: 12),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: EcliniqColors.light.strokeNeutralSubtle,
-                borderRadius: BorderRadius.circular(2),
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(top: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: EcliniqColors.light.strokeNeutralSubtle,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.only(top: 15, left: 15, ),
               child: Text(
                 'Select Gender',
                 style: EcliniqTextStyles.headlineBMedium.copyWith(
                   color: EcliniqColors.light.textPrimary,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 18,
                 ),
               ),
             ),
@@ -69,17 +74,21 @@ class GenderSelectionSheet extends StatelessWidget {
                         ),
                       ),
                       title: Text(
+
                         gender,
                         style: EcliniqTextStyles.bodyMedium.copyWith(
                           color: EcliniqColors.light.textPrimary,
+                          fontWeight: FontWeight.w400,
+                          fontSize: 18,
                         ),
                       ),
                       onTap: () => {
                         Future.delayed(
-                          const Duration(microseconds: 200),
+                          const Duration(milliseconds: 300),
                               () => Navigator.pop(context, gender),
                         ),
                         provider.selectGender(gender),
+
                       },
                     );
                   }).toList(),

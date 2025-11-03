@@ -10,7 +10,7 @@ class BloodGroupSelectionSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+    final bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Others'];
 
     return ChangeNotifierProvider(
       create: (_) => AddDependentProvider(),
@@ -21,22 +21,27 @@ class BloodGroupSelectionSheet extends StatelessWidget {
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              margin: const EdgeInsets.only(top: 12),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: EcliniqColors.light.strokeNeutralSubtle,
-                borderRadius: BorderRadius.circular(2),
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(top: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: EcliniqColors.light.strokeNeutralSubtle,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.only(top: 15, left: 15, ),
               child: Text(
                 'Select Blood Group',
                 style: EcliniqTextStyles.headlineBMedium.copyWith(
                   color: EcliniqColors.light.textPrimary,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 18,
                 ),
               ),
             ),
@@ -73,7 +78,8 @@ class BloodGroupSelectionSheet extends StatelessWidget {
                         bloodGroup,
                         style: EcliniqTextStyles.bodyMedium.copyWith(
                           color: EcliniqColors.light.textPrimary,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                          fontWeight: FontWeight.w400,
+                          fontSize: 18,
                         ),
                       ),
                       onTap: () {
