@@ -48,7 +48,8 @@ enum EcliniqIcons {
   pdf('$_base/pdf.svg'),
   threeDots('$_base/MenuDots.svg'),
   star('$_base/Star.svg'),
-  call('$_base/Incoming Call.png');
+  call('$_base/Incoming Call.png'),
+  close('$_base/close.png');
 
   //speciality
 

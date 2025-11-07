@@ -1,13 +1,12 @@
 name: ecliniq
 description: "A new Flutter project."
 
-publish_to: 'none' 
+publish_to: 'none'
 
 version: 1.0.0+1
 
 environment:
   sdk: ^3.8.1
-
 
 dependencies:
   flutter:
@@ -36,13 +35,16 @@ dev_dependencies:
     sdk: flutter
   build_runner:
 
-  
   flutter_lints: ^5.0.0
 flutter:
   uses-material-design: true
 
   assets:
-    - lib/ecliniq_icons/assets/
-    - lib/ecliniq_icons/assets/mpin.gif
-
-
+  - lib/ecliniq_icons/assets/
+  - lib/ecliniq_icons/assets/mpin.gif
+  - lib/ecliniq_icons/assets/Login_Man_frame.png
+  - lib/ecliniq_icons/assets/cut.png
+  - lib/ecliniq_icons/assets/Clip_path_group.png
+  - lib/ecliniq_icons/assets/Vector_Question.png
+  - lib/ecliniq_icons/assets/Vector_msg.png
+  - lib/ecliniq_icons/assets/Vector_chat.png
