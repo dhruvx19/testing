@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../ecliniq_ui/lib/tokens/colors.g.dart';
-import '../../../../ecliniq_ui/lib/tokens/styles.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/colors.g.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import '../../../../ecliniq_utils/responsive_helper.dart';
 
 class UserInfoSection extends StatelessWidget {
