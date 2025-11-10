@@ -1,4 +1,6 @@
 import 'package:ecliniq/ecliniq_icons/icons.dart';
+import 'package:ecliniq/ecliniq_modules/screens/upchar_Q_coin/upchar_q_coin_page.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -89,6 +91,14 @@ class ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    void onWalletPressed() {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const UpcharCoin(),
+          ));
+    }
     return SafeArea(
 
       child:Column(
@@ -98,13 +108,39 @@ class ProfileHeader extends StatelessWidget {
             alignment: Alignment.topRight,
             child: Padding(
               padding: const EdgeInsets.only(right: 20, top: 10),
-              child: IconButton(
-                icon: const Icon(
-                  Icons.my_location_outlined,
-                  color: Colors.white,
-                  size: 24,
+              child: InkWell(
+                onTap: onWalletPressed,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  height: 32,
+                  width: 73,
+                  decoration: BoxDecoration(
+                    color: Color(0xFFF6F2E7),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+
+                    children: [
+                      SvgPicture.asset(
+                        EcliniqIcons.upcharCoinSmall.assetPath,
+                        height: 20,
+                        width: 24,
+                      ),
+                      Text('20',
+                      style: EcliniqTextStyles.bodyMedium.copyWith(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w400,
+                        fontSize: 18
+                      ),),
+                      SvgPicture.asset(
+                        EcliniqIcons.angleRight.assetPath,
+                        height: 24,
+                        width: 24,
+                      ),
+                    ],
+                  ),
                 ),
-                onPressed: onSettingsPressed,
               ),
             ),
           ),

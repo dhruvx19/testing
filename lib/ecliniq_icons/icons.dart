@@ -73,7 +73,18 @@ enum EcliniqIcons {
   trashBin2('$_base/Trash Bin 2.svg'),
   clockCircle('$_base/Clock Circle.svg'),
   arrowRightWhite('$_base/Arrow Right.svg'),
-  arrowRight('$_base/arrow_right.svg');
+  coinLarge('$_base/CoinLarge.svg'),
+  upcharCoin('$_base/upcharCoinLogo.svg'),
+  upcharCoinSmall('$_base/upcharCoinSmall.svg'),
+  scissor('$_base/Scissors.svg'),
+  appointmentReminder('$_base/appoinmentRemider.svg'),
+  pointOnMap('$_base/Point On Map.svg'),
+  mapPointBlue('$_base/Map Point Blue.svg'),
+  hospital('$_base/Hospital.svg'),
+  mapArrow('$_base/Map Arrow.svg'),
+  arrowRight('$_base/arrow_right.svg'),
+  filter('$_base/Filter.svg'),
+  sort('$_base/Sort From Top To Bottom.svg');
   //speciality
   final String assetPath;
   const EcliniqIcons(this.assetPath);

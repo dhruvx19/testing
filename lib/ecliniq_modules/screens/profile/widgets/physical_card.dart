@@ -149,7 +149,7 @@ class _BMIVisualization extends StatelessWidget {
                   child: Text(
                     bmi.toStringAsFixed(1),
                     style: EcliniqTextStyles.headlineLarge.copyWith(
-                      fontSize: (MediaQuery.of(context).size.height*0.03),
+                      fontSize: (MediaQuery.of(context).size.height*0.027),
                       fontWeight: FontWeight.w700,
                       color: _getBMIColor(),
                       height: 1,
