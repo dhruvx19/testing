@@ -58,7 +58,22 @@ enum EcliniqIcons {
   map('$_base/Map Point.svg'),
   microphoneMyDoctor('$_base/Microphone.svg'),
   magnifierMyDoctor('$_base/Magnifer.svg'),
-  refreshed('$_base/Refresh.svg');
+  userHeartRounded('$_base/User Heart Rounded.svg'),
+  dropperMinimalistic('$_base/Dropper Minimalistic.svg'),
+  gender('$_base/gender_sign.svg'),
+  refreshed('$_base/Refresh.svg'),
+  arrowLeft('$_base/Arrow Left.svg'),
+  questionCircle('$_base/Question Circle.svg'),
+  smartphone('$_base/Smartphone.svg'),
+  mail('$_base/Mail.svg'),
+  password('$_base/Password.svg'),
+  faceScanSquare('$_base/Face Scan Square.svg'),
+  angleRight('$_base/Angle Right.svg'),
+  angleDown('$_base/Angle Down.svg'),
+  trashBin2('$_base/Trash Bin 2.svg'),
+  clockCircle('$_base/Clock Circle.svg'),
+  arrowRightWhite('$_base/Arrow Right.svg'),
+  arrowRight('$_base/arrow_right.svg');
   //speciality
   final String assetPath;
   const EcliniqIcons(this.assetPath);
