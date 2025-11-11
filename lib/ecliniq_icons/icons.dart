@@ -46,6 +46,8 @@ enum EcliniqIcons {
   pdf('$_base/pdf.svg'),
   threeDots('$_base/MenuDots.svg'),
   star('$_base/Star.svg'),
+  call('$_base/Incoming Call.png'),
+  close('$_base/close.png');
   medicalKit('$_base/Medical Kit.svg'),
   shuffle('$_base/Shuffle.svg'),
   mapPoint('$_base/Map Point.svg'),
