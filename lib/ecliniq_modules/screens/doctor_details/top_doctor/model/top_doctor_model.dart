@@ -24,6 +24,54 @@ class Doctor {
   });
 
   factory Doctor.fromJson(Map<String, dynamic> json) {
+    // Helper to parse hospital - handle both singular and plural
+    Hospital? parseHospital() {
+      // Try singular first
+      if (json['hospital'] != null) {
+        try {
+          return Hospital.fromJson(json['hospital'] as Map<String, dynamic>);
+        } catch (e) {
+          // If parsing fails, try plural
+        }
+      }
+      // Try plural (array) - take first item
+      if (json['hospitals'] != null) {
+        final hospitals = json['hospitals'] as List<dynamic>?;
+        if (hospitals != null && hospitals.isNotEmpty) {
+          try {
+            return Hospital.fromJson(hospitals.first as Map<String, dynamic>);
+          } catch (e) {
+            // If parsing fails, return null
+          }
+        }
+      }
+      return null;
+    }
+
+    // Helper to parse clinic - handle both singular and plural
+    Clinic? parseClinic() {
+      // Try singular first
+      if (json['clinic'] != null) {
+        try {
+          return Clinic.fromJson(json['clinic'] as Map<String, dynamic>);
+        } catch (e) {
+          // If parsing fails, try plural
+        }
+      }
+      // Try plural (array) - take first item
+      if (json['clinics'] != null) {
+        final clinics = json['clinics'] as List<dynamic>?;
+        if (clinics != null && clinics.isNotEmpty) {
+          try {
+            return Clinic.fromJson(clinics.first as Map<String, dynamic>);
+          } catch (e) {
+            // If parsing fails, return null
+          }
+        }
+      }
+      return null;
+    }
+
     return Doctor(
       id: json['id'] ?? '',
       name: json['name'] ?? '',
@@ -39,12 +87,8 @@ class Doctor {
           [],
       yearOfExperience: json['yearOfExperience'],
       distanceKm: json['distanceKm']?.toDouble(),
-      hospital: json['hospital'] != null
-          ? Hospital.fromJson(json['hospital'] as Map<String, dynamic>)
-          : null,
-      clinic: json['clinic'] != null 
-          ? Clinic.fromJson(json['clinic'] as Map<String, dynamic>)
-          : null,
+      hospital: parseHospital(),
+      clinic: parseClinic(),
     );
   }
 
@@ -117,15 +161,62 @@ class Hospital {
   });
 
   factory Hospital.fromJson(Map<String, dynamic> json) {
+    // Handle nested address object if present
+    String getCity() {
+      if (json['city'] != null) return json['city'].toString();
+      if (json['address'] != null && json['address'] is Map) {
+        final address = json['address'] as Map<String, dynamic>;
+        return address['city']?.toString() ?? '';
+      }
+      return '';
+    }
+
+    String getState() {
+      if (json['state'] != null) return json['state'].toString();
+      if (json['address'] != null && json['address'] is Map) {
+        final address = json['address'] as Map<String, dynamic>;
+        return address['state']?.toString() ?? '';
+      }
+      return '';
+    }
+
+    String getPincode() {
+      if (json['pincode'] != null) return json['pincode'].toString();
+      if (json['address'] != null && json['address'] is Map) {
+        final address = json['address'] as Map<String, dynamic>;
+        return address['pincode']?.toString() ?? '';
+      }
+      return '';
+    }
+
+    // Handle both distanceKm and distance fields
+    double getDistanceKm() {
+      if (json['distanceKm'] != null) {
+        return (json['distanceKm'] is num) 
+            ? json['distanceKm'].toDouble() 
+            : double.tryParse(json['distanceKm'].toString()) ?? 0.0;
+      }
+      if (json['distance'] != null) {
+        return (json['distance'] is num) 
+            ? json['distance'].toDouble() 
+            : double.tryParse(json['distance'].toString()) ?? 0.0;
+      }
+      return 0.0;
+    }
+
     return Hospital(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      city: json['city'] ?? '',
-      state: json['state'] ?? '',
-      pincode: json['pincode'] ?? '',
-      latitude: (json['latitude'] ?? 0).toDouble(),
-      longitude: (json['longitude'] ?? 0).toDouble(),
-      distanceKm: (json['distanceKm'] ?? 0).toDouble(),
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      city: getCity(),
+      state: getState(),
+      pincode: getPincode(),
+      latitude: (json['latitude'] is num) 
+          ? json['latitude'].toDouble() 
+          : double.tryParse(json['latitude']?.toString() ?? '0') ?? 0.0,
+      longitude: (json['longitude'] is num) 
+          ? json['longitude'].toDouble() 
+          : double.tryParse(json['longitude']?.toString() ?? '0') ?? 0.0,
+      distanceKm: getDistanceKm(),
     );
   }
 
@@ -168,15 +259,62 @@ class Clinic {
   });
 
   factory Clinic.fromJson(Map<String, dynamic> json) {
+    // Handle nested address object if present
+    String getCity() {
+      if (json['city'] != null) return json['city'].toString();
+      if (json['address'] != null && json['address'] is Map) {
+        final address = json['address'] as Map<String, dynamic>;
+        return address['city']?.toString() ?? '';
+      }
+      return '';
+    }
+
+    String getState() {
+      if (json['state'] != null) return json['state'].toString();
+      if (json['address'] != null && json['address'] is Map) {
+        final address = json['address'] as Map<String, dynamic>;
+        return address['state']?.toString() ?? '';
+      }
+      return '';
+    }
+
+    String getPincode() {
+      if (json['pincode'] != null) return json['pincode'].toString();
+      if (json['address'] != null && json['address'] is Map) {
+        final address = json['address'] as Map<String, dynamic>;
+        return address['pincode']?.toString() ?? '';
+      }
+      return '';
+    }
+
+    // Handle both distanceKm and distance fields
+    double getDistanceKm() {
+      if (json['distanceKm'] != null) {
+        return (json['distanceKm'] is num) 
+            ? json['distanceKm'].toDouble() 
+            : double.tryParse(json['distanceKm'].toString()) ?? 0.0;
+      }
+      if (json['distance'] != null) {
+        return (json['distance'] is num) 
+            ? json['distance'].toDouble() 
+            : double.tryParse(json['distance'].toString()) ?? 0.0;
+      }
+      return 0.0;
+    }
+
     return Clinic(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      city: json['city'] ?? '',
-      state: json['state'] ?? '',
-      pincode: json['pincode'] ?? '',
-      latitude: (json['latitude'] ?? 0).toDouble(),
-      longitude: (json['longitude'] ?? 0).toDouble(),
-      distanceKm: (json['distanceKm'] ?? 0).toDouble(),
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      city: getCity(),
+      state: getState(),
+      pincode: getPincode(),
+      latitude: (json['latitude'] is num) 
+          ? json['latitude'].toDouble() 
+          : double.tryParse(json['latitude']?.toString() ?? '0') ?? 0.0,
+      longitude: (json['longitude'] is num) 
+          ? json['longitude'].toDouble() 
+          : double.tryParse(json['longitude']?.toString() ?? '0') ?? 0.0,
+      distanceKm: getDistanceKm(),
     );
   }
 
