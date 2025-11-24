@@ -70,6 +70,8 @@ class AppointmentDetailModel {
       status = 'completed';
     } else if (status == 'pending') {
       status = 'requested';
+    } else if (status == 'checked_in') {
+      status = 'confirmed';
     }
 
     // Combine date and time - startTime might have wrong date (1970-01-01), so use schedule.date

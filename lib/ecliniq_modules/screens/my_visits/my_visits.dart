@@ -149,6 +149,9 @@ class _MyVisitsState extends State<MyVisits>
       case 'CONFIRMED':
         status = AppointmentStatus.confirmed;
         break;
+      case 'CHECKED_IN':
+        status = AppointmentStatus.confirmed;
+        break;
       case 'PENDING':
         status = AppointmentStatus.requested;
         break;
