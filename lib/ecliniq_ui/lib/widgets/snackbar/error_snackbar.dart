@@ -167,7 +167,7 @@ class _SuccessSnackBarContentState extends State<_SuccessSnackBarContent>
                                 color: Color(0xFFF04248), // Green
                                 borderRadius: BorderRadius.only(
                                   bottomLeft: Radius.circular(8),
-                                  bottomRight: Radius.circular(8),
+                                  bottomRight: Radius.circular(0),
                                 ),
                               ),
                             ),

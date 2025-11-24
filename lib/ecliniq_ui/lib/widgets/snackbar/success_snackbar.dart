@@ -179,7 +179,8 @@ class _SuccessSnackBarContentState extends State<_SuccessSnackBarContent>
                               decoration: const BoxDecoration(
                                 color: Color(0xFF6DDB72), // Green
                                 borderRadius: BorderRadius.only(
-                                  bottomRight: Radius.circular(12),
+                                  bottomLeft: Radius.circular(8),
+                                  bottomRight: Radius.circular(0),
                                 ),
                               ),
                             ),

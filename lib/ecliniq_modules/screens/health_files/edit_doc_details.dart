@@ -1,7 +1,10 @@
 import 'dart:io';
+
 import 'package:ecliniq/ecliniq_modules/screens/details/widgets/date_picker_sheet.dart';
 import 'package:ecliniq/ecliniq_modules/screens/health_files/models/health_file_model.dart';
 import 'package:ecliniq/ecliniq_modules/screens/health_files/providers/health_files_provider.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/colors.g.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/success_snackbar.dart';
 import 'package:flutter/material.dart';
@@ -10,10 +13,7 @@ import 'package:provider/provider.dart';
 class EditDocumentDetailsPage extends StatefulWidget {
   final HealthFile healthFile;
 
-  const EditDocumentDetailsPage({
-    super.key,
-    required this.healthFile,
-  });
+  const EditDocumentDetailsPage({super.key, required this.healthFile});
 
   @override
   State<EditDocumentDetailsPage> createState() =>
@@ -67,7 +67,7 @@ class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
   @override
   Widget build(BuildContext context) {
     final fileExists = File(widget.healthFile.filePath).existsSync();
-    
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -453,18 +453,11 @@ class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.description,
-              size: 64,
-              color: Colors.grey.shade400,
-            ),
+            Icon(Icons.description, size: 64, color: Colors.grey.shade400),
             const SizedBox(height: 16),
             Text(
               widget.healthFile.fileName,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade600,
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
             ),
           ],
         ),
@@ -539,8 +532,10 @@ class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
 
       // Update file via provider
       if (mounted) {
-        final success = await context.read<HealthFilesProvider>().updateFile(updatedFile);
-        
+        final success = await context.read<HealthFilesProvider>().updateFile(
+          updatedFile,
+        );
+
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             CustomSuccessSnackBar(
@@ -578,10 +573,7 @@ class _FullScreenPreview extends StatelessWidget {
   final String filePath;
   final bool isImage;
 
-  const _FullScreenPreview({
-    required this.filePath,
-    required this.isImage,
-  });
+  const _FullScreenPreview({required this.filePath, required this.isImage});
 
   @override
   Widget build(BuildContext context) {
@@ -593,9 +585,7 @@ class _FullScreenPreview extends StatelessWidget {
       backgroundColor: Colors.black,
       body: Center(
         child: isImage && File(filePath).existsSync()
-            ? InteractiveViewer(
-                child: Image.file(File(filePath)),
-              )
+            ? InteractiveViewer(child: Image.file(File(filePath)))
             : const Center(
                 child: Text(
                   'Preview not available',
@@ -621,87 +611,74 @@ class FileTypeBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      height: MediaQuery.of(context).size.height * 0.45,
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Select File Type',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2D2D2D),
+          Padding(
+            padding: const EdgeInsets.only(top: 15, left: 15),
+            child: Text(
+              'Select File Type',
+              style: EcliniqTextStyles.headlineBMedium.copyWith(
+                color: Color(0xff424242),
+                fontWeight: FontWeight.w500,
+                fontSize: 18,
+              ),
             ),
           ),
-          const SizedBox(height: 24),
-          Flexible(
+          Expanded(
             child: ListView.builder(
-              shrinkWrap: true,
               itemCount: fileTypes.length,
               itemBuilder: (context, index) {
                 final fileType = fileTypes[index];
-
-                return _FileTypeOption(
-                  fileType: fileType,
-                  groupValue: selectedFileType,
+                final isSelected = selectedFileType == fileType;
+                return ListTile(
+                  leading: Container(
+                    height: 20,
+                    width: 20,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: isSelected
+                            ? EcliniqColors.light.strokeBrand
+                            : EcliniqColors.light.strokeNeutralSubtle,
+                      ),
+                      shape: BoxShape.circle,
+                      color: isSelected
+                          ? EcliniqColors.light.bgContainerInteractiveBrand
+                          : EcliniqColors.light.bgBaseOverlay,
+                    ),
+                    child: Container(
+                      margin: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: EcliniqColors.light.bgBaseOverlay,
+                      ),
+                    ),
+                  ),
+                  title: Text(
+                    fileType,
+                    style: EcliniqTextStyles.bodyMedium.copyWith(
+                      color: Color(0xff424242),
+                      fontWeight: FontWeight.w400,
+                      fontSize: 18,
+                    ),
+                  ),
                   onTap: () {
-                    Navigator.pop(context, fileType);
+                    Future.delayed(
+                      const Duration(milliseconds: 300),
+                      () => Navigator.pop(context, fileType),
+                    );
                   },
                 );
               },
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
         ],
-      ),
-    );
-  }
-}
-
-class _FileTypeOption extends StatelessWidget {
-  final String fileType;
-  final String groupValue;
-  final VoidCallback onTap;
-
-  const _FileTypeOption({
-    required this.fileType,
-    required this.groupValue,
-    required this.onTap,
-  });
-
-  bool get isSelected => fileType == groupValue;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Row(
-            children: [
-              Radio<String>(
-                value: fileType,
-                groupValue: groupValue,
-                onChanged: (value) => onTap(),
-                activeColor: const Color(0xFF2B7FFF),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  fileType,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                    color: const Color(0xFF2D2D2D),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

@@ -263,10 +263,13 @@ class ProfessionalInformationWidget extends StatelessWidget {
           children: [
             Text(
               value,
+           
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
                 color: Color(0xff626060),
+                
               ),
             ),
             if (hasVerification) ...[

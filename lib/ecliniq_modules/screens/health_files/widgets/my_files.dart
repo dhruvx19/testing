@@ -122,13 +122,6 @@ class FileCategoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-         ScaffoldMessenger.of(context).showSnackBar(
-            CustomActionSnackBar(
-              title: 'Details saved successfully',
-              subtitle: 'Your changes have been saved successfully',
-              context: context,
-            ),
-          );
         EcliniqRouter.push(FileTypeScreen(fileType: category.fileType));
       },
       child: Container(
