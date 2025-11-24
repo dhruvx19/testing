@@ -8,7 +8,8 @@ class SlotService {
   Future<SlotResponse> findSlotsByDoctorAndDate({
     required String doctorId,
     required String date,
-    required String hospitalId,
+    String? hospitalId,
+    String? clinicId,
   }) async {
     try {
       final url = Uri.parse(Endpoints.getSlotsByDate);
@@ -17,6 +18,7 @@ class SlotService {
         doctorId: doctorId,
         date: date,
         hospitalId: hospitalId,
+        clinicId: clinicId,
       );
 
       final response = await http.post(

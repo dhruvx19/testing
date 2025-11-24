@@ -15,7 +15,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ClinicVisitSlotScreen extends StatefulWidget {
   final String doctorId;
-  final String hospitalId;
+  final String? hospitalId;
+  final String? clinicId;
   final String? doctorName;
   final String? doctorSpecialization;
   final String? appointmentId;
@@ -25,13 +26,17 @@ class ClinicVisitSlotScreen extends StatefulWidget {
   const ClinicVisitSlotScreen({
     super.key,
     required this.doctorId,
-    required this.hospitalId,
+    this.hospitalId,
+    this.clinicId,
     this.doctorName,
     this.doctorSpecialization,
     this.appointmentId,
     this.previousAppointment,
     this.isReschedule = false,
-  });
+  }) : assert(
+          hospitalId != null || clinicId != null,
+          'Either hospitalId or clinicId must be provided',
+        );
 
   @override
   State<ClinicVisitSlotScreen> createState() => _ClinicVisitSlotScreenState();
@@ -117,6 +122,7 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
       final response = await _slotService.findSlotsByDoctorAndDate(
         doctorId: widget.doctorId,
         hospitalId: widget.hospitalId,
+        clinicId: widget.clinicId,
         date: _formatDateForApi(selectedDate!),
       );
 
@@ -298,9 +304,11 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
       if (mounted) {
         if (holdTokenResponse.success && holdTokenResponse.data != null) {
           // Token held successfully, navigate to review screen
+          // Use hospitalId from slot if available, otherwise fallback to widget.hospitalId
+          // Note: ReviewDetailsScreen may need to be updated to support clinicId as well
           final hospitalIdFromSlot = slot.hospitalId.isNotEmpty
               ? slot.hospitalId
-              : widget.hospitalId;
+              : (widget.hospitalId ?? '');
 
           Navigator.push(
             context,

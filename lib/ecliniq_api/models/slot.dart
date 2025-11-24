@@ -158,20 +158,33 @@ class SlotResponse {
 class FindSlotsRequest {
   final String doctorId;
   final String date;
-  final String hospitalId;
+  final String? hospitalId;
+  final String? clinicId;
 
   FindSlotsRequest({
     required this.doctorId,
     required this.date,
-    required this.hospitalId,
-  });
+    this.hospitalId,
+    this.clinicId,
+  }) : assert(
+          hospitalId != null || clinicId != null,
+          'Either hospitalId or clinicId must be provided',
+        );
 
   Map<String, dynamic> toJson() {
-    return {
+    final json = <String, dynamic>{
       'doctorId': doctorId,
       'date': date,
-      'hospitalId': hospitalId,
     };
+    
+    if (hospitalId != null) {
+      json['hospitalId'] = hospitalId;
+    }
+    if (clinicId != null) {
+      json['clinicId'] = clinicId;
+    }
+    
+    return json;
   }
 }
 
