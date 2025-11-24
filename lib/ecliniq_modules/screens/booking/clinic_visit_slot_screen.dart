@@ -5,13 +5,14 @@ import 'package:ecliniq/ecliniq_modules/screens/booking/review_details_screen.da
 import 'package:ecliniq/ecliniq_modules/screens/booking/widgets/date_selector.dart';
 import 'package:ecliniq/ecliniq_modules/screens/booking/widgets/doctor_info_card.dart';
 import 'package:ecliniq/ecliniq_modules/screens/booking/widgets/time_slot_card.dart';
-import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/widgets/common.dart' hide DoctorInfoCard;
+import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/widgets/common.dart'
+    hide DoctorInfoCard;
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/button/button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 
 class ClinicVisitSlotScreen extends StatefulWidget {
   final String doctorId;
@@ -34,9 +35,9 @@ class ClinicVisitSlotScreen extends StatefulWidget {
     this.previousAppointment,
     this.isReschedule = false,
   }) : assert(
-          hospitalId != null || clinicId != null,
-          'Either hospitalId or clinicId must be provided',
-        );
+         hospitalId != null || clinicId != null,
+         'Either hospitalId or clinicId must be provided',
+       );
 
   @override
   State<ClinicVisitSlotScreen> createState() => _ClinicVisitSlotScreenState();
@@ -201,7 +202,6 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
     for (final slot in _slots) {
       final hourIST = _getHourInIST(slot.startTime);
 
-    
       String period;
       if (hourIST >= 5 && hourIST < 12) {
         period = 'Morning';
@@ -538,58 +538,122 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
   Widget _buildPreviousAppointmentBanner() {
     final appointment = widget.previousAppointment!;
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF2F7FF),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color(0xFF96BFFF),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+      decoration: BoxDecoration(color: Color(0xffF8FAFF)),
+      child: Row(
         children: [
-          Row(
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Color(0xff3EAF3F),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  'Today',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white,
+                  ),
+                ),
+                Text(
+                  '12 Nov',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                Icons.info_outline,
-                color: const Color(0xFF2372EC),
-                size: 20,
+              FittedBox(
+                child: Text(
+                  'You already have a confirmed booking',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xff424242),
+                  ),
+                ),
               ),
-              const SizedBox(width: 8),
-              Text(
-                'Previous Appointment Details',
-                style: EcliniqTextStyles.headlineMedium.copyWith(
-                  color: const Color(0xFF2372EC),
-                  fontWeight: FontWeight.w600,
+              FittedBox(
+                child: Text(
+                  'Your Token #76 (Time: 10:45AM)',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xff424242),
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          if (appointment.tokenNumber != null)
-            _buildBannerRow(
-              'Token No',
-              appointment.tokenNumber!,
-              Icons.confirmation_number,
-            ),
-          const SizedBox(height: 8),
-          _buildBannerRow(
-            'Date',
-            appointment.timeInfo.date,
-            Icons.calendar_today,
-          ),
-          const SizedBox(height: 8),
-          _buildBannerRow(
-            'Time',
-            appointment.timeInfo.time,
-            Icons.access_time,
-          ),
         ],
       ),
     );
+
+    // Container(
+    //   margin: const EdgeInsets.all(16),
+    //   padding: const EdgeInsets.all(16),
+    //   decoration: BoxDecoration(
+    //     color: const Color(0xFFF2F7FF),
+    //     borderRadius: BorderRadius.circular(12),
+    //     border: Border.all(
+    //       color: const Color(0xFF96BFFF),
+    //       width: 1,
+    //     ),
+    //   ),
+    //   child: Column(
+    //     crossAxisAlignment: CrossAxisAlignment.start,
+    //     children: [
+    //       Row(
+    //         children: [
+    //           Icon(
+    //             Icons.info_outline,
+    //             color: const Color(0xFF2372EC),
+    //             size: 20,
+    //           ),
+    //           const SizedBox(width: 8),
+    //           Text(
+    //             'Previous Appointment Details',
+    //             style: EcliniqTextStyles.headlineMedium.copyWith(
+    //               color: const Color(0xFF2372EC),
+    //               fontWeight: FontWeight.w600,
+    //             ),
+    //           ),
+    //         ],
+    //       ),
+    //       const SizedBox(height: 12),
+    //       if (appointment.tokenNumber != null)
+    //         _buildBannerRow(
+    //           'Token No',
+    //           appointment.tokenNumber!,
+    //           Icons.confirmation_number,
+    //         ),
+    //       const SizedBox(height: 8),
+    //       _buildBannerRow(
+    //         'Date',
+    //         appointment.timeInfo.date,
+    //         Icons.calendar_today,
+    //       ),
+    //       const SizedBox(height: 8),
+    //       _buildBannerRow(
+    //         'Time',
+    //         appointment.timeInfo.time,
+    //         Icons.access_time,
+    //       ),
+    //     ],
+    //   ),
+    // );
   }
 
   Widget _buildBannerRow(String label, String value, IconData icon) {

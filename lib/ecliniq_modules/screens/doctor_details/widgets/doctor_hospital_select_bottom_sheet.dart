@@ -6,10 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 class LocationBottomSheet extends StatefulWidget {
   final Doctor doctor;
 
-  const LocationBottomSheet({
-    super.key,
-    required this.doctor,
-  });
+  const LocationBottomSheet({super.key, required this.doctor});
 
   @override
   State<LocationBottomSheet> createState() => _LocationBottomSheetState();
@@ -57,17 +54,6 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Drag Handle
-          Container(
-            margin: const EdgeInsets.only(top: 12),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: const Color(0xFFE0E0E0),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-
           // Content
           Padding(
             padding: const EdgeInsets.all(16),
@@ -142,9 +128,7 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF2372EC),
           disabledBackgroundColor: const Color(0xFFE0E0E0),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           elevation: 0,
         ),
         child: const Text(
@@ -193,9 +177,7 @@ class _LocationCard extends StatelessWidget {
             const SizedBox(width: 12),
             _LocationIcon(type: location.type),
             const SizedBox(width: 12),
-            Expanded(
-              child: _LocationDetails(location: location),
-            ),
+            Expanded(child: _LocationDetails(location: location)),
           ],
         ),
       ),
@@ -215,9 +197,7 @@ class _RadioButton extends StatelessWidget {
       width: 20,
       decoration: BoxDecoration(
         border: Border.all(
-          color: isSelected
-              ? const Color(0xFF2563EB)
-              : const Color(0xFFD1D5DB),
+          color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFD1D5DB),
           width: 2,
         ),
         shape: BoxShape.circle,
@@ -252,8 +232,7 @@ class _LocationIcon extends StatelessWidget {
         color: isHospital ? const Color(0xFFFFF7F0) : const Color(0xFFE3F2FD),
         borderRadius: BorderRadius.circular(54),
         border: Border.all(
-          color:
-              isHospital ? const Color(0xFFEC7600) : const Color(0xFF2196F3),
+          color: isHospital ? const Color(0xFFEC7600) : const Color(0xFF2196F3),
           width: 0.5,
         ),
       ),
@@ -325,10 +304,7 @@ class _IconTextRow extends StatelessWidget {
   final String icon;
   final String text;
 
-  const _IconTextRow({
-    required this.icon,
-    required this.text,
-  });
+  const _IconTextRow({required this.icon, required this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -362,10 +338,7 @@ class _EmptyLocationState extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: 20),
         child: Text(
           'No locations available',
-          style: TextStyle(
-            fontSize: 14,
-            color: Color(0xFF9E9E9E),
-          ),
+          style: TextStyle(fontSize: 14, color: Color(0xFF9E9E9E)),
         ),
       ),
     );
