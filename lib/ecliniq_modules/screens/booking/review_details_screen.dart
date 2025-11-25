@@ -324,10 +324,11 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                               child: Text(
                                 selectedReason ?? 'Enter Reason for Visit',
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 18,
                                   color: selectedReason != null
                                       ? Colors.black
                                       : const Color(0xffD6D6D6),
+                                      fontWeight: FontWeight.w400
                                 ),
                               ),
                             ),
