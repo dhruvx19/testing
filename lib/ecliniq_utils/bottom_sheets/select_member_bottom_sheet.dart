@@ -9,6 +9,8 @@ import 'package:ecliniq/ecliniq_api/models/patient.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class SelectMemberBottomSheet extends StatefulWidget {
   const SelectMemberBottomSheet({super.key});
@@ -24,6 +26,8 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
   bool _isLoading = true;
   String? _errorMessage;
   List<DependentData> _dependents = [];
+  String? _authToken;
+  final Map<String, String> _imageUrlCache = {};
 
   @override
   void initState() {
@@ -67,6 +71,7 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
         setState(() {
           _dependents = response.data;
           _isLoading = false;
+          _authToken = authToken;
         });
       } else {
         setState(() {
@@ -81,6 +86,34 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
         _errorMessage = 'Failed to load dependents: $e';
       });
     }
+  }
+
+  Future<void> _ensureDownloadUrl(String key, {bool isPublic = false}) async {
+    if (_imageUrlCache.containsKey(key)) return;
+    try {
+      final uri = Uri.parse(
+        isPublic
+            ? '${Endpoints.storagePublicUrl}?key=${Uri.encodeComponent(key)}'
+            : '${Endpoints.storageDownloadUrl}?key=${Uri.encodeComponent(key)}',
+      );
+      final headers = <String, String>{'Content-Type': 'application/json'};
+      if (!isPublic && _authToken != null && _authToken!.isNotEmpty) {
+        headers['Authorization'] = 'Bearer ${_authToken!}';
+        headers['x-access-token'] = _authToken!;
+      }
+      final resp = await http.get(uri, headers: headers);
+      if (resp.statusCode == 200) {
+        final body = jsonDecode(resp.body) as Map<String, dynamic>;
+        final data = body['data'] as Map<String, dynamic>?;
+        final url = isPublic ? data?['publicUrl'] : data?['downloadUrl'];
+        if (url is String && url.isNotEmpty) {
+          if (!mounted) return;
+          setState(() {
+            _imageUrlCache[key] = url;
+          });
+        }
+      }
+    } catch (_) {}
   }
 
   @override
@@ -201,20 +234,26 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
                                       color: Color(0xFF96BFFF),
                                       width: 0.6,
                                     ),
-                                    image:
-                                        d.profilePhoto != null &&
-                                            d.profilePhoto!.isNotEmpty
-                                        ? DecorationImage(
+                                    image: () {
+                                      final key = d.profilePhoto;
+                                      if (key != null && key.isNotEmpty) {
+                                        final cached = _imageUrlCache[key];
+                                        if (cached != null && cached.isNotEmpty) {
+                                          return DecorationImage(
                                             fit: BoxFit.cover,
-                                            image: NetworkImage(
-                                              '${Endpoints.localhost}/${d.profilePhoto}',
-                                            ),
-                                          )
-                                        : null,
+                                            image: NetworkImage(cached),
+                                          );
+                                        } else {
+                                          // kick off fetch, show initials till then
+                                          _ensureDownloadUrl(key, isPublic: false);
+                                        }
+                                      }
+                                      return null;
+                                    }(),
                                   ),
-                                  child:
-                                      (d.profilePhoto == null ||
-                                          d.profilePhoto!.isEmpty)
+                                  child: (d.profilePhoto == null ||
+                                          d.profilePhoto!.isEmpty) ||
+                                          !_imageUrlCache.containsKey(d.profilePhoto!)
                                       ? Center(
                                           child: Text(
                                             _initials(d.fullName),
@@ -281,11 +320,15 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
                 SizedBox(height: 16),
 
                 InkWell(
-                  onTap: () {
-                    EcliniqBottomSheet.show(
+                  onTap: () async {
+                    final result = await EcliniqBottomSheet.show(
                       context: context,
                       child: AddDependentBottomSheet(),
                     );
+                    // If user added a dependent successfully, refresh the list
+                    if (mounted && result != null) {
+                      await _fetchDependents();
+                    }
                   },
                   child: Container(
                     width: double.infinity,

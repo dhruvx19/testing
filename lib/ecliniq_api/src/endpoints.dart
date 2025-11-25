@@ -13,6 +13,8 @@ class Endpoints {
   static String get login => '$localhost/api/auth/login';
 
   static String get getUrl => '$localhost/api/storage/upload-url';
+  static String get storageDownloadUrl => '$localhost/api/storage/download-url';
+  static String get storagePublicUrl => '$localhost/api/storage/public-url';
 
   static String get patientDetails => '$localhost/api/patients/create-patient-profile';
   static String get topHospitals => '$localhost/api/hospitals/top-hospitals';
