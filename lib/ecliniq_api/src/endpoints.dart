@@ -34,6 +34,7 @@ class Endpoints {
   static String get getPatientDetails => '$localhost/api/patients/get-patient-details';
   static String get addDependent => '$localhost/api/patients/add-dependent';
   static String get getDependents => '$localhost/api/patients/get-dependents';
+  static String get getFavouriteDoctors => '$localhost/api/patients/get-favourite-doctors';
   static String doctorDetailsById(String doctorId) => '$localhost/api/doctors/doctorDetailsByIdByPatient/$doctorId';
 
   // Change contact endpoints
