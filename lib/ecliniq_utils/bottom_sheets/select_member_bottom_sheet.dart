@@ -29,6 +29,17 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
     _fetchDependents();
   }
 
+  double _computeListHeight() {
+    // Each row visual height ~86 + vertical margin ~12
+    const double itemHeight = 86;
+    const double verticalMargin = 12;
+    final count = _dependents.length;
+    if (count <= 0) return 0;
+    final total = (itemHeight + verticalMargin) * count;
+    // Cap at 240 to avoid overly tall sheet; ensures 1-2 items shrink
+    return total.clamp(86.0, 240.0);
+  }
+
   Future<void> _fetchDependents() async {
     setState(() {
       _isLoading = true;
@@ -98,7 +109,7 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
           Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
             child: SizedBox(
-              height: 240,
+              height: _isLoading ? 240 : _computeListHeight(),
               child: _isLoading
                   ? const ShimmerListLoading(
                       itemCount: 3,
@@ -115,6 +126,7 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
                         )
                       : ListView.builder(
                           padding: EdgeInsets.zero,
+                          shrinkWrap: true,
                           itemCount: _dependents.length,
                           itemBuilder: (context, index) {
                             final d = _dependents[index];

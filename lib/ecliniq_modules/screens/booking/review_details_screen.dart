@@ -255,7 +255,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                       subtitle: _selectedDependent != null
                           ? _formatDependentSubtitle(_selectedDependent!)
                           : 'Male, 02/02/1996 (29Y)',
-                      badge: 'You',
+                      badge: _selectedDependent?.relation ?? 'You',
                       showEdit: true,
                       onDependentSelected: (dep) {
                         setState(() {
