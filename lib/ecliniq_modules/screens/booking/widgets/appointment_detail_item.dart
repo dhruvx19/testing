@@ -2,6 +2,7 @@ import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_utils/bottom_sheets/select_member_bottom_sheet.dart';
+import 'package:ecliniq/ecliniq_api/models/patient.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -11,6 +12,7 @@ class AppointmentDetailItem extends StatelessWidget {
   final String subtitle;
   final String? badge;
   final bool showEdit;
+  final ValueChanged<DependentData>? onDependentSelected;
 
   const AppointmentDetailItem({
     super.key,
@@ -19,6 +21,7 @@ class AppointmentDetailItem extends StatelessWidget {
     required this.subtitle,
     this.badge,
     required this.showEdit,
+    this.onDependentSelected,
   });
 
   @override
@@ -74,10 +77,15 @@ class AppointmentDetailItem extends StatelessWidget {
           ),
           if (showEdit)
             GestureDetector(
-              onTap: () => EcliniqBottomSheet.show(
-                context: context,
-                child: SelectMemberBottomSheet(),
-              ),
+              onTap: () async {
+                final selected = await EcliniqBottomSheet.show<DependentData>(
+                  context: context,
+                  child: const SelectMemberBottomSheet(),
+                );
+                if (selected != null && onDependentSelected != null) {
+                  onDependentSelected!(selected);
+                }
+              },
               child: SvgPicture.asset(
                 EcliniqIcons.editIcon.assetPath,
                 width: 48,

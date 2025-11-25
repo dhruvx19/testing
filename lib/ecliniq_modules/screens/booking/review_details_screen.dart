@@ -12,6 +12,7 @@ import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/widget
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/button/button.dart';
+import 'package:ecliniq/ecliniq_api/models/patient.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -63,6 +64,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
   String? _patientId;
   String? _authToken;
   String? _hospitalAddress;
+  DependentData? _selectedDependent;
 
   final List<String> reasons = [
     'Fever',
@@ -165,6 +167,26 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
     }
   }
 
+  String _formatDependentSubtitle(DependentData d) {
+    String capitalize(String s) => s.isEmpty
+        ? s
+        : s[0].toUpperCase() + (s.length > 1 ? s.substring(1).toLowerCase() : '');
+
+    final gender = capitalize(d.gender);
+    String dobStr = '';
+    if (d.dob != null) {
+      final dd = d.dob!;
+      final day = dd.day.toString().padLeft(2, '0');
+      final month = dd.month.toString().padLeft(2, '0');
+      dobStr = '$day/$month/${dd.year}';
+    }
+    final parts = <String>[];
+    if (gender.isNotEmpty) parts.add(gender);
+    if (dobStr.isNotEmpty) parts.add(dobStr);
+    final age = d.age != null ? ' (${d.age})' : '';
+    return parts.join(', ') + age;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -229,10 +251,17 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                   RepaintBoundary(
                     child: AppointmentDetailItem(
                       iconAssetPath: EcliniqIcons.user.assetPath,
-                      title: 'Ketan Patni',
-                      subtitle: 'Male, 02/02/1996 (29Y)',
+                      title: _selectedDependent?.fullName ?? 'Ketan Patni',
+                      subtitle: _selectedDependent != null
+                          ? _formatDependentSubtitle(_selectedDependent!)
+                          : 'Male, 02/02/1996 (29Y)',
                       badge: 'You',
                       showEdit: true,
+                      onDependentSelected: (dep) {
+                        setState(() {
+                          _selectedDependent = dep;
+                        });
+                      },
                     ),
                   ),
                   Divider(

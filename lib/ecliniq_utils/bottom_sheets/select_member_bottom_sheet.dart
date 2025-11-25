@@ -1,6 +1,12 @@
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:provider/provider.dart';
+import 'package:ecliniq/ecliniq_api/patient_service.dart';
+import 'package:ecliniq/ecliniq_api/models/patient.dart';
+import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
+import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
 
 class SelectMemberBottomSheet extends StatefulWidget {
   const SelectMemberBottomSheet({super.key});
@@ -12,37 +18,57 @@ class SelectMemberBottomSheet extends StatefulWidget {
 
 class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
   int selectedIndex = 0;
+  final PatientService _patientService = PatientService();
+  bool _isLoading = true;
+  String? _errorMessage;
+  List<DependentData> _dependents = [];
 
-  final List<FamilyMember> familyMembers = [
-    FamilyMember(
-      name: 'Ketan Patni',
-      relation: 'Self',
-      avatar: '👨‍💼',
-      color: Color(0xFFFF6B35),
-    ),
-    FamilyMember(
-      name: 'Archana Patni',
-      relation: 'Mother',
-      avatar: '👩',
-      color: Color(0xFF4F46E5),
-    ),
-    FamilyMember(
-      name: 'Devendra Patni',
-      relation: 'Father',
-      avatar: '👨',
-      color: Color(0xFF4F46E5),
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _fetchDependents();
+  }
 
-  final List<String> dependentAvatars = [
-    '👶',
-    '👧',
-    '👦',
-    '👨',
-    '👴',
-    '👵',
-    '👶🏽',
-  ];
+  Future<void> _fetchDependents() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final authToken = authProvider.authToken;
+
+      if (authToken == null || authToken.isEmpty) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Authentication required. Please login again.';
+        });
+        return;
+      }
+
+      final response = await _patientService.getDependents(authToken: authToken);
+      if (!mounted) return;
+
+      if (response.success) {
+        setState(() {
+          _dependents = response.data;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = response.message;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Failed to load dependents: $e';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,114 +94,157 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
           ),
 
           SizedBox(height: 20),
-
-          // Family Members List
-          ...familyMembers.asMap().entries.map((entry) {
-            int index = entry.key;
-            FamilyMember member = entry.value;
-            bool isSelected = selectedIndex == index;
-
-            return InkWell(
-              onTap: () {
-                setState(() {
-                  selectedIndex = index;
-                });
-              },
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: isSelected ? Color(0xFFF8F9FF) : Colors.white,
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(
-                    color: isSelected ? Color(0xFF96BFFF) : Colors.white,
-                    width: 0.5,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    // Radio button
-                    Container(
-                      height: 24,
-                      width: 24,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: isSelected
-                              ? Color(0xFF4F46E5)
-                              : Color(0xFFD1D5DB),
-                          width: 2,
-                        ),
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                      ),
-                      child: isSelected
-                          ? Center(
+          // Dependents list
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: SizedBox(
+              height: 240,
+              child: _isLoading
+                  ? const ShimmerListLoading(
+                      itemCount: 3,
+                      itemHeight: 86,
+                      padding: EdgeInsets.zero,
+                    )
+                  : _errorMessage != null
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            _errorMessage!,
+                            style: TextStyle(color: Colors.red[700]),
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: EdgeInsets.zero,
+                          itemCount: _dependents.length,
+                          itemBuilder: (context, index) {
+                            final d = _dependents[index];
+                            final isSelected = selectedIndex == index;
+                            return InkWell(
+                              onTap: () {
+                                setState(() {
+                                  selectedIndex = index;
+                                });
+                                Navigator.of(context).pop<DependentData>(d);
+                              },
                               child: Container(
-                                width: 12,
-                                height: 12,
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 6),
+                                padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Color(0xFF4F46E5),
+                                  color:
+                                      isSelected ? Color(0xFFF8F9FF) : Colors.white,
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? Color(0xFF96BFFF)
+                                        : Colors.white,
+                                    width: 0.5,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    // Radio button
+                                    Container(
+                                      height: 24,
+                                      width: 24,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: isSelected
+                                              ? Color(0xFF4F46E5)
+                                              : Color(0xFFD1D5DB),
+                                          width: 2,
+                                        ),
+                                        shape: BoxShape.circle,
+                                        color: Colors.white,
+                                      ),
+                                      child: isSelected
+                                          ? Center(
+                                              child: Container(
+                                                width: 12,
+                                                height: 12,
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  color: Color(0xFF4F46E5),
+                                                ),
+                                              ),
+                                            )
+                                          : null,
+                                    ),
+
+                                    SizedBox(width: 16),
+
+                                    // Avatar
+                                    Container(
+                                      width: 52,
+                                      height: 52,
+                                      decoration: BoxDecoration(
+                                        color: Color(0xffF2F7FF),
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Color(0xFF96BFFF),
+                                          width: 0.6,
+                                        ),
+                                        image: d.profilePhoto != null &&
+                                                d.profilePhoto!.isNotEmpty
+                                            ? DecorationImage(
+                                                fit: BoxFit.cover,
+                                                image: NetworkImage(
+                                                  '${Endpoints.localhost}/${d.profilePhoto}',
+                                                ),
+                                              )
+                                            : null,
+                                      ),
+                                      child: (d.profilePhoto == null ||
+                                              d.profilePhoto!.isEmpty)
+                                          ? Center(
+                                              child: Text(
+                                                _initials(d.fullName),
+                                                style: const TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Color(0xFF2372EC),
+                                                ),
+                                              ),
+                                            )
+                                          : null,
+                                    ),
+
+                                    SizedBox(width: 16),
+
+                                    // Name and Relation
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            d.fullName,
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                              color: Color(0xFF424242),
+                                            ),
+                                          ),
+                                          SizedBox(height: 2),
+                                          Text(
+                                            d.relation,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w400,
+                                              color: Color(0xFF626060),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            )
-                          : null,
-                    ),
-
-                    SizedBox(width: 16),
-
-                    // Avatar
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: Color(0xffF2F7FF),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Color(0xFF96BFFF),
-                          width: 0.6,
+                            );
+                          },
                         ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          member.avatar,
-                          style: TextStyle(fontSize: 28),
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(width: 16),
-
-                    // Name and Relation
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            member.name,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF424242),
-                            ),
-                          ),
-                          SizedBox(height: 2),
-                          Text(
-                            member.relation,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                              color: Color(0xFF626060),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
+            ),
+          ),
 
           SizedBox(height: 12),
 
@@ -238,16 +307,9 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
   }
 }
 
-class FamilyMember {
-  final String name;
-  final String relation;
-  final String avatar;
-  final Color color;
-
-  FamilyMember({
-    required this.name,
-    required this.relation,
-    required this.avatar,
-    required this.color,
-  });
+String _initials(String name) {
+  final parts = name.trim().split(RegExp(r"\s+")).where((e) => e.isNotEmpty).toList();
+  if (parts.isEmpty) return 'NA';
+  if (parts.length == 1) return parts.first[0].toUpperCase();
+  return (parts.first[0] + parts.last[0]).toUpperCase();
 }
