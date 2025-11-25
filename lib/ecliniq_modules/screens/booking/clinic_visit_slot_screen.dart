@@ -361,6 +361,7 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
               builder: (context) => ReviewDetailsScreen(
                 selectedSlot: _formatTimeRange(slot.startTime, slot.endTime),
                 selectedDate: selectedDateLabel,
+                selectedDateValue: selectedDate,
                 doctorId: slot.doctorId.isNotEmpty
                     ? slot.doctorId
                     : widget.doctorId,

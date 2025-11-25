@@ -122,13 +122,15 @@ class DateSelector extends StatelessWidget {
     final tomorrow = today.add(const Duration(days: 1));
     final dateOnly = DateTime(date.year, date.month, date.day);
 
+    final monthName = _getMonthName(date.month);
+
     if (dateOnly == today) {
-      return 'Today';
+      return 'Today, ${date.day} $monthName';
     } else if (dateOnly == tomorrow) {
-      return 'Tomorrow';
+      return 'Tomorrow, ${date.day} $monthName';
     } else {
       final weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-      return '${weekdays[date.weekday - 1]}, ${date.day} ${_getMonthName(date.month)}';
+      return '${weekdays[date.weekday - 1]}, ${date.day} $monthName';
     }
   }
 

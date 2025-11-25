@@ -11,11 +11,15 @@ import 'package:url_launcher/url_launcher.dart';
 class ClinicLocationCard extends StatefulWidget {
   final String? hospitalId;
   final String? clinicId;
+  final String? locationName;
+  final String? locationAddress;
 
   const ClinicLocationCard({
     super.key,
     this.hospitalId,
     this.clinicId,
+    this.locationName,
+    this.locationAddress,
   }) : assert(
           hospitalId != null || clinicId != null,
           'Either hospitalId or clinicId must be provided',
@@ -247,6 +251,10 @@ class _ClinicLocationCardState extends State<ClinicLocationCard> {
   }
 
   String _getHospitalAddress() {
+    if (widget.locationAddress != null && widget.locationAddress!.isNotEmpty) {
+      return widget.locationAddress!;
+    }
+
     if (widget.clinicId != null) {
       // For clinics, return a generic message
       return 'Clinic location details';
@@ -297,9 +305,12 @@ class _ClinicLocationCardState extends State<ClinicLocationCard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'In-Clinic Consultation',
+                    widget.locationName ??
+                        (widget.clinicId != null
+                            ? 'Clinic Consultation'
+                            : 'In-Clinic Consultation'),
                     style: EcliniqTextStyles.headlineMedium.copyWith(
-                      color: Color(0xff424242),
+                      color: const Color(0xff424242),
                     ),
                   ),
                   const SizedBox(height: 4),

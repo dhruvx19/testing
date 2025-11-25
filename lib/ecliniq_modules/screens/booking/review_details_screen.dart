@@ -1,6 +1,8 @@
 import 'package:ecliniq/ecliniq_api/appointment_service.dart';
+import 'package:ecliniq/ecliniq_api/doctor_service.dart';
 import 'package:ecliniq/ecliniq_api/hospital_service.dart';
 import 'package:ecliniq/ecliniq_api/models/appointment.dart';
+import 'package:ecliniq/ecliniq_api/models/doctor.dart' as doctor_models;
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/booking/request_sent.dart';
 import 'package:ecliniq/ecliniq_modules/screens/booking/widgets/appointment_detail_item.dart';
@@ -19,6 +21,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ReviewDetailsScreen extends StatefulWidget {
   final String selectedSlot;
   final String selectedDate;
+  final DateTime? selectedDateValue;
   final String doctorId;
   final String? hospitalId;
   final String? clinicId;
@@ -33,6 +36,7 @@ class ReviewDetailsScreen extends StatefulWidget {
     super.key,
     required this.selectedSlot,
     required this.selectedDate,
+    this.selectedDateValue,
     required this.doctorId,
     this.hospitalId,
     this.clinicId,
@@ -54,6 +58,7 @@ class ReviewDetailsScreen extends StatefulWidget {
 class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
   final AppointmentService _appointmentService = AppointmentService();
   final HospitalService _hospitalService = HospitalService();
+  final DoctorService _doctorService = DoctorService();
   final TextEditingController _referByController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
@@ -63,6 +68,34 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
   String? _patientId;
   String? _authToken;
   String? _hospitalAddress;
+  doctor_models.Doctor? _doctorSummary;
+  doctor_models.DoctorDetails? _doctorDetails;
+  String? _locationName;
+  String? _locationAddress;
+  String? _locationDistance;
+  static const List<String> _monthNames = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+  static const List<String> _weekdayNames = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
 
   final List<String> reasons = [
     'Fever',
@@ -77,14 +110,22 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadPatientId();
-    _fetchHospitalAddress();
+    _doctorSummary = _buildFallbackDoctor();
+    _initializeData();
     
     // Pre-fill reason from previous appointment if rescheduling
     if (widget.isReschedule && widget.previousAppointment != null) {
       // The reason might be stored in the appointment, but it's not in AppointmentDetailModel
       // So we'll leave it empty for now
     }
+  }
+
+  Future<void> _initializeData() async {
+    await _loadPatientId();
+    await Future.wait([
+      _fetchDoctorDetails(),
+      _fetchHospitalAddress(),
+    ]);
   }
 
   Future<void> _fetchHospitalAddress() async {
@@ -118,14 +159,209 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
         }
 
         setState(() {
-          _hospitalAddress = parts.isEmpty
+          final formattedAddress = parts.isEmpty
               ? 'Address not available'
               : parts.join(', ');
+          _hospitalAddress = formattedAddress;
+          _locationName ??= hospitalDetail.name;
+          _locationAddress ??= formattedAddress;
         });
       }
     } catch (e) {
       // Silently fail - address will be null
     }
+  }
+
+  Future<void> _fetchDoctorDetails() async {
+    if (widget.doctorId.isEmpty) return;
+
+    try {
+      final response = await _doctorService.getDoctorDetailsById(
+        doctorId: widget.doctorId,
+        authToken: _authToken,
+      );
+
+      if (!mounted) return;
+
+      if (response.success && response.data != null) {
+        final details = response.data!;
+        setState(() {
+          _doctorDetails = details;
+          _doctorSummary = _mapDoctorDetails(details);
+        });
+        _applyLocationFromDoctorDetails(details);
+      } else if (_doctorSummary == null) {
+        setState(() {
+          _doctorSummary = _buildFallbackDoctor();
+        });
+      }
+    } catch (e) {
+      if (mounted && _doctorSummary == null) {
+        setState(() {
+          _doctorSummary = _buildFallbackDoctor();
+        });
+      }
+  }
+
+  doctor_models.Doctor _mapDoctorDetails(
+    doctor_models.DoctorDetails details,
+  ) {
+    final specializationSet = <String>{};
+    if (details.specializations != null) {
+      specializationSet.addAll(details.specializations!.where((s) => s.isNotEmpty));
+    }
+    final professionalSpecs = details.professionalInformation?.specializations;
+    if (professionalSpecs != null) {
+      specializationSet.addAll(
+        professionalSpecs.map((s) => s.name).where((s) => s.isNotEmpty),
+      );
+    }
+
+    final degrees = <String>{};
+    if (details.educationalInformation != null) {
+      for (final education in details.educationalInformation!) {
+        if (education.degree.isNotEmpty) {
+          degrees.add(education.degree);
+        }
+      }
+    }
+
+    return doctor_models.Doctor(
+      id: widget.doctorId,
+      name: details.name.isNotEmpty
+          ? details.name
+          : (widget.doctorName ?? ''),
+      profilePhoto: details.profilePhoto,
+      rating: details.rating,
+      specializations: specializationSet.toList(),
+      degreeTypes: degrees.toList(),
+      yearOfExperience: details.workExperience,
+    );
+  }
+
+  doctor_models.Doctor _buildFallbackDoctor() {
+    return doctor_models.Doctor(
+      id: widget.doctorId,
+      name: widget.doctorName ?? 'Doctor',
+      specializations: widget.doctorSpecialization != null
+          ? [widget.doctorSpecialization!]
+          : [],
+      degreeTypes: const [],
+      yearOfExperience: null,
+      rating: null,
+    );
+  }
+
+  void _applyLocationFromDoctorDetails(
+    doctor_models.DoctorDetails details,
+  ) {
+    if (widget.hospitalId != null && widget.hospitalId!.isNotEmpty) {
+      final info = _findHospitalLocation(
+        details.doctorHospitals,
+        widget.hospitalId!,
+      );
+      if (info != null && mounted) {
+        setState(() {
+          _locationName ??= info['name'];
+          _locationAddress ??= info['address'];
+          _locationDistance ??= info['distance'];
+        });
+      }
+    } else if (widget.clinicId != null && widget.clinicId!.isNotEmpty) {
+      final clinic = details.clinicDetails;
+      if (clinic != null &&
+          (clinic.id == widget.clinicId || widget.clinicId!.isEmpty)) {
+        final address = _formatAddress([
+          clinic.address,
+          clinic.city,
+          clinic.state,
+          clinic.pincode,
+        ]);
+        if (mounted) {
+          setState(() {
+            _locationName = clinic.name;
+            _locationAddress = address;
+          });
+        }
+      }
+    }
+  }
+
+  Map<String, String?>? _findHospitalLocation(
+    List<dynamic>? doctorHospitals,
+    String targetHospitalId,
+  ) {
+    if (doctorHospitals == null) return null;
+
+    for (final entry in doctorHospitals) {
+      if (entry is! Map<String, dynamic>) continue;
+
+      Map<String, dynamic>? hospitalData;
+      if (entry['hospital'] is Map<String, dynamic>) {
+        hospitalData = entry['hospital'] as Map<String, dynamic>;
+      } else {
+        hospitalData = entry;
+      }
+
+      final id = hospitalData?['id']?.toString() ??
+          entry['hospitalId']?.toString() ??
+          entry['id']?.toString();
+
+      if (id == null || id != targetHospitalId) {
+        continue;
+      }
+
+      final name = hospitalData?['name']?.toString() ?? entry['name']?.toString();
+
+      String? address;
+      if (hospitalData?['address'] != null) {
+        address = _formatAddressFromMap(hospitalData!['address']);
+      } else if (entry['address'] != null) {
+        address = _formatAddressFromMap(entry['address']);
+      }
+
+      final distance = _stringify(
+        hospitalData?['distance'] ?? entry['distance'],
+      );
+
+      return {
+        'name': name,
+        'address': address,
+        'distance': distance,
+      };
+    }
+    return null;
+  }
+
+  String _formatAddress(List<String?> parts) {
+    final filtered = parts.where((part) => part != null && part!.isNotEmpty).cast<String>().toList();
+    return filtered.isEmpty ? '' : filtered.join(', ');
+  }
+
+  String? _formatAddressFromMap(dynamic raw) {
+    if (raw == null) return null;
+    if (raw is String) return raw;
+    if (raw is Map<String, dynamic>) {
+      final parts = <String>[];
+      for (final key in ['street', 'blockNo', 'city', 'state', 'pincode']) {
+        final value = raw[key];
+        if (value is String && value.isNotEmpty) {
+          parts.add(value);
+        }
+      }
+      if (raw['landmark'] is String && raw['landmark'].isNotEmpty) {
+        parts.add('Near ${raw['landmark']}');
+      }
+      return parts.isEmpty ? null : parts.join(', ');
+    }
+    return raw.toString();
+  }
+
+  String? _stringify(dynamic value) {
+    if (value == null) return null;
+    if (value is String) return value;
+    if (value is num) return '${value.toString()} Km';
+    return value.toString();
   }
 
   @override
@@ -163,6 +399,30 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
         selectedReason = selected;
       });
     }
+  }
+
+  String get _formattedSelectedDate {
+    final dateValue = widget.selectedDateValue;
+    if (dateValue == null) {
+      return widget.selectedDate;
+    }
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final tomorrow = today.add(const Duration(days: 1));
+    final dateOnly = DateTime(dateValue.year, dateValue.month, dateValue.day);
+
+    String prefix;
+    if (dateOnly == today) {
+      prefix = 'Today';
+    } else if (dateOnly == tomorrow) {
+      prefix = 'Tomorrow';
+    } else {
+      prefix = _weekdayNames[dateValue.weekday - 1];
+    }
+
+    final monthName = _monthNames[dateValue.month - 1];
+    return '$prefix, ${dateValue.day} $monthName ${dateValue.year}';
   }
 
   @override
@@ -213,7 +473,14 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  RepaintBoundary(child: const DoctorInfoCard()),
+                  RepaintBoundary(
+                    child: DoctorInfoCard(
+                      doctor: _doctorSummary ?? _buildFallbackDoctor(),
+                      facilityName: _locationName,
+                      facilityArea: _locationAddress ?? _hospitalAddress,
+                      facilityDistance: _locationDistance,
+                    ),
+                  ),
 
                   const Padding(
                     padding: EdgeInsets.all(20),
@@ -245,7 +512,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                     child: AppointmentDetailItem(
                       iconAssetPath: EcliniqIcons.calendar.assetPath,
                       title: widget.selectedSlot,
-                      subtitle: widget.selectedDate,
+                      subtitle: _formattedSelectedDate,
                       showEdit: false,
                     ),
                   ),
@@ -259,8 +526,10 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(20),
                       child: ClinicLocationCard(
-                        hospitalId: widget.hospitalId ?? '',
+                        hospitalId: widget.hospitalId,
                         clinicId: widget.clinicId,
+                        locationName: _locationName,
+                        locationAddress: _locationAddress ?? _hospitalAddress,
                       ),
                     ),
                   ),
@@ -519,8 +788,8 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                   doctorName: widget.doctorName,
                   doctorSpecialization: widget.doctorSpecialization,
                   selectedSlot: widget.selectedSlot,
-                  selectedDate: widget.selectedDate,
-                  hospitalAddress: _hospitalAddress,
+                  selectedDate: _formattedSelectedDate,
+                  hospitalAddress: _locationAddress ?? _hospitalAddress,
                   tokenNumber: tokenNumber,
                 ),
               ),
@@ -580,8 +849,8 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                   doctorName: widget.doctorName,
                   doctorSpecialization: widget.doctorSpecialization,
                   selectedSlot: widget.selectedSlot,
-                  selectedDate: widget.selectedDate,
-                  hospitalAddress: _hospitalAddress,
+                  selectedDate: _formattedSelectedDate,
+                  hospitalAddress: _locationAddress ?? _hospitalAddress,
                   tokenNumber: tokenNumber,
                 ),
               ),
