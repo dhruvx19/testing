@@ -6,6 +6,9 @@ import 'package:ecliniq/ecliniq_api/src/upload_service.dart';
 import 'package:ecliniq/ecliniq_core/auth/session_service.dart';
 import 'package:ecliniq/ecliniq_core/auth/secure_storage.dart';
 import 'package:ecliniq/ecliniq_core/auth/jwt_decoder.dart';
+import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:flutter/material.dart';
 
 class AuthProvider with ChangeNotifier {
@@ -327,6 +330,69 @@ class AuthProvider with ChangeNotifier {
   }
 
   bool get hasProfilePhoto => _profilePhotoKey != null;
+
+  Future<bool> updatePatientProfile({
+    required String firstName,
+    required String lastName,
+    String? bloodGroup,
+    int? height,
+    int? weight,
+    String? dob, // YYYY-MM-DD
+    String? profilePhoto,
+  }) async {
+    if (_authToken == null) {
+      _errorMessage = 'Authentication required';
+      notifyListeners();
+      return false;
+    }
+
+    _isSavingDetails = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final body = <String, dynamic>{
+        'firstName': firstName,
+        'lastName': lastName,
+        if (bloodGroup != null && bloodGroup.isNotEmpty) 'bloodGroup': bloodGroup,
+        if (height != null) 'height': height,
+        if (weight != null) 'weight': weight,
+        if (dob != null && dob.isNotEmpty) 'dob': dob,
+        if (profilePhoto != null && profilePhoto.isNotEmpty) 'profilePhoto': profilePhoto,
+      };
+
+      final resp = await http.post(
+        Uri.parse(Endpoints.updatePatientProfile),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${_authToken!}',
+          'x-access-token': _authToken!,
+        },
+        body: jsonEncode(body),
+      );
+
+      _isSavingDetails = false;
+
+      if (resp.statusCode == 200) {
+        notifyListeners();
+        return true;
+      } else {
+        try {
+          final m = jsonDecode(resp.body);
+          _errorMessage = m['message']?.toString() ?? 'Failed to update profile';
+        } catch (_) {
+          _errorMessage = 'Failed to update profile';
+        }
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _isSavingDetails = false;
+      _errorMessage = 'Failed to update profile: ${e.toString()}';
+      notifyListeners();
+      return false;
+    }
+  }
 
   /// Load saved token from session storage
   /// Only loads if token is valid and not expired

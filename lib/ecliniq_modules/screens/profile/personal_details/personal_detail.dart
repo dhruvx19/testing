@@ -19,6 +19,7 @@ import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
 
 import '../add_dependent/provider/dependent_provider.dart';
 import '../add_dependent/widgets/personal_details_card.dart';
+import '../add_dependent/widgets/blood_group_selection.dart';
 
 class PersonalDetails extends StatefulWidget {
   const PersonalDetails({super.key});
@@ -153,6 +154,40 @@ class _PersonalDetailsState extends State<PersonalDetails> {
     );
   }
 
+  // Blood group mapping helpers
+  String _uiBloodGroup(String? backendValue) {
+    if (backendValue == null) return '';
+    const map = {
+      'A_POSITIVE': 'A+',
+      'A_NEGATIVE': 'A-',
+      'B_POSITIVE': 'B+',
+      'B_NEGATIVE': 'B-',
+      'AB_POSITIVE': 'AB+',
+      'AB_NEGATIVE': 'AB-',
+      'O_POSITIVE': 'O+',
+      'O_NEGATIVE': 'O-',
+      'OTHERS': 'Others',
+    };
+    return map[backendValue] ?? backendValue;
+  }
+
+  String? _backendBloodGroup(String? uiValue) {
+    if (uiValue == null || uiValue.isEmpty) return null;
+    final v = uiValue.toUpperCase();
+    const map = {
+      'A+': 'A_POSITIVE',
+      'A-': 'A_NEGATIVE',
+      'B+': 'B_POSITIVE',
+      'B-': 'B_NEGATIVE',
+      'AB+': 'AB_POSITIVE',
+      'AB-': 'AB_NEGATIVE',
+      'O+': 'O_POSITIVE',
+      'O-': 'O_NEGATIVE',
+      'OTHERS': 'OTHERS',
+    };
+    return map[v] ?? v;
+  }
+
   @override
   void dispose() {
     _firstNameController.dispose();
@@ -187,7 +222,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
         _data = d;
         _firstNameController.text = d.user?.firstName ?? '';
         _lastNameController.text = d.user?.lastName ?? '';
-        _bloodGroupController.text = d.bloodGroup ?? '';
+        _bloodGroupController.text = _uiBloodGroup(d.bloodGroup);
         _heightController.text = d.height != null ? d.height.toString() : '';
         _weightController.text = d.weight != null ? d.weight.toString() : '';
         _dob = d.dob;
@@ -232,12 +267,39 @@ class _PersonalDetailsState extends State<PersonalDetails> {
   }
 
   Future<void> _resolveImageUrl(String key, {required String token}) async {
+    // Try public URL first
     try {
-      final uri = Uri.parse('${Endpoints.storagePublicUrl}?key=${Uri.encodeComponent(key)}');
-      final resp = await http.get(uri, headers: {'Content-Type': 'application/json'});
+      final publicUri = Uri.parse(
+          '${Endpoints.storagePublicUrl}?key=${Uri.encodeComponent(key)}');
+      final resp = await http.get(
+        publicUri,
+        headers: {'Content-Type': 'application/json'},
+      );
       if (resp.statusCode == 200) {
         final body = jsonDecode(resp.body) as Map<String, dynamic>;
         final url = body['data']?['publicUrl'];
+        if (url is String && url.isNotEmpty) {
+          _profilePhotoUrl = url;
+          return;
+        }
+      }
+    } catch (_) {}
+
+    // Fallback: auth-protected download URL
+    try {
+      final downloadUri = Uri.parse(
+          '${Endpoints.storageDownloadUrl}?key=${Uri.encodeComponent(key)}');
+      final resp = await http.get(
+        downloadUri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+          'x-access-token': token,
+        },
+      );
+      if (resp.statusCode == 200) {
+        final body = jsonDecode(resp.body) as Map<String, dynamic>;
+        final url = body['data']?['downloadUrl'];
         if (url is String && url.isNotEmpty) {
           _profilePhotoUrl = url;
         }
@@ -307,27 +369,23 @@ class _PersonalDetailsState extends State<PersonalDetails> {
         photoKey = key;
       }
 
-      final body = {
-        'firstName': _firstNameController.text.trim(),
-        'lastName': _lastNameController.text.trim(),
-        'bloodGroup': _bloodGroupController.text.trim().isEmpty ? null : _bloodGroupController.text.trim(),
-        'height': int.tryParse(_heightController.text.trim()),
-        'weight': int.tryParse(_weightController.text.trim()),
-        'dob': _dob != null ? '${_dob!.year.toString().padLeft(4,'0')}-${_dob!.month.toString().padLeft(2,'0')}-${_dob!.day.toString().padLeft(2,'0')}' : null,
-        if (photoKey != null) 'profilePhoto': photoKey,
-      }..removeWhere((k, v) => v == null);
-
-      final resp = await http.post(
-        Uri.parse(Endpoints.updatePatientProfile),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-          'x-access-token': token,
-        },
-        body: jsonEncode(body),
+      final success = await auth.updatePatientProfile(
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+        bloodGroup: _backendBloodGroup(
+          _bloodGroupController.text.trim().isEmpty
+              ? null
+              : _bloodGroupController.text.trim(),
+        ),
+        height: int.tryParse(_heightController.text.trim()),
+        weight: int.tryParse(_weightController.text.trim()),
+        dob: _dob != null
+            ? '${_dob!.year.toString().padLeft(4,'0')}-${_dob!.month.toString().padLeft(2,'0')}-${_dob!.day.toString().padLeft(2,'0')}'
+            : null,
+        profilePhoto: photoKey,
       );
 
-      if (resp.statusCode == 200) {
+      if (success) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profile updated')),
@@ -335,7 +393,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
         _selectedProfilePhoto = null;
         await _fetchPatientDetails();
       } else {
-        final msg = jsonDecode(resp.body)['message'] ?? 'Failed to update';
+        final msg = auth.errorMessage ?? 'Failed to update';
         throw Exception(msg);
       }
     } catch (e) {
@@ -553,12 +611,22 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          _buildTextField(
+                          _buildSelectField(
                             label: 'Blood Group',
                             isRequired: false,
-                            hint: 'e.g. B+',
-                            controller: _bloodGroupController,
-                            onChanged: (_) {},
+                            hint: 'Select Blood Group',
+                            value: _bloodGroupController.text.isNotEmpty ? _bloodGroupController.text : null,
+                            onTap: () async {
+                              final selected = await EcliniqBottomSheet.show<String>(
+                                context: context,
+                                child: const BloodGroupSelectionSheet(),
+                              );
+                              if (selected != null && mounted) {
+                                setState(() {
+                                  _bloodGroupController.text = selected;
+                                });
+                              }
+                            },
                           ),
                           Divider(color: EcliniqColors.light.strokeNeutralExtraSubtle, thickness: 1, height: 16),
                           _buildTextField(

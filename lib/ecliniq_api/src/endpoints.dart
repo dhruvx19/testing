@@ -42,6 +42,9 @@ class Endpoints {
   static String get verifyExistingContact => '$localhost/api/auth/change-contact/verify-existing';
   static String get requestNewContactOTP => '$localhost/api/auth/change-contact/request-new-otp';
   static String get verifyNewContact => '$localhost/api/auth/change-contact/verify-new';
+  
+  // Patient notification preferences
+  static String get updateNotificationPreferences => '$localhost/api/patients/update-notification-preferences';
 
 }
 

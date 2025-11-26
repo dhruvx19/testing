@@ -20,6 +20,9 @@ import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:provider/provider.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -38,6 +41,7 @@ class _ProfilePageState extends State<ProfilePage>
   List<DependentData> _dependents = [];
   bool _isLoading = true;
   String? _errorMessage;
+  String? _profilePhotoUrl;
 
   @override
   void initState() {
@@ -79,6 +83,28 @@ class _ProfilePageState extends State<ProfilePage>
       );
 
       if (response.success && response.data != null) {
+        // Try to extract profilePhoto key from raw JSON and resolve URL
+        try {
+          final rawResp = await http.get(
+            Uri.parse(Endpoints.getPatientDetails),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $authToken',
+              'x-access-token': authToken,
+            },
+          );
+          if (rawResp.statusCode == 200) {
+            final body = jsonDecode(rawResp.body) as Map<String, dynamic>;
+            final data = body['data'] as Map<String, dynamic>?;
+            final key = data?['profilePhoto'] ?? (data?['user']?['profilePhoto']);
+            if (key is String && key.isNotEmpty) {
+              await _resolveProfileImageUrl(key, token: authToken);
+            } else {
+              _profilePhotoUrl = null;
+            }
+          }
+        } catch (_) {}
+
         setState(() {
           _patientData = response.data;
           _isLoading = false;
@@ -96,6 +122,41 @@ class _ProfilePageState extends State<ProfilePage>
         _errorMessage = 'Failed to load patient details: $e';
       });
     }
+  }
+
+  Future<void> _resolveProfileImageUrl(String key, {required String token}) async {
+    // Try public URL
+    try {
+      final publicUri = Uri.parse(
+          '${Endpoints.storagePublicUrl}?key=${Uri.encodeComponent(key)}');
+      final resp = await http.get(publicUri, headers: {'Content-Type': 'application/json'});
+      if (resp.statusCode == 200) {
+        final body = jsonDecode(resp.body) as Map<String, dynamic>;
+        final url = body['data']?['publicUrl'];
+        if (url is String && url.isNotEmpty) {
+          _profilePhotoUrl = url;
+          return;
+        }
+      }
+    } catch (_) {}
+
+    // Fallback to download URL with auth
+    try {
+      final downloadUri = Uri.parse(
+          '${Endpoints.storageDownloadUrl}?key=${Uri.encodeComponent(key)}');
+      final resp = await http.get(downloadUri, headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'x-access-token': token,
+      });
+      if (resp.statusCode == 200) {
+        final body = jsonDecode(resp.body) as Map<String, dynamic>;
+        final url = body['data']?['downloadUrl'];
+        if (url is String && url.isNotEmpty) {
+          _profilePhotoUrl = url;
+        }
+      }
+    } catch (_) {}
   }
 
   Future<void> _fetchDependents() async {
@@ -189,6 +250,31 @@ class _ProfilePageState extends State<ProfilePage>
       ));
   }
 
+  Future<void> _onNotificationSettingsChanged(NotificationSettings settings) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final authToken = authProvider.authToken;
+    if (authToken == null) return;
+
+    final prefs = {
+      'getPhoneNotifications': settings.sms,
+      'getWhatsAppNotifications': settings.whatsApp,
+      'getEmailNotifications': settings.email,
+      'getInAppNotifications': settings.inApp,
+      'getPromotionalMessages': settings.promotional,
+    };
+
+    final resp = await _patientService.updateNotificationPreferences(
+      authToken: authToken,
+      prefs: prefs,
+    );
+
+    if (resp.success && resp.data != null) {
+      setState(() {
+        _patientData = resp.data;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
@@ -278,12 +364,16 @@ class _ProfilePageState extends State<ProfilePage>
                   child: CircleAvatar(
                     radius: 50,
                     backgroundColor: const Color(0xFFDFE8FF),
-                    child: SvgPicture.asset(
-                      'lib/ecliniq_icons/assets/Group.svg',
-
-                      width: 80,
-                      fit: BoxFit.contain,
-                    ),
+                    backgroundImage: (_profilePhotoUrl != null && _profilePhotoUrl!.isNotEmpty)
+                        ? NetworkImage(_profilePhotoUrl!)
+                        : null,
+                    child: (_profilePhotoUrl == null || _profilePhotoUrl!.isEmpty)
+                        ? SvgPicture.asset(
+                            'lib/ecliniq_icons/assets/Group.svg',
+                            width: 80,
+                            fit: BoxFit.contain,
+                          )
+                        : null,
                   ),
                 ),
               ),
@@ -339,6 +429,21 @@ class TopCircleCutClipper extends CustomClipper<Path> {
 
 // Profile page content builders
 extension _ProfilePageContent on _ProfilePageState {
+  String _uiBloodGroup(String? backendValue) {
+    if (backendValue == null) return 'N/A';
+    const map = {
+      'A_POSITIVE': 'A+',
+      'A_NEGATIVE': 'A-',
+      'B_POSITIVE': 'B+',
+      'B_NEGATIVE': 'B-',
+      'AB_POSITIVE': 'AB+',
+      'AB_NEGATIVE': 'AB-',
+      'O_POSITIVE': 'O+',
+      'O_NEGATIVE': 'O-',
+      'OTHERS': 'Others',
+    };
+    return map[backendValue] ?? backendValue;
+  }
   Widget _buildShimmerLoading() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -507,7 +612,7 @@ extension _ProfilePageContent on _ProfilePageState {
     final isPhoneVerified = patient.user?.phone != null;
     final age = patient.age ?? 'N/A';
     final gender = 'Male'; // TODO: Add gender to API response
-    final bloodGroup = patient.bloodGroup ?? 'N/A';
+    final bloodGroup = _uiBloodGroup(patient.bloodGroup);
     final healthStatus = patient.healthStatus;
     final bmi = patient.bmi ?? 0.0;
     final height = patient.displayHeight;
@@ -565,7 +670,12 @@ extension _ProfilePageContent on _ProfilePageState {
                           ),
                           const SizedBox(height: 20),
                           NotificationsSettingsWidget(
-                            onSettingsChanged: (settings) {},
+                            initialWhatsAppEnabled: patient.getWhatsAppNotifications,
+                            initialSmsEnabled: patient.getPhoneNotifications,
+                            initialInAppEnabled: patient.getInAppNotifications,
+                            initialEmailEnabled: patient.getEmailNotifications,
+                            initialPromotionalEnabled: patient.getPromotionalMessages,
+                            onSettingsChanged: _onNotificationSettingsChanged,
                           ),
                           const SizedBox(height: 20),
                           MoreSettingsMenuWidget(

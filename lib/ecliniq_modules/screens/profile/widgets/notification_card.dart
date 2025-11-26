@@ -139,29 +139,18 @@ class _NotificationsSettingsWidgetState
           ),
 
           _buildDivider(),
-          const SizedBox(height: 6),
-          Padding(
-            padding: const EdgeInsets.all(6),
-            child: Row(
-              children: [
-                Container(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: Color(0xff2372EC),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: const Icon(Icons.check, color: Colors.white, size: 16),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Get Promotional Messages and Updates',
-                    style: EcliniqTextStyles.bodySmall.copyWith(),
-                  ),
-                ),
-              ],
-            ),
+
+          _NotificationToggleItem(
+            icon: 'bell',
+            title: 'Promotional Messages',
+            subtitle: 'Get Promotional Messages and Updates',
+            value: promotionalEnabled,
+            onChanged: (value) {
+              setState(() {
+                promotionalEnabled = value;
+              });
+              _updateSettings();
+            },
           ),
         ],
       ),
@@ -213,7 +202,6 @@ class _NotificationToggleItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool isOn = false;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Row(
@@ -249,18 +237,20 @@ class _NotificationToggleItem extends StatelessWidget {
             width: 40,
             height: 23,
             child: GestureDetector(
-              onTap: () {},
+              onTap: () {
+                onChanged(!value);
+              },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
                 width: 60,
                 height: 30,
                 decoration: BoxDecoration(
-                  color: isOn ? Color(0xff0D47A1) : Colors.grey.shade300,
+                  color: value ? Color(0xff0D47A1) : Colors.grey.shade300,
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: AnimatedAlign(
                   duration: const Duration(milliseconds: 250),
-                  alignment: isOn
+                  alignment: value
                       ? Alignment.centerRight
                       : Alignment.centerLeft,
                   curve: Curves.easeInOut,

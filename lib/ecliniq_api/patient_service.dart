@@ -207,5 +207,71 @@ class PatientService {
       );
     }
   }
+
+  /// Update patient notification preferences
+  /// @param authToken - Authentication token from AuthProvider
+  /// @param prefs - Map of preferences to update
+  /// @returns PatientDetailsResponse with updated patient data or error
+  Future<PatientDetailsResponse> updateNotificationPreferences({
+    required String authToken,
+    required Map<String, dynamic> prefs,
+  }) async {
+    try {
+      final url = Uri.parse(Endpoints.updateNotificationPreferences);
+
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $authToken',
+        'x-access-token': authToken,
+      };
+
+      final response = await http.patch(
+        url,
+        headers: headers,
+        body: jsonEncode(prefs),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        // Some APIs wrap actual result under data.data, handle both
+        if (responseData is Map<String, dynamic> &&
+            responseData['success'] == true &&
+            responseData['data'] is Map<String, dynamic> &&
+            (responseData['data']['data'] is Map<String, dynamic> ||
+                responseData['data'] is Map<String, dynamic>)) {
+          final normalized = responseData['data']['data'] ?? responseData['data'];
+          return PatientDetailsResponse(
+            success: true,
+            message: responseData['message'] ?? 'Updated successfully',
+            data: PatientDetailsData.fromJson(normalized),
+            errors: null,
+            meta: null,
+            timestamp: responseData['timestamp'] ?? DateTime.now().toIso8601String(),
+          );
+        }
+        return PatientDetailsResponse.fromJson(responseData);
+      } else {
+        final responseData = jsonDecode(response.body);
+        return PatientDetailsResponse(
+          success: false,
+          message: responseData['message'] ??
+              'Failed to update preferences: ${response.statusCode}',
+          data: null,
+          errors: response.body,
+          meta: null,
+          timestamp: DateTime.now().toIso8601String(),
+        );
+      }
+    } catch (e) {
+      return PatientDetailsResponse(
+        success: false,
+        message: 'Network error: $e',
+        data: null,
+        errors: e.toString(),
+        meta: null,
+        timestamp: DateTime.now().toIso8601String(),
+      );
+    }
+  }
 }
 
