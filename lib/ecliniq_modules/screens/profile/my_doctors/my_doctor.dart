@@ -3,6 +3,7 @@ import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart
 import 'package:ecliniq/ecliniq_modules/screens/profile/my_doctors/model/doctor_details.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/my_doctors/widgets/doctor_info_widgets.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
@@ -152,9 +153,7 @@ class _MyDoctorsState extends State<MyDoctors> {
 
   Widget _buildDoctorsList() {
     if (_isLoading) {
-      return Center(
-        child: CircularProgressIndicator(),
-      );
+      return _buildShimmerList();
     }
 
     if (_errorMessage != null) {
@@ -211,6 +210,102 @@ class _MyDoctorsState extends State<MyDoctors> {
       itemCount: _doctors.length,
       itemBuilder: (context, index) {
         return DoctorInfoWidget(doctor: _doctors[index]);
+      },
+    );
+  }
+
+  Widget _buildShimmerList() {
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      itemCount: 4,
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      itemBuilder: (context, index) {
+        return Container(
+          height: 300,
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  // Avatar shimmer
+                  ShimmerLoading(
+                    width: 64,
+                    height: 64,
+                    borderRadius: BorderRadius.circular(32),
+                  ),
+                  const SizedBox(width: 12),
+                  // Name and details shimmer
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ShimmerLoading(width: 160, height: 18, borderRadius: BorderRadius.circular(4)),
+                        const SizedBox(height: 8),
+                        ShimmerLoading(width: 120, height: 14, borderRadius: BorderRadius.circular(4)),
+                        const SizedBox(height: 6),
+                        ShimmerLoading(width: 100, height: 14, borderRadius: BorderRadius.circular(4)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  ShimmerLoading(width: 24, height: 24, borderRadius: BorderRadius.circular(4)),
+                ],
+              ),
+              // Stats row
+              Row(
+                children: [
+                  ShimmerLoading(width: 24, height: 24, borderRadius: BorderRadius.circular(4)),
+                  const SizedBox(width: 10),
+                  ShimmerLoading(width: 110, height: 16, borderRadius: BorderRadius.circular(4)),
+                  const SizedBox(width: 10),
+                  ShimmerLoading(width: 58, height: 24, borderRadius: BorderRadius.circular(4)),
+                  const SizedBox(width: 10),
+                  ShimmerLoading(width: 60, height: 16, borderRadius: BorderRadius.circular(4)),
+                ],
+              ),
+              // Availability row
+              Row(
+                children: [
+                  ShimmerLoading(width: 24, height: 24, borderRadius: BorderRadius.circular(4)),
+                  const SizedBox(width: 10),
+                  ShimmerLoading(width: 140, height: 16, borderRadius: BorderRadius.circular(4)),
+                  const SizedBox(width: 8),
+                  ShimmerLoading(width: 100, height: 16, borderRadius: BorderRadius.circular(4)),
+                ],
+              ),
+              // Location row
+              Row(
+                children: [
+                  ShimmerLoading(width: 24, height: 24, borderRadius: BorderRadius.circular(4)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ShimmerLoading(width: double.infinity, height: 16, borderRadius: BorderRadius.circular(4)),
+                  ),
+                  const SizedBox(width: 8),
+                  ShimmerLoading(width: 70, height: 24, borderRadius: BorderRadius.circular(4)),
+                ],
+              ),
+              // Tokens + button
+              ShimmerLoading(width: 180, height: 24, borderRadius: BorderRadius.circular(4)),
+              Row(
+                children: [
+                  Expanded(
+                    child: ShimmerLoading(height: 48, borderRadius: BorderRadius.circular(4)),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ShimmerLoading(height: 48, borderRadius: BorderRadius.circular(4)),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
       },
     );
   }

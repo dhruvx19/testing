@@ -307,7 +307,7 @@ class _ProfilePageState extends State<ProfilePage>
                 child: ClipPath(
                   clipper: TopCircleCutClipper(radius: 50, topCut: 30),
                   child: Container(
-                    padding: const EdgeInsets.only(top: 32),
+                    padding: const EdgeInsets.only(top: 90),
                     decoration: const BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.only(
@@ -320,6 +320,32 @@ class _ProfilePageState extends State<ProfilePage>
                         : _errorMessage != null
                             ? _buildErrorWidget()
                             : _buildProfileContent(),
+                  ),
+                ),
+              ),
+
+              // Static avatar placeholder (no network image)
+              Positioned(
+                top: topMargin - 13,
+                left: MediaQuery.of(context).size.width / 2 - 43,
+                child: Container(
+                  height: 86,
+                  width: 86,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: const CircleAvatar(
+                    radius: 50,
+                    backgroundColor: Color(0xFFDFE8FF),
+                    child: _ProfileAvatarIcon(),
                   ),
                 ),
               ),
@@ -373,6 +399,19 @@ class TopCircleCutClipper extends CustomClipper<Path> {
 
   @override
   bool shouldReclip(covariant CustomClipper<Path> oldClipper) => true;
+}
+
+class _ProfileAvatarIcon extends StatelessWidget {
+  const _ProfileAvatarIcon();
+
+  @override
+  Widget build(BuildContext context) {
+    return SvgPicture.asset(
+      'lib/ecliniq_icons/assets/Group.svg',
+      width: 80,
+      fit: BoxFit.contain,
+    );
+  }
 }
 
 // Profile page content builders
