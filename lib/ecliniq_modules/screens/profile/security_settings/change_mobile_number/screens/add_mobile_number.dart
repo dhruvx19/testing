@@ -7,13 +7,11 @@ import 'package:ecliniq/ecliniq_api/auth_service.dart';
 import 'package:ecliniq/ecliniq_core/auth/session_service.dart';
 
 class AddMobileNumber extends StatefulWidget {
-  final String existingChallengeId;
-  final String existingOTP;
+  final String verificationToken;
 
   const AddMobileNumber({
     super.key,
-    required this.existingChallengeId,
-    required this.existingOTP,
+    required this.verificationToken,
   });
 
   @override
@@ -42,11 +40,10 @@ class _AddMobileNumberState extends State<AddMobileNumber> {
 
     try {
       final authToken = await SessionService.getAuthToken();
-      final result = await _authService.requestNewContactOTP(
+      // Step 3: Send OTP to new contact (verificationToken is checked automatically by backend)
+      final result = await _authService.sendNewContactOtp(
         type: 'mobile',
-        challengeId: widget.existingChallengeId,
         newContact: _phoneController.text,
-        otp: widget.existingOTP,
         authToken: authToken,
       );
 

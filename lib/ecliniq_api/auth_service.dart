@@ -234,15 +234,15 @@ class AuthService {
     }
   }
 
-  /// Verify existing contact (email or mobile) to initiate change contact flow
-  /// POST /api/auth/change-contact/verify-existing
+  /// Step 1: Send OTP to existing contact (email or mobile)
+  /// POST /api/auth/change-contact/send-existing-otp
   /// Request: { "type": "mobile" } or { "type": "email" }
-  /// Response: { "success": true, "data": { "data": { "challengeId": "...", "maskedContact": "..." } } }
-  Future<Map<String, dynamic>> verifyExistingContact({
+  /// Response: { "success": true, "data": { "challengeId": "...", "sentTo": "...", "contact": "..." } }
+  Future<Map<String, dynamic>> sendExistingContactOTP({
     required String type, // "mobile" or "email"
     String? authToken,
   }) async {
-    final url = Uri.parse(Endpoints.verifyExistingContact);
+    final url = Uri.parse(Endpoints.sendExistingContactOTP);
     try {
       final headers = <String, String>{
         'Content-Type': 'application/json',
@@ -263,11 +263,12 @@ class AuthService {
       final responseData = jsonDecode(response.body);
 
       if (response.statusCode == 200 && responseData['success'] == true) {
-        final data = responseData['data']?['data'] ?? responseData['data'];
+        final data = responseData['data'];
         return {
           'success': true,
           'challengeId': data['challengeId'],
-          'maskedContact': data['maskedContact'],
+          'sentTo': data['sentTo'], // "mobile" or "email"
+          'contact': data['contact'], // Masked contact
           'message': responseData['message'] ?? 'OTP sent to existing contact',
         };
       } else {
@@ -284,18 +285,68 @@ class AuthService {
     }
   }
 
-  /// Request OTP to new contact after verifying existing contact
-  /// POST /api/auth/change-contact/request-new-otp
-  /// Request: { "type": "mobile", "challengeId": "...", "newContact": "...", "otp": "..." }
-  /// Response: { "success": true, "data": { "data": { "challengeId": "..." } } }
-  Future<Map<String, dynamic>> requestNewContactOTP({
-    required String type, // "mobile" or "email"
-    required String challengeId, // From verify-existing response
-    required String newContact, // New mobile number or email
-    required String otp, // OTP from existing contact verification
+  /// Step 2: Verify existing contact OTP
+  /// POST /api/auth/change-contact/verify-existing-otp
+  /// Request: { "challengeId": "...", "otp": "..." }
+  /// Response: { "success": true, "data": { "verificationToken": "..." } }
+  Future<Map<String, dynamic>> verifyExistingContactOtp({
+    required String challengeId,
+    required String otp,
     String? authToken,
   }) async {
-    final url = Uri.parse(Endpoints.requestNewContactOTP);
+    final url = Uri.parse(Endpoints.verifyExistingContactOtp);
+    try {
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+      };
+
+      if (authToken != null && authToken.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $authToken';
+      }
+
+      final response = await http.post(
+        url,
+        headers: headers,
+        body: jsonEncode({
+          'challengeId': challengeId,
+          'otp': otp,
+        }),
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && responseData['success'] == true) {
+        final data = responseData['data'];
+        return {
+          'success': true,
+          'verificationToken': data['verificationToken'],
+          'message': responseData['message'] ?? 'Existing contact verified successfully',
+        };
+      } else {
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 'Failed to verify existing contact OTP',
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Failed to connect to the server: $e',
+      };
+    }
+  }
+
+  /// Step 3: Send OTP to new contact
+  /// POST /api/auth/change-contact/send-new-otp
+  /// Request: { "type": "mobile", "newContact": "..." } or { "type": "email", "newContact": "..." }
+  /// Response: { "success": true, "data": { "challengeId": "...", "maskedContact": "..." } }
+  /// Note: Verification token from step 2 is checked automatically by backend
+  Future<Map<String, dynamic>> sendNewContactOtp({
+    required String type, // "mobile" or "email"
+    required String newContact, // New mobile number or email
+    String? authToken,
+  }) async {
+    final url = Uri.parse(Endpoints.sendNewContactOtp);
     try {
       final headers = <String, String>{
         'Content-Type': 'application/json',
@@ -310,19 +361,18 @@ class AuthService {
         headers: headers,
         body: jsonEncode({
           'type': type,
-          'challengeId': challengeId,
           'newContact': newContact,
-          'otp': otp,
         }),
       );
 
       final responseData = jsonDecode(response.body);
 
       if (response.statusCode == 200 && responseData['success'] == true) {
-        final data = responseData['data']?['data'] ?? responseData['data'];
+        final data = responseData['data'];
         return {
           'success': true,
           'challengeId': data['challengeId'],
+          'maskedContact': data['maskedContact'],
           'message': responseData['message'] ?? 'OTP sent to new contact',
         };
       } else {
@@ -339,17 +389,17 @@ class AuthService {
     }
   }
 
-  /// Verify new contact OTP and complete the change contact flow
-  /// POST /api/auth/change-contact/verify-new
-  /// Request: { "type": "mobile", "challengeId": "...", "otp": "..." }
-  /// Response: { "success": true, "data": { "data": { "phone": "..." } or { "email": "..." } } }
+  /// Step 4: Verify new contact OTP and complete the change contact flow
+  /// POST /api/auth/change-contact/verify-new-otp
+  /// Request: { "challengeId": "...", "otp": "..." }
+  /// Response: { "success": true, "data": { "phone": "..." } or { "email": "..." } }
+  /// Note: Contact type is stored in Redis from step 3, no need to pass type
   Future<Map<String, dynamic>> verifyNewContact({
-    required String type, // "mobile" or "email"
-    required String challengeId, // From request-new-otp response
+    required String challengeId, // From send-new-otp response
     required String otp, // OTP from new contact
     String? authToken,
   }) async {
-    final url = Uri.parse(Endpoints.verifyNewContact);
+    final url = Uri.parse(Endpoints.verifyNewContactOtp);
     try {
       final headers = <String, String>{
         'Content-Type': 'application/json',
@@ -363,7 +413,6 @@ class AuthService {
         url,
         headers: headers,
         body: jsonEncode({
-          'type': type,
           'challengeId': challengeId,
           'otp': otp,
         }),
@@ -372,10 +421,10 @@ class AuthService {
       final responseData = jsonDecode(response.body);
 
       if (response.statusCode == 200 && responseData['success'] == true) {
-        final data = responseData['data']?['data'] ?? responseData['data'];
+        final data = responseData['data'];
         return {
           'success': true,
-          'newContact': data['phone'] ?? data['email'],
+          'newContact': data['phone'] ?? data['emailId'] ?? data['email'],
           'message': responseData['message'] ?? 'Contact changed successfully',
         };
       } else {
