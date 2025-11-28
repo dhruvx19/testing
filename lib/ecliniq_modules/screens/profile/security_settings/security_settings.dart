@@ -66,7 +66,7 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
 
     try {
       final authToken = await SessionService.getAuthToken();
-      final result = await _authService.verifyExistingContact(
+      final result = await _authService.sendExistingContactOTP(
         type: 'mobile',
         authToken: authToken,
       );
@@ -82,7 +82,7 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
             MaterialPageRoute(
               builder: (context) => VerifyExistingAccount(
                 challengeId: result['challengeId'],
-                maskedContact: result['maskedContact'],
+                maskedContact: result['contact'], // Use 'contact' field from new API
                 existingPhone: _existingPhone,
               ),
             ),
@@ -118,7 +118,7 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
 
     try {
       final authToken = await SessionService.getAuthToken();
-      final result = await _authService.verifyExistingContact(
+      final result = await _authService.sendExistingContactOTP(
         type: 'email',
         authToken: authToken,
       );
@@ -134,7 +134,7 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
             MaterialPageRoute(
               builder: (context) => VerifyExistingEmail(
                 challengeId: result['challengeId'],
-                maskedContact: result['maskedContact'],
+                maskedContact: result['contact'], // Use 'contact' field from new API
                 existingEmail: _existingEmail,
               ),
             ),
@@ -215,7 +215,6 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
               'Change Mobile Number',
               _isLoadingMobile ? null : onPressedChangeMobileNumber,
               _isExpanded,
-              subtitle: _existingPhone,
               isLoading: _isLoadingMobile,
             ),
             Container(
@@ -228,7 +227,6 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
               'Change Email ID',
               _isLoadingEmail ? null : onPressedChangeEmail,
               _isExpanded,
-              subtitle: _existingEmail,
               isLoading: _isLoadingEmail,
             ),
             Container(

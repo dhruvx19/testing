@@ -95,7 +95,7 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
 
     try {
       final authToken = await SessionService.getAuthToken();
-      final result = await _authService.verifyExistingContact(
+      final result = await _authService.sendExistingContactOTP(
         type: 'mobile',
         authToken: authToken,
       );
@@ -105,7 +105,7 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
       if (result['success'] == true) {
         setState(() {
           _challengeId = result['challengeId'];
-          _maskedContact = result['maskedContact'];
+          _maskedContact = result['contact']; // Use 'contact' field from new API
           _isLoading = false;
         });
       } else {
@@ -156,22 +156,44 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
       _errorMessage = null;
     });
 
-    // Navigate to add mobile number screen with challengeId and OTP
-    if (mounted) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => AddMobileNumber(
-            existingChallengeId: _challengeId!,
-            existingOTP: _otpController.text,
+    // Step 2: Verify existing contact OTP
+    try {
+      final authToken = await SessionService.getAuthToken();
+      final result = await _authService.verifyExistingContactOtp(
+        challengeId: _challengeId!,
+        otp: _otpController.text,
+        authToken: authToken,
+      );
+
+      if (!mounted) return;
+
+      if (result['success'] == true) {
+        // Navigate to add mobile number screen with verificationToken
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AddMobileNumber(
+              verificationToken: result['verificationToken'],
+            ),
           ),
-        ),
-      ).then((_) {
-        if (mounted) {
-          setState(() {
-            _isButtonPressed = false;
-          });
-        }
+        ).then((_) {
+          if (mounted) {
+            setState(() {
+              _isButtonPressed = false;
+            });
+          }
+        });
+      } else {
+        setState(() {
+          _errorMessage = result['message'] ?? 'Failed to verify OTP';
+          _isButtonPressed = false;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = 'An error occurred: $e';
+        _isButtonPressed = false;
       });
     }
   }

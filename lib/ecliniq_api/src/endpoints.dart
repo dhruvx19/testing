@@ -38,10 +38,11 @@ class Endpoints {
   static String get getFavouriteDoctors => '$localhost/api/patients/get-favourite-doctors';
   static String doctorDetailsById(String doctorId) => '$localhost/api/doctors/doctorDetailsByIdByPatient/$doctorId';
 
-  // Change contact endpoints
-  static String get verifyExistingContact => '$localhost/api/auth/change-contact/verify-existing';
-  static String get requestNewContactOTP => '$localhost/api/auth/change-contact/request-new-otp';
-  static String get verifyNewContact => '$localhost/api/auth/change-contact/verify-new';
+  // Change contact endpoints (4-step flow)
+  static String get sendExistingContactOTP => '$localhost/api/auth/change-contact/send-existing-otp';
+  static String get verifyExistingContactOtp => '$localhost/api/auth/change-contact/verify-existing-otp';
+  static String get sendNewContactOtp => '$localhost/api/auth/change-contact/send-new-otp';
+  static String get verifyNewContactOtp => '$localhost/api/auth/change-contact/verify-new-otp';
   
   // Patient notification preferences
   static String get updateNotificationPreferences => '$localhost/api/patients/update-notification-preferences';

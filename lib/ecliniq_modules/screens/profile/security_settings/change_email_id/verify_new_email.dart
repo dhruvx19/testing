@@ -82,8 +82,8 @@ class _VerifyNewEmailAddressState extends State<VerifyNewEmailAddress> {
 
     try {
       final authToken = await SessionService.getAuthToken();
+      // Step 4: Verify new contact OTP (type is stored in Redis from step 3)
       final result = await _authService.verifyNewContact(
-        type: 'email',
         challengeId: widget.newChallengeId,
         otp: _otpController.text,
         authToken: authToken,

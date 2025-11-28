@@ -82,8 +82,8 @@ class _VerifyNewMobileNumberState extends State<VerifyNewMobileNumber> {
 
     try {
       final authToken = await SessionService.getAuthToken();
+      // Step 4: Verify new contact OTP (type is stored in Redis from step 3)
       final result = await _authService.verifyNewContact(
-        type: 'mobile',
         challengeId: widget.newChallengeId,
         otp: _otpController.text,
         authToken: authToken,
