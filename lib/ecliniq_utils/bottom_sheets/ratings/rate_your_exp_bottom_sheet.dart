@@ -215,21 +215,23 @@ class _RatingBottomSheetState extends State<RatingBottomSheet> {
         // Close bottom sheet first
         Navigator.of(context).pop(_tempRating);
 
-        // Show success snackbar
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          CustomSuccessSnackBar(
-            context: context,
-            title: 'Rating Submitted',
-            subtitle: res['message']?.toString() ?? 'Thank you for your feedback!',
-            duration: const Duration(seconds: 3),
-          ),
-        );
-
-        // Show thank you dialog after snackbar
-        await Future.delayed(const Duration(milliseconds: 3500));
+        // Show thank you dialog immediately after submission
         if (mounted) {
           _showThankYouDialog();
+        }
+
+        // Show success snackbar after a short delay
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (mounted) {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+            CustomSuccessSnackBar(
+              context: context,
+              title: 'Rating Submitted',
+              subtitle: res['message']?.toString() ?? 'Thank you for your feedback!',
+              duration: const Duration(seconds: 3),
+            ),
+          );
         }
       } else {
         setState(() {
