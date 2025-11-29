@@ -59,7 +59,7 @@ class _MyVisitsState extends State<MyVisits>
   int _selectedFilterIndex = 0;
   final _appointmentService = AppointmentService();
   bool _isLoadingAppointments = false;
-// Key counter for hot reload
+  // Key counter for hot reload
 
   List<AppointmentData> _scheduledAppointments = [];
   List<AppointmentData> _historyAppointments = [];
@@ -211,7 +211,7 @@ class _MyVisitsState extends State<MyVisits>
     // Navigate immediately with appointment ID and status
     // The detail page will handle its own loading state
     Widget detailPage;
-    
+
     // Determine status from appointment data
     String status = appointment.status.name;
     if (status == 'served') {
@@ -219,7 +219,7 @@ class _MyVisitsState extends State<MyVisits>
     } else if (status == 'pending') {
       status = 'requested';
     }
-    
+
     switch (status) {
       case 'confirmed':
         detailPage = BookingConfirmedDetail(appointmentId: appointment.id);
@@ -245,7 +245,9 @@ class _MyVisitsState extends State<MyVisits>
         } else if (appointment.status == AppointmentStatus.completed) {
           detailPage = BookingCompletedDetail(appointmentId: appointment.id);
         } else {
-          _showErrorSnackBar('Unknown appointment status: ${appointment.status}');
+          _showErrorSnackBar(
+            'Unknown appointment status: ${appointment.status}',
+          );
           return;
         }
     }
@@ -274,7 +276,7 @@ class _MyVisitsState extends State<MyVisits>
     // Reload appointments from API
     await _loadAppointments();
     setState(() {
-// Increment key to trigger hot reload
+      // Increment key to trigger hot reload
     });
   }
 
@@ -382,7 +384,7 @@ class _MyVisitsState extends State<MyVisits>
       child: Container(
         width: screenWidth - (horizontalMargin * 2),
         margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        padding: const EdgeInsets.only(bottom: 10),
+
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
@@ -720,31 +722,39 @@ class _MyVisitsState extends State<MyVisits>
   Widget _buildRatingSection(AppointmentData appointment) {
     if (_selectedTabIndex != 1) return SizedBox.shrink();
 
-    final screenWidth = MediaQuery.of(context).size.width;
     final hasRating = appointment.rating != null && appointment.rating! > 0;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(color: Color(0xFFF9F9F9)),
+      decoration: BoxDecoration(
+        color: Color(0xFFF9F9F9),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(12),
+          bottomRight: Radius.circular(12),
+        ),
+      ),
       child: GestureDetector(
         onTap: hasRating ? null : () => _openRatingSheet(appointment),
         child: Row(
           children: [
             Text(
-              hasRating ? 'Your Rating :' : 'Rate Doctor :',
+              'Rate Doctor :',
               style: TextStyle(
                 fontSize: 16,
-                color: hasRating ? Color(0xFF424242) : Color(0xFF333333),
+                fontWeight: FontWeight.w400,
+                color: Color(0xff424242),
               ),
             ),
             const Spacer(),
             Row(
               children: List.generate(5, (index) {
                 final filled = hasRating && index < appointment.rating!;
-                return Icon(
-                  filled ? Icons.star : Icons.star_border,
-                  size: screenWidth * 0.063,
-                  color: filled ? Colors.amber : Color(0xFFE0E0E0),
+                return SvgPicture.asset(
+                  filled
+                      ? EcliniqIcons.starRateExp.assetPath
+                      : EcliniqIcons.starHistory.assetPath,
+                  width: 24,
+                  height: 24,
                 );
               }),
             ),
@@ -759,7 +769,7 @@ class _MyVisitsState extends State<MyVisits>
     if (appointment.rating != null && appointment.rating! > 0) {
       return;
     }
-    
+
     await RatingBottomSheet.show(
       context: context,
       initialRating: appointment.rating,
@@ -828,25 +838,25 @@ class _MyVisitsState extends State<MyVisits>
                                       ),
                                     )
                                   : currentAppointments.isEmpty
-                                      ? Center(
-                                          child: Text(
-                                            'No appointments found',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              color: Color(0xFF666666),
-                                            ),
-                                          ),
-                                        )
-                                      : ListView.builder(
-                                          itemCount: currentAppointments.length,
-                                          itemBuilder: (context, index) {
-                                            final appointment =
-                                                currentAppointments[index];
-                                            return _buildAppointmentCard(
-                                              appointment,
-                                            );
-                                          },
+                                  ? Center(
+                                      child: Text(
+                                        'No appointments found',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Color(0xFF666666),
                                         ),
+                                      ),
+                                    )
+                                  : ListView.builder(
+                                      itemCount: currentAppointments.length,
+                                      itemBuilder: (context, index) {
+                                        final appointment =
+                                            currentAppointments[index];
+                                        return _buildAppointmentCard(
+                                          appointment,
+                                        );
+                                      },
+                                    ),
                             ),
                             EcliniqBottomNavigationBar(
                               currentIndex: _currentIndex,

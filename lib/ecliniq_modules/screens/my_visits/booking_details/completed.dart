@@ -257,7 +257,7 @@ class _BookingCompletedDetailState extends State<BookingCompletedDetail> {
                 padding: EdgeInsets.zero,
                 child: RatingSection(
                   initialRating: _userRating,
-                  onRatingChanged: _userRating == null || _userRating == 0
+                  onRatingChanged: _userRating == 0
                       ? (rating) {
                           setState(() {
                             _userRating = rating;
@@ -266,7 +266,7 @@ class _BookingCompletedDetailState extends State<BookingCompletedDetail> {
                       : null,
                   doctorName: _appointment!.doctor.name,
                   appointmentId: _appointment!.id,
-                  showAsReadOnly: _userRating != null && _userRating > 0,
+                  showAsReadOnly: _userRating > 0,
                   onRefetch: _loadAppointmentDetails,
                 ),
               ),
@@ -395,7 +395,9 @@ class _BookingCompletedDetailState extends State<BookingCompletedDetail> {
 
   Widget _buildBottomButton(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(6),
+      width: double.infinity,
+
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(color: Colors.white),
       child: BookingActionButton(
         label: 'Book Again',
@@ -405,64 +407,5 @@ class _BookingCompletedDetailState extends State<BookingCompletedDetail> {
         },
       ),
     );
-  }
-
-  Future<void> _submitRating(int rating) async {
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final authToken = authProvider.authToken;
-
-      if (authToken == null) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Authentication required. Please login again.'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-        return;
-      }
-
-      final appointmentId = _appointment?.id ?? widget.appointmentId;
-      final res = await _appointmentService.rateAppointment(
-        appointmentId: appointmentId,
-        rating: rating,
-        authToken: authToken,
-      );
-
-      if (!mounted) return;
-
-      if (res['success'] == true) {
-        setState(() {
-          _userRating = rating;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              res['message']?.toString() ?? 'Appointment rated successfully',
-            ),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              res['message']?.toString() ?? 'Failed to submit rating',
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to submit rating: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
   }
 }
