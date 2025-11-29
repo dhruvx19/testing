@@ -73,8 +73,16 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
       if (!mounted) return;
 
       if (success) {
-        // Navigate to OTP screen and pop this screen
-        // The OTP screen will handle navigation to MPIN set screen
+        // Update state to show "OTP sent to" message
+        setState(() {
+          _isLoading = false;
+          _isSendingOTP = false;
+        });
+
+        // Wait briefly to show the "OTP sent to" message for better UX
+        await Future.delayed(const Duration(seconds: 1));
+
+        // Navigate to OTP screen
         if (mounted) {
           Navigator.pushReplacement(
             context,
