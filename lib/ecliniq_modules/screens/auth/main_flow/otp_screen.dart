@@ -1,5 +1,6 @@
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_core/auth/secure_storage.dart';
+import 'package:ecliniq/ecliniq_core/auth/session_service.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/mpin/set_mpin.dart';
@@ -101,25 +102,42 @@ class _OtpInputScreenState extends State<OtpInputScreen>
         return;
       }
 
-      final success = await authProvider.verifyOTP(otp);
+      // Use forget MPIN verify API if it's forget PIN flow, otherwise use normal verify
+      final success = widget.isForgotPinFlow
+          ? await authProvider.forgetMpinVerifyOtp(otp)
+          : await authProvider.verifyOTP(otp);
 
       if (mounted) {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             CustomSuccessSnackBar(
               title: 'OTP verified successfully!',
-              subtitle: 'Your account has been verified successfully',
+              subtitle: widget.isForgotPinFlow
+                  ? 'You can now reset your MPIN'
+                  : 'Your account has been verified successfully',
               context: context,
             ),
           );
           
           // Route based on flow type
           if (widget.isForgotPinFlow) {
-            // Forgot PIN flow: OTP verified → Reset MPIN → OTP again on same number
-            EcliniqRouter.pushAndRemoveUntil(
-              const MPINSet(isResetMode: true),
-              (route) => route.isFirst,
-            );
+            // Forgot PIN flow: OTP verified → Reset MPIN
+            // Check if user is authenticated (change MPIN from settings) or not (forget PIN from login)
+            final hasValidSession = await SessionService.hasValidSession();
+            if (hasValidSession) {
+              // User is authenticated - this is change MPIN from security settings
+              // Use push instead of pushAndRemoveUntil to preserve navigation stack
+              EcliniqRouter.push(
+                const MPINSet(isResetMode: true),
+              );
+            } else {
+              // User is not authenticated - this is forget PIN from login
+              // Use pushAndRemoveUntil to clear navigation stack
+              EcliniqRouter.pushAndRemoveUntil(
+                const MPINSet(isResetMode: true),
+                (route) => route.isFirst,
+              );
+            }
           } else {
             // Normal flow: Check if user needs to set MPIN
             final hasMPIN = await SecureStorageService.hasMPIN();
@@ -176,7 +194,16 @@ class _OtpInputScreenState extends State<OtpInputScreen>
     });
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    await authProvider.resendOTP();
+    
+    // Use forget MPIN resend if it's forget PIN flow, otherwise use normal resend
+    if (widget.isForgotPinFlow) {
+      final phoneNumber = authProvider.phoneNumber;
+      if (phoneNumber != null) {
+        await authProvider.forgetMpinSendOtp(phoneNumber);
+      }
+    } else {
+      await authProvider.resendOTP();
+    }
 
     if (mounted) {
       setState(() {

@@ -440,4 +440,134 @@ class AuthService {
       };
     }
   }
+
+  /// Step 1: Send OTP for forget MPIN
+  /// POST /api/auth/forget-mpin/send-otp
+  /// Request: { "phone": "1234567890" }
+  /// Response: { "success": true, "data": { "challengeId": "...", "phone": "..." } }
+  Future<Map<String, dynamic>> forgetMpinSendOtp({
+    required String phone,
+  }) async {
+    final url = Uri.parse(Endpoints.forgetMpinSendOtp);
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'phone': phone,
+        }),
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && responseData['success'] == true) {
+        final data = responseData['data'];
+        return {
+          'success': true,
+          'challengeId': data['challengeId'],
+          'phone': data['phone'],
+          'message': responseData['message'] ?? 'OTP sent successfully',
+        };
+      } else {
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 'Failed to send OTP',
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Failed to connect to the server: $e',
+      };
+    }
+  }
+
+  /// Step 2: Verify OTP for forget MPIN
+  /// POST /api/auth/forget-mpin/verify-otp
+  /// Request: { "challengeId": "...", "otp": "...", "phone": "..." }
+  /// Response: { "success": true, "data": { "phone": "..." } }
+  Future<Map<String, dynamic>> forgetMpinVerifyOtp({
+    required String challengeId,
+    required String otp,
+    String? phone,
+  }) async {
+    final url = Uri.parse(Endpoints.forgetMpinVerifyOtp);
+    try {
+      final requestBody = <String, dynamic>{
+        'challengeId': challengeId,
+        'otp': otp,
+      };
+      
+      if (phone != null && phone.isNotEmpty) {
+        requestBody['phone'] = phone;
+      }
+
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(requestBody),
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && responseData['success'] == true) {
+        final data = responseData['data'];
+        return {
+          'success': true,
+          'phone': data['phone'],
+          'message': responseData['message'] ?? 'OTP verified successfully',
+        };
+      } else {
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 'Failed to verify OTP',
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Failed to connect to the server: $e',
+      };
+    }
+  }
+
+  /// Step 3: Reset MPIN
+  /// POST /api/auth/forget-mpin/reset
+  /// Request: { "mpin": "1234", "phone": "1234567890" }
+  /// Response: { "success": true, "message": "MPIN reset successfully" }
+  Future<Map<String, dynamic>> forgetMpinReset({
+    required String mpin,
+    required String phone,
+  }) async {
+    final url = Uri.parse(Endpoints.forgetMpinReset);
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'mpin': mpin,
+          'phone': phone,
+        }),
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && responseData['success'] == true) {
+        return {
+          'success': true,
+          'message': responseData['message'] ?? 'MPIN reset successfully',
+        };
+      } else {
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 'Failed to reset MPIN',
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Failed to connect to the server: $e',
+      };
+    }
+  }
 }

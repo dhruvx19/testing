@@ -45,6 +45,11 @@ class Endpoints {
   static String get sendNewContactOtp => '$localhost/api/auth/change-contact/send-new-otp';
   static String get verifyNewContactOtp => '$localhost/api/auth/change-contact/verify-new-otp';
   
+  // Forget MPIN endpoints (3-step flow)
+  static String get forgetMpinSendOtp => '$localhost/api/auth/forget-mpin/send-otp';
+  static String get forgetMpinVerifyOtp => '$localhost/api/auth/forget-mpin/verify-otp';
+  static String get forgetMpinReset => '$localhost/api/auth/forget-mpin/reset';
+  
   // Patient notification preferences
   static String get updateNotificationPreferences => '$localhost/api/patients/update-notification-preferences';
 
