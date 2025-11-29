@@ -448,8 +448,57 @@ class _BookingCompletedDetailState extends State<BookingCompletedDetail> {
   }
 
   Future<void> _submitRating(int rating) async {
-    print(
-      'Submitting rating: $rating for appointment: ${_appointment?.id ?? widget.appointmentId}',
-    );
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final authToken = authProvider.authToken;
+
+      if (authToken == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Authentication required. Please login again.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      final appointmentId = _appointment?.id ?? widget.appointmentId;
+      final res = await _appointmentService.rateAppointment(
+        appointmentId: appointmentId,
+        rating: rating,
+        authToken: authToken,
+      );
+
+      if (!mounted) return;
+
+      if (res['success'] == true) {
+        setState(() {
+          _userRating = rating;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(res['message']?.toString() ?? 'Appointment rated successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(res['message']?.toString() ?? 'Failed to submit rating'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to submit rating: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

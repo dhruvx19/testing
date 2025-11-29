@@ -322,4 +322,47 @@ class AppointmentService {
       );
     }
   }
+
+  Future<Map<String, dynamic>> rateAppointment({
+    required String appointmentId,
+    required int rating,
+    required String authToken,
+  }) async {
+    try {
+      final url = Uri.parse(Endpoints.rateAppointment(appointmentId));
+
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $authToken',
+        'x-access-token': authToken,
+      };
+
+      final body = jsonEncode({
+        'rating': rating,
+      });
+
+      final response = await http.put(url, headers: headers, body: body);
+
+      final responseData = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        return {
+          'success': responseData['success'] ?? true,
+          'message': responseData['message']?.toString() ?? 'Appointment rated successfully',
+          'data': responseData['data'],
+        };
+      }
+
+      return {
+        'success': false,
+        'message': responseData['message']?.toString() ?? 'Failed to rate appointment: ${response.statusCode}',
+        'data': null,
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Network error: $e',
+        'data': null,
+      };
+    }
+  }
 }

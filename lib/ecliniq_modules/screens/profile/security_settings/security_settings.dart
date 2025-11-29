@@ -65,31 +65,69 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
   }
 
   Future<void> onPressedChangeMobileNumber() async {
-    // Navigate immediately, API call happens in background on next page
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => VerifyExistingAccount(
-          challengeId: null, // Will trigger API call on next page
-          maskedContact: null,
-          existingPhone: _existingPhone,
+    // Show loader while navigating
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.3),
+      builder: (context) => Center(
+        child: CircularProgressIndicator(
+          color: Colors.blue.shade800,
         ),
       ),
     );
+
+    // Navigate immediately, API call happens in background on next page
+    if (mounted) {
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => VerifyExistingAccount(
+            challengeId: null, // Will trigger API call on next page
+            maskedContact: null,
+            existingPhone: _existingPhone,
+          ),
+        ),
+      );
+      
+      // Dismiss loader when navigation completes
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+    }
   }
 
   Future<void> onPressedChangeEmail() async {
-    // Navigate immediately, API call happens in background on next page
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => VerifyExistingEmail(
-          challengeId: null, // Will trigger API call on next page
-          maskedContact: null,
-          existingEmail: _existingEmail,
+    // Show loader while navigating
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.3),
+      builder: (context) => Center(
+        child: CircularProgressIndicator(
+          color: Colors.blue.shade800,
         ),
       ),
     );
+
+    // Navigate immediately, API call happens in background on next page
+    if (mounted) {
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => VerifyExistingEmail(
+            challengeId: null, // Will trigger API call on next page
+            maskedContact: null,
+            existingEmail: _existingEmail,
+          ),
+        ),
+      );
+      
+      // Dismiss loader when navigation completes
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+    }
   }
 
   @override

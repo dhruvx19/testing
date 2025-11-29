@@ -32,6 +32,7 @@ class Endpoints {
   static String cancelAppointment(String appointmentId) => '$localhost/api/appointments/cancel/$appointmentId';
   static String get rescheduleAppointment => '$localhost/api/appointments/reschedule';
   static String get verifyAppointment => '$localhost/api/appointments/verify';
+  static String rateAppointment(String appointmentId) => '$localhost/api/appointments/rate/$appointmentId';
   static String get getPatientDetails => '$localhost/api/patients/get-patient-details';
   static String get addDependent => '$localhost/api/patients/add-dependent';
   static String get getDependents => '$localhost/api/patients/get-dependents';
@@ -48,4 +49,5 @@ class Endpoints {
   static String get updateNotificationPreferences => '$localhost/api/patients/update-notification-preferences';
 
 }
+
 

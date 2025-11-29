@@ -44,6 +44,12 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
   @override
   void initState() {
     super.initState();
+    // If existing phone is available, show it immediately
+    if (widget.existingPhone != null) {
+      // Mask the phone for display (e.g., ******1234)
+      _maskedContact = _maskPhone(widget.existingPhone!);
+    }
+    
     // Use provided data or fetch if not available
     if (widget.challengeId != null && widget.maskedContact != null) {
       _challengeId = widget.challengeId;
@@ -54,6 +60,12 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
       _sendOTPToExistingContact();
     }
     _startTimer();
+  }
+
+  String _maskPhone(String phone) {
+    if (phone.length <= 4) return phone;
+    final lastFour = phone.substring(phone.length - 4);
+    return '******$lastFour';
   }
 
   @override
@@ -267,23 +279,26 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
                 ),
               )
             else if (_maskedContact != null)
-              Row(
-                children: [
-                  Text(
-                    'OTP sent to ',
-                    style: EcliniqTextStyles.headlineMedium.copyWith(
-                      fontWeight: FontWeight.w400,
-                      fontSize: 18,
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Row(
+                  children: [
+                    Text(
+                      'OTP sent to ',
+                      style: EcliniqTextStyles.headlineMedium.copyWith(
+                        fontWeight: FontWeight.w400,
+                        fontSize: 18,
+                      ),
                     ),
-                  ),
-                  Text(
-                    _maskedContact!,
-                    style: EcliniqTextStyles.headlineMedium.copyWith(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 18,
+                    Text(
+                      _maskedContact!,
+                      style: EcliniqTextStyles.headlineMedium.copyWith(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 18,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             if (_errorMessage != null)
               Padding(

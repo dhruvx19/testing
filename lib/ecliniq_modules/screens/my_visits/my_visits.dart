@@ -403,7 +403,7 @@ class _MyVisitsState extends State<MyVisits>
               ),
             ),
             if (appointment.status == AppointmentStatus.completed)
-              _buildRatingSection(),
+              _buildRatingSection(appointment),
           ],
         ),
       ),
@@ -713,7 +713,7 @@ class _MyVisitsState extends State<MyVisits>
     }
   }
 
-  Widget _buildRatingSection() {
+  Widget _buildRatingSection(AppointmentData appointment) {
     if (_selectedTabIndex != 1) return SizedBox.shrink();
 
     final screenWidth = MediaQuery.of(context).size.width;
@@ -721,24 +721,130 @@ class _MyVisitsState extends State<MyVisits>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(color: Color(0xFFF9F9F9)),
-      child: Row(
-        children: [
-          Text(
-            'Rate Doctor :',
-            style: TextStyle(fontSize: 16, color: Color(0xFF333333)),
-          ),
-          const Spacer(),
-          Row(
-            children: List.generate(5, (index) {
-              return Icon(
-                Icons.star_border,
-                size: screenWidth * 0.063,
-                color: Color(0xFFE0E0E0),
-              );
-            }),
-          ),
-        ],
+      child: GestureDetector(
+        onTap: () => _openRatingSheet(appointment),
+        child: Row(
+          children: [
+            Text(
+              'Rate Doctor :',
+              style: TextStyle(fontSize: 16, color: Color(0xFF333333)),
+            ),
+            const Spacer(),
+            Row(
+              children: List.generate(5, (index) {
+                return Icon(
+                  Icons.star_border,
+                  size: screenWidth * 0.063,
+                  color: Color(0xFFE0E0E0),
+                );
+              }),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  Future<void> _openRatingSheet(AppointmentData appointment) async {
+    int tempRating = 0;
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+      ),
+      builder: (context) {
+        final screenWidth = MediaQuery.of(context).size.width;
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Rate your Experience',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 12),
+              StatefulBuilder(
+                builder: (context, setModalState) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(5, (index) {
+                      final filled = index < tempRating;
+                      return GestureDetector(
+                        onTap: () {
+                          setModalState(() {
+                            tempRating = index + 1;
+                          });
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          child: Icon(
+                            filled ? Icons.star : Icons.star_border,
+                            size: 40,
+                            color: filled ? Colors.amber : const Color(0xFFE0E0E0),
+                          ),
+                        ),
+                      );
+                    }),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    if (tempRating == 0) {
+                      Navigator.of(context).pop();
+                      return;
+                    }
+                    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                    final authToken = authProvider.authToken;
+                    if (authToken == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Authentication required. Please login again.'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      Navigator.of(context).pop();
+                      return;
+                    }
+                    final res = await _appointmentService.rateAppointment(
+                      appointmentId: appointment.id,
+                      rating: tempRating,
+                      authToken: authToken,
+                    );
+                    if (!mounted) return;
+                    if (res['success'] == true) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(res['message']?.toString() ?? 'Appointment rated successfully'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                      Navigator.of(context).pop();
+                      _refreshAppointments();
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(res['message']?.toString() ?? 'Failed to submit rating'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2372EC), padding: const EdgeInsets.symmetric(vertical: 12)),
+                  child: const Text('Submit'),
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
     );
   }
 
