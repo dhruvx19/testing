@@ -725,8 +725,8 @@ class StatusHeader extends StatelessWidget {
       case 'completed':
         return _StatusConfig(
           title: 'Your Appointment is Completed',
-          backgroundColor: const Color(0xFFE3F2FD),
-          textColor: const Color(0xFF1976D2),
+          backgroundColor: const Color(0xFFFFEBEE),
+          textColor: const Color(0xFFF04248),
         );
       case 'cancelled':
         return _StatusConfig(
@@ -766,12 +766,14 @@ class DoctorInfoCard extends StatelessWidget {
   final DoctorInfo doctor;
   final ClinicInfo clinic;
   final String? currentTokenNumber;
+  final bool isSimplified; // New parameter for simplified view
 
   const DoctorInfoCard({
     super.key,
     required this.doctor,
     required this.clinic,
     this.currentTokenNumber,
+    this.isSimplified = false, // Default to full view
   });
 
   // Cache colors to prevent recreation on every build
@@ -783,6 +785,104 @@ class DoctorInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (isSimplified) {
+      return _buildSimplifiedCard();
+    }
+    return _buildFullCard();
+  }
+
+  Widget _buildSimplifiedCard() {
+    return Padding(
+      padding: const EdgeInsets.all(6.0),
+      child: Row(
+        children: [
+          Stack(
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE3F2FD),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: _borderColor, width: 1),
+                ),
+                child: doctor.profileImage != null && doctor.profileImage!.isNotEmpty
+                    ? ClipOval(
+                        child: Image.network(
+                          doctor.profileImage!,
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Center(
+                              child: Text(
+                                doctor.initials,
+                                style: const TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF1565C0),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                    : Center(
+                        child: Text(
+                          doctor.initials,
+                          style: const TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1565C0),
+                          ),
+                        ),
+                      ),
+              ),
+              Positioned(
+                right: 0,
+                top: 0,
+                child: SvgPicture.asset(
+                  EcliniqIcons.verified.assetPath,
+                  width: 24,
+                  height: 24,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  doctor.name,
+                  style: EcliniqTextStyles.headlineLarge.copyWith(
+                    color: Color(0xff424242),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  doctor.specialization.isEmpty ? 'General Physician' : doctor.specialization,
+                  style: EcliniqTextStyles.titleXLarge.copyWith(
+                    color: Color(0xff424242),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  doctor.qualification,
+                  style: EcliniqTextStyles.titleXLarge.copyWith(
+                    color: Color(0xff424242),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFullCard() {
     return Column(
       children: [
         Padding(
@@ -1254,11 +1354,15 @@ class PaymentDetailsCard extends StatelessWidget {
 class RatingSection extends StatefulWidget {
   final int? initialRating;
   final Function(int) onRatingChanged;
+  final String doctorName;
+  final String appointmentId;
 
   const RatingSection({
     super.key,
     this.initialRating,
     required this.onRatingChanged,
+    required this.doctorName,
+    required this.appointmentId,
   });
 
   @override
@@ -1274,37 +1378,109 @@ class _RatingSectionState extends State<RatingSection> {
     _rating = widget.initialRating ?? 0;
   }
 
+  Future<void> _openRatingBottomSheet() async {
+    int tempRating = _rating;
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Rate your Experience',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    widget.doctorName,
+                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(5, (index) {
+                      final filled = index < tempRating;
+                      return GestureDetector(
+                        onTap: () {
+                          setModalState(() {
+                            tempRating = index + 1;
+                          });
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          child: Icon(
+                            filled ? Icons.star : Icons.star_border,
+                            size: 40,
+                            color: filled ? Colors.amber : const Color(0xFFE0E0E0),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (tempRating > 0) {
+                          widget.onRatingChanged(tempRating);
+                          setState(() {
+                            _rating = tempRating;
+                          });
+                        }
+                        Navigator.of(context).pop();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2372EC),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: const Text('Submit'),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE3F2FD),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Rate your Experience :',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF333333),
+    return GestureDetector(
+      onTap: _openRatingBottomSheet,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE3F2FD),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Rate your Experience :',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF333333),
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(5, (index) {
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _rating = index + 1;
-                  });
-                  widget.onRatingChanged(_rating);
-                },
-                child: Padding(
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(5, (index) {
+                return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   child: Icon(
                     index < _rating ? Icons.star : Icons.star_border,
@@ -1313,11 +1489,11 @@ class _RatingSectionState extends State<RatingSection> {
                         ? Colors.amber
                         : const Color(0xFFE0E0E0),
                   ),
-                ),
-              );
-            }),
-          ),
-        ],
+                );
+              }),
+            ),
+          ],
+        ),
       ),
     );
   }

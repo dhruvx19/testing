@@ -257,6 +257,7 @@ class _BookingCancelledDetailState extends State<BookingCancelledDetail> {
                 DoctorInfoCard(
                   doctor: _appointment!.doctor,
                   clinic: _appointment!.clinic,
+                  isSimplified: true,
                 ),
                 const SizedBox(height: 12),
 

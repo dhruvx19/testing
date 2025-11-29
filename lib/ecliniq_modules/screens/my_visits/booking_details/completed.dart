@@ -1,9 +1,11 @@
 import 'package:ecliniq/ecliniq_api/appointment_service.dart';
+import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/widgets/common.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 
 class BookingCompletedDetail extends StatefulWidget {
@@ -246,6 +248,7 @@ class _BookingCompletedDetailState extends State<BookingCompletedDetail> {
                 DoctorInfoCard(
                   doctor: _appointment!.doctor,
                   clinic: _appointment!.clinic,
+                  isSimplified: true,
                 ),
                 const SizedBox(height: 12),
 
@@ -258,9 +261,9 @@ class _BookingCompletedDetailState extends State<BookingCompletedDetail> {
                     });
                     _submitRating(rating);
                   },
+                  doctorName: _appointment!.doctor.name,
+                  appointmentId: _appointment!.id,
                 ),
-                const SizedBox(height: 24),
-                _buildFeesSection(),
                 const SizedBox(height: 24),
                 AppointmentDetailsSection(
                   patient: _appointment!.patient,
@@ -269,11 +272,11 @@ class _BookingCompletedDetailState extends State<BookingCompletedDetail> {
                 const SizedBox(height: 24),
                 ClinicLocationCard(clinic: _appointment!.clinic),
                 const SizedBox(height: 24),
-                _buildPrescriptionSection(),
-                const SizedBox(height: 24),
                 PaymentDetailsCard(payment: _appointment!.payment),
+                const SizedBox(height: 40),
+                _buildCallbackSection(),
                 const SizedBox(height: 24),
-                _buildBottomButtons(context),
+                _buildBottomButton(context),
               ],
             ),
           ),
@@ -282,167 +285,112 @@ class _BookingCompletedDetailState extends State<BookingCompletedDetail> {
     );
   }
 
-  Widget _buildPrescriptionSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE3F2FD),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.receipt_long, color: Color(0xFF2372EC), size: 32),
-          const SizedBox(width: 16),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildCallbackSection() {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: const Text(
+                'Easy Way to book',
+                style: TextStyle(
+                  fontSize: 20.0,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xff424242),
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 16),
+        Column(
+          children: [
+            Row(
               children: [
-                Text(
-                  'Prescription Available',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF333333),
+                SvgPicture.asset(
+                  EcliniqIcons.call.assetPath,
+                  width: 32,
+                  height: 32,
+                ),
+                const SizedBox(width: 12),
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Request a Callback',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xff424242),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Assisted booking with expert',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Color(0xff8E8E8E),
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                SizedBox(height: 4),
-                Text(
-                  'View your consultation prescription',
-                  style: TextStyle(fontSize: 14, color: Color(0xFF666666)),
+
+                OutlinedButton(
+                  onPressed: () {},
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 7,
+                    ),
+                    side: const BorderSide(
+                      color: Color(0xFF96BFFF),
+                      width: 1.5,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    backgroundColor: Color(0xFFF2F7FF),
+                  ),
+                  child: const Text(
+                    'Call Us',
+                    style: TextStyle(
+                      color: Color(0xFF2372EC),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
               ],
             ),
-          ),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2372EC),
+            SizedBox(height: 16),
+
+            Divider(
+              height: 1,
+              thickness: 0.5,
+              color: Color(0xffB8B8B8),
+              indent: 6,
+              endIndent: 6,
             ),
-            child: const Text('View'),
-          ),
-        ],
-      ),
+          ],
+        ),
+      ],
     );
   }
 
-  Widget _buildBottomButtons(BuildContext context) {
+  Widget _buildBottomButton(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(color: Colors.white),
-      child: Row(
-        children: [
-          Expanded(
-            child: BookingActionButton(
-              label: 'View Prescription',
-
-              type: BookingButtonType.outlined,
-              onPressed: () {
-                // Handle view prescription
-              },
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: BookingActionButton(
-              label: 'Book Follow-up',
-
-              type: BookingButtonType.primary,
-              onPressed: () {
-                // Handle book follow-up
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFeesSection() {
-    final consultationFee = _appointment?.payment.consultationFee ?? 0.0;
-    final followUpFee = _appointment?.payment.followUpFee ?? 0.0;
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color(0xFFE0E0E0),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Fees',
-            style: EcliniqTextStyles.headlineLarge.copyWith(
-              color: const Color(0xff424242),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Consultation Fee',
-                style: EcliniqTextStyles.headlineXMedium.copyWith(
-                  color: const Color(0xff626060),
-                ),
-              ),
-              Text(
-                '₹${consultationFee.toStringAsFixed(0)}',
-                style: EcliniqTextStyles.headlineXMedium.copyWith(
-                  color: const Color(0xff424242),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          if (followUpFee > 0) ...[
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Follow-up Fee',
-                  style: EcliniqTextStyles.headlineXMedium.copyWith(
-                    color: const Color(0xff626060),
-                  ),
-                ),
-                Text(
-                  '₹${followUpFee.toStringAsFixed(0)}',
-                  style: EcliniqTextStyles.headlineXMedium.copyWith(
-                    color: const Color(0xff424242),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ],
-          const Divider(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Total',
-                style: EcliniqTextStyles.headlineLarge.copyWith(
-                  color: const Color(0xff424242),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              Text(
-                '₹${_appointment?.payment.totalPayable.toStringAsFixed(0) ?? consultationFee.toStringAsFixed(0)}',
-                style: EcliniqTextStyles.headlineLarge.copyWith(
-                  color: const Color(0xff424242),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ],
+      child: BookingActionButton(
+        label: 'Book Again',
+        type: BookingButtonType.primary,
+        onPressed: () {
+          // Handle book again
+        },
       ),
     );
   }
