@@ -1,11 +1,14 @@
 import 'package:ecliniq/ecliniq_core/auth/secure_storage.dart';
+import 'package:ecliniq/ecliniq_core/auth/session_service.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/main_flow/otp_screen.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/main_flow/phone_input.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/details/user_details.dart';
+import 'package:ecliniq/ecliniq_modules/screens/login/login.dart';
 import 'package:ecliniq/ecliniq_modules/screens/login/login_trouble.dart';
+import 'package:ecliniq/ecliniq_modules/screens/profile/security_settings/security_settings.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/button/button.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
@@ -178,9 +181,11 @@ class _MPINSetState extends State<MPINSet> with TickerProviderStateMixin {
       
       final createMPIN = _createMPINController.text.trim();
 
-      // Call backend API to setup MPIN
+      // Call backend API to setup or reset MPIN
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final success = await authProvider.setupMPIN(createMPIN);
+      final success = widget.isResetMode
+          ? await authProvider.forgetMpinReset(createMPIN)
+          : await authProvider.setupMPIN(createMPIN);
 
       if (!mounted) return;
 
@@ -191,9 +196,26 @@ class _MPINSetState extends State<MPINSet> with TickerProviderStateMixin {
 
         if (mounted) {
           if (widget.isResetMode) {
-            // Reset mode: After setting new MPIN, verify with OTP again on same number
-            // Get the phone number from auth provider and navigate to OTP screen
-            _navigateToOTPForVerification();
+            // Reset mode: Check if user is authenticated (change MPIN from settings) or not (forget PIN from login)
+            final hasValidSession = await SessionService.hasValidSession();
+            if (hasValidSession) {
+              // User is authenticated - this is change MPIN from security settings
+              // Navigate back to security settings
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SecuritySettingsOptions(),
+                ),
+                (route) => false,
+              );
+            } else {
+              // User is not authenticated - this is forget PIN from login
+              // Navigate back to login
+              EcliniqRouter.pushAndRemoveUntil(
+                const LoginPage(),
+                (route) => route.isFirst,
+              );
+            }
           } else {
             // Normal mode: Request biometric permission via native dialog after MPIN setup
             await _requestBiometricPermission(createMPIN);
@@ -258,37 +280,6 @@ class _MPINSetState extends State<MPINSet> with TickerProviderStateMixin {
 
   
 
-  void _navigateToOTPForVerification() async {
-    if (!mounted) return;
-    
-    // After resetting MPIN, verify with OTP again on the same number
-    // Get the phone number from auth provider
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final phoneNumber = authProvider.phoneNumber;
-    
-    if (phoneNumber != null) {
-      // Resend OTP to the same phone number
-      await authProvider.resendOTP();
-      
-      // Navigate to OTP screen for verification
-      EcliniqRouter.pushAndRemoveUntil(
-        const OtpInputScreen(isForgotPinFlow: false), // Normal flow after MPIN reset
-        (route) => route.isFirst,
-      );
-    } else {
-      // If phone number is not available, go back to phone input
-      final phoneController = TextEditingController();
-      EcliniqRouter.pushAndRemoveUntil(
-        PhoneInputScreen(
-          phoneController: phoneController,
-          onClose: () => EcliniqRouter.pop(),
-          fadeAnimation: AlwaysStoppedAnimation(1.0),
-          isForgotPinFlow: false,
-        ),
-        (route) => route.isFirst,
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

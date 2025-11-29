@@ -663,4 +663,110 @@ class AuthProvider with ChangeNotifier {
       return false;
     }
   }
+
+  /// Step 1: Send OTP for forget MPIN
+  Future<bool> forgetMpinSendOtp(String phone) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      // Include Authorization header if user has a valid session
+      final authToken = _authToken ?? await SessionService.getAuthToken();
+      final result = await _authService.forgetMpinSendOtp(
+        phone: phone,
+        authToken: authToken,
+      );
+      _isLoading = false;
+
+      if (result['success'] == true) {
+        _challengeId = result['challengeId'];
+        _phoneNumber = phone;
+        notifyListeners();
+        return true;
+      } else {
+        _errorMessage = result['message'];
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Step 2: Verify OTP for forget MPIN
+  Future<bool> forgetMpinVerifyOtp(String otp) async {
+    if (_challengeId == null || _phoneNumber == null) {
+      _errorMessage = 'Session expired. Please try again.';
+      notifyListeners();
+      return false;
+    }
+
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final result = await _authService.forgetMpinVerifyOtp(
+        challengeId: _challengeId!,
+        otp: otp,
+        phone: _phoneNumber,
+      );
+      _isLoading = false;
+
+      if (result['success'] == true) {
+        notifyListeners();
+        return true;
+      } else {
+        _errorMessage = result['message'];
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Step 3: Reset MPIN
+  Future<bool> forgetMpinReset(String mpin) async {
+    if (_phoneNumber == null) {
+      _errorMessage = 'Phone number not found. Please start over.';
+      notifyListeners();
+      return false;
+    }
+
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final result = await _authService.forgetMpinReset(
+        mpin: mpin,
+        phone: _phoneNumber!,
+      );
+      _isLoading = false;
+
+      if (result['success'] == true) {
+        // Store MPIN locally after successful reset
+        await SecureStorageService.storeMPIN(mpin);
+        notifyListeners();
+        return true;
+      } else {
+        _errorMessage = result['message'];
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
 }

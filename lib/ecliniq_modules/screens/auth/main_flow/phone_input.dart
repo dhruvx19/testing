@@ -119,7 +119,11 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
       await SecureStorageService.storePhoneNumber(phone);
 
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final success = await authProvider.loginOrRegisterUser(phone);
+      
+      // Use forget MPIN API if it's forget PIN flow, otherwise use normal login/register
+      final success = widget.isForgotPinFlow
+          ? await authProvider.forgetMpinSendOtp(phone)
+          : await authProvider.loginOrRegisterUser(phone);
 
       if (mounted) {
         if (success) {
@@ -130,7 +134,8 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
           setState(() {
             _isButtonPressed = false;
           });
-          _showSnackBar(authProvider.errorMessage ?? 'Login failed');
+          _showSnackBar(authProvider.errorMessage ?? 
+              (widget.isForgotPinFlow ? 'Failed to send OTP' : 'Login failed'));
         }
       }
     } catch (e) {

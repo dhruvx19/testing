@@ -1,4 +1,5 @@
 import 'package:ecliniq/ecliniq_modules/screens/profile/security_settings/change_email_id/verify_existing_email.dart';
+import 'package:ecliniq/ecliniq_modules/screens/profile/security_settings/change_mpin/change_mpin_screen.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
 import 'package:flutter/material.dart';
@@ -145,7 +146,34 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
       });
     }
 
-    void onPressedChangeMPin() {}
+    Future<void> onPressedChangeMPin() async {
+      // Show loader while navigating
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        barrierColor: Colors.black.withOpacity(0.3),
+        builder: (context) => Center(
+          child: CircularProgressIndicator(
+            color: Colors.blue.shade800,
+          ),
+        ),
+      );
+
+      // Navigate to change MPIN screen
+      if (mounted) {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const ChangeMPINScreen(),
+          ),
+        );
+        
+        // Dismiss loader when navigation completes
+        if (mounted) {
+          Navigator.of(context, rootNavigator: true).pop();
+        }
+      }
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
