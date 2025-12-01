@@ -16,6 +16,13 @@ class AppointmentRequestScreen extends StatefulWidget {
   final String patientName;
   final String patientSubtitle;
   final String patientBadge;
+  
+  // Payment details (optional)
+  final String? merchantTransactionId;
+  final String? paymentMethod;
+  final double? totalAmount;
+  final double? walletAmount;
+  final double? gatewayAmount;
 
   const AppointmentRequestScreen({
     super.key,
@@ -28,6 +35,11 @@ class AppointmentRequestScreen extends StatefulWidget {
     required this.patientName,
     required this.patientSubtitle,
     required this.patientBadge,
+    this.merchantTransactionId,
+    this.paymentMethod,
+    this.totalAmount,
+    this.walletAmount,
+    this.gatewayAmount,
   });
 
   @override
@@ -59,6 +71,11 @@ class _AppointmentRequestScreenState extends State<AppointmentRequestScreen> {
             patientName: widget.patientName,
             patientSubtitle: widget.patientSubtitle,
             patientBadge: widget.patientBadge,
+            merchantTransactionId: widget.merchantTransactionId,
+            paymentMethod: widget.paymentMethod,
+            totalAmount: widget.totalAmount,
+            walletAmount: widget.walletAmount,
+            gatewayAmount: widget.gatewayAmount,
           ),
         ),
       );
