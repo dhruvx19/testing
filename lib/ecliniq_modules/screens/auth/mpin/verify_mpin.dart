@@ -17,6 +17,9 @@ class VerifyMPINPage extends StatefulWidget {
 }
 
 class _VerifyMPINPageState extends State<VerifyMPINPage> with WidgetsBindingObserver {
+  // Feature flag: Set to false to disable biometric for production
+  static const bool _enableBiometric = false;
+  
   final TextEditingController _mpinController = TextEditingController();
   bool _isLoading = false;
   bool _isBiometricAvailable = false;
@@ -29,11 +32,13 @@ class _VerifyMPINPageState extends State<VerifyMPINPage> with WidgetsBindingObse
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _mpinController.addListener(_onMPINChanged);
-    _checkBiometricAvailability().then((_) {
-      if (mounted) {
-        _autoTriggerBiometric();
-      }
-    });
+    if (_enableBiometric) {
+      _checkBiometricAvailability().then((_) {
+        if (mounted) {
+          _autoTriggerBiometric();
+        }
+      });
+    }
   }
 
   @override
@@ -50,7 +55,7 @@ class _VerifyMPINPageState extends State<VerifyMPINPage> with WidgetsBindingObse
     super.didChangeAppLifecycleState(state);
     // Re-check biometric availability when app comes to foreground
     // This helps if user enabled biometric in device settings while app was in background
-    if (state == AppLifecycleState.resumed && mounted) {
+    if (_enableBiometric && state == AppLifecycleState.resumed && mounted) {
       _checkBiometricAvailability();
     }
   }
@@ -286,13 +291,7 @@ class _VerifyMPINPageState extends State<VerifyMPINPage> with WidgetsBindingObse
                 setState(() {
                   _isLoading = false;
                 });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Biometric authentication timed out. Please try again.'),
-                    backgroundColor: Colors.red,
-                    duration: Duration(seconds: 2),
-                  ),
-                );
+                _showBiometricFailureOptions('Biometric authentication timed out');
               }
               return false;
             },
@@ -325,13 +324,8 @@ class _VerifyMPINPageState extends State<VerifyMPINPage> with WidgetsBindingObse
             errorMsg.toLowerCase().contains('user');
         
         if (errorMsg.isNotEmpty && !isUserCancellation) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(errorMsg),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 2),
-            ),
-          );
+          // Show options dialog for authentication failure
+          _showBiometricFailureOptions(errorMsg);
         } else if (errorMsg.toLowerCase().contains('not enabled')) {
           // Biometric not enabled - request permission via native dialog
           final mpin = await SecureStorageService.getMPIN();
@@ -340,6 +334,9 @@ class _VerifyMPINPageState extends State<VerifyMPINPage> with WidgetsBindingObse
             // Re-check availability after permission request
             await _checkBiometricAvailability();
           }
+        } else if (isUserCancellation) {
+          // User cancelled - focus on MPIN input
+          _focusMPINInput();
         }
       }
     } catch (e) {
@@ -352,25 +349,106 @@ class _VerifyMPINPageState extends State<VerifyMPINPage> with WidgetsBindingObse
         
         // Check if it's a timeout exception
         if (e.toString().toLowerCase().contains('timeout')) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Biometric authentication timed out. Please try again.'),
-              backgroundColor: Colors.red,
-              duration: Duration(seconds: 2),
-            ),
-          );
+          _showBiometricFailureOptions('Biometric authentication timed out');
         } else {
-          // Only show error for unexpected exceptions
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Biometric login failed: ${e.toString()}'),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 2),
-            ),
-          );
+          // Show options for other failures
+          _showBiometricFailureOptions('Biometric authentication failed');
         }
       }
     }
+  }
+
+  /// Show options dialog when biometric fails
+  void _showBiometricFailureOptions(String errorMessage) {
+    if (!mounted) return;
+    
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
+            SizedBox(width: 12),
+            Text('Authentication Failed'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(errorMessage),
+            const SizedBox(height: 16),
+            const Text(
+              'Please choose an option to continue:',
+              style: TextStyle(
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              // Focus on MPIN input
+              _focusMPINInput();
+            },
+            child: const Text(
+              'Use MPIN',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF2372EC),
+              ),
+            ),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.of(context).pop();
+              // Retry biometric
+              Future.delayed(const Duration(milliseconds: 300), () {
+                _handleBiometricLogin();
+              });
+            },
+            icon: ImageIcon(
+              const AssetImage('lib/ecliniq_icons/assets/Face Scan Square.png'),
+              size: 20,
+            ),
+            label: const Text('Try Again'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2372EC),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Focus on MPIN input field
+  void _focusMPINInput() {
+    if (!mounted) return;
+    // Clear any existing input
+    _mpinController.clear();
+    setState(() {
+      _entered = '';
+    });
+    // Focus on the MPIN input after a short delay
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (mounted) {
+        FocusScope.of(context).requestFocus(FocusNode());
+        SystemChannels.textInput.invokeMethod('TextInput.show');
+      }
+    });
   }
 
   @override
@@ -439,7 +517,7 @@ class _VerifyMPINPageState extends State<VerifyMPINPage> with WidgetsBindingObse
                         )
                       else ...[
                         const SizedBox(height: 24),
-                        if (_isBiometricAvailable) ...[
+                        if (_enableBiometric && _isBiometricAvailable) ...[
                           const Row(
                             children: [
                               Expanded(child: Divider()),

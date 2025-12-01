@@ -115,35 +115,48 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
     });
 
     try {
+      print('📱 Submitting phone number: $phone');
+      
       // Save phone number to secure storage for future use
       await SecureStorageService.storePhoneNumber(phone);
+      print('✅ Phone number saved to storage');
 
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      
+      print('🔄 Calling ${widget.isForgotPinFlow ? "forgetMpinSendOtp" : "loginOrRegisterUser"}');
       
       // Use forget MPIN API if it's forget PIN flow, otherwise use normal login/register
       final success = widget.isForgotPinFlow
           ? await authProvider.forgetMpinSendOtp(phone)
           : await authProvider.loginOrRegisterUser(phone);
 
+      print('📊 API call result: success=$success');
+      
       if (mounted) {
         if (success) {
+          print('✅ Success! Navigating to OTP screen');
           EcliniqRouter.push(
             OtpInputScreen(isForgotPinFlow: widget.isForgotPinFlow),
           );
         } else {
+          print('❌ Failed: ${authProvider.errorMessage}');
           setState(() {
             _isButtonPressed = false;
           });
-          _showSnackBar(authProvider.errorMessage ?? 
-              (widget.isForgotPinFlow ? 'Failed to send OTP' : 'Login failed'));
+          final errorMsg = authProvider.errorMessage ?? 
+              (widget.isForgotPinFlow ? 'Failed to send OTP' : 'Login failed');
+          print('🔴 Showing error: $errorMsg');
+          _showSnackBar(errorMsg);
         }
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('❌ Exception caught in _submitPhoneNumber: $e');
+      print('Stack trace: $stackTrace');
       if (mounted) {
         setState(() {
           _isButtonPressed = false;
         });
-        _showSnackBar('An error occurred. Please try again.');
+        _showSnackBar('An error occurred: $e');
       }
     }
   }

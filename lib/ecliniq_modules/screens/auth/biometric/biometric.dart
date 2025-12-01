@@ -221,6 +221,7 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
                 child: _isBiometricAvailable
                     ? _buildBiometricAvailable()
                     : _buildBiometricUnavailable(),
+                   
               ),
             ),
           ),

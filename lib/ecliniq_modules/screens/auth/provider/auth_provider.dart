@@ -62,27 +62,38 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<bool> loginOrRegisterUser(String phone) async {
+    print('🔵 AuthProvider: loginOrRegisterUser called with phone: $phone');
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
+      print('🔵 AuthProvider: Calling auth service...');
       final result = await _authService.loginOrRegisterUser(phone);
+      print('🔵 AuthProvider: Got result from auth service: $result');
+      
       _isLoading = false;
 
       if (result['success']) {
+        print('✅ AuthProvider: Login successful, storing data...');
         _challengeId = result['challengeId'];
         _phoneNumber = phone;
         _userId = result['userId'];
         _isNewUser = result['isNewUser'] ?? false;
+        
+        print('✅ AuthProvider: Stored - challengeId: $_challengeId, userId: $_userId, isNewUser: $_isNewUser');
+        
         notifyListeners();
         return true;
       } else {
+        print('❌ AuthProvider: Login failed with message: ${result['message']}');
         _errorMessage = result['message'];
         notifyListeners();
         return false;
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('❌ AuthProvider: Exception in loginOrRegisterUser: $e');
+      print('Stack trace: $stackTrace');
       _isLoading = false;
       _errorMessage = e.toString();
       notifyListeners();

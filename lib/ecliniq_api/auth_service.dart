@@ -7,16 +7,39 @@ class AuthService {
   Future<Map<String, dynamic>> loginOrRegisterUser(String phone) async {
     final url = Uri.parse(Endpoints.loginOrRegisterUser);
     try {
+      print('📞 Calling loginOrRegisterUser API with phone: $phone');
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'phone': phone}),
       );
 
+      print('📡 Response status: ${response.statusCode}');
+      print('📡 Response body: ${response.body}');
+
       final responseData = jsonDecode(response.body);
 
       if (response.statusCode == 200 && responseData['success'] == true) {
         final data = responseData['data'];
+        
+        // Validate required fields
+        if (data == null) {
+          print('❌ Data field is null in response');
+          return {
+            'success': false,
+            'message': 'Invalid response: data is null',
+          };
+        }
+        
+        if (data['challengeId'] == null) {
+          print('❌ challengeId is null in response data');
+          return {
+            'success': false,
+            'message': 'Invalid response: challengeId is missing',
+          };
+        }
+        
+        print('✅ Successfully parsed login response');
         return {
           'success': true,
           'challengeId': data['challengeId'],
@@ -25,12 +48,15 @@ class AuthService {
           'isNewUser': data['isNewUser'] ?? false,
         };
       } else {
+        print('❌ API returned success=false or non-200 status');
         return {
           'success': false,
           'message': responseData['message'] ?? 'Failed to send OTP',
         };
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('❌ Exception in loginOrRegisterUser: $e');
+      print('Stack trace: $stackTrace');
       return {
         'success': false,
         'message': 'Failed to connect to the server: $e',

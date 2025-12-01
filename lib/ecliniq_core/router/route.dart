@@ -8,47 +8,75 @@ class EcliniqRouter {
     Widget page, {
     bool fullscreenDialog = false,
     PageTransitionType transition = PageTransitionType.rightToLeft,
-  }) =>
-      navigatorKey.currentState!.push(
-        _appRoute<T>(
-          page,
-          fullscreenDialog: fullscreenDialog,
-          transition: transition,
-        ),
+  }) {
+    final navigator = navigatorKey.currentState;
+    if (navigator == null) {
+      throw Exception(
+        'Navigator is not initialized. Make sure navigatorKey is set in MaterialApp.',
       );
+    }
+    return navigator.push(
+      _appRoute<T>(
+        page,
+        fullscreenDialog: fullscreenDialog,
+        transition: transition,
+      ),
+    );
+  }
 
   static Future<T?> pushAndRemoveUntil<T extends Object?>(
     Widget page,
     RoutePredicate predicate, {
     bool fullscreenDialog = false,
     PageTransitionType transition = PageTransitionType.rightToLeft,
-  }) =>
-      navigatorKey.currentState!.pushAndRemoveUntil(
-        _appRoute<T>(
-          page,
-          fullscreenDialog: fullscreenDialog,
-          transition: transition,
-        ),
-        predicate,
+  }) {
+    final navigator = navigatorKey.currentState;
+    if (navigator == null) {
+      throw Exception(
+        'Navigator is not initialized. Make sure navigatorKey is set in MaterialApp.',
       );
+    }
+    return navigator.pushAndRemoveUntil(
+      _appRoute<T>(
+        page,
+        fullscreenDialog: fullscreenDialog,
+        transition: transition,
+      ),
+      predicate,
+    );
+  }
 
   static Future<T?> pushReplacement<T extends Object?, TO extends Object?>(
     Widget page, {
     bool fullscreenDialog = false,
     PageTransitionType transition = PageTransitionType.rightToLeft,
     Duration? duration,
-  }) =>
-      navigatorKey.currentState!.pushReplacement(
-        _appRoute<T>(
-          page,
-          fullscreenDialog: fullscreenDialog,
-          transition: transition,
-          duration: duration,
-        ),
+  }) {
+    final navigator = navigatorKey.currentState;
+    if (navigator == null) {
+      throw Exception(
+        'Navigator is not initialized. Make sure navigatorKey is set in MaterialApp.',
       );
+    }
+    return navigator.pushReplacement(
+      _appRoute<T>(
+        page,
+        fullscreenDialog: fullscreenDialog,
+        transition: transition,
+        duration: duration,
+      ),
+    );
+  }
 
-  static void pop<T extends Object?>([T? result]) =>
-      navigatorKey.currentState!.pop(result);
+  static void pop<T extends Object?>([T? result]) {
+    final navigator = navigatorKey.currentState;
+    if (navigator == null) {
+      throw Exception(
+        'Navigator is not initialized. Make sure navigatorKey is set in MaterialApp.',
+      );
+    }
+    navigator.pop(result);
+  }
       
 
   static Route<T> _appRoute<T>(
@@ -72,13 +100,20 @@ class EcliniqRouter {
     bool fullscreenDialog = false,
     PageTransitionType transition = PageTransitionType.rightToLeft,
     Duration? duration,
-  }) =>
-      navigatorKey.currentState!.push(
-        _appRoute<T>(
-          page,
-          fullscreenDialog: fullscreenDialog,
-          transition: transition,
-          duration: duration,
-        ),
+  }) {
+    final navigator = navigatorKey.currentState;
+    if (navigator == null) {
+      throw Exception(
+        'Navigator is not initialized. Make sure navigatorKey is set in MaterialApp.',
       );
+    }
+    return navigator.push(
+      _appRoute<T>(
+        page,
+        fullscreenDialog: fullscreenDialog,
+        transition: transition,
+        duration: duration,
+      ),
+    );
+  }
 }

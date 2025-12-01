@@ -632,7 +632,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
     }
 
     await _loadPatientId();
-    final finalPatientId = _patientId ?? '2ccb2364-9e21-40ad-a1f2-274b73553e44';
+    final finalPatientId = '48bc218e-152d-404b-ac3f-cda7f6340bbd';
 
     setState(() {
       _isBooking = true;
@@ -724,6 +724,28 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                 ? response.data as Map<String, dynamic>
                 : null;
 
+            // Debug logging for payment data
+            print('========== BOOKING RESPONSE DEBUG ==========');
+            print('Response success: ${response.success}');
+            print('Response data type: ${response.data.runtimeType}');
+            if (responseDataJson != null) {
+              print('Contains requiresGateway: ${responseDataJson.containsKey("requiresGateway")}');
+              print('Contains token: ${responseDataJson.containsKey("token")}');
+              print('requiresGateway value: ${responseDataJson["requiresGateway"]}');
+              final tokenStr = responseDataJson["token"]?.toString() ?? '';
+              print('token value (first 50 chars): ${tokenStr.length > 50 ? tokenStr.substring(0, 50) : tokenStr}');
+              print('token length: ${tokenStr.length}');
+              print('merchantTransactionId: ${responseDataJson["merchantTransactionId"]}');
+              print('totalAmount: ${responseDataJson["totalAmount"]}');
+              print('walletAmount: ${responseDataJson["walletAmount"]}');
+              print('gatewayAmount: ${responseDataJson["gatewayAmount"]}');
+              print('provider: ${responseDataJson["provider"]}');
+            } else {
+              print('responseDataJson is null - data type is: ${response.data.runtimeType}');
+              print('This means the backend returned AppointmentData instead of payment data');
+            }
+            print('============================================');
+
             // Check if payment data is present
             if (responseDataJson != null &&
                 responseDataJson.containsKey('requiresGateway')) {
@@ -731,6 +753,14 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                   BookingPaymentData.fromJson(responseDataJson);
 
               if (paymentData.requiresGateway) {
+                print('========== NAVIGATING TO PAYMENT ==========');
+                print('Appointment ID: ${paymentData.appointmentId}');
+                print('Merchant Txn ID: ${paymentData.merchantTransactionId}');
+                print('Token present: ${paymentData.token != null}');
+                print('Token length: ${paymentData.token?.length ?? 0}');
+                print('Gateway amount: ${paymentData.gatewayAmount}');
+                print('==========================================');
+                
                 // Navigate to payment processing screen
                 Navigator.pushReplacement(
                   context,

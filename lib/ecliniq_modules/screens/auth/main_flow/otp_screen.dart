@@ -4,6 +4,7 @@ import 'package:ecliniq/ecliniq_core/auth/session_service.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/mpin/set_mpin.dart';
+import 'package:ecliniq/ecliniq_modules/screens/details/user_details.dart';
 import 'package:ecliniq/ecliniq_modules/screens/login/login.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/button/button.dart';
@@ -153,7 +154,7 @@ class _OtpInputScreenState extends State<OtpInputScreen>
               // User can enter MPIN or use biometric on login page
               // This handles token expiration case - user already has MPIN, just needs to re-authenticate
               EcliniqRouter.pushAndRemoveUntil(
-                const LoginPage(),
+                const UserDetails (),
                 (route) => route.isFirst,
               );
             }

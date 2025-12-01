@@ -156,7 +156,7 @@ class BookingConfirmedScreen extends StatelessWidget {
               ),
             ),
             // Payment receipt section
-            if (totalAmount != null && totalAmount! > 0) ..[
+            if (totalAmount != null && totalAmount! > 0) ...[
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(16),
@@ -217,7 +217,7 @@ class BookingConfirmedScreen extends StatelessWidget {
                       const SizedBox(height: 8),
                       Text(
                         'Transaction ID: $merchantTransactionId',
-                        style: EcliniqTextStyles.buttonXSmall.copyWith(
+                        style: EcliniqTextStyles.buttonLarge.copyWith(
                           color: Color(0xff8E8E8E),
                         ),
                       ),

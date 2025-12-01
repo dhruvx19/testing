@@ -134,7 +134,7 @@ class AppointmentData {
 class BookAppointmentResponse {
   final bool success;
   final String message;
-  final AppointmentData? data;
+  final dynamic data; // Changed from AppointmentData? to dynamic to support both AppointmentData and payment data
   final dynamic errors;
   final dynamic meta;
   final String timestamp;
@@ -149,12 +149,26 @@ class BookAppointmentResponse {
   });
 
   factory BookAppointmentResponse.fromJson(Map<String, dynamic> json) {
+    // Keep data as raw Map if it contains payment fields, otherwise parse as AppointmentData
+    dynamic parsedData;
+    if (json['data'] != null) {
+      final dataMap = json['data'] as Map<String, dynamic>;
+      // Check if response contains payment-related fields
+      if (dataMap.containsKey('requiresGateway') || 
+          dataMap.containsKey('token') || 
+          dataMap.containsKey('merchantTransactionId')) {
+        // Keep as Map for payment data
+        parsedData = dataMap;
+      } else {
+        // Parse as AppointmentData for regular booking response
+        parsedData = AppointmentData.fromJson(dataMap);
+      }
+    }
+    
     return BookAppointmentResponse(
       success: json['success'] ?? false,
       message: json['message'] ?? '',
-      data: json['data'] != null
-          ? AppointmentData.fromJson(json['data'])
-          : null,
+      data: parsedData,
       errors: json['errors'],
       meta: json['meta'],
       timestamp: json['timestamp'] ?? '',
@@ -165,7 +179,9 @@ class BookAppointmentResponse {
     return {
       'success': success,
       'message': message,
-      if (data != null) 'data': data!.toJson(),
+      'data': data is AppointmentData
+          ? (data as AppointmentData).toJson()
+          : data,
       'errors': errors,
       'meta': meta,
       'timestamp': timestamp,
