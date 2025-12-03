@@ -1,5 +1,4 @@
 import 'package:phonepe_payment_sdk/phonepe_payment_sdk.dart';
-import 'package:upi_chooser/upi_chooser.dart';
 
 /// Service wrapper for PhonePe Payment SDK
 class PhonePeService {
@@ -102,131 +101,6 @@ class PhonePeService {
     }
   }
 
-  /// Get list of installed UPI apps
-  /// Returns list of UPI apps that can be used for payment
-  Future<List<UpiApp>> getInstalledUpiApps() async {
-    try {
-      // Try to use upi_chooser package if available
-      // Note: The package API may vary by version
-      try {
-        // Use dynamic to handle different API versions
-        final dynamic result = await (UpiChooser as dynamic).apps();
-        
-        // Handle different return types
-        List<dynamic>? appsList;
-        if (result is Map && result.containsKey('data')) {
-          appsList = result['data'];
-        } else if (result is List) {
-          appsList = result;
-        } else {
-          // Try to access .data property
-          try {
-            appsList = (result as dynamic).data;
-          } catch (e) {
-            print('Could not extract apps list from result');
-          }
-        }
-        
-        if (appsList != null && appsList.isNotEmpty) {
-          print('Found ${appsList.length} UPI apps from upi_chooser');
-          
-          // Convert to our UpiApp class
-          final upiApps = <UpiApp>[];
-          for (final app in appsList) {
-            String name = 'Unknown';
-            String packageName = '';
-            
-            if (app is Map) {
-              name = app['name']?.toString() ?? app['applicationName']?.toString() ?? 'Unknown';
-              packageName = app['packageName']?.toString() ?? '';
-            } else {
-              // Try to access as object properties
-              try {
-                name = (app as dynamic).name?.toString() ?? 'Unknown';
-                packageName = (app as dynamic).packageName?.toString() ?? '';
-              } catch (e) {
-                print('Error parsing UPI app: $e');
-                continue;
-              }
-            }
-            
-            if (packageName.isNotEmpty) {
-              upiApps.add(UpiApp(
-                name: name,
-                packageName: packageName,
-                version: null,
-                icon: null,
-              ));
-            }
-          }
-          
-          if (upiApps.isNotEmpty) {
-            return upiApps;
-          }
-        }
-      } catch (e) {
-        print('upi_chooser package not available or API changed: $e');
-      }
-      
-      // Fallback: Return common UPI apps
-      // PhonePe SDK will handle opening the appropriate app
-      print('Using fallback UPI apps list');
-      return _getCommonUpiApps();
-    } catch (e) {
-      print('Error getting UPI apps: $e');
-      // Return common apps as fallback
-      return _getCommonUpiApps();
-    }
-  }
-  
-  /// Get list of common UPI apps (fallback)
-  List<UpiApp> _getCommonUpiApps() {
-    return [
-      UpiApp(
-        name: 'PhonePe',
-        packageName: 'com.phonepe.app',
-        version: null,
-        icon: null,
-      ),
-      UpiApp(
-        name: 'Google Pay',
-        packageName: 'com.google.android.apps.nfc.payment',
-        version: null,
-        icon: null,
-      ),
-      UpiApp(
-        name: 'Paytm',
-        packageName: 'net.one97.paytm',
-        version: null,
-        icon: null,
-      ),
-      UpiApp(
-        name: 'BHIM UPI',
-        packageName: 'in.org.npci.upiapp',
-        version: null,
-        icon: null,
-      ),
-      UpiApp(
-        name: 'Amazon Pay',
-        packageName: 'in.amazon.mShop.android.shopping',
-        version: null,
-        icon: null,
-      ),
-    ];
-  }
-
-  /// Check if PhonePe app is installed
-  /// Note: This method may not be available in all SDK versions
-  /// Returns true if PhonePe is likely installed (based on UPI apps list)
-  Future<bool> isPhonePeInstalled() async {
-    try {
-      final upiApps = await getInstalledUpiApps();
-      return upiApps.any((app) => app.isPhonePe);
-    } catch (e) {
-      print('Error checking PhonePe installation: $e');
-      return false;
-    }
-  }
 
   /// Get the current environment
   String? get environment => _environment;
@@ -236,40 +110,6 @@ class PhonePeService {
 
   /// Check if SDK is initialized
   bool get isInitialized => _isInitialized;
-}
-
-/// UPI App information
-class UpiApp {
-  final String name;
-  final String packageName;
-  final String? version;
-  final String? icon;
-
-  UpiApp({
-    required this.name,
-    required this.packageName,
-    this.version,
-    this.icon,
-  });
-
-  factory UpiApp.fromJson(Map<String, dynamic> json) {
-    return UpiApp(
-      name: json['applicationName'] ?? json['name'] ?? 'Unknown',
-      packageName: json['packageName'] ?? '',
-      version: json['version'],
-      icon: json['icon'],
-    );
-  }
-
-  /// Common UPI app identifiers
-  bool get isPhonePe => packageName.toLowerCase().contains('phonepe');
-  bool get isGPay => packageName.toLowerCase().contains('google') || 
-                     packageName.toLowerCase().contains('gpay');
-  bool get isPaytm => packageName.toLowerCase().contains('paytm');
-  bool get isBhim => packageName.toLowerCase().contains('bhim');
-
-  @override
-  String toString() => 'UpiApp($name, $packageName)';
 }
 
 /// Payment result from PhonePe SDK
