@@ -92,9 +92,21 @@ class PhonePeService {
       String base64Request;
       
       // Use requestPayload directly if available (preferred method as per PhonePe docs)
+      // The backend provides requestPayload as base64-encoded string, which is what PhonePe SDK expects
       if (requestPayload != null && requestPayload.isNotEmpty) {
+        // Backend already provides base64-encoded payload, use it directly
+        // This matches the pattern: PhonePe SDK expects base64(JSON.stringify({orderId, merchantId, token, paymentMode}))
         base64Request = requestPayload;
         print('Using requestPayload from backend (already base64-encoded)');
+        
+        // Optional: Decode to verify structure (for debugging only)
+        try {
+          final decoded = utf8.decode(base64Decode(requestPayload));
+          final decodedMap = jsonDecode(decoded);
+          print('Decoded payload structure: ${decodedMap.keys}');
+        } catch (e) {
+          print('Note: Could not decode payload for verification: $e');
+        }
       } else {
         // Fallback: Construct payload from token and orderId (legacy support)
         if (_merchantId == null || _merchantId!.isEmpty) {
