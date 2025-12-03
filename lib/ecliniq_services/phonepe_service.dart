@@ -89,23 +89,28 @@ class PhonePeService {
     print('Expected package: $_packageName');
     
     try {
-      String base64Request;
+      String requestToSend;
       
       // Use requestPayload directly if available (preferred method as per PhonePe docs)
-      // The backend provides requestPayload as base64-encoded string, which is what PhonePe SDK expects
+      // The backend provides requestPayload as base64-encoded string
+      // PhonePe SDK expects JSON string (not base64), so we need to decode it
       if (requestPayload != null && requestPayload.isNotEmpty) {
-        // Backend already provides base64-encoded payload, use it directly
-        // This matches the pattern: PhonePe SDK expects base64(JSON.stringify({orderId, merchantId, token, paymentMode}))
-        base64Request = requestPayload;
-        print('Using requestPayload from backend (already base64-encoded)');
-        
-        // Optional: Decode to verify structure (for debugging only)
+        // Backend provides base64-encoded payload
+        // PhonePe SDK expects JSON string, so decode base64 to get JSON string
+        // This matches the article pattern: decode base64 -> get JSON -> pass JSON to SDK
         try {
-          final decoded = utf8.decode(base64Decode(requestPayload));
-          final decodedMap = jsonDecode(decoded);
+          final decodedBytes = base64Decode(requestPayload);
+          final jsonString = utf8.decode(decodedBytes);
+          
+          // Verify it's valid JSON by parsing it
+          final decodedMap = jsonDecode(jsonString);
+          print('Using requestPayload from backend (decoded from base64)');
           print('Decoded payload structure: ${decodedMap.keys}');
+          
+          // Pass the JSON string to SDK (not the base64)
+          requestToSend = jsonString;
         } catch (e) {
-          print('Note: Could not decode payload for verification: $e');
+          throw PhonePeException('Failed to decode requestPayload from base64: $e');
         }
       } else {
         // Fallback: Construct payload from token and orderId (legacy support)
@@ -134,12 +139,15 @@ class PhonePeService {
         final jsonString = jsonEncode(payload);
         print('Payment payload JSON: $jsonString');
         
-        // Base64 encode the JSON string
-        base64Request = base64Encode(utf8.encode(jsonString));
-        print('Base64 request length: ${base64Request.length}');
-        print('Base64 request (first 100 chars): ${base64Request.substring(0, base64Request.length > 100 ? 100 : base64Request.length)}');
+        // Pass JSON string directly to SDK (not base64)
+        requestToSend = jsonString;
+        print('Using constructed payload from token/orderId');
       }
       
+      print('===================================================');
+      print('Sending to PhonePe SDK (JSON string):');
+      print('Length: ${requestToSend.length}');
+      print('First 200 chars: ${requestToSend.substring(0, requestToSend.length > 200 ? 200 : requestToSend.length)}');
       print('===================================================');
       
       // PhonePe SDK startTransaction automatically:
@@ -147,8 +155,10 @@ class PhonePeService {
       // 2. Shows payment method selector (UPI apps, UPI ID, Card, etc.)
       // 3. User completes payment
       // 4. Returns to app via deep link (appSchema)
+      // 
+      // Note: PhonePe SDK expects JSON string (not base64), matching the article pattern
       final response = await PhonePePaymentSdk.startTransaction(
-        base64Request, // base64 encoded payment payload
+        requestToSend, // JSON string (decoded from base64 if using requestPayload)
         appSchema, // callback URL schema (e.g., 'ecliniq')
       );
 
