@@ -69,16 +69,12 @@ class PhonePeService {
       throw PhonePeException('PhonePe SDK not initialized. Call initialize() first.');
     }
 
-    // In sandbox mode, explicitly use simulator package name if not provided
-    final targetPackageName = packageName ?? 
-        (_environment == 'SANDBOX' ? 'com.phonepe.simulator' : null);
-
     print('========== PHONEPE SERVICE: START PAYMENT ==========');
     print('Request (base64) length: ${request.length}');
     print('Request (first 100 chars): ${request.substring(0, request.length > 100 ? 100 : request.length)}');
     print('App schema: $appSchema');
     print('Environment: $_environment');
-    print('Target package name: ${targetPackageName ?? "PhonePe SDK will auto-select"}');
+    print('Expected package: ${_packageName} (SDK will auto-select based on environment)');
     print('===================================================');
     
     try {
