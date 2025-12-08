@@ -42,12 +42,12 @@ class FavouriteDoctor {
       specialization: json['specialization'],
       qualification: json['qualification'],
       experienceYears: json['experienceYears'],
-      rating: json['rating'].toDouble(),
+      rating: (json['rating'] as num).toDouble(),
       fee: json['fee'],
       availableTime: json['availableTime'],
       availableDays: json['availableDays'],
       location: json['location'],
-      distanceKm: json['distanceKm'].toDouble(),
+      distanceKm: (json['distanceKm'] as num).toDouble(),
       availableTokens: json['availableTokens'],
       nextAvailable: json['nextAvailable'],
       isFavorite: json['isFavorite'] ?? false,
@@ -83,7 +83,7 @@ class FavouriteDoctor {
     final experience = json['experience'] ?? 0;
     
     // Extract rating
-    final rating = (json['rating'] ?? 0.0).toDouble();
+    final rating = (json['rating'] as num? ?? 0.0).toDouble();
     
     // Extract fee (convert string to int)
     final feeStr = json['fee'] ?? '0';

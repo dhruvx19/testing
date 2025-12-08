@@ -88,7 +88,7 @@ class Doctor {
       id: json['id'] ?? '',
       name: json['name'] ?? '',
       profilePhoto: json['profilePhoto'],
-      rating: json['rating']?.toDouble(),
+      rating: json['rating'] != null ? (json['rating'] as num).toDouble() : null,
       specializations: (json['specializations'] as List<dynamic>?)
               ?.map((item) => item.toString())
               .toList() ??
@@ -104,7 +104,7 @@ class Doctor {
       // New response uses 'experience' instead of 'yearOfExperience'
       yearOfExperience: json['experience'] ?? json['yearOfExperience'],
       // Handle distance object { meters, km }
-      distanceKm: parseDistanceKm(json['distance']) ?? json['distanceKm']?.toDouble(),
+      distanceKm: parseDistanceKm(json['distance']) ?? (json['distanceKm'] != null ? (json['distanceKm'] as num).toDouble() : null),
       hospital: parseHospital(),
       clinic: parseClinic(),
     );

@@ -361,7 +361,7 @@ class DoctorInfo {
       name: json['name'] ?? '',
       specialization: json['specialization'] ?? '',
       qualification: json['qualification'] ?? '',
-      rating: (json['rating'] ?? 0).toDouble(),
+      rating: (json['rating'] as num? ?? 0).toDouble(),
       yearsOfExperience: json['years_of_experience'] ?? 0,
       profileImage: json['profile_image'],
     );
@@ -492,9 +492,9 @@ class ClinicInfo {
       address: json['address'] ?? '',
       city: json['city'] ?? '',
       pincode: json['pincode'] ?? '',
-      latitude: (json['latitude'] ?? 0).toDouble(),
-      longitude: (json['longitude'] ?? 0).toDouble(),
-      distanceKm: (json['distance_km'] ?? 0).toDouble(),
+      latitude: (json['latitude'] as num? ?? 0).toDouble(),
+      longitude: (json['longitude'] as num? ?? 0).toDouble(),
+      distanceKm: (json['distance_km'] as num? ?? 0).toDouble(),
     );
   }
 
@@ -532,10 +532,10 @@ class PaymentInfo {
 
   factory PaymentInfo.fromJson(Map<String, dynamic> json) {
     return PaymentInfo(
-      consultationFee: (json['consultation_fee'] ?? 0).toDouble(),
-      followUpFee: (json['follow_up_fee'] ?? 0).toDouble(),
-      serviceFee: (json['service_fee'] ?? 0).toDouble(),
-      totalPayable: (json['total_payable'] ?? 0).toDouble(),
+      consultationFee: (json['consultation_fee'] as num? ?? 0).toDouble(),
+      followUpFee: (json['follow_up_fee'] as num? ?? 0).toDouble(),
+      serviceFee: (json['service_fee'] as num? ?? 0).toDouble(),
+      totalPayable: (json['total_payable'] as num? ?? 0).toDouble(),
       isServiceFeeWaived: json['is_service_fee_waived'] ?? false,
       waiverMessage:
           json['waiver_message'] ??

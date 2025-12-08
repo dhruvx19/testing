@@ -284,8 +284,8 @@ class DoctorHospital {
       city: json['city'],
       state: json['state'],
       pincode: json['pincode'],
-      latitude: json['latitude']?.toDouble(),
-      longitude: json['longitude']?.toDouble(),
+      latitude: json['latitude'] != null ? (json['latitude'] as num).toDouble() : null,
+      longitude: json['longitude'] != null ? (json['longitude'] as num).toDouble() : null,
       distanceKm: () {
         final d = json['distance'];
         if (d is Map) {
