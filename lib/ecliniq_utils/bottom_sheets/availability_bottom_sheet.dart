@@ -73,9 +73,7 @@ class _AvailabilityFilterBottomSheetState
   Widget _buildAvailabilityOption(String option, bool isSelected) {
     return InkWell(
       onTap: () {
-        setState(() {
-          selectedAvailability = option;
-        });
+        Navigator.pop(context, option);
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),

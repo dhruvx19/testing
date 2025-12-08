@@ -101,6 +101,47 @@ class _SelectSpecialitiesBottomSheetState
               },
             ),
           ),
+          // Apply button
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: selectedSpecialities.isEmpty
+                    ? null
+                    : () {
+                        Navigator.pop(context, selectedSpecialities.toList());
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2372EC),
+                  disabledBackgroundColor: Colors.grey[300],
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  elevation: 0,
+                ),
+                child: Text(
+                  'Apply (${selectedSpecialities.length})',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

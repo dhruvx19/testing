@@ -1,7 +1,9 @@
 // lib/ecliniq_modules/screens/hospital/hospital_doctors_screen.dart
 
 import 'package:ecliniq/ecliniq_api/hospital_service.dart';
+import 'package:ecliniq/ecliniq_api/doctor_service.dart';
 import 'package:ecliniq/ecliniq_api/models/hospital_doctor_model.dart';
+import 'package:ecliniq/ecliniq_api/models/doctor.dart' as api_doctor;
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/booking/clinic_visit_slot_screen.dart';
@@ -35,6 +37,7 @@ class HospitalDoctorsScreen extends StatefulWidget {
 
 class _HospitalDoctorsScreenState extends State<HospitalDoctorsScreen> {
   final HospitalService _hospitalService = HospitalService();
+  final DoctorService _doctorService = DoctorService();
   final TextEditingController _searchController = TextEditingController();
 
   List<Doctor> _doctors = [];
@@ -42,6 +45,10 @@ class _HospitalDoctorsScreenState extends State<HospitalDoctorsScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   String _searchQuery = '';
+  
+  // Filter state
+  Map<String, dynamic>? _appliedFilters;
+  bool _isUsingFilters = false;
 
   @override
   void initState() {
@@ -113,6 +120,86 @@ class _HospitalDoctorsScreenState extends State<HospitalDoctorsScreen> {
         });
       }
     }
+  }
+
+  Future<void> _applyFilters(Map<String, dynamic> filterData) async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+      _appliedFilters = filterData;
+      _isUsingFilters = true;
+    });
+
+    try {
+      // Build filter request
+      final request = api_doctor.FilterDoctorsRequest(
+        latitude: 28.6139, // TODO: Get from user's location
+        longitude: 77.209,
+        speciality: filterData['specialities'] != null 
+            ? List<String>.from(filterData['specialities']) 
+            : null,
+        gender: filterData['gender']?.toString().toUpperCase(),
+        distance: filterData['distance']?.toInt(),
+        workExperience: _mapExperienceFilter(filterData['experience']),
+        availability: _mapAvailabilityFilter(filterData['availability']),
+      );
+
+      final response = await _doctorService.getFilteredDoctors(request);
+
+      if (response.success && response.data != null && mounted) {
+        // Convert API doctors to hospital doctor model
+        final convertedDoctors = response.data!.doctors.map((apiDoctor) {
+          return Doctor(
+            id: apiDoctor.id,
+            name: apiDoctor.name,
+            specializations: apiDoctor.specializations,
+            degreeTypes: apiDoctor.degreeTypes,
+            qualifications: apiDoctor.degreeTypes.join(', '),
+            experience: apiDoctor.yearOfExperience,
+            rating: apiDoctor.rating,
+            timings: null, // Not available in filter API
+            availability: null, // Not available in filter API
+          );
+        }).toList();
+
+        setState(() {
+          _doctors = convertedDoctors;
+          _filteredDoctors = convertedDoctors;
+          _isLoading = false;
+        });
+      } else {
+        if (mounted) {
+          setState(() {
+            _errorMessage = response.message;
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Failed to apply filters: ${e.toString()}';
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  String? _mapExperienceFilter(String? experience) {
+    if (experience == null) return null;
+    if (experience.contains('0 - 5')) return '0-5';
+    if (experience.contains('6 - 10')) return '6-10';
+    if (experience.contains('10+')) return '10+';
+    if (experience.toLowerCase() == 'any') return 'any';
+    return null;
+  }
+
+  String? _mapAvailabilityFilter(String? availability) {
+    if (availability == null) return null;
+    if (availability.toLowerCase().contains('today')) return 'TODAY';
+    if (availability.toLowerCase().contains('tomorrow')) return 'TOMORROW';
+    if (availability.toLowerCase().contains('now')) return 'TODAY';
+    return null;
   }
 
   String _getInitials(String name) {
@@ -302,33 +389,45 @@ class _HospitalDoctorsScreenState extends State<HospitalDoctorsScreen> {
             iconAssetPath:
                 EcliniqIcons.filter.assetPath, 
             label: 'Filters',
-            onTap: () {
-              EcliniqBottomSheet.show(
+            onTap: () async {
+              final filterData = await EcliniqBottomSheet.show<Map<String, dynamic>>(
                 context: context,
-               child: DoctorFilterBottomSheet(),
+                child: DoctorFilterBottomSheet(),
               );
+              
+              if (filterData != null) {
+                _applyFilters(filterData);
+              }
             },
           ),
           const SizedBox(width: 8),
           _buildFilterChip(
             label: 'Specialities',
             isSelected: true,
-            onTap: () {
-              EcliniqBottomSheet.show(
+            onTap: () async {
+              final specialities = await EcliniqBottomSheet.show<List<String>>(
                 context: context,
                 child: SelectSpecialitiesBottomSheet(),
               );
+              
+              if (specialities != null && specialities.isNotEmpty) {
+                _applyFilters({'specialities': specialities});
+              }
             },
           ),
           const SizedBox(width: 8),
           _buildFilterChip(
             label: 'Availability',
             isSelected: false,
-            onTap: () {
-              EcliniqBottomSheet.show(
+            onTap: () async {
+              final availability = await EcliniqBottomSheet.show<String>(
                 context: context,
                 child: AvailabilityFilterBottomSheet(),
               );
+              
+              if (availability != null) {
+                _applyFilters({'availability': availability});
+              }
             },
           ),
         ],
