@@ -50,6 +50,44 @@ class DoctorService {
     }
   }
 
+  /// Get filtered doctors
+  Future<FilterDoctorsResponse> getFilteredDoctors(
+      FilterDoctorsRequest request) async {
+    try {
+      final url = Uri.parse(Endpoints.filteredDoctors);
+
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(request.toJson()),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final responseData = jsonDecode(response.body);
+        return FilterDoctorsResponse.fromJson(responseData);
+      } else {
+        return FilterDoctorsResponse(
+          success: false,
+          message: 'Failed to fetch doctors: ${response.statusCode}',
+          data: null,
+          errors: response.body,
+          meta: null,
+          timestamp: DateTime.now().toIso8601String(),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error in getFilteredDoctors: $e');
+      return FilterDoctorsResponse(
+        success: false,
+        message: 'Network error: $e',
+        data: null,
+        errors: e.toString(),
+        meta: null,
+        timestamp: DateTime.now().toIso8601String(),
+      );
+    }
+  }
+
   /// Get doctor details by ID for patient
   Future<DoctorDetailsResponse> getDoctorDetailsById({
     required String doctorId,

@@ -10,6 +10,7 @@ import 'package:ecliniq/ecliniq_ui/lib/widgets/button/button.dart';
 import 'package:ecliniq/ecliniq_ui/scripts/ecliniq_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:ecliniq/ecliniq_modules/screens/doctors/doctors_list.dart';
 import 'package:shimmer/shimmer.dart';
 
 class TopDoctorsWidget extends StatefulWidget {
@@ -148,7 +149,7 @@ class _TopDoctorsWidgetState extends State<TopDoctorsWidget> {
         ),
         TextButton(
           onPressed: () {
-            // Navigate to view all doctors
+            EcliniqRouter.push(const DoctorsListScreen());
           },
           style: TextButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
