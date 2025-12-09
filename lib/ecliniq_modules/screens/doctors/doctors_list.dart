@@ -14,6 +14,7 @@ import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_modules/screens/doctor_details/widgets/doctor_hospital_select_bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_modules/screens/doctor_details/top_doctor/model/top_doctor_model.dart' show LocationData, LocationType;
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart' as ecliniq_sheet;
+import 'package:ecliniq/ecliniq_utils/bottom_sheets/sort_by_filter_bottom_sheet.dart';
 
 
 class DoctorsListScreen extends StatefulWidget {
@@ -33,6 +34,7 @@ class _DoctorsListScreenState extends State<DoctorsListScreen> {
   String? _errorMessage;
   final Set<String> _pressedButtons = {};
   Timer? _debounce;
+  String? _selectedSortOption;
 
   @override
   void initState() {
@@ -43,6 +45,99 @@ class _DoctorsListScreenState extends State<DoctorsListScreen> {
           longitude: 77.209,
         );
     _fetchDoctors();
+  }
+
+  void _openSort() {
+    ecliniq_sheet.EcliniqBottomSheet.show(
+      context: context,
+      child: SortByBottomSheet(
+        onChanged: (option) {
+          setState(() {
+            _selectedSortOption = option;
+            _applySort();
+          });
+        },
+      ),
+    );
+  }
+
+  void _applySort() {
+    if (_doctors.isEmpty || _selectedSortOption == null) return;
+    final option = _selectedSortOption!;
+    int safeCompare<T extends Comparable>(T? a, T? b) {
+      if (a == null && b == null) return 0;
+      if (a == null) return 1;
+      if (b == null) return -1;
+      return a.compareTo(b);
+    }
+
+    double? _computeFee(Doctor d) {
+      if (d.fee != null) return d.fee;
+      double? minFee;
+      for (final h in d.hospitals) {
+        final val = h.consultationFee;
+        if (val != null) {
+          if (minFee == null || val < minFee) minFee = val;
+        }
+      }
+      for (final c in d.clinics) {
+        final val = c.consultationFee;
+        if (val != null) {
+          if (minFee == null || val < minFee) minFee = val;
+        }
+      }
+      return minFee;
+    }
+
+    double? _computeDistance(Doctor d) {
+      double? minDist;
+      for (final h in d.hospitals) {
+        final val = h.distance;
+        if (val != null) {
+          if (minDist == null || val < minDist) minDist = val;
+        }
+      }
+      for (final c in d.clinics) {
+        final val = c.distance;
+        if (val != null) {
+          if (minDist == null || val < minDist) minDist = val;
+        }
+      }
+      return minDist;
+    }
+
+    setState(() {
+      switch (option) {
+        case 'Price: Low - High':
+          _doctors.sort((a, b) => safeCompare(_computeFee(a), _computeFee(b)));
+          break;
+        case 'Price: High - Low':
+          _doctors.sort((a, b) => safeCompare(_computeFee(b), _computeFee(a)));
+          break;
+        case 'Experience - Most Experience first':
+          _doctors.sort((a, b) => safeCompare(b.experience, a.experience));
+          break;
+        case 'Distance - Nearest First':
+          _doctors.sort((a, b) => safeCompare(_computeDistance(a), _computeDistance(b)));
+          break;
+        case 'Order A-Z':
+          _doctors.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+          break;
+        case 'Order Z-A':
+          _doctors.sort((a, b) => b.name.toLowerCase().compareTo(a.name.toLowerCase()));
+          break;
+        case 'Rating High - low':
+          _doctors.sort((a, b) => safeCompare(b.rating, a.rating));
+          break;
+        case 'Rating Low - High':
+          _doctors.sort((a, b) => safeCompare(a.rating, b.rating));
+          break;
+        case 'Relevance':
+        default:
+          // no-op
+          break;
+      }
+    });
   }
 
   Future<void> _fetchDoctors() async {
@@ -58,6 +153,7 @@ class _DoctorsListScreenState extends State<DoctorsListScreen> {
           _doctors = response.data!.doctors;
           _isLoading = false;
         });
+        _applySort();
       } else {
         setState(() {
           _errorMessage = response.message;
@@ -134,6 +230,10 @@ class _DoctorsListScreenState extends State<DoctorsListScreen> {
       appBar: AppBar(
         title: const Text('Doctors'),
         actions: [
+          IconButton(
+            onPressed: _openSort,
+            icon: const Icon(Icons.sort),
+          ),
           IconButton(
             onPressed: _openFilter,
             icon: const Icon(Icons.filter_list),

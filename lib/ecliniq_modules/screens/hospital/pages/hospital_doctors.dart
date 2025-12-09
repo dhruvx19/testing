@@ -246,9 +246,11 @@ class _HospitalDoctorsScreenState extends State<HospitalDoctorsScreen> {
       final request = api_doctor.FilterDoctorsRequest(
         latitude: 28.6139, // TODO: Get from user's location
         longitude: 77.209,
-        speciality: _selectedSpecialities,
+        speciality: _normalizeSpecialities(_selectedSpecialities),
         gender: _otherFilters?['gender']?.toString().toUpperCase(),
-        distance: _otherFilters?['distance']?.toInt(),
+        distance: (_otherFilters?['distance'] is num)
+            ? (_otherFilters!['distance'] as num).toDouble()
+            : null,
         workExperience: _mapExperienceFilter(_otherFilters?['experience']),
         availability: _mapAvailabilityFilter(_selectedAvailability),
       );
@@ -339,6 +341,39 @@ class _HospitalDoctorsScreenState extends State<HospitalDoctorsScreen> {
     if (availability.toLowerCase().contains('tomorrow')) return 'TOMORROW';
     if (availability.toLowerCase().contains('now')) return 'TODAY';
     return null;
+  }
+
+  List<String>? _normalizeSpecialities(List<String>? selected) {
+    if (selected == null || selected.isEmpty) return null;
+    final map = <String, String>{
+      'General Physician / Family Doctor': 'General Physician',
+      'Pediatrician (Child Specialist)': 'Pediatrics',
+      "Gynaecologist (Women's Health Doctor)": 'Gynaecology',
+      'Dentist': 'Dentistry',
+      'Dermatologist (Skin Doctor)': 'Dermatology',
+      'ENT (Ear, Nose, Throat Specialist)': 'ENT',
+      'Ophthalmologist (Eye Specialist)': 'Ophthalmology',
+      'Cardiologist (Heart Specialist)': 'Cardiology',
+      'Orthopedic (Bone & Joint Specialist)': 'Orthopedics',
+      'Diabetologist (Sugar Specialist)': 'Diabetology',
+    };
+
+    return selected
+        .map((s) => s.trim())
+        .map((s) => map[s] ?? _stripParentheses(s))
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toSet()
+        .toList();
+  }
+
+  String _stripParentheses(String s) {
+    final withoutParen = s.replaceAll(RegExp(r"\s*\(.*?\)"), '').trim();
+    // Handle common suffixes
+    if (withoutParen.contains('/')) {
+      return withoutParen.split('/').first.trim();
+    }
+    return withoutParen;
   }
 
   String _getInitials(String name) {
