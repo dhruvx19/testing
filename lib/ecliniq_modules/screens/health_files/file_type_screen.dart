@@ -230,17 +230,29 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
         onDeleteDocument: () => EcliniqBottomSheet.show<bool>(
           context: context,
           child: DeleteFileBottomSheet(),
-        ).then((confirmed) async {
+        ).then((confirmed) {
           if (confirmed == true && mounted) {
-            final provider = context.read<HealthFilesProvider>();
-            final success = await provider.deleteFile(file);
-            if (!mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(success ? 'File deleted' : 'Failed to delete file'),
-                backgroundColor: success ? Colors.green : Colors.red,
-              ),
-            );
+            WidgetsBinding.instance.addPostFrameCallback((_) async {
+              try {
+                final provider = context.read<HealthFilesProvider>();
+                final success = await provider.deleteFile(file);
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(success ? 'File deleted' : 'Failed to delete file'),
+                    backgroundColor: success ? Colors.green : Colors.red,
+                  ),
+                );
+              } catch (e) {
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to delete file: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            });
           }
         }),
       ),
