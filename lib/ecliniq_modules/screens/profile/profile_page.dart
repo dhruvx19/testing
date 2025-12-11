@@ -1,8 +1,10 @@
 import 'package:ecliniq/ecliniq_api/models/patient.dart';
 import 'package:ecliniq/ecliniq_api/patient_service.dart';
 import 'package:ecliniq/ecliniq_core/router/navigation_helper.dart';
+import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
+import 'package:ecliniq/ecliniq_modules/screens/login/terms_and_conditions.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/add_dependent/add_dependent.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/my_doctors/my_doctor.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/personal_details/personal_detail.dart';
@@ -653,7 +655,9 @@ extension _ProfilePageContent on _ProfilePageState {
             supportEmail: 'Support@eclinicq.com',
             onReferEarnPressed: () {},
             onHelpSupportPressed: () {},
-            onTermsPressed: () {},
+            onTermsPressed: () {
+              EcliniqRouter.push(TermsAndConditionsPage());
+            },
             onPrivacyPressed: () {},
             onFaqPressed: () {},
             onAboutPressed: () {},

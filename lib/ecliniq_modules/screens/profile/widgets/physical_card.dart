@@ -214,19 +214,21 @@ class _TriangleIndicator extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 50,
+          width: 70,
           height: 16,
           decoration: BoxDecoration(
             color: color,
             borderRadius: BorderRadius.circular(4),
           ),
           child: Center(
-            child: EcliniqText(
-              status,
-              style: EcliniqTextStyles.bodyMedium.copyWith(
-                color: Colors.white,
-                fontSize: 9,
-                fontWeight: FontWeight.bold,
+            child: FittedBox(
+              child: EcliniqText(
+                status,
+                style: EcliniqTextStyles.bodyMedium.copyWith(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),

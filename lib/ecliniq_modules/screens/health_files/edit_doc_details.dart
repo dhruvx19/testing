@@ -7,6 +7,7 @@ import 'package:ecliniq/ecliniq_ui/lib/tokens/colors.g.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/success_snackbar.dart';
+import 'package:ecliniq/ecliniq_utils/bottom_sheets/select_member_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -498,10 +499,7 @@ class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
   Future<void> _showRecordForBottomSheet(BuildContext context) async {
     final String? selected = await EcliniqBottomSheet.show<String>(
       context: context,
-      child: RecordForBottomSheet(
-        recordForOptions: _recordForOptions,
-        selectedRecordFor: _selectedRecordFor,
-      ),
+      child: SelectMemberBottomSheet()
     );
     if (selected != null && selected != _selectedRecordFor) {
       setState(() {

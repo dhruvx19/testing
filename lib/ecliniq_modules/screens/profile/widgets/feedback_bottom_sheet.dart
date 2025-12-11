@@ -1,6 +1,7 @@
+import 'package:ecliniq/ecliniq_icons/icons.dart';
+import 'package:ecliniq/ecliniq_utils/bottom_sheets/ratings/thank_you.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:ecliniq/ecliniq_icons/icons.dart';
 
 class FeedbackBottomSheet extends StatefulWidget {
   const FeedbackBottomSheet({super.key});
@@ -42,12 +43,24 @@ class _FeedbackBottomSheetState extends State<FeedbackBottomSheet> {
     setState(() => _isLoading = false);
 
     if (mounted) {
-      Navigator.pop(context);
-      // Show success snackbar
+      Navigator.pop(context); // Close feedback bottom sheet first
+      await Future.delayed(
+        const Duration(milliseconds: 200),
+      ); // Optional: smooth transition
+      await _showThankYouSheet(context);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Feedback submitted successfully!')),
       );
     }
+  }
+
+  Future<void> _showThankYouSheet(BuildContext context) async {
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const ThankYou(),
+    );
   }
 
   @override
