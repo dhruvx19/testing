@@ -85,14 +85,28 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
     );
 
     if (confirmed == true && mounted) {
-      final provider = context.read<HealthFilesProvider>();
-      final success = await provider.deleteFile(file);
+      try {
+        final provider = context.read<HealthFilesProvider>();
+        final success = await provider.deleteFile(file);
 
-      if (mounted) {
+        if (!mounted) return;
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(success ? 'File deleted' : 'Failed to delete file'),
+            content: Text(success ? 'File deleted successfully' : 'Failed to delete file'),
             backgroundColor: success ? Colors.green : Colors.red,
+            dismissDirection: DismissDirection.horizontal,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting file: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            dismissDirection: DismissDirection.horizontal,
+            duration: const Duration(seconds: 3),
           ),
         );
       }
@@ -102,71 +116,89 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
   Future<void> _handleFileDownload(HealthFile file) async {
     try {
       final sourceFile = File(file.filePath);
+      
       if (!await sourceFile.exists()) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('File not found'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('File not found in storage'),
+            backgroundColor: Colors.red,
+            dismissDirection: DismissDirection.horizontal,
+            duration: Duration(seconds: 2),
+          ),
+        );
         return;
       }
 
       if (Platform.isAndroid) {
-        final directory = Directory('/storage/emulated/0/Download');
-        if (!await directory.exists()) {
-          final externalDir = await getExternalStorageDirectory();
-          if (externalDir != null) {
-            final downloadDir = Directory(
-              path.join(externalDir.path, 'Download'),
-            );
-            if (!await downloadDir.exists()) {
-              await downloadDir.create(recursive: true);
+        try {
+          final directory = Directory('/storage/emulated/0/Download');
+          Directory targetDir = directory;
+          
+          if (!await directory.exists()) {
+            final externalDir = await getExternalStorageDirectory();
+            if (externalDir == null) {
+              throw Exception('Unable to access storage directory');
             }
-            final destFile = File(path.join(downloadDir.path, file.fileName));
-            await sourceFile.copy(destFile.path);
-
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('File downloaded successfully'),
-                  backgroundColor: Colors.green,
-                ),
-              );
+            
+            targetDir = Directory(path.join(externalDir.path, 'Download'));
+            if (!await targetDir.exists()) {
+              await targetDir.create(recursive: true);
             }
-            await LocalNotifications.showDownloadSuccess(fileName: file.fileName);
-            return;
           }
-        } else {
-          final destFile = File(path.join(directory.path, file.fileName));
+          
+          String fileName = file.fileName;
+          File destFile = File(path.join(targetDir.path, fileName));
+          
+          int counter = 1;
+          while (await destFile.exists()) {
+            final nameWithoutExt = path.basenameWithoutExtension(fileName);
+            final ext = path.extension(fileName);
+            fileName = '${nameWithoutExt}_$counter$ext';
+            destFile = File(path.join(targetDir.path, fileName));
+            counter++;
+          }
+          
           await sourceFile.copy(destFile.path);
 
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('File downloaded successfully'),
-                backgroundColor: Colors.green,
-              ),
-            );
-          }
-          await LocalNotifications.showDownloadSuccess(fileName: file.fileName);
+          if (!mounted) return;
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('File downloaded to: ${targetDir.path}'),
+              backgroundColor: Colors.green,
+              dismissDirection: DismissDirection.horizontal,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+          
+          await LocalNotifications.showDownloadSuccess(fileName: fileName);
+          return;
+        } catch (e) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Download failed: ${e.toString()}'),
+              backgroundColor: Colors.red,
+              dismissDirection: DismissDirection.horizontal,
+              duration: const Duration(seconds: 3),
+            ),
+          );
           return;
         }
       }
 
-      // Use share functionality as fallback
       await _shareFile(file);
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to download file: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to download file: ${e.toString()}'),
+          backgroundColor: Colors.red,
+          dismissDirection: DismissDirection.horizontal,
+          duration: const Duration(seconds: 3),
+        ),
+      );
     }
   }
 
@@ -174,34 +206,37 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
     try {
       final file = File(healthFile.filePath);
       if (!await file.exists()) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('File not found'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('File not found'),
+            backgroundColor: Colors.red,
+            dismissDirection: DismissDirection.horizontal,
+            duration: Duration(seconds: 2),
+          ),
+        );
         return;
       }
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Share functionality coming soon'),
-            backgroundColor: Colors.blue,
-          ),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Share functionality coming soon'),
+          backgroundColor: Colors.blue,
+          dismissDirection: DismissDirection.horizontal,
+          duration: Duration(seconds: 2),
+        ),
+      );
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to share file: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to share file: ${e.toString()}'),
+          backgroundColor: Colors.red,
+          dismissDirection: DismissDirection.horizontal,
+          duration: const Duration(seconds: 2),
+        ),
+      );
     }
   }
 
@@ -227,34 +262,40 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
           EcliniqRouter.push(EditDocumentDetailsPage(healthFile: file));
         },
         onDownloadDocument: () => _handleFileDownload(file),
-        onDeleteDocument: () => EcliniqBottomSheet.show<bool>(
-          context: context,
-          child: DeleteFileBottomSheet(),
-        ).then((confirmed) {
+        onDeleteDocument: () async {
+          final confirmed = await EcliniqBottomSheet.show<bool>(
+            context: context,
+            child: const DeleteFileBottomSheet(),
+          );
+          
           if (confirmed == true && mounted) {
-            WidgetsBinding.instance.addPostFrameCallback((_) async {
-              try {
-                final provider = context.read<HealthFilesProvider>();
-                final success = await provider.deleteFile(file);
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(success ? 'File deleted' : 'Failed to delete file'),
-                    backgroundColor: success ? Colors.green : Colors.red,
-                  ),
-                );
-              } catch (e) {
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Failed to delete file: $e'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
-            });
+            try {
+              final provider = context.read<HealthFilesProvider>();
+              final success = await provider.deleteFile(file);
+              
+              if (!mounted) return;
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(success ? 'File deleted successfully' : 'Failed to delete file'),
+                  backgroundColor: success ? Colors.green : Colors.red,
+                  dismissDirection: DismissDirection.horizontal,
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            } catch (e) {
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Error deleting file: ${e.toString()}'),
+                  backgroundColor: Colors.red,
+                  dismissDirection: DismissDirection.horizontal,
+                  duration: const Duration(seconds: 3),
+                ),
+              );
+            }
           }
-        }),
+        },
       ),
     );
   }

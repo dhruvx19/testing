@@ -170,17 +170,34 @@ class LocalFileStorageService {
   /// Delete a file
   Future<bool> deleteFile(HealthFile healthFile) async {
     try {
-      // Delete physical file
+      bool physicalFileDeleted = false;
+      
+      // Try to delete physical file
       final file = File(healthFile.filePath);
       if (await file.exists()) {
-        await file.delete();
+        try {
+          await file.delete();
+          physicalFileDeleted = true;
+        } catch (e) {
+          // Log error but continue to remove metadata
+          print('Error deleting physical file: $e');
+        }
+      } else {
+        // File doesn't exist, consider it deleted
+        physicalFileDeleted = true;
       }
       
-      // Remove from metadata
-      await _removeFileMetadata(healthFile.id);
+      // Always remove from metadata, even if physical file deletion failed
+      try {
+        await _removeFileMetadata(healthFile.id);
+      } catch (e) {
+        print('Error removing file metadata: $e');
+        return false;
+      }
       
-      return true;
+      return physicalFileDeleted;
     } catch (e) {
+      print('Error in deleteFile: $e');
       return false;
     }
   }
