@@ -2,17 +2,9 @@ import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
-class DeleteFileBottomSheet extends StatefulWidget {
+class DeleteFileBottomSheet extends StatelessWidget {
   const DeleteFileBottomSheet({super.key});
 
-  @override
-  State<DeleteFileBottomSheet> createState() => _DeleteFileBottomSheetState();
-}
-
-class _DeleteFileBottomSheetState extends State<DeleteFileBottomSheet> {
-  late int _tempRating;
-
-  @override
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -51,32 +43,80 @@ class _DeleteFileBottomSheetState extends State<DeleteFileBottomSheet> {
           ),
 
           const SizedBox(height: 16),
-
-          _buildSubmitButton(),
+          Padding(
+            padding: const EdgeInsets.only(left: 4.0, right: 4.0),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: GestureDetector(
+                    onTap: () => Navigator.of(context).pop(true),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: const Color(0xFFEB8B85), width: 0.5),
+                        color: const Color(0xFFFFF8F8),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Yes',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xffF04248),
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 1,
+                  child: GestureDetector(
+                    onTap: () => Navigator.of(context).pop(false),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: const Color(0xff8E8E8E), width: 0.5),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'No',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xff424242),
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 8),
         ],
-      ),
-    );
-  }
-
-  Widget _buildSubmitButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: ElevatedButton(
-        onPressed: () {
-          Navigator.of(context).pop(_tempRating);
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF2372EC),
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-        ),
-        child: const Text(
-          'Ok',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-        ),
       ),
     );
   }

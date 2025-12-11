@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ecliniq/ecliniq_utils/bottom_sheets/filter_bottom_sheet.dart';
 
 class HealthFilesFilter extends StatefulWidget {
   final Function(Map<String, dynamic>)? onApply;
@@ -35,9 +36,10 @@ class HealthFilesFilterState extends State<HealthFilesFilter> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: MediaQuery.of(context).size.height * 0.75,
       decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -57,86 +59,78 @@ class HealthFilesFilterState extends State<HealthFilesFilter> {
             ),
           ),
           // Search bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search across filter',
-                hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
-                prefixIcon: Icon(Icons.search, color: Colors.grey[400]),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Colors.blue),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
+          SearchBarWidget(onSearch: (String value) {}),
+          const SizedBox(height: 20),
+          Container(height: 0.5, color: const Color(0xffD6D6D6)),
+          const SizedBox(height: 10),
           // Two column layout
-          SizedBox(
-            height: 300,
+          Expanded(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Left column - Categories
                 SizedBox(
-                  width: 120,
-                  child: Column(
-                    children: _categories.map((category) {
-                      final isSelected = _selectedCategory == category;
-                      return GestureDetector(
-                        onTap: () =>
-                            setState(() => _selectedCategory = category),
+                  width: 130,
+                  child: ListView.builder(
+                    itemCount: _categories.length,
+                    itemBuilder: (context, index) {
+                      final tab = _categories[index];
+                      final isSelected = _selectedCategory == tab;
+                      return InkWell(
+                        onTap: () {
+                          setState(() {
+                            _selectedCategory = tab;
+                          });
+                        },
                         child: Container(
-                          width: double.infinity,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 16,
-                            vertical: 14,
+                            vertical: 12,
                           ),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? Colors.blue.withOpacity(0.1)
+                                ? const Color(0xffF8FAFF)
                                 : Colors.transparent,
                             border: Border(
-                              left: BorderSide(
+                              top: BorderSide(
                                 color: isSelected
-                                    ? Colors.blue
+                                    ? const Color(0xff96BFFF)
+                                    : Colors.transparent,
+                                width: 0.5,
+                              ),
+                              bottom: BorderSide(
+                                color: isSelected
+                                    ? const Color(0xff96BFFF)
+                                    : Colors.transparent,
+                                width: 0.5,
+                              ),
+                              right: BorderSide(
+                                color: isSelected
+                                    ? const Color(0xff96BFFF)
                                     : Colors.transparent,
                                 width: 3,
                               ),
                             ),
                           ),
                           child: Text(
-                            category,
+                            tab,
                             style: TextStyle(
-                              fontSize: 14,
+                              color: isSelected
+                                  ? const Color(0xff2372EC)
+                                  : Colors.grey[700],
+                              fontSize: 16,
                               fontWeight: isSelected
                                   ? FontWeight.w500
-                                  : FontWeight.normal,
-                              color: isSelected
-                                  ? Colors.blue
-                                  : Colors.grey[700],
+                                  : FontWeight.w400,
                             ),
                           ),
                         ),
                       );
-                    }).toList(),
+                    },
                   ),
                 ),
                 // Divider
-                Container(width: 1, color: Colors.grey[200]),
+                Container(width: 0.5, color: const Color(0xffD6D6D6)),
                 // Right column - Options
                 Expanded(child: _buildOptionsColumn()),
               ],
@@ -151,41 +145,47 @@ class HealthFilesFilterState extends State<HealthFilesFilter> {
   Widget _buildOptionsColumn() {
     if (_selectedCategory == 'Sort By') {
       return ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(vertical: 8),
         itemCount: _sortByOptions.length,
         itemBuilder: (context, index) {
           final option = _sortByOptions[index];
           final isSelected = _selectedSortBy == option;
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: GestureDetector(
-              onTap: () =>
-                  setState(() => _selectedSortBy = isSelected ? null : option),
+          return InkWell(
+            onTap: () => setState(() => _selectedSortBy = option),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    option,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[800]),
+                  Expanded(
+                    child: Text(
+                      option,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Color(0xff424242),
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
                   ),
                   Container(
-                    width: 20,
-                    height: 20,
+                    width: 24,
+                    height: 24,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isSelected ? Colors.blue : Colors.grey[400]!,
+                        color: isSelected
+                            ? const Color(0xff2372EC)
+                            : Colors.grey[400]!,
                         width: 2,
                       ),
                     ),
                     child: isSelected
                         ? Center(
                             child: Container(
-                              width: 10,
-                              height: 10,
+                              width: 12,
+                              height: 12,
                               decoration: const BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: Colors.blue,
+                                color: Color(0xff2372EC),
                               ),
                             ),
                           )
@@ -199,43 +199,50 @@ class HealthFilesFilterState extends State<HealthFilesFilter> {
       );
     } else {
       return ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(vertical: 8),
         itemCount: _relatedToOptions.length,
         itemBuilder: (context, index) {
           final option = _relatedToOptions[index];
           final isSelected = _selectedRelatedTo.contains(option['name']);
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  if (isSelected) {
-                    _selectedRelatedTo.remove(option['name']);
-                  } else {
-                    _selectedRelatedTo.add(option['name']!);
-                  }
-                });
-              },
+          return InkWell(
+            onTap: () {
+              setState(() {
+                if (isSelected) {
+                  _selectedRelatedTo.remove(option['name']);
+                } else {
+                  _selectedRelatedTo.add(option['name']!);
+                }
+              });
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    '${option['name']} (${option['relation']})',
-                    style: TextStyle(fontSize: 14, color: Colors.grey[800]),
+                  Expanded(
+                    child: Text(
+                      '${option['name']} (${option['relation']})',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Color(0xff424242),
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
                   ),
                   Container(
-                    width: 20,
-                    height: 20,
+                    width: 24,
+                    height: 24,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(4),
                       border: Border.all(
-                        color: isSelected ? Colors.blue : Colors.grey[400]!,
-                        width: 2,
+                        color: isSelected
+                            ? const Color(0xff2372EC)
+                            : const Color(0xff8E8E8E),
+                        width: 1,
                       ),
+                      borderRadius: BorderRadius.circular(6),
                       color: isSelected ? Colors.blue : Colors.transparent,
                     ),
                     child: isSelected
-                        ? const Icon(Icons.check, size: 14, color: Colors.white)
+                        ? const Icon(Icons.check, size: 16, color: Colors.white)
                         : null,
                   ),
                 ],

@@ -15,6 +15,7 @@ import 'package:ecliniq/ecliniq_utils/bottom_sheets/health_files/delete_file_bot
 import 'package:ecliniq/ecliniq_utils/bottom_sheets/health_files/health_files_filter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:ecliniq/ecliniq_core/notifications/local_notifications.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -135,6 +136,7 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
                 ),
               );
             }
+            await LocalNotifications.showDownloadSuccess(fileName: file.fileName);
             return;
           }
         } else {
@@ -149,6 +151,7 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
               ),
             );
           }
+          await LocalNotifications.showDownloadSuccess(fileName: file.fileName);
           return;
         }
       }
@@ -224,10 +227,22 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
           EcliniqRouter.push(EditDocumentDetailsPage(healthFile: file));
         },
         onDownloadDocument: () => _handleFileDownload(file),
-        onDeleteDocument: () => EcliniqBottomSheet.show(
+        onDeleteDocument: () => EcliniqBottomSheet.show<bool>(
           context: context,
           child: DeleteFileBottomSheet(),
-        ),
+        ).then((confirmed) async {
+          if (confirmed == true && mounted) {
+            final provider = context.read<HealthFilesProvider>();
+            final success = await provider.deleteFile(file);
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(success ? 'File deleted' : 'Failed to delete file'),
+                backgroundColor: success ? Colors.green : Colors.red,
+              ),
+            );
+          }
+        }),
       ),
     );
   }
