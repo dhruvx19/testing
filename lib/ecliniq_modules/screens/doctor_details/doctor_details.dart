@@ -10,7 +10,10 @@ import 'package:ecliniq/ecliniq_modules/screens/doctor_details/widgets/address_d
 import 'package:ecliniq/ecliniq_modules/screens/doctor_details/widgets/common_widget.dart';
 import 'package:ecliniq/ecliniq_modules/screens/home/widgets/easy_to_book.dart';
 import 'package:ecliniq/ecliniq_modules/screens/hospital/widgets/appointment_timing.dart';
+import 'package:ecliniq/ecliniq_modules/screens/profile/widgets/basic_info.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
+import 'package:ecliniq/widgets/horizontal_divider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
@@ -90,7 +93,11 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
           backgroundColor: Colors.white,
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back),
+            icon: SvgPicture.asset(
+              EcliniqIcons.arrowLeft.assetPath,
+              width: 24,
+              height: 24,
+            ),
             onPressed: () => EcliniqRouter.pop(),
           ),
         ),
@@ -154,24 +161,24 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildHeaderImage(clinic?.image),
-                    const SizedBox(height: 16),
+
                     _buildDoctorInfo(
                       doctor.name,
                       specialization,
                       education,
                       location,
                     ),
-                    const SizedBox(height: 16),
 
                     _buildStatsCards(
                       doctor.patientsServed ?? 0,
                       doctor.workExperience ?? 0,
                       doctor.rating ?? 0.0,
                     ),
-                    const SizedBox(height: 16),
 
-                    AppointmentTimingWidget(),
+                    HorizontalDivider(),
                     const SizedBox(height: 16),
+                    AppointmentTimingWidget(),
+                    const SizedBox(height: 20),
 
                     if (clinic != null) AddressWidget(clinic: clinic),
                     const SizedBox(height: 16),
@@ -360,12 +367,12 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildCircleButton(Icons.arrow_back, () => EcliniqRouter.pop()),
+                _buildCircleButton(EcliniqIcons.arrowLeft, () => EcliniqRouter.pop()),
                 Row(
                   children: [
-                    _buildCircleButton(Icons.favorite_border, () {}),
+                    _buildCircleButton(EcliniqIcons.heartUnfilled, () {}),
                     const SizedBox(width: 8),
-                    _buildCircleButton(Icons.share, () {}),
+                    _buildCircleButton(EcliniqIcons.share, () {}),
                   ],
                 ),
               ],
@@ -376,19 +383,24 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
     );
   }
 
-  Widget _buildCircleButton(IconData icon, VoidCallback onTap) {
+  Widget _buildCircleButton(EcliniqIcons icon, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
       child: Container(
-        width: 40,
-        height: 40,
+        width: 48,
+        height: 48,
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.5),
           shape: BoxShape.circle,
-          
         ),
-        child: Icon(icon, size: 20),
+        child: Center(
+          child: SvgPicture.asset(
+            icon.assetPath,
+            width: 32,
+            height: 32,
+          ),
+        ),
       ),
     );
   }
@@ -413,7 +425,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height:4),
+          const SizedBox(height: 4),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -438,7 +450,45 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
               ),
             ),
           ],
-          const SizedBox(height: 16),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SvgPicture.asset(
+                EcliniqIcons.hospitalBuilding.assetPath,
+                width: 24,
+                height: 24,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Sunrise Family Clinic',
+                style: EcliniqTextStyles.titleXLarge.copyWith(
+                  color: Color(0xff626060),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(width: 1, height: 20, color: Colors.grey),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () {},
+                child: const Text(
+                  'Change',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF2372EC),
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              SvgPicture.asset(
+                EcliniqIcons.shuffle.assetPath,
+                width: 16,
+                height: 16,
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -446,7 +496,6 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                 EcliniqIcons.mapPoint.assetPath,
                 width: 24,
                 height: 24,
-                color: Color(0xff96BFFF),
               ),
               const SizedBox(width: 6),
               Text(
@@ -470,29 +519,25 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
         child: Row(
           children: [
             _buildStatCard(
-              Icons.people,
+              EcliniqIcons.usersGroupRounded,
               'Patients Served',
               patientsServed > 0 ? _formatNumber(patientsServed) : 'N/A',
             ),
-            Container(
-              width: 1,
-              height: 80,
-              margin: const EdgeInsets.symmetric(horizontal: 20),
-              color: Colors.grey[200],
-            ),
+            DashedVerticalDivider(height: 100),
             _buildStatCard(
-              Icons.medical_services_outlined,
+              EcliniqIcons.caseDoctor,
               'Experience',
               experience > 0 ? '$experience Yrs' : 'N/A',
             ),
-            Container(
-              width: 1,
-              height: 80,
-              margin: const EdgeInsets.symmetric(horizontal: 20),
-              color: Colors.grey[200],
-            ),
+            DashedVerticalDivider(height: 100),
             _buildStatCard(
-              Icons.rate_review_outlined,
+              EcliniqIcons.tagPrice,
+              'Fees',
+              experience > 0 ? '$experience Yrs' : 'N/A',
+            ),
+            DashedVerticalDivider(height: 100),
+            _buildStatCard(
+              EcliniqIcons.stars,
               'Rating',
               rating > 0 ? '${rating.toStringAsFixed(1)} Star' : 'N/A',
             ),
@@ -511,16 +556,20 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
     return number.toString();
   }
 
-  Widget _buildStatCard(IconData icon, String label, String value) {
+  Widget _buildStatCard(final EcliniqIcons icon, String label, String value) {
     return SizedBox(
-      width: 120,
+      width: 140,
       child: Column(
         children: [
-          Icon(icon, color: Colors.blue[600], size: 32),
+          SvgPicture.asset(icon.assetPath, width: 32, height: 32),
           const SizedBox(height: 8),
           Text(
             label,
-            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              color: Color(0xff626060),
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 6),
@@ -528,8 +577,8 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
             value,
             style: TextStyle(
               fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.blue[600],
+              fontWeight: FontWeight.w600,
+              color: Color(0xff2372EC),
             ),
           ),
         ],
@@ -619,55 +668,49 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
             children: [
               // Header image shimmer
               ShimmerLoading(height: 280, borderRadius: BorderRadius.zero),
-              const SizedBox(height: 16),
+              
               // Doctor info section shimmer
               Container(
                 color: Colors.white,
                 padding: const EdgeInsets.only(
-                  top: 80,
+                  top: 60,
                   left: 16,
                   right: 16,
                   bottom: 24,
                 ),
-                child: Column(
-                  children: [
-                    // Profile picture shimmer (circular)
-                    Center(
-                      child: ShimmerLoading(
-                        width: 100,
-                        height: 100,
-                        borderRadius: BorderRadius.circular(50),
+                child: Center(
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 24),
+                      // Name shimmer
+                      ShimmerLoading(
+                        width: 200,
+                        height: 24,
+                        borderRadius: BorderRadius.circular(4),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    // Name shimmer
-                    ShimmerLoading(
-                      width: 200,
-                      height: 24,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    const SizedBox(height: 12),
-                    // Specialization shimmer
-                    ShimmerLoading(
-                      width: 150,
-                      height: 16,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    const SizedBox(height: 8),
-                    // Education shimmer
-                    ShimmerLoading(
-                      width: 180,
-                      height: 16,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    const SizedBox(height: 16),
-                    // Location shimmer
-                    ShimmerLoading(
-                      width: 120,
-                      height: 16,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ],
+                      const SizedBox(height: 12),
+                      // Specialization shimmer
+                      ShimmerLoading(
+                        width: 150,
+                        height: 16,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      const SizedBox(height: 8),
+                      // Education shimmer
+                      ShimmerLoading(
+                        width: 180,
+                        height: 16,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      const SizedBox(height: 16),
+                      // Location shimmer
+                      ShimmerLoading(
+                        width: 120,
+                        height: 16,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 16),

@@ -105,6 +105,7 @@ class ClinicalDetailsWidget extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           value,
+          maxLines: 3,
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w500,
@@ -247,7 +248,6 @@ class ProfessionalInformationWidget extends StatelessWidget {
     required String value,
     bool hasVerification = false,
   }) {
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -326,8 +326,8 @@ class DoctorContactDetailsWidget extends StatelessWidget {
               children: [
                 if (contactDetails.email != null)
                   _buildContactItem(
-                    icon: Icons.email_outlined,
-                    iconColor: const Color(0xFF5B9FFF),
+                    icon: EcliniqIcons.mailBlue ,
+
                     title: contactDetails.email!,
                     subtitle: 'Doctor Contact Email',
                     onTap: () {},
@@ -335,8 +335,8 @@ class DoctorContactDetailsWidget extends StatelessWidget {
                 if (contactDetails.email != null) const SizedBox(height: 16),
                 if (contactDetails.phone != null)
                   _buildContactItem(
-                    icon: Icons.phone_outlined,
-                    iconColor: const Color(0xFF5B9FFF),
+                    icon: EcliniqIcons.sthes,
+
                     title: contactDetails.phone!,
                     subtitle: 'Doctor Contact Number',
                     showCallButton: true,
@@ -346,8 +346,8 @@ class DoctorContactDetailsWidget extends StatelessWidget {
                 if (contactDetails.languages != null &&
                     contactDetails.languages!.isNotEmpty)
                   _buildContactItem(
-                    icon: Icons.language_outlined,
-                    iconColor: const Color(0xFF5B9FFF),
+                    icon: EcliniqIcons.userSpeak,
+
                     title: contactDetails.languages!.join(', '),
                     subtitle: 'Speaks',
                     onTap: () {},
@@ -361,8 +361,8 @@ class DoctorContactDetailsWidget extends StatelessWidget {
   }
 
   Widget _buildContactItem({
-    required IconData icon,
-    required Color iconColor,
+    required EcliniqIcons icon,
+
     required String title,
     required String subtitle,
     bool showCallButton = false,
@@ -372,14 +372,8 @@ class DoctorContactDetailsWidget extends StatelessWidget {
       children: [
         Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(icon, color: iconColor, size: 24),
-            ),
+            SvgPicture.asset(icon.assetPath, width: 28, height: 26),
+
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -497,17 +491,10 @@ class EducationalInformationWidget extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: const Color(0xFF5B9FFF).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Icon(
-            Icons.school_outlined,
-            color: Color(0xFF5B9FFF),
-            size: 24,
-          ),
+        SvgPicture.asset(
+          EcliniqIcons.academicCap.assetPath,
+          width: 24,
+          height: 24,
         ),
         const SizedBox(width: 12),
         Expanded(

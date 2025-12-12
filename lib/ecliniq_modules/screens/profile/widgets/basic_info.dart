@@ -233,8 +233,32 @@ class _DashedLinePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// Usage in BasicInfoCards:
-// Replace:
-// Container(width: 1, height: 60, color: Colors.grey[300]),
-// With:
-// DashedVerticalDivider(height: 60, color: Colors.grey[300]!),
+class DashedHorizontallDivider extends StatelessWidget {
+  final double height;
+  final Color color;
+  final double dashHeight;
+  final double dashGap;
+
+  const DashedHorizontallDivider({
+    super.key,
+    this.height = 60,
+    this.color = const Color(0xFFE0E0E0),
+    this.dashHeight = 4,
+    this.dashGap = 3,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: height,
+      width: 0.5,
+      child: CustomPaint(
+        painter: _DashedLinePainter(
+          color: color,
+          dashHeight: dashHeight,
+          dashGap: dashGap,
+        ),
+      ),
+    );
+  }
+}
