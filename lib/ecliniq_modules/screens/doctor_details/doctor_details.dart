@@ -9,11 +9,13 @@ import 'package:ecliniq/ecliniq_modules/screens/doctor_details/branches/branches
 import 'package:ecliniq/ecliniq_modules/screens/doctor_details/widgets/about_doctor.dart';
 import 'package:ecliniq/ecliniq_modules/screens/doctor_details/widgets/address_doctor.dart';
 import 'package:ecliniq/ecliniq_modules/screens/doctor_details/widgets/common_widget.dart';
+import 'package:ecliniq/ecliniq_modules/screens/doctor_details/widgets/doctor_hospital_select_bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_modules/screens/home/widgets/easy_to_book.dart';
 import 'package:ecliniq/ecliniq_modules/screens/hospital/widgets/appointment_timing.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/widgets/basic_info.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/widgets.dart';
 import 'package:ecliniq/widgets/horizontal_divider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -261,7 +263,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
 
                     if (doctor.professionalInformation != null)
                       ClinicalDetailsWidget(
-                        professionalInfo: doctor.professionalInformation!,
+                        clinicDetails: doctor.clinicDetails!,
                       ),
                     const SizedBox(height: 16),
 
@@ -546,7 +548,12 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
               Container(width: 1, height: 20, color: Colors.grey),
               const SizedBox(width: 8),
               GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  // EcliniqBottomSheet.show(
+                  //   context: context,
+                  //   child: ,
+                  // );
+                },
                 child: const Text(
                   'Change',
                   style: TextStyle(

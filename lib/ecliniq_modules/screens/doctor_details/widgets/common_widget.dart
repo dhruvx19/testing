@@ -1,7 +1,7 @@
 import 'package:ecliniq/ecliniq_api/models/doctor.dart';
+import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
-import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -13,9 +13,9 @@ String _getImageUrl(String? imageKey) {
 }
 
 class ClinicalDetailsWidget extends StatelessWidget {
-  final ProfessionalInformation professionalInfo;
+  final ClinicDetails clinicDetails;
 
-  const ClinicalDetailsWidget({super.key, required this.professionalInfo});
+  const ClinicalDetailsWidget({super.key, required this.clinicDetails});
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +42,7 @@ class ClinicalDetailsWidget extends StatelessWidget {
                 'Clinical Details',
                 style: TextStyle(
                   fontSize: 20.0,
-                  fontWeight: FontWeight.w400,
+                  fontWeight: FontWeight.w600,
                   color: Color(0xff424242),
                 ),
               ),
@@ -53,35 +53,23 @@ class ClinicalDetailsWidget extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (professionalInfo.registrationNumber != null)
+                _buildDetailItem(
+                  label: 'Clinic Name:',
+                  value: clinicDetails.name,
+                ),
+
+                const SizedBox(height: 12),
+
+                if (clinicDetails.contactEmail != null)
                   _buildDetailItem(
-                    label: 'Registration Number:',
-                    value: professionalInfo.registrationNumber!,
+                    label: 'Clinic Contact Email:',
+                    value: clinicDetails.contactEmail!,
                   ),
-                if (professionalInfo.registrationNumber != null)
-                  const SizedBox(height: 12),
-                if (professionalInfo.registrationCouncil != null)
-                  _buildDetailItem(
-                    label: 'Registration Council:',
-                    value: professionalInfo.registrationCouncil!,
-                  ),
-                if (professionalInfo.registrationCouncil != null)
-                  const SizedBox(height: 12),
-                if (professionalInfo.registrationYear != null)
-                  _buildDetailItem(
-                    label: 'Registration Year:',
-                    value: professionalInfo.registrationYear!,
-                  ),
-                if (professionalInfo.registrationYear != null)
-                  const SizedBox(height: 12),
-                if (professionalInfo.specializations != null &&
-                    professionalInfo.specializations!.isNotEmpty)
-                  _buildDetailItem(
-                    label: 'Specializations:',
-                    value: professionalInfo.specializations!
-                        .map((s) => '${s.name} (Exp: ${s.expYears}years)')
-                        .join(', '),
-                  ),
+
+                _buildDetailItem(
+                  label: 'Clinic Contact Number:',
+                  value: clinicDetails.contactNumber!,
+                ),
               ],
             ),
           ),
@@ -99,7 +87,7 @@ class ClinicalDetailsWidget extends StatelessWidget {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w400,
-            color: Colors.grey[600],
+            color: Color(0xff8E8E8E),
           ),
         ),
         const SizedBox(height: 4),
@@ -109,53 +97,10 @@ class ClinicalDetailsWidget extends StatelessWidget {
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w500,
-            color: Colors.black87,
+            color: Color(0xff424242),
           ),
         ),
         Divider(color: Colors.grey[300]),
-      ],
-    );
-  }
-
-  Widget _buildDetailItemWithIcon({
-    required String label,
-    required String value,
-    required IconData icon,
-    required VoidCallback onIconTap,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
-            color: Colors.grey[600],
-          ),
-        ),
-        const SizedBox(height: 4),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-                color: Colors.black87,
-              ),
-            ),
-            IconButton(
-              onPressed: EcliniqRouter.pop,
-              icon: SvgPicture.asset(
-                EcliniqIcons.phone.assetPath,
-                width: 32,
-                height: 32,
-              ),
-            ),
-          ],
-        ),
       ],
     );
   }
@@ -194,7 +139,7 @@ class ProfessionalInformationWidget extends StatelessWidget {
                 'Professional Information',
                 style: TextStyle(
                   fontSize: 20.0,
-                  fontWeight: FontWeight.w400,
+                  fontWeight: FontWeight.w600,
                   color: Color(0xff424242),
                 ),
               ),
@@ -256,20 +201,21 @@ class ProfessionalInformationWidget extends StatelessWidget {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w400,
-            color: Colors.grey[600],
+            color: Color(0xff8E8E8E),
           ),
         ),
         const SizedBox(height: 4),
         Row(
           children: [
-            Text(
-              value,
-
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-                color: Color(0xff626060),
+            Expanded(
+              child: Text(
+                value,
+                maxLines: 20,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xff424242),
+                ),
               ),
             ),
             if (hasVerification) ...[
@@ -326,7 +272,7 @@ class DoctorContactDetailsWidget extends StatelessWidget {
               children: [
                 if (contactDetails.email != null)
                   _buildContactItem(
-                    icon: EcliniqIcons.mailBlue ,
+                    icon: EcliniqIcons.mailBlue,
 
                     title: contactDetails.email!,
                     subtitle: 'Doctor Contact Email',

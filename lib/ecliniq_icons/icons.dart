@@ -113,6 +113,7 @@ enum EcliniqIcons {
   close('$_base/close.png'),
   caseDoctor('$_base/Case.svg'),
   mailBlue('$_base/MailBlue.svg'),
+  mapArrow('$_base/Map Arrow.svg'),
   userSpeak('$_base/User Speak.svg'),
   academicCap('$_base/Square Academic Cap.svg'),
   heartUnfilled('$_base/heartUnfilled.svg'),

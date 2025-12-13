@@ -158,24 +158,25 @@ class HospitalBranchDetail extends StatelessWidget {
                   height: 30,
                   width: 74,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
+                    color: Color(0xffF9F9F9),
                     borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: Colors.grey, width: 0.5),
+                    border: Border.all(color: Color(0xffB8B8B8), width: 0.5),
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
+                      SizedBox(width: 4),
                       Center(
                         child: Text(
                           '4KM ',
                           style: EcliniqTextStyles.bodySmall.copyWith(
-                            color: Colors.grey,
+                            color: Color(0xff424242),
                             fontSize: 16,
                           ),
                         ),
                       ),
+                      SizedBox(width: 4),
                       SvgPicture.asset(
-                        EcliniqIcons.map.assetPath,
+                        EcliniqIcons.mapArrow.assetPath,
                         width: 18,
                         height: 18,
                       ),
