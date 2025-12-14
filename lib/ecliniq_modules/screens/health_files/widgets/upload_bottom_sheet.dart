@@ -67,13 +67,7 @@ class _UploadBottomSheetState extends State<UploadBottomSheet> {
         // Get current permission status
         PermissionStatus status = await requiredPermission.status;
         
-        if (Platform.isIOS) {
-          // iOS: If already granted or limited, proceed directly (no delay)
-          // If not granted, image_picker will request permission automatically when called
-          // This allows the native iOS permission dialog to show, and then gallery opens immediately
-          // No need to pre-request, just proceed and let image_picker handle it
-        } else if (Platform.isAndroid) {
-          // Android: Request permission manually before proceeding
+          // Check and request permission for both platforms
           if (!status.isGranted && !status.isLimited) {
             // Permission not granted, try requesting it
             status = await requiredPermission.request();
@@ -111,7 +105,6 @@ class _UploadBottomSheetState extends State<UploadBottomSheet> {
               return;
             }
           }
-        }
         
         // Permission is granted or limited (both are OK) - proceed
         // On iOS: If not granted yet, image_picker will request it automatically when called
