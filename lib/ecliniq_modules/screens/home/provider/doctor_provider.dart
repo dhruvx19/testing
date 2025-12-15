@@ -34,7 +34,9 @@ class DoctorProvider with ChangeNotifier {
   }) {
     _currentLatitude = latitude;
     _currentLongitude = longitude;
-    _currentLocationName = locationName;
+    if (locationName != null) {
+      _currentLocationName = locationName;
+    }
     notifyListeners();
   }
 
@@ -76,11 +78,15 @@ class DoctorProvider with ChangeNotifier {
       debugPrint('🔍 fetchTopDoctors called - lat: $latitude, lng: $longitude, isRefresh: $isRefresh');
       debugPrint('🔍 Current doctors count: ${_doctors?.length ?? 0}');
       
+      // Hardcoded coordinates as per request
+      const double hardcodedLat = 28.6139;
+      const double hardcodedLong = 77.209;
+      
       // Fetch directly to parse with UI model
       final url = Uri.parse(Endpoints.topDoctors);
       final requestBody = api.TopDoctorsRequest(
-        latitude: latitude,
-        longitude: longitude,
+        latitude: hardcodedLat,
+        longitude: hardcodedLong,
       );
 
       final httpResponse = await http.post(

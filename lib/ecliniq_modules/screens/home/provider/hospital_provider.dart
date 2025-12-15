@@ -32,7 +32,9 @@ class HospitalProvider with ChangeNotifier {
   }) {
     _currentLatitude = latitude;
     _currentLongitude = longitude;
-    _currentLocationName = locationName;
+    if (locationName != null) {
+      _currentLocationName = locationName;
+    }
     notifyListeners();
   }
 

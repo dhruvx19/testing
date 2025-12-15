@@ -281,10 +281,7 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
 
     if (!mounted) return;
 
-    // 2. Close bottom sheet immediately to update UI and prevent "black screen" feeling
-    Navigator.of(context).pop();
-
-    // 3. Update providers
+    // 2. Get providers before popping context
     final hospitalProvider = Provider.of<HospitalProvider>(
       context,
       listen: false,
@@ -294,6 +291,10 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
       listen: false,
     );
 
+    // 3. Close bottom sheet immediately
+    Navigator.of(context).pop();
+
+    // 4. Update providers
     hospitalProvider.setLocation(
       latitude: position.latitude,
       longitude: position.longitude,
