@@ -20,13 +20,13 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
   final String _currentLocation = 'Vishnu Dev Nagar, Wakad';
 
   // Dummy doctor data
- 
-  List<Doctor> _filteredDoctors = [];
+
+  final List<Doctor> _filteredDoctors = [];
 
   @override
   void initState() {
     super.initState();
-    
+
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -40,16 +40,12 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
   void _onSearchChanged() {
     setState(() {
       _searchQuery = _searchController.text.toLowerCase();
-
     });
   }
-
-  
 
   void _onCategorySelected(String category) {
     setState(() {
       _selectedCategory = category;
-    
     });
   }
 
@@ -78,28 +74,20 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
           ),
         ),
         actions: [
-          IconButton(
-            icon: Icon(Icons.filter_list, color: Color(0xff424242)),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Filter functionality coming soon!'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            },
+          SvgPicture.asset(EcliniqIcons.sort.assetPath, width: 32, height: 32),
+          VerticalDivider(
+            color: Colors.grey[400],
+            thickness: 1,
+            width: 24,
+            indent: 12,
+            endIndent: 12,
           ),
-          IconButton(
-            icon: Icon(Icons.tune, color: Color(0xff424242)),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Sort functionality coming soon!'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            },
+          SvgPicture.asset(
+            EcliniqIcons.filter.assetPath,
+            width: 32,
+            height: 32,
           ),
+          SizedBox(width: 16),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
@@ -107,7 +95,7 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
         ),
       ),
       body: Container(
-        color: Color(0xffF9F9F9),
+        color: Color(0xffFfffff),
         child: Column(
           children: [
             const SizedBox(height: 8),
@@ -139,18 +127,16 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Row(
           children: [
-            Image.asset(
-              EcliniqIcons.mapPoint.assetPath,
-              width: 20,
-              height: 20,
-              color: Color(0xFF2372EC),
+            SvgPicture.asset(
+              EcliniqIcons.mapPointBlue.assetPath,
+              width: 24,
+              height: 24,
             ),
             const SizedBox(width: 8),
             Text(
               _currentLocation,
-              style: EcliniqTextStyles.bodyMedium.copyWith(
+              style: EcliniqTextStyles.headlineXMedium.copyWith(
                 color: Color(0xff424242),
-                fontWeight: FontWeight.w500,
               ),
             ),
             const SizedBox(width: 4),
@@ -207,7 +193,7 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                   ),
                 );
               },
-              child: Image.asset(
+              child: SvgPicture.asset(
                 EcliniqIcons.microphone.assetPath,
                 width: 28,
                 height: 28,
@@ -235,68 +221,58 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
   }
 
   Widget _buildCategoryFilters() {
-    final categories = ['All', 'General Physician', 'Paediatrics'];
+    final categories = [
+      'All',
+      'General Physician',
+      'Paediatrics',
+      'Gynaecology',
+      'Dermatology',
+      'Cardiology',
+    ];
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Row(
-          children: categories.map((category) {
-            final isSelected = _selectedCategory == category;
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: GestureDetector(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Colors.grey[300]!, width: 1)),
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: categories.map((category) {
+              final isSelected = _selectedCategory == category;
+              return GestureDetector(
                 onTap: () => _onCategorySelected(category),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
+                  padding: const EdgeInsets.only(
+                    left: 18,
+                    right: 26,
+                    top: 12,
+                    bottom: 12,
                   ),
                   decoration: BoxDecoration(
-                    color: isSelected ? Color(0xFF2372EC) : Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: isSelected ? Color(0xFF2372EC) : Colors.grey[300]!,
-                      width: 1,
+                    border: Border(
+                      bottom: BorderSide(
+                        color: isSelected
+                            ? Color(0xFF2372EC)
+                            : Colors.transparent,
+                        width: 2,
+                      ),
                     ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (category == 'All')
-                        Icon(
-                          Icons.apps,
-                          size: 18,
-                          color: isSelected ? Colors.white : Colors.grey[700],
-                        ),
-                      if (category == 'General Physician')
-                        Icon(
-                          Icons.medical_services,
-                          size: 18,
-                          color: isSelected ? Colors.white : Colors.grey[700],
-                        ),
-                      if (category == 'Paediatrics')
-                        Icon(
-                          Icons.child_care,
-                          size: 18,
-                          color: isSelected ? Colors.white : Colors.grey[700],
-                        ),
-                      if (category != 'All') const SizedBox(width: 6),
-                      Text(
-                        category,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: isSelected ? Colors.white : Colors.grey[700],
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    category,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w400,
+                      color: isSelected ? Color(0xFF2372EC) : Color(0xFF626060),
+                    ),
                   ),
                 ),
-              ),
-            );
-          }).toList(),
+              );
+            }).toList(),
+          ),
         ),
       ),
     );

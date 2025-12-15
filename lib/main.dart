@@ -10,6 +10,7 @@ import 'package:ecliniq/ecliniq_modules/screens/profile/add_dependent/provider/d
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/provider/eta_provider.dart';
 import 'package:ecliniq/ecliniq_core/notifications/push_notification.dart';
 import 'package:ecliniq/ecliniq_modules/screens/search_specialities/search_specialities_page.dart';
+import 'package:ecliniq/ecliniq_modules/screens/search_specialities/speciality_doctors_list.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -83,7 +84,7 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      home: const LoginPage(),
+      home: const SpecialityDoctorsList(),
     );
   }
 }
