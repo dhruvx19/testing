@@ -8,6 +8,7 @@ import 'dart:async';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_api/auth_service.dart';
 import 'package:ecliniq/ecliniq_core/auth/session_service.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 
 class VerifyNewMobileNumber extends StatefulWidget {
   final String newChallengeId;
@@ -259,7 +260,7 @@ class _VerifyNewMobileNumberState extends State<VerifyNewMobileNumber> {
             Spacer(),
             if (_isLoading)
               Center(
-                child: CircularProgressIndicator(),
+                child: EcliniqLoader(),
               )
             else
               TextButton(

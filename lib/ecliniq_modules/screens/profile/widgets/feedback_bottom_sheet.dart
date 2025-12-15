@@ -2,6 +2,7 @@ import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_utils/bottom_sheets/ratings/thank_you.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 
 class FeedbackBottomSheet extends StatefulWidget {
   const FeedbackBottomSheet({super.key});
@@ -202,9 +203,9 @@ class _FeedbackBottomSheetState extends State<FeedbackBottomSheet> {
                           ? const SizedBox(
                               height: 20,
                               width: 20,
-                              child: CircularProgressIndicator(
+                              child: EcliniqLoader(
+                                size: 20,
                                 color: Colors.white,
-                                strokeWidth: 2,
                               ),
                             )
                           : Text(

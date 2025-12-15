@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ecliniq/ecliniq_api/auth_service.dart';
 import 'package:ecliniq/ecliniq_core/auth/session_service.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 
 class AddMobileNumber extends StatefulWidget {
   final String verificationToken;
@@ -223,7 +224,7 @@ class _AddMobileNumberState extends State<AddMobileNumber> {
             Spacer(),
             if (_isLoading)
               Center(
-                child: CircularProgressIndicator(),
+                child: EcliniqLoader(),
               )
             else
               TextButton(

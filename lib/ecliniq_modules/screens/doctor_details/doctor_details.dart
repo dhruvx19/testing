@@ -21,6 +21,7 @@ import 'package:ecliniq/widgets/horizontal_divider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 
 class DoctorDetailScreen extends StatefulWidget {
   final String doctorId;
@@ -328,136 +329,139 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          SingleChildScrollView(
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildHeaderImage(clinic?.image),
+          RefreshIndicator(
+            onRefresh: _fetchDoctorDetails,
+            child: SingleChildScrollView(
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildHeaderImage(clinic?.image),
 
-                    _buildDoctorInfo(
-                      doctor.name,
-                      specialization,
-                      education,
-                      location,
-                    ),
-
-                    _buildStatsCards(
-                      doctor.patientsServed ?? 0,
-                      doctor.workExperience ?? 0,
-                      doctor.rating ?? 0.0,
-                    ),
-
-                    HorizontalDivider(),
-                    const SizedBox(height: 16),
-                    AppointmentTimingWidget(),
-                    const SizedBox(height: 20),
-
-                    if (clinic != null) AddressWidget(clinic: clinic),
-                    const SizedBox(height: 16),
-
-                    if (doctor.about != null)
-                      AboutHospital(about: doctor.about!),
-                    const SizedBox(height: 16),
-
-                    if (doctor.professionalInformation != null &&
-                        doctor.clinicDetails != null)
-                      ClinicalDetailsWidget(
-                        clinicDetails: doctor.clinicDetails!,
-                      ),
-                    const SizedBox(height: 16),
-
-                    if (doctor.professionalInformation != null)
-                      ProfessionalInformationWidget(
-                        professionalInfo: doctor.professionalInformation!,
-                      ),
-                    const SizedBox(height: 16),
-                    if (doctor.contactDetails != null)
-                      DoctorContactDetailsWidget(
-                        contactDetails: doctor.contactDetails!,
+                      _buildDoctorInfo(
+                        doctor.name,
+                        specialization,
+                        education,
+                        location,
                       ),
 
-                    const SizedBox(height: 16),
-                    if (doctor.educationalInformation != null &&
-                        doctor.educationalInformation!.isNotEmpty)
-                      EducationalInformationWidget(
-                        educationList: doctor.educationalInformation!,
+                      _buildStatsCards(
+                        doctor.patientsServed ?? 0,
+                        doctor.workExperience ?? 0,
+                        doctor.rating ?? 0.0,
                       ),
 
-                    const SizedBox(height: 16),
-                    if (doctor.certificatesAndAccreditations != null &&
-                        doctor.certificatesAndAccreditations!.isNotEmpty)
-                      DoctorCertificatesWidget(
-                        certificates: doctor.certificatesAndAccreditations!,
-                      ),
-                    const SizedBox(height: 16),
-                    if (clinic?.photos != null && clinic!.photos!.isNotEmpty)
-                      ClinicPhotosWidget(photos: clinic.photos!),
-                    const SizedBox(height: 16),
-                    EasyWayToBookWidget(),
+                      HorizontalDivider(),
+                      const SizedBox(height: 16),
+                      AppointmentTimingWidget(),
+                      const SizedBox(height: 20),
 
-                    const SizedBox(height: 100),
-                  ],
-                ),
+                      if (clinic != null) AddressWidget(clinic: clinic),
+                      const SizedBox(height: 16),
 
-                Positioned(
-                  top: 230,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.blue, width: 3),
-                      ),
-                      child: Stack(
-                        children: [
-                          Center(
-                            child:
-                                doctor.profilePhoto != null &&
-                                    doctor.profilePhoto!.isNotEmpty
-                                ? ClipOval(
-                                    child: Image.network(
-                                      _getImageUrl(doctor.profilePhoto),
-                                      width: 94,
-                                      height: 94,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                            return Icon(
-                                              Icons.local_hospital,
-                                              size: 60,
-                                              color: Colors.orange[700],
-                                            );
-                                          },
+                      if (doctor.about != null)
+                        AboutHospital(about: doctor.about!),
+                      const SizedBox(height: 16),
+
+                      if (doctor.professionalInformation != null &&
+                          doctor.clinicDetails != null)
+                        ClinicalDetailsWidget(
+                          clinicDetails: doctor.clinicDetails!,
+                        ),
+                      const SizedBox(height: 16),
+
+                      if (doctor.professionalInformation != null)
+                        ProfessionalInformationWidget(
+                          professionalInfo: doctor.professionalInformation!,
+                        ),
+                      const SizedBox(height: 16),
+                      if (doctor.contactDetails != null)
+                        DoctorContactDetailsWidget(
+                          contactDetails: doctor.contactDetails!,
+                        ),
+
+                      const SizedBox(height: 16),
+                      if (doctor.educationalInformation != null &&
+                          doctor.educationalInformation!.isNotEmpty)
+                        EducationalInformationWidget(
+                          educationList: doctor.educationalInformation!,
+                        ),
+
+                      const SizedBox(height: 16),
+                      if (doctor.certificatesAndAccreditations != null &&
+                          doctor.certificatesAndAccreditations!.isNotEmpty)
+                        DoctorCertificatesWidget(
+                          certificates: doctor.certificatesAndAccreditations!,
+                        ),
+                      const SizedBox(height: 16),
+                      if (clinic?.photos != null && clinic!.photos!.isNotEmpty)
+                        ClinicPhotosWidget(photos: clinic.photos!),
+                      const SizedBox(height: 16),
+                      EasyWayToBookWidget(),
+
+                      const SizedBox(height: 100),
+                    ],
+                  ),
+
+                  Positioned(
+                    top: 230,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.blue, width: 3),
+                        ),
+                        child: Stack(
+                          children: [
+                            Center(
+                              child:
+                                  doctor.profilePhoto != null &&
+                                      doctor.profilePhoto!.isNotEmpty
+                                  ? ClipOval(
+                                      child: Image.network(
+                                        _getImageUrl(doctor.profilePhoto),
+                                        width: 94,
+                                        height: 94,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                              return Icon(
+                                                Icons.local_hospital,
+                                                size: 60,
+                                                color: Colors.orange[700],
+                                              );
+                                            },
+                                      ),
+                                    )
+                                  : Icon(
+                                      Icons.local_hospital,
+                                      size: 60,
+                                      color: Colors.orange[700],
                                     ),
-                                  )
-                                : Icon(
-                                    Icons.local_hospital,
-                                    size: 60,
-                                    color: Colors.orange[700],
-                                  ),
-                          ),
-                          Positioned(
-                            top: 0,
-                            right: 0,
-                            child: SvgPicture.asset(
-                              EcliniqIcons.verified.assetPath,
-                              width: 24,
-                              height: 24,
                             ),
-                          ),
-                        ],
+                            Positioned(
+                              top: 0,
+                              right: 0,
+                              child: SvgPicture.asset(
+                                EcliniqIcons.verified.assetPath,
+                                width: 24,
+                                height: 24,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 
@@ -513,11 +517,8 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                       return Container(
                         color: Colors.grey[200],
                         child: Center(
-                          child: CircularProgressIndicator(
-                            value: loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!
-                                : null,
+                          child: EcliniqLoader(
+                            size: 24,
                           ),
                         ),
                       );

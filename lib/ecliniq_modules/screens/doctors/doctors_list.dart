@@ -15,6 +15,7 @@ import 'package:ecliniq/ecliniq_modules/screens/doctor_details/widgets/doctor_ho
 import 'package:ecliniq/ecliniq_modules/screens/doctor_details/top_doctor/model/top_doctor_model.dart' show LocationData, LocationType;
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart' as ecliniq_sheet;
 import 'package:ecliniq/ecliniq_utils/bottom_sheets/sort_by_filter_bottom_sheet.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 
 
 class DoctorsListScreen extends StatefulWidget {
@@ -241,26 +242,29 @@ class _DoctorsListScreenState extends State<DoctorsListScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: EcliniqLoader())
           : _errorMessage != null
               ? Center(child: Text('Error: $_errorMessage'))
               : _doctors.isEmpty
                   ? const Center(child: Text('No doctors found'))
-                  : ListView.separated(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _doctors.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 16),
-                      itemBuilder: (context, index) {
-                        final doctor = _doctors[index];
-                        return _DoctorListItem(
-                          doctor: doctor,
-                          isPressed: _pressedButtons.contains(doctor.id),
-                          onTap: () => EcliniqRouter.push(
-                            DoctorDetailScreen(doctorId: doctor.id),
-                          ),
-                          onBookVisit: () => _bookClinicVisit(doctor),
-                        );
-                      },
+                  : RefreshIndicator(
+                      onRefresh: _fetchDoctors,
+                      child: ListView.separated(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: _doctors.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 16),
+                        itemBuilder: (context, index) {
+                          final doctor = _doctors[index];
+                          return _DoctorListItem(
+                            doctor: doctor,
+                            isPressed: _pressedButtons.contains(doctor.id),
+                            onTap: () => EcliniqRouter.push(
+                              DoctorDetailScreen(doctorId: doctor.id),
+                            ),
+                            onBookVisit: () => _bookClinicVisit(doctor),
+                          );
+                        },
+                      ),
                     ),
     );
   }

@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 
 class HospitalDetailScreen extends StatefulWidget {
   final String hospitalId;
@@ -134,7 +135,9 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen>
   }
 
   Widget _buildDetailsContent(hospital) {
-    return SingleChildScrollView(
+    return RefreshIndicator(
+      onRefresh: () async => await _provider.fetchHospitalDetails(hospitalId: widget.hospitalId),
+      child: SingleChildScrollView(
       child: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -225,6 +228,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen>
           ),
         ],
       ),
+      ),
     );
   }
 
@@ -233,7 +237,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen>
       future: SessionService.getAuthToken(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: EcliniqLoader());
         }
 
         final authToken = snapshot.data ?? '';

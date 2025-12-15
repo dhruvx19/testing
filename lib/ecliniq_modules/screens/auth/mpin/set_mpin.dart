@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 
 class MPINSet extends StatefulWidget {
   final bool isResetMode;
@@ -545,12 +546,10 @@ class _MPINSetState extends State<MPINSet> with TickerProviderStateMixin {
                           child: SizedBox(
                             width: 20,
                             height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
-                              ),
-                            ),
+						child: EcliniqLoader(
+							size: 20,
+							color: Colors.white,
+						),
                           ),
                         )
                       : Row(

@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_api/auth_service.dart';
 import 'package:ecliniq/ecliniq_core/auth/session_service.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 
 class AddEmailAddress extends StatefulWidget {
   final String verificationToken;
@@ -196,7 +197,7 @@ class _AddEmailAddressState extends State<AddEmailAddress> {
             Spacer(),
             if (_isLoading)
               Center(
-                child: CircularProgressIndicator(),
+                child: EcliniqLoader(),
               )
             else
               TextButton(

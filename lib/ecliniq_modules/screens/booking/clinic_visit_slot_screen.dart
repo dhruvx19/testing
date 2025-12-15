@@ -19,6 +19,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 
 class ClinicVisitSlotScreen extends StatefulWidget {
   final String doctorId;
@@ -1216,9 +1217,9 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
                 const SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  child: EcliniqLoader(
+                    size: 20,
+                    color: Colors.white,
                   ),
                 )
               else

@@ -176,7 +176,8 @@ enum EcliniqIcons {
   sirenRounded('$_base/Siren Rounded.svg'),
   stethoscopeBlue('$_base/StethoscopeBlue.svg'),
   scissors('$_base/Scissors.svg'),
-  requestedIcon('$_base/Diploma Verified.svg');
+  requestedIcon('$_base/Diploma Verified.svg'),
+  progressIndicator('$_base/progress_indicator.svg');
 
   //speciality
 

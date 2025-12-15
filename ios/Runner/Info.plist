@@ -49,5 +49,9 @@
 	<string>This app needs access to location to show nearby hospitals and provide better services.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>This app needs access to location to show nearby hospitals and provide better services.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>This app needs access to speech recognition for searching health files.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs access to microphone for voice search.</string>
 </dict>
 </plist>

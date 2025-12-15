@@ -16,6 +16,23 @@ class HealthFilesProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
+  List<HealthFile> _searchResults = [];
+  List<HealthFile> get searchResults => _searchResults;
+
+  void searchFiles(String query) {
+    if (query.isEmpty) {
+      _searchResults = [];
+    } else {
+      final lowercaseQuery = query.toLowerCase();
+      _searchResults = _allFiles.where((file) {
+        return file.fileName.toLowerCase().contains(lowercaseQuery) ||
+            (file.recordFor != null && 
+             file.recordFor!.toLowerCase().contains(lowercaseQuery));
+      }).toList();
+    }
+    notifyListeners();
+  }
+
   /// Initialize and load all files
   Future<void> loadFiles() async {
     _setLoading(true);
