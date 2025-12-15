@@ -10,6 +10,7 @@ import 'package:ecliniq/ecliniq_modules/screens/health_files/widgets/prescriptio
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/success_snackbar.dart';
 import 'package:ecliniq/ecliniq_ui/scripts/ecliniq_ui.dart';
 import 'package:ecliniq/ecliniq_utils/bottom_sheets/health_files/delete_file_bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_utils/bottom_sheets/health_files/health_files_filter.dart';
@@ -141,6 +142,13 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
           Navigator.pop(context);
         }
 
+        // Refresh the file list to ensure UI updates
+        if (successCount > 0) {
+          await provider.refresh();
+        }
+
+        if (!mounted) return;
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('$successCount file(s) deleted successfully'),
@@ -208,11 +216,11 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('$successCount file(s) downloaded successfully'),
-          backgroundColor: Colors.green,
-          dismissDirection: DismissDirection.horizontal,
-          duration: const Duration(seconds: 2),
+        CustomSuccessSnackBar(
+          context: context,
+          title: 'Download successful',
+          subtitle: '$successCount file(s) downloaded successfully',
+          duration: const Duration(seconds: 3),
         ),
       );
 
@@ -275,6 +283,13 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
         // Close loading indicator
         Navigator.pop(context);
 
+        if (success) {
+          // Refresh the file list to ensure UI updates
+          await provider.refresh();
+        }
+
+        if (!mounted) return;
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -309,27 +324,25 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
     HealthFile file, {
     bool showSnackbar = true,
   }) async {
-    try {
-      // Show loading indicator
-      if (showSnackbar && mounted) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => const Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
-      }
+    if (!mounted) return;
 
+    // Show "Download started" message immediately
+    if (showSnackbar) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Download started. We\'ll notify you when it\'s complete.'),
+          backgroundColor: Color(0xFF2372EC),
+          dismissDirection: DismissDirection.horizontal,
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
+
+    try {
       final sourceFile = File(file.filePath);
 
       if (!await sourceFile.exists()) {
         if (!mounted) return;
-        
-        // Close loading indicator
-        if (showSnackbar && Navigator.canPop(context)) {
-          Navigator.pop(context);
-        }
         
         if (showSnackbar) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -346,13 +359,17 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
 
       if (Platform.isAndroid) {
         try {
-          final directory = Directory('/storage/emulated/0/Download');
-          Directory targetDir = directory;
-
-          if (!await directory.exists()) {
+          Directory targetDir;
+          
+          // Try primary download directory first
+          final primaryDir = Directory('/storage/emulated/0/Download');
+          if (await primaryDir.exists()) {
+            targetDir = primaryDir;
+          } else {
+            // Fallback to app's external storage directory
             final externalDir = await getExternalStorageDirectory();
             if (externalDir == null) {
-              throw Exception('Unable to access storage directory');
+              throw Exception('Unable to access storage directory. Please check storage permissions.');
             }
 
             targetDir = Directory(path.join(externalDir.path, 'Download'));
@@ -373,35 +390,35 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
             counter++;
           }
 
+          // Download file in background
+          // Note: Download works on real devices. On emulators, storage access
+          // might be limited and downloads may fail due to permission restrictions.
           await sourceFile.copy(destFile.path);
+
+          // Verify file was copied successfully
+          if (!await destFile.exists()) {
+            throw Exception('File copy failed - destination file does not exist. This may happen on emulators due to storage restrictions. Try on a real device.');
+          }
 
           if (!mounted) return;
 
-          // Close loading indicator
-          if (showSnackbar && Navigator.canPop(context)) {
-            Navigator.pop(context);
-          }
-
+          // Show success snackbar
           if (showSnackbar) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('File downloaded to: ${targetDir.path}'),
-                backgroundColor: Colors.green,
-                dismissDirection: DismissDirection.horizontal,
+              CustomSuccessSnackBar(
+                context: context,
+                title: 'Download successful',
+                subtitle: 'File saved: $fileName',
                 duration: const Duration(seconds: 3),
               ),
             );
           }
 
+          // Show local notification
           await LocalNotifications.showDownloadSuccess(fileName: fileName);
           return;
         } catch (e) {
           if (!mounted) return;
-          
-          // Close loading indicator
-          if (showSnackbar && Navigator.canPop(context)) {
-            Navigator.pop(context);
-          }
           
           if (showSnackbar) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -417,19 +434,10 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
         }
       }
 
-      // Close loading indicator before sharing
-      if (showSnackbar && mounted && Navigator.canPop(context)) {
-        Navigator.pop(context);
-      }
-      
+      // For iOS, use share functionality
       await _shareFile(file);
     } catch (e) {
       if (!mounted) return;
-      
-      // Close loading indicator if still open
-      if (showSnackbar && Navigator.canPop(context)) {
-        Navigator.pop(context);
-      }
       
       if (showSnackbar) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -546,6 +554,13 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
               if (Navigator.canPop(context)) {
                 Navigator.pop(context);
               }
+
+              if (success) {
+                // Refresh the file list to ensure UI updates
+                await provider.refresh();
+              }
+
+              if (!mounted) return;
 
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(

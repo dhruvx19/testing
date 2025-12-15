@@ -55,9 +55,11 @@ class _HealthFilesState extends State<HealthFiles> {
     EcliniqBottomSheet.show(
       context: context,
       child: UploadBottomSheet(
-        onFileUploaded: () {
+        onFileUploaded: () async {
           // Refresh files after upload
-          context.read<HealthFilesProvider>().refresh();
+          if (mounted) {
+            await context.read<HealthFilesProvider>().refresh();
+          }
         },
       ),
     );

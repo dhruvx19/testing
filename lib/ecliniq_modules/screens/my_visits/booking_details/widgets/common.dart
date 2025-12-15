@@ -742,6 +742,13 @@ class StatusHeader extends StatelessWidget {
           backgroundColor: const Color(0xFFFFEBEE),
           textColor: const Color(0xFFF04248),
         );
+
+      case 'failed':
+        return _StatusConfig(
+          title: 'Your booking has been cancelled',
+          backgroundColor: const Color(0xFFFFEBEE),
+          textColor: const Color(0xFFF04248),
+        );
       case 'requested':
         return _StatusConfig(
           title: 'Requested',
@@ -1363,7 +1370,6 @@ class PaymentDetailsCard extends StatelessWidget {
   }
 }
 
-
 class RatingSection extends StatefulWidget {
   final int? initialRating;
   final Function(int)? onRatingChanged;
@@ -1397,12 +1403,12 @@ class _RatingSectionState extends State<RatingSection> {
 
   Future<void> _openRatingBottomSheet() async {
     // Don't allow opening if rating already exists or is read-only
-    if (widget.showAsReadOnly || 
-        widget.onRatingChanged == null || 
+    if (widget.showAsReadOnly ||
+        widget.onRatingChanged == null ||
         (_rating > 0)) {
       return;
     }
-    
+
     final result = await RatingBottomSheet.show(
       context: context,
       initialRating: _rating > 0 ? _rating : null,

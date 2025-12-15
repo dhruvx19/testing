@@ -50,7 +50,9 @@ class DeleteFileBottomSheet extends StatelessWidget {
                 Expanded(
                   flex: 1,
                   child: GestureDetector(
-                    onTap: () => Navigator.of(context).pop(true),
+                    onTap: () {
+                      Navigator.of(context, rootNavigator: false).pop(true);
+                    },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
@@ -83,7 +85,9 @@ class DeleteFileBottomSheet extends StatelessWidget {
                 Expanded(
                   flex: 1,
                   child: GestureDetector(
-                    onTap: () => Navigator.of(context).pop(false),
+                    onTap: () {
+                      Navigator.of(context, rootNavigator: false).pop(false);
+                    },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
