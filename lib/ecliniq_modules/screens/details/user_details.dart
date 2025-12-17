@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 
 class UserDetails extends StatefulWidget {
   const UserDetails({super.key});
@@ -227,11 +228,9 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
                       child: SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white,
-                          ),
+                        child: EcliniqLoader(
+                          size: 20,
+                          color: Colors.white,
                         ),
                       ),
                     )

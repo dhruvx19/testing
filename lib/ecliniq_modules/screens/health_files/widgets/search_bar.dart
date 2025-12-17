@@ -15,6 +15,7 @@ class SearchBarWidget extends StatefulWidget {
     this.showBackButton = false,
     this.autofocus = false,
     this.onVoiceSearch,
+    this.controller,
   });
 
   final VoidCallback? onBack;
@@ -24,6 +25,7 @@ class SearchBarWidget extends StatefulWidget {
   final String hintText;
   final bool showBackButton;
   final bool autofocus;
+  final TextEditingController? controller;
 
   @override
   State<SearchBarWidget> createState() => _SearchBarWidgetState();
@@ -31,8 +33,14 @@ class SearchBarWidget extends StatefulWidget {
 
 class _SearchBarWidgetState extends State<SearchBarWidget> {
   String query = '';
-  final _controller = TextEditingController();
+  late final TextEditingController _controller;
   Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = widget.controller ?? TextEditingController();
+  }
 
   Future<void> search(String text) async {
     setState(() => query = text);
@@ -58,7 +66,9 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
   @override
   void dispose() {
     _timer?.cancel();
-    _controller.dispose();
+    if (widget.controller == null) {
+      _controller.dispose();
+    }
     super.dispose();
   }
 

@@ -20,6 +20,7 @@ import 'package:ecliniq/ecliniq_core/notifications/local_notifications.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 
 class FileTypeScreen extends StatefulWidget {
   final HealthFileType? fileType;
@@ -126,7 +127,7 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
           context: context,
           barrierDismissible: false,
           builder: (context) => const Center(
-            child: CircularProgressIndicator(),
+                  child: EcliniqLoader(),
           ),
         );
 
@@ -272,7 +273,7 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
           context: context,
           barrierDismissible: false,
           builder: (context) => const Center(
-            child: CircularProgressIndicator(),
+                  child: EcliniqLoader(),
           ),
         );
         
@@ -541,7 +542,7 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
                 context: context,
                 barrierDismissible: false,
                 builder: (context) => const Center(
-                  child: CircularProgressIndicator(),
+                        child: EcliniqLoader(),
                 ),
               );
               
@@ -800,7 +801,7 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
               children: [
                 _buildFileTypeTabs(),
                 const Expanded(
-                  child: Center(child: CircularProgressIndicator()),
+                  child: Center(child: EcliniqLoader()),
                 ),
               ],
             );

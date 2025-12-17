@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 
 class UploadBottomSheet extends StatefulWidget {
   final Future<void> Function()? onFileUploaded;
@@ -143,7 +144,7 @@ class _UploadBottomSheetState extends State<UploadBottomSheet> with WidgetsBindi
           loadingDialogContext = dialogContext;
           return PopScope(
             canPop: false,
-            child: const Center(child: CircularProgressIndicator()),
+            child: const Center(child: EcliniqLoader()),
           );
         },
       );

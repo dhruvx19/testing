@@ -4,6 +4,8 @@ import 'package:ecliniq/ecliniq_modules/screens/details/user_details.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 
 class BiometricSetupPage extends StatefulWidget {
   const BiometricSetupPage({super.key});
@@ -189,7 +191,7 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(color: Colors.white),
+          EcliniqLoader(color: Colors.white),
           SizedBox(height: 16),
           Text(
             'Checking biometric availability...',
@@ -316,7 +318,7 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
                 ? const SizedBox(
                     height: 20,
                     width: 20,
-                    child: CircularProgressIndicator(
+                    child: EcliniqLoader(
                       color: Colors.white,
                       strokeWidth: 2,
                     ),

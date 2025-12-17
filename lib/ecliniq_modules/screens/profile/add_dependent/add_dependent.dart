@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 
 import '../../../../ecliniq_utils/responsive_helper.dart';
 
@@ -471,9 +472,9 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
               ? SizedBox(
                   height: 20,
                   width: 20,
-                  child: CircularProgressIndicator(
+                  child: EcliniqLoader(
                     color: Colors.white,
-                    strokeWidth: 2,
+                    size: 20,
                   ),
                 )
               : Row(

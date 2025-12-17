@@ -3,6 +3,8 @@ import 'package:ecliniq/ecliniq_modules/screens/profile/security_settings/change
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../../../../ecliniq_icons/icons.dart';
@@ -72,9 +74,7 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
       barrierDismissible: false,
       barrierColor: Colors.black.withOpacity(0.3),
       builder: (context) => Center(
-        child: CircularProgressIndicator(
-          color: Colors.blue.shade800,
-        ),
+        child: EcliniqLoader(),
       ),
     );
 
@@ -105,9 +105,7 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
       barrierDismissible: false,
       barrierColor: Colors.black.withOpacity(0.3),
       builder: (context) => Center(
-        child: CircularProgressIndicator(
-          color: Colors.blue.shade800,
-        ),
+        child: EcliniqLoader(),
       ),
     );
 
@@ -153,9 +151,7 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
         barrierDismissible: false,
         barrierColor: Colors.black.withOpacity(0.3),
         builder: (context) => Center(
-          child: CircularProgressIndicator(
-            color: Colors.blue.shade800,
-          ),
+          child: EcliniqLoader(),
         ),
       );
 
@@ -203,9 +199,7 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
       ),
       body: _isInitialLoading
           ? Center(
-              child: CircularProgressIndicator(
-                color: Colors.blue.shade800,
-              ),
+              child: EcliniqLoader(size: 20),
             )
           : Container(
               padding: EdgeInsets.symmetric(horizontal: 20),

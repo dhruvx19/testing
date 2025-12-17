@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 
 class VerifyMPINPage extends StatefulWidget {
   const VerifyMPINPage({super.key});
@@ -435,7 +436,7 @@ class _VerifyMPINPageState extends State<VerifyMPINPage> with WidgetsBindingObse
                       if (_isLoading)
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 16.0),
-                          child: CircularProgressIndicator(),
+                          child: EcliniqLoader(),
                         )
                       else ...[
                         const SizedBox(height: 24),

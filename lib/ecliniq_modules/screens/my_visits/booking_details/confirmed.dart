@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 
 class BookingConfirmedDetail extends StatefulWidget {
   final String appointmentId;
@@ -323,7 +324,9 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
   }
 
   Widget _buildContent() {
-    return SingleChildScrollView(
+    return RefreshIndicator(
+      onRefresh: _loadAppointmentDetails,
+      child: SingleChildScrollView(
       child: Column(
         children: [
           StatusHeader(
@@ -355,11 +358,9 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
                         SizedBox(
                           width: 16,
                           height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.blue,
-                            ),
+                          child: EcliniqLoader(
+                            size: 16,
+                            color: Colors.blue,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -390,6 +391,7 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

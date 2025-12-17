@@ -11,6 +11,7 @@ import 'package:ecliniq/ecliniq_services.dart/phonepe_service.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 
 class PaymentProcessingScreen extends StatefulWidget {
   final String appointmentId;
@@ -541,9 +542,9 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
       default:
         return const SizedBox(
           width: 80, height: 80,
-          child: CircularProgressIndicator(
-            strokeWidth: 6,
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1976D2)),
+          child: EcliniqLoader(
+            size: 80,
+            color: Color(0xFF1976D2),
           ),
         );
     }

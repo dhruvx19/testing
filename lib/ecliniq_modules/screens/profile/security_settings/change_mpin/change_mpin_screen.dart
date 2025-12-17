@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 
 class ChangeMPINScreen extends StatefulWidget {
   const ChangeMPINScreen({super.key});
@@ -375,9 +376,9 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
                             ? SizedBox(
                                 width: 24,
                                 height: 24,
-                                child: CircularProgressIndicator(
+                                child: EcliniqLoader(
                                   color: Colors.white,
-                                  strokeWidth: 2,
+                                  size: 24,
                                 ),
                               )
                             : Row(

@@ -21,6 +21,7 @@ import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/error_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 
 class ReviewDetailsScreen extends StatefulWidget {
   final String selectedSlot;
@@ -1238,9 +1239,9 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                 const SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  child: EcliniqLoader(
+                    size: 20,
+                    color: Colors.white,
                   ),
                 )
               else ...[
