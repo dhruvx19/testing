@@ -12,7 +12,7 @@ import 'package:ecliniq/ecliniq_modules/screens/booking/payment_processing_scree
 import 'package:ecliniq/ecliniq_modules/screens/booking/widgets/appointment_detail_item.dart';
 import 'package:ecliniq/ecliniq_modules/screens/booking/widgets/clinic_location_card.dart';
 import 'package:ecliniq/ecliniq_modules/screens/booking/widgets/doctor_info_card.dart';
-import 'package:ecliniq/ecliniq_modules/screens/home/widgets/top_bar_widgets/easy_way_book.dart';
+import 'package:ecliniq/ecliniq_icons/assets/home/widgets/top_bar_widgets/easy_way_book.dart';
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/widgets/common.dart'
     hide DoctorInfoCard, ClinicLocationCard;
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';

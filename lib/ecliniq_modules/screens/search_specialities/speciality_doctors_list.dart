@@ -1,56 +1,234 @@
-import 'package:ecliniq/ecliniq_api/models/doctor.dart';
+import 'dart:async';
+
+import 'package:ecliniq/ecliniq_api/doctor_service.dart';
+import 'package:ecliniq/ecliniq_api/models/doctor.dart' as api_doctor;
+import 'package:ecliniq/ecliniq_api/models/hospital_doctor_model.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
+import 'package:ecliniq/ecliniq_icons/assets/home/widgets/top_bar_widgets/location_search.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/booking/clinic_visit_slot_screen.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 class SpecialityDoctorsList extends StatefulWidget {
-  const SpecialityDoctorsList({super.key});
+  final String? initialSpeciality;
+
+  const SpecialityDoctorsList({super.key, this.initialSpeciality});
 
   @override
   State<SpecialityDoctorsList> createState() => _SpecialityDoctorsListState();
 }
 
 class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
+  final DoctorService _doctorService = DoctorService();
   final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
-  String _selectedCategory = 'General Physician';
-  final String _currentLocation = 'Vishnu Dev Nagar, Wakad';
+  final ScrollController _categoryScrollController = ScrollController();
 
-  // Dummy doctor data
- 
-  List<Doctor> _filteredDoctors = [];
+  List<Doctor> _doctors = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+  String _searchQuery = '';
+  String _selectedCategory = 'All';
+  final String _currentLocation = 'Vishnu Dev Nagar, Wakad';
+  Timer? _debounceTimer;
+
+  final double _latitude = 28.6139;
+  final double _longitude = 77.209;
+
+  // Updated category list to match UI
+  final List<String> _categories = [
+    'All',
+    'General Physician',
+    'Paediatrics',
+    'Gynaecology',
+    'Dermatology',
+    'Cardiology',
+    'Orthopedics',
+    'ENT',
+    'Ophthalmology',
+    'Neurology',
+    'Psychiatry',
+    'Dentistry',
+  ];
+
+  // Keys for each category to measure their positions
+  final Map<String, GlobalKey> _categoryKeys = {};
 
   @override
   void initState() {
     super.initState();
-    
+    // Initialize keys for all categories
+    for (var category in _categories) {
+      _categoryKeys[category] = GlobalKey();
+    }
+
+    if (widget.initialSpeciality != null) {
+      _selectedCategory = widget.initialSpeciality!;
+      // Add initial speciality if not in list
+      if (!_categories.contains(widget.initialSpeciality)) {
+        _categories.insert(1, widget.initialSpeciality!);
+        _categoryKeys[widget.initialSpeciality!] = GlobalKey();
+      }
+    }
+    _fetchDoctors();
     _searchController.addListener(_onSearchChanged);
+
+    // Auto scroll to initial category after build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToCategory(_selectedCategory);
+    });
   }
 
   @override
   void dispose() {
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
+    _categoryScrollController.dispose();
+    _debounceTimer?.cancel();
     super.dispose();
   }
 
   void _onSearchChanged() {
     setState(() {
       _searchQuery = _searchController.text.toLowerCase();
-
     });
   }
 
-  
+  void _scrollToCategory(String category) {
+    final key = _categoryKeys[category];
+    if (key?.currentContext != null) {
+      final RenderBox renderBox =
+          key!.currentContext!.findRenderObject() as RenderBox;
+      final position = renderBox.localToGlobal(Offset.zero);
+      final screenWidth = MediaQuery.of(context).size.width;
+      final boxWidth = renderBox.size.width;
+
+      // Calculate scroll offset to center the selected category
+      final scrollOffset =
+          _categoryScrollController.offset +
+          position.dx -
+          (screenWidth / 2) +
+          (boxWidth / 2);
+
+      _categoryScrollController.animateTo(
+        scrollOffset.clamp(
+          0.0,
+          _categoryScrollController.position.maxScrollExtent,
+        ),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
 
   void _onCategorySelected(String category) {
     setState(() {
       _selectedCategory = category;
-    
+      _isLoading = true;
     });
+    _scrollToCategory(category);
+    _fetchDoctors();
+  }
+
+  Future<void> _fetchDoctors() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      List<String>? specialityFilter;
+      if (_selectedCategory != 'All') {
+        specialityFilter = [_selectedCategory];
+      }
+
+      final request = api_doctor.FilterDoctorsRequest(
+        latitude: _latitude,
+        longitude: _longitude,
+        speciality: specialityFilter,
+      );
+
+      final response = await _doctorService.getFilteredDoctors(request);
+
+      if (response.success && response.data != null && mounted) {
+        final convertedDoctors = response.data!.doctors.map((apiDoctor) {
+          return Doctor(
+            id: apiDoctor.id,
+            firstName: apiDoctor.firstName ?? '',
+            lastName: apiDoctor.lastName ?? '',
+            headline: apiDoctor.headline,
+            specialization: apiDoctor.specializations.join(', '),
+            qualifications: apiDoctor.degreeTypes.join(', '),
+            experience: apiDoctor.yearOfExperience,
+            rating: apiDoctor.rating,
+            fee: apiDoctor.fee,
+            timings: null,
+            availability: null,
+            profilePhoto: apiDoctor.profilePhoto,
+            hospitals: apiDoctor.hospitals.map((h) {
+              return DoctorHospital(
+                id: h.id,
+                name: h.name,
+                city: h.city,
+                state: h.state,
+                latitude: h.latitude,
+                longitude: h.longitude,
+                distanceKm: h.distance,
+                consultationFee: h.consultationFee?.toString(),
+              );
+            }).toList(),
+            clinics: apiDoctor.clinics.map((c) {
+              return {
+                'id': c.id,
+                'name': c.name,
+                'city': c.city,
+                'state': c.state,
+                'latitude': c.latitude,
+                'longitude': c.longitude,
+                'distance': c.distance,
+                'consultationFee': c.consultationFee,
+              };
+            }).toList(),
+            isFavourite: apiDoctor.isFavourite,
+          );
+        }).toList();
+
+        setState(() {
+          _doctors = convertedDoctors;
+          _isLoading = false;
+        });
+      } else {
+        if (mounted) {
+          setState(() {
+            _errorMessage = response.message;
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Failed to load doctors: ${e.toString()}';
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  List<Doctor> get _filteredDoctors {
+    if (_searchQuery.isEmpty) {
+      return _doctors;
+    }
+    return _doctors.where((doctor) {
+      final name = doctor.name.toLowerCase();
+      final specializations = doctor.specialization.toLowerCase();
+      final qualifications = doctor.qualifications.toLowerCase();
+      return name.contains(_searchQuery) ||
+          specializations.contains(_searchQuery) ||
+          qualifications.contains(_searchQuery);
+    }).toList();
   }
 
   @override
@@ -78,46 +256,38 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
           ),
         ),
         actions: [
-          IconButton(
-            icon: Icon(Icons.filter_list, color: Color(0xff424242)),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Filter functionality coming soon!'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            },
+          SvgPicture.asset(
+            EcliniqIcons.sortAlt.assetPath,
+            width: 32,
+            height: 32,
           ),
-          IconButton(
-            icon: Icon(Icons.tune, color: Color(0xff424242)),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Sort functionality coming soon!'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            },
+          VerticalDivider(
+            color: Color(0xffD6D6D6),
+            thickness: 1,
+            width: 24,
+            indent: 18,
+            endIndent: 18,
           ),
+          SvgPicture.asset(
+            EcliniqIcons.filter.assetPath,
+            width: 32,
+            height: 32,
+          ),
+          const SizedBox(width: 16),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
-          child: Container(color: Color(0xFFB8B8B8), height: 1.0),
+          child: Container(color: const Color(0xFFB8B8B8), height: 0.5),
         ),
       ),
       body: Container(
-        color: Color(0xffF9F9F9),
+        color: Colors.white,
         child: Column(
           children: [
             const SizedBox(height: 8),
-            // Location Section
             _buildLocationSection(),
-            // Search Bar
             _buildSearchBar(),
-            // Category Filters
             _buildCategoryFilters(),
-            // Doctor List
             Expanded(child: _buildDoctorList()),
           ],
         ),
@@ -128,33 +298,36 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
   Widget _buildLocationSection() {
     return GestureDetector(
       onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Location picker coming soon!'),
-            duration: Duration(seconds: 2),
-          ),
+        EcliniqBottomSheet.show(
+          context: context,
+          child: LocationBottomSheet(currentLocation: _currentLocation),
         );
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        color: Colors.white,
         child: Row(
           children: [
-            Image.asset(
-              EcliniqIcons.mapPoint.assetPath,
-              width: 20,
-              height: 20,
-              color: Color(0xFF2372EC),
+            SvgPicture.asset(
+              EcliniqIcons.mapPointBlue.assetPath,
+              width: 24,
+              height: 24,
             ),
             const SizedBox(width: 8),
             Text(
               _currentLocation,
-              style: EcliniqTextStyles.bodyMedium.copyWith(
+              style: EcliniqTextStyles.headlineXMedium.copyWith(
                 color: Color(0xff424242),
-                fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(width: 4),
-            Icon(Icons.keyboard_arrow_down, size: 20, color: Color(0xff424242)),
+            SizedBox(width: 10),
+            Container(height: 20, width: 0.5, color: Color(0xffD6D6D6)),
+            const SizedBox(width: 8.0),
+            SvgPicture.asset(
+              EcliniqIcons.arrowDown.assetPath,
+              width: 20,
+              height: 20,
+            ),
           ],
         ),
       ),
@@ -163,159 +336,147 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
 
   Widget _buildSearchBar() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      height: 52,
+      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      height: 48,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Color(0xff626060), width: 0.7),
+        border: Border.all(color: Color(0xFF626060), width: 0.5),
       ),
-      child: TextField(
-        controller: _searchController,
-        decoration: InputDecoration(
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide.none,
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide.none,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide.none,
-          ),
-          filled: true,
-          fillColor: Colors.white,
-          prefixIcon: Container(
-            margin: const EdgeInsets.only(left: 4),
-            child: Image.asset(
+      child: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 12, right: 8),
+            child: SvgPicture.asset(
               EcliniqIcons.magnifierMyDoctor.assetPath,
-              width: 20,
-              height: 20,
-              color: Colors.black,
+              width: 24,
+              height: 24,
             ),
           ),
-          suffixIcon: Container(
-            margin: const EdgeInsets.only(right: 8),
-            child: GestureDetector(
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Voice search coming soon!'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              },
-              child: Image.asset(
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              textInputAction: TextInputAction.search,
+              style: const TextStyle(
+                color: Color(0xFF424242),
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Search Doctor',
+                hintStyle: TextStyle(
+                  color: Color(0xFF8E8E8E),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w400,
+                ),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+                isDense: true,
+              ),
+              cursorColor: Color(0xFF2372EC),
+              onTapOutside: (_) =>
+                  FocusManager.instance.primaryFocus?.unfocus(),
+            ),
+          ),
+          GestureDetector(
+            onTap: () {},
+            child: Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: SvgPicture.asset(
                 EcliniqIcons.microphone.assetPath,
-                width: 28,
-                height: 28,
+                width: 32,
+                height: 32,
               ),
             ),
           ),
-          hintText: 'Search Doctor',
-          hintStyle: TextStyle(
-            color: Colors.grey[500],
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 14,
-          ),
-        ),
-        style: const TextStyle(
-          color: Colors.black87,
-          fontSize: 16,
-          fontWeight: FontWeight.w400,
-        ),
+        ],
       ),
     );
   }
 
   Widget _buildCategoryFilters() {
-    final categories = ['All', 'General Physician', 'Paediatrics'];
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Row(
-          children: categories.map((category) {
-            final isSelected = _selectedCategory == category;
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: GestureDetector(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Colors.grey[300]!, width: 1)),
+      ),
+      child: SingleChildScrollView(
+        controller: _categoryScrollController,
+        scrollDirection: Axis.horizontal,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: _categories.map((category) {
+              final isSelected = _selectedCategory == category;
+              return GestureDetector(
+                key: _categoryKeys[category],
                 onTap: () => _onCategorySelected(category),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isSelected ? Color(0xFF2372EC) : Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: isSelected ? Color(0xFF2372EC) : Colors.grey[300]!,
-                      width: 1,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 24),
+                  child: IntrinsicWidth(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Text(
+                            category,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w400,
+                              color: isSelected
+                                  ? Color(0xFF2372EC)
+                                  : Color(0xFF626060),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          height: 2,
+                          color: isSelected
+                              ? Color(0xFF2372EC)
+                              : Colors.transparent,
+                        ),
+                      ],
                     ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (category == 'All')
-                        Icon(
-                          Icons.apps,
-                          size: 18,
-                          color: isSelected ? Colors.white : Colors.grey[700],
-                        ),
-                      if (category == 'General Physician')
-                        Icon(
-                          Icons.medical_services,
-                          size: 18,
-                          color: isSelected ? Colors.white : Colors.grey[700],
-                        ),
-                      if (category == 'Paediatrics')
-                        Icon(
-                          Icons.child_care,
-                          size: 18,
-                          color: isSelected ? Colors.white : Colors.grey[700],
-                        ),
-                      if (category != 'All') const SizedBox(width: 6),
-                      Text(
-                        category,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: isSelected ? Colors.white : Colors.grey[700],
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
-              ),
-            );
-          }).toList(),
+              );
+            }).toList(),
+          ),
         ),
       ),
     );
   }
 
   Widget _buildDoctorList() {
-    if (_filteredDoctors.isEmpty) {
+    if (_isLoading) {
+      return _buildShimmerLoading();
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Text(_errorMessage!, style: TextStyle(color: Colors.red)),
+      );
+    }
+
+    final doctors = _filteredDoctors;
+
+    if (doctors.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.people_outline, size: 64, color: Colors.grey[400]),
-            const SizedBox(height: 16),
+            SvgPicture.asset(
+              EcliniqIcons.noDoctor.assetPath,
+             
+            ),
+            const SizedBox(height: 8),
             Text(
-              _searchQuery.isNotEmpty
-                  ? 'No doctors found matching your search'
-                  : 'No doctors available',
+              'No Doctor Match Found',
               style: EcliniqTextStyles.bodyMedium.copyWith(
-                color: Colors.grey[600],
+                color: Color(0xff424242),
               ),
               textAlign: TextAlign.center,
             ),
@@ -326,303 +487,304 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      itemCount: _filteredDoctors.length,
+      itemCount: doctors.length,
       itemBuilder: (context, index) {
-        return _buildDoctorCard(_filteredDoctors[index]);
+        return _buildDoctorCard(doctors[index]);
       },
     );
   }
 
-  Widget _buildDoctorCard(Doctor doctor) {
-    final initials = _getInitials(doctor.name);
-    final specializations = _getSpecializations(doctor.specializations);
-    final degrees = _getDegrees(doctor.degreeTypes);
-    final experience = _getExperienceText(doctor.yearOfExperience);
-    final rating = doctor.rating?.toStringAsFixed(1) ?? '4.0';
+  Widget _buildShimmerLoading() {
+    return Center(child: CircularProgressIndicator());
+  }
 
+  Widget _buildDoctorCard(Doctor doctor) {
     return Column(
       children: [
         Container(
           color: Colors.white,
-          padding: const EdgeInsets.all(10),
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Avatar
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: Colors.blue.shade50,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 3),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Stack(
-                        children: [
-                          Center(
-                            child: Text(
-                              initials,
-                              style: TextStyle(
-                                fontSize: 30,
-                                color: Colors.blue.shade700,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            right: -2,
-                            top: -2,
-                            child: SvgPicture.asset(
-                              EcliniqIcons.verified.assetPath,
-                              width: 24,
-                              height: 24,
-                            ),
-                          ),
-                        ],
-                      ),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: Color(0xffF8FAFF),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Color(0xff96BFFF), width: 0.5),
                     ),
-                    const SizedBox(width: 16),
-                    // Doctor Info
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            doctor.name,
-                            style: EcliniqTextStyles.headlineLarge.copyWith(
-                              color: const Color(0xFF424242),
+                    child: Stack(
+                      children: [
+                        Center(
+                          child: Text(
+                            _getInitials(doctor.name),
+                            style: TextStyle(
+                              fontSize: 30,
+                              color: Colors.blue.shade700,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                        ),
+                        Positioned(
+                          right: -2,
+                          top: -2,
+                          child: SvgPicture.asset(
+                            EcliniqIcons.verified.assetPath,
+                            width: 24,
+                            height: 24,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          doctor.name,
+                          style: EcliniqTextStyles.headlineLarge.copyWith(
+                            color: const Color(0xFF424242),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          doctor.specialization.isNotEmpty
+                              ? doctor.specialization
+                              : 'General',
+                          style: EcliniqTextStyles.titleXLarge.copyWith(
+                            color: const Color(0xFF424242),
+                          ),
+                        ),
+                        if (doctor.qualifications.isNotEmpty) ...[
+                          const SizedBox(height: 2),
                           Text(
-                            specializations,
+                            doctor.qualifications,
                             style: EcliniqTextStyles.titleXLarge.copyWith(
                               color: const Color(0xFF424242),
                             ),
                           ),
-                          if (degrees.isNotEmpty) ...[
-                            const SizedBox(height: 2),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      if (doctor.experience != null) ...[
+                        SvgPicture.asset(
+                          EcliniqIcons.medicalKit.assetPath,
+                          width: 24,
+                          height: 24,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${doctor.experience}yrs of exp',
+                          style: EcliniqTextStyles.titleXLarge.copyWith(
+                            color: const Color(0xFF626060),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF8E8E8E),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Color(0xffFEF9E6),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SvgPicture.asset(
+                              EcliniqIcons.star.assetPath,
+                              width: 18,
+                              height: 18,
+                            ),
+                            const SizedBox(width: 2),
                             Text(
-                              degrees,
-                              style: EcliniqTextStyles.titleXLarge.copyWith(
-                                color: const Color(0xFF424242),
+                              doctor.rating?.toStringAsFixed(1) ?? '4.0',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Color(0xffBE8B00),
+                                fontWeight: FontWeight.w400,
                               ),
                             ),
                           ],
-                        ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                // Experience, Rating, Availability Section (below profile)
-                const SizedBox(height: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Experience and Rating
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        if (experience.isNotEmpty) ...[
-                          Icon(
-                            Icons.work_outline,
-                            size: 18,
-                            color: Colors.grey[600],
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            experience,
-                            style: EcliniqTextStyles.titleXLarge.copyWith(
-                              color: const Color(0xFF626060),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            '●',
-                            style: TextStyle(
-                              color: Color(0xff8E8E8E),
-                              fontSize: 8,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                        ],
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Color(0xffFEF9E6),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SvgPicture.asset(
-                                EcliniqIcons.star.assetPath,
-                                width: 18,
-                                height: 18,
-                              ),
-                              const SizedBox(width: 2),
-                              Text(
-                                rating,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Color(0xffBE8B00),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
+                      const SizedBox(width: 8),
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF8E8E8E),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        doctor.fee != null
+                            ? '₹${doctor.fee}'
+                            : 'Fee Unavailable',
+                        style: EcliniqTextStyles.titleXLarge.copyWith(
+                          color: const Color(0xFF626060),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      SvgPicture.asset(
+                        EcliniqIcons.appointmentRemindar.assetPath,
+                        width: 24,
+                        height: 24,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          _formatTimings(doctor.timings),
+                          style: EcliniqTextStyles.titleXLarge.copyWith(
+                            color: const Color(0xFF626060),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '●',
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      SvgPicture.asset(
+                        EcliniqIcons.mapPointBlack.assetPath,
+                        width: 24,
+                        height: 24,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _currentLocation,
+                        style: EcliniqTextStyles.titleXLarge.copyWith(
+                          color: const Color(0xFF626060),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Color(0xffF9F9F9),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: Color(0xffB8B8B8),
+                            width: 0.5,
+                          ),
+                        ),
+                        child: Text(
+                          _getDistanceText(doctor),
                           style: TextStyle(
-                            color: Color(0xff8E8E8E),
-                            fontSize: 8,
+                            fontSize: 16,
+                            color: Color(0xff424242),
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '₹500',
-                          style: EcliniqTextStyles.titleXLarge.copyWith(
-                            color: const Color(0xFF626060),
-                          ),
-                        ),
-                      ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Color(0xffF2FFF3),
+                      borderRadius: BorderRadius.circular(6),
                     ),
-                    const SizedBox(height: 8),
-                    // Availability
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.calendar_today_outlined,
-                          size: 16,
-                          color: Colors.grey[600],
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            '10am - 9:30pm (Mon and Wed)',
-
-                            style: EcliniqTextStyles.titleXLarge.copyWith(
-                              color: const Color(0xFF626060),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    // Location with distance
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.location_on_outlined,
-                          size: 16,
-                          color: Colors.grey[600],
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          _currentLocation,
-                          style: EcliniqTextStyles.titleXLarge.copyWith(
-                            color: const Color(0xFF626060),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            '4 Km',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[700],
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    // Token Availability
-                    Text(
-                      '25 Tokens Available',
+                    child: Text(
+                      _getTokenAvailability(doctor),
                       style: EcliniqTextStyles.bodySmallProminent.copyWith(
                         color: Colors.green[600],
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                // Booking Section
-                Padding(
-                  padding: const EdgeInsets.only(left: 4.0, right: 4.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 15,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.green[50],
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Next Available',
-                                style: EcliniqTextStyles.titleXLarge.copyWith(
-                                  color: Color(0xff626060),
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Tomorrow, 10:00AM',
-                                style: EcliniqTextStyles.bodySmall.copyWith(
-                                  color: Color(0xff626060),
-                                ),
-                              ),
-                            ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.only(left: 4.0, right: 4.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 15,
+                        ),
+                        decoration: BoxDecoration(
+                          color: _getAvailabilityColor(doctor),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Center(
+                          child: Text(
+                            _getAvailabilityStatus(doctor),
+                            textAlign: TextAlign.center,
+                            style: EcliniqTextStyles.titleXLarge.copyWith(
+                              color: Color(0xff3EAF3F),
+                            ),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        flex: 1,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      flex: 1,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(4),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Color(0x4D2372EC),
+                              offset: Offset(2, 2),
+                              blurRadius: 10,
+                              spreadRadius: 0,
+                            ),
+                          ],
+                        ),
                         child: ElevatedButton(
                           onPressed: () {
                             EcliniqRouter.push(
                               ClinicVisitSlotScreen(
                                 doctorId: doctor.id,
-                                hospitalId: 'dummy-hospital-id',
+                                hospitalId: doctor.hospitals.isNotEmpty
+                                    ? doctor.hospitals.first.id
+                                    : '',
                                 doctorName: doctor.name,
                                 doctorSpecialization:
-                                    doctor.specializations.isNotEmpty
-                                    ? doctor.specializations.first
+                                    doctor.specialization.isNotEmpty
+                                    ? doctor.specialization
                                     : null,
                               ),
                             );
@@ -636,22 +798,23 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                             ),
                             elevation: 0,
                           ),
-                          child: Text(
-                            'Book Appointment',
-                            style: EcliniqTextStyles.headlineMedium.copyWith(
-                              color: Colors.white,
+                          child: FittedBox(
+                            child: Text(
+                              'Book Appointment',
+                              style: EcliniqTextStyles.headlineMedium.copyWith(
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-        // Line after container
         Container(height: 1, color: Colors.grey[300]),
       ],
     );
@@ -664,18 +827,78 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   }
 
-  String _getSpecializations(List<String> specializations) {
-    if (specializations.isEmpty) return 'General';
-    return specializations.join(', ');
+  String _formatTimings(String? timings) {
+    if (timings == null || timings.isEmpty) {
+      return '10am - 9:30pm (Mon - Sat)';
+    }
+    return timings;
   }
 
-  String _getDegrees(List<String> degrees) {
-    if (degrees.isEmpty) return '';
-    return degrees.join(', ');
+  String _getDistanceText(Doctor doctor) {
+    double? minDist;
+
+    for (var h in doctor.hospitals) {
+      if (h.distanceKm != null) {
+        if (minDist == null || h.distanceKm! < minDist) {
+          minDist = h.distanceKm;
+        }
+      }
+    }
+
+    for (var c in doctor.clinics) {
+      final dist = c['distance'];
+      if (dist is num) {
+        if (minDist == null || dist.toDouble() < minDist) {
+          minDist = dist.toDouble();
+        }
+      }
+    }
+
+    if (minDist != null) {
+      return '${minDist.toStringAsFixed(1)} Km';
+    }
+    return 'Nearby';
   }
 
-  String _getExperienceText(int? years) {
-    if (years == null) return '';
-    return '${years}yrs of exp';
+  String _getAvailabilityStatus(Doctor doctor) {
+    if (doctor.availability == null) return 'Available';
+
+    switch (doctor.availability!.status) {
+      case 'AVAILABLE':
+        return 'Available Now';
+      case 'NEXT_DAY':
+        return doctor.availability!.message;
+      case 'BUSY':
+        return 'Currently Busy';
+      case 'UNAVAILABLE':
+        return 'Not Available';
+      default:
+        return 'Available';
+    }
+  }
+
+  Color _getAvailabilityColor(Doctor doctor) {
+    if (doctor.availability == null) return Colors.green[50]!;
+
+    switch (doctor.availability!.status) {
+      case 'AVAILABLE':
+        return Color(0xffF2FFF3);
+      case 'NEXT_DAY':
+        return Color(0xffF9F9F9);
+      case 'BUSY':
+        return Colors.orange[50]!;
+      case 'UNAVAILABLE':
+        return Colors.red[50]!;
+      default:
+        return Colors.green[50]!;
+    }
+  }
+
+  String _getTokenAvailability(Doctor doctor) {
+    if (doctor.availability?.availableTokens != null) {
+      final available = doctor.availability!.availableTokens!;
+      return '$available Tokens Available';
+    }
+    return 'Tokens Available';
   }
 }

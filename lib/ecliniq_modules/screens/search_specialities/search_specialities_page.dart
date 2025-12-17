@@ -44,26 +44,22 @@ class _SearchSpecialitiesState extends State<SearchSpecialities> {
         id: 'general_physician',
         title: 'General Physician',
         subtitle: 'Family Doctor',
-        iconPath: EcliniqIcons.generalMedicine.assetPath,
+        iconPath: EcliniqIcons.generalPhysician.assetPath,
       ),
       Speciality(
         id: 'pediatrician',
         title: 'Pediatrician',
         subtitle: 'Child Specialist',
-        iconPath: EcliniqIcons.childSpe.assetPath,
+        iconPath: EcliniqIcons.pediatrician.assetPath,
       ),
-      Speciality(
-        id: 'pediatrician',
-        title: 'Pediatrician',
-        subtitle: 'Child Specialist',
-        iconPath: EcliniqIcons.cancer.assetPath,
-      ),
+
       Speciality(
         id: 'gynaecologist',
         title: 'Gynaecologist',
         subtitle: "Women's Health",
-        iconPath: EcliniqIcons.gynecologist.assetPath,
+        iconPath: EcliniqIcons.gynaecologist.assetPath,
       ),
+
       Speciality(
         id: 'dentist',
         title: 'Dentist',
@@ -73,7 +69,7 @@ class _SearchSpecialitiesState extends State<SearchSpecialities> {
         id: 'dermatologist',
         title: 'Dermatologist',
         subtitle: 'Skin & Hair Specialist',
-        iconPath: EcliniqIcons.skinCare.assetPath,
+        iconPath: EcliniqIcons.dermatologist.assetPath,
       ),
       Speciality(
         id: 'ent',
@@ -85,7 +81,7 @@ class _SearchSpecialitiesState extends State<SearchSpecialities> {
         id: 'ophthalmologist',
         title: 'Ophthalmologist',
         subtitle: 'Eye Specialist',
-        iconPath: EcliniqIcons.eyeCare.assetPath,
+        iconPath: EcliniqIcons.ophthalmologist.assetPath,
       ),
       Speciality(
         id: 'cardiologist',
@@ -94,10 +90,107 @@ class _SearchSpecialitiesState extends State<SearchSpecialities> {
         iconPath: EcliniqIcons.cardiologist.assetPath,
       ),
       Speciality(
-        id: 'cardiologist',
-        title: 'Cardiologist',
-        subtitle: 'Heart Specialist',
-        iconPath: EcliniqIcons.bone.assetPath,
+        id: 'orthopedic',
+        title: 'Orthopedic',
+        subtitle: 'Bone & Joint Specialist',
+        iconPath: EcliniqIcons.orthopedic.assetPath,
+      ),
+      Speciality(
+        id: 'diabetologist',
+        title: 'Diabetologist',
+        subtitle: 'Sugar Specialist',
+        iconPath: EcliniqIcons.diabetologist.assetPath,
+      ),
+      Speciality(
+        id: 'pulmonologist',
+        title: 'Pulmonologist',
+        subtitle: 'Lung & Chest Specialist ',
+        iconPath: EcliniqIcons.pulmonologist.assetPath,
+      ),
+      Speciality(
+        id: 'nephrologist',
+        title: 'Nephrologist',
+        subtitle: 'Kidney Specialist',
+        iconPath: EcliniqIcons.nephrologist.assetPath,
+      ),
+      Speciality(
+        id: 'gastroenterologist',
+        title: 'Gastroenterologist',
+        subtitle: 'Stomach & Digestive Specialist',
+        iconPath: EcliniqIcons.gastroenterologist.assetPath,
+      ),
+      Speciality(
+        id: 'psychiatrist',
+        title: 'Psychiatrist/Psychologist/ Counsellor',
+        subtitle: 'Mental Health Specialist',
+        iconPath: EcliniqIcons.psychiatrist.assetPath,
+      ),
+      Speciality(
+        id: 'physiotherapist',
+        title: 'Physiotherapist',
+        subtitle: 'Physical Activity Specialist',
+        iconPath: EcliniqIcons.physiotherapist.assetPath,
+      ),
+      Speciality(
+        id: 'urologist',
+        title: 'Urologist',
+        subtitle: 'Urine & Male Health Specialist',
+        iconPath: EcliniqIcons.urologist.assetPath,
+      ),
+      Speciality(
+        id: 'oncologist',
+        title: 'Oncologist',
+        subtitle: 'Cancer Specialist',
+        iconPath: EcliniqIcons.oncologist.assetPath,
+      ),
+      Speciality(
+        id: 'neurologist',
+        title: 'Neurologist',
+        subtitle: 'Brain & Nerves Specialist',
+        iconPath: EcliniqIcons.neurologist.assetPath,
+      ),
+      Speciality(
+        id: 'sexologist',
+        title: 'Sexologist',
+        subtitle: 'Sex Health',
+        iconPath: EcliniqIcons.sexologist.assetPath,
+      ),
+      Speciality(
+        id: 'hepatologists',
+        title: 'Hepatologists',
+        subtitle: 'Liver Specialist',
+        iconPath: EcliniqIcons.hepatologist.assetPath,
+      ),
+      Speciality(
+        id: 'endocrinologist',
+        title: 'Endocrinologist',
+        subtitle: 'Hormonal and metabolic disorders',
+        iconPath: EcliniqIcons.endocrinologist.assetPath,
+      ),
+      Speciality(
+        id: 'haematologist',
+        title: 'Haematologist',
+        subtitle: 'Blood disorders',
+        iconPath: EcliniqIcons.haematologist.assetPath,
+      ),
+
+      Speciality(
+        id: 'radiologist',
+        title: 'Radiologist',
+        subtitle: 'Imaging and diagnosis',
+        iconPath: EcliniqIcons.radiologist.assetPath,
+      ),
+      Speciality(
+        id: 'radiologist',
+        title: 'Homeopathy',
+
+        iconPath: EcliniqIcons.homeopathy.assetPath,
+      ),
+      Speciality(
+        id: 'ayurvedic',
+        title: 'Ayurvedic',
+
+        iconPath: EcliniqIcons.ayurvedic.assetPath,
       ),
     ];
     _filteredSpecialities = List.from(_allSpecialities);
@@ -131,7 +224,9 @@ class _SearchSpecialitiesState extends State<SearchSpecialities> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
-
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
         leading: IconButton(
           icon: SvgPicture.asset(
             EcliniqIcons.backArrow.assetPath,
@@ -151,17 +246,18 @@ class _SearchSpecialitiesState extends State<SearchSpecialities> {
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
-          child: Container(color: Color(0xFFB8B8B8), height: 1.0),
+          child: Container(color: Color(0xFFB8B8B8), height: 0.5),
         ),
       ),
       body: Column(
         children: [
           _buildSearchBar(),
+          const SizedBox(height: 8),
           Expanded(
             child: _filteredSpecialities.isEmpty
                 ? _buildEmptyState()
                 : ListView.builder(
-                    padding: EdgeInsets.all(10),
+                    padding: EdgeInsets.all(15),
                     itemCount: _filteredSpecialities.length,
                     itemBuilder: (context, index) {
                       return _buildSpecialityItem(_filteredSpecialities[index]);
@@ -184,7 +280,7 @@ class _SearchSpecialitiesState extends State<SearchSpecialities> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8.0),
-        border: Border.all(color: Color(0xFFE0E0E0), width: 1.0),
+        border: Border.all(color: Color(0xFF626060), width: 0.5),
       ),
       child: TextField(
         controller: _searchController,
@@ -197,16 +293,16 @@ class _SearchSpecialitiesState extends State<SearchSpecialities> {
           isDense: true,
           prefixIcon: Container(
             margin: const EdgeInsets.only(left: 16.0, right: 8.0),
-            child: Image.asset(
+            child: SvgPicture.asset(
               EcliniqIcons.magnifierMyDoctor.assetPath,
-              width: 20,
-              height: 20,
+              width: 24,
+              height: 24,
             ),
           ),
           hintText: 'Search Speciality',
           hintStyle: TextStyle(
-            color: Color(0xFF8E8E8E),
-            fontSize: 16,
+            color: Color(0xFFD6D6D6),
+            fontSize: 18,
             fontWeight: FontWeight.w400,
           ),
           contentPadding: const EdgeInsets.symmetric(
@@ -231,7 +327,9 @@ class _SearchSpecialitiesState extends State<SearchSpecialities> {
         Material(
           child: InkWell(
             onTap: () {
-              EcliniqRouter.push(SpecialityDoctorsList());
+              EcliniqRouter.push(
+                SpecialityDoctorsList(initialSpeciality: speciality.title),
+              );
             },
             child: Container(
               decoration: BoxDecoration(
@@ -245,7 +343,19 @@ class _SearchSpecialitiesState extends State<SearchSpecialities> {
               ),
               child: Row(
                 children: [
-                  Image.asset(speciality.iconPath),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Color(0xFFF8FAFF),
+                      borderRadius: BorderRadius.circular(99.0),
+                    ),
+                    child: Center(
+                      child: Image.asset(
+                        speciality.iconPath,
+                        width: 52,
+                        height: 52,
+                      ),
+                    ),
+                  ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
@@ -258,7 +368,6 @@ class _SearchSpecialitiesState extends State<SearchSpecialities> {
                           ),
                         ),
                         if (speciality.subtitle != null) ...[
-                          const SizedBox(height: 4),
                           Text(
                             speciality.subtitle!,
                             style: EcliniqTextStyles.bodySmall.copyWith(
@@ -270,10 +379,9 @@ class _SearchSpecialitiesState extends State<SearchSpecialities> {
                     ),
                   ),
                   SvgPicture.asset(
-                    EcliniqIcons.arrowRight.assetPath,
+                    EcliniqIcons.arrowRight1.assetPath,
                     width: 24,
                     height: 24,
-                    color: Color(0xFF424242),
                   ),
                 ],
               ),

@@ -1,15 +1,18 @@
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/health_files/providers/health_files_provider.dart';
-import 'package:ecliniq/ecliniq_modules/screens/home/provider/doctor_provider.dart';
-import 'package:ecliniq/ecliniq_modules/screens/home/provider/hospital_provider.dart';
-import 'package:ecliniq/ecliniq_modules/screens/home/widgets/searched_specialities.dart';
+import 'package:ecliniq/ecliniq_icons/assets/home/home_screen.dart';
+import 'package:ecliniq/ecliniq_icons/assets/home/provider/doctor_provider.dart';
+import 'package:ecliniq/ecliniq_icons/assets/home/provider/hospital_provider.dart';
+import 'package:ecliniq/ecliniq_icons/assets/home/widgets/searched_specialities.dart';
 import 'package:ecliniq/ecliniq_modules/screens/login/login.dart';
 import 'package:ecliniq/ecliniq_modules/screens/notifications/notification_screen.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/add_dependent/provider/dependent_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/provider/eta_provider.dart';
 import 'package:ecliniq/ecliniq_core/notifications/push_notification.dart';
 import 'package:ecliniq/ecliniq_modules/screens/search_specialities/search_specialities_page.dart';
+import 'package:ecliniq/ecliniq_modules/screens/search_specialities/speciality_doctors_list.dart';
+import 'package:ecliniq/ecliniq_modules/screens/search_specialities/speciality_hospital_list.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -83,7 +86,7 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      home: const LoginPage(),
+      home: const HomeScreen(),
     );
   }
 }

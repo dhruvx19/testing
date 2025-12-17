@@ -79,7 +79,7 @@ static const TextStyle headlineXLarge = TextStyle(
     fontSize: 15,
     fontWeight: FontWeight.w400,
     fontFamily: fontFamily,
-    fontStyle: FontStyle.normal,
+
     decoration: TextDecoration.none,
   );
 

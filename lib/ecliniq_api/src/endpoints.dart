@@ -20,6 +20,7 @@ class Endpoints {
   static String get updatePatientProfile =>
       '$localhost/api/patients/update-profile';
   static String get topHospitals => '$localhost/api/hospitals/top-hospitals';
+  static String get getAllHospitals => '$localhost/api/hospitals/getAllHospitals';
   static String get topDoctors => '$localhost/api/doctors/top-doctors';
   static String get filteredDoctors => '$localhost/api/doctors/filteredDoctors';
   static String hospitalDetails(String hospitalId) =>
