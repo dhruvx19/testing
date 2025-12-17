@@ -187,14 +187,13 @@ enum EcliniqIcons {
   stethoscopeBlue('$_base/StethoscopeBlue.svg'),
   scissors('$_base/Scissors.svg'),
   requestedIcon('$_base/Diploma Verified.svg'),
-  progressIndicator('$_base/progress_indicator.svg');
+  progressIndicator('$_base/progress_indicator.svg'),
   sortAlt('$_base/Frame 3 (6).svg'),
   arrowRightBlue('$_base/Dropdown.svg'),
   locationSheet('$_base/location_sheet.svg'),
   noDoctor('$_base/no_doctor.svg'),
   noHospital('$_base/no_hospital.svg'),
-  noNotifications('$_base/no_notif.svg'),
-  requestedIcon('$_base/Diploma Verified.svg');
+  noNotifications('$_base/no_notif.svg');
 
   //speciality
 
