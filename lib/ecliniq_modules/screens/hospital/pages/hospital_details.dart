@@ -1,7 +1,7 @@
 import 'package:ecliniq/ecliniq_core/auth/session_service.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
-import 'package:ecliniq/ecliniq_modules/screens/home/widgets/easy_to_book.dart';
+import 'package:ecliniq/ecliniq_icons/assets/home/widgets/easy_to_book.dart';
 import 'package:ecliniq/ecliniq_modules/screens/hospital/pages/branches.dart';
 import 'package:ecliniq/ecliniq_modules/screens/hospital/pages/hospital_doctors.dart';
 import 'package:ecliniq/ecliniq_modules/screens/hospital/pages/surgeries_list.dart';

@@ -380,8 +380,8 @@ class HospitalService {
       // Implement search endpoint when available
       // For now, fetch all hospitals and filter locally
       final response = await getTopHospitals(
-        latitude: latitude ?? 28.6139,
-        longitude: longitude ?? 77.209,
+        latitude:  28.6139,
+        longitude:  77.209,
       );
 
       if (response.success) {

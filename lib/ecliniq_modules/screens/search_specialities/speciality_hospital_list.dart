@@ -4,14 +4,18 @@ import 'package:ecliniq/ecliniq_api/hospital_service.dart';
 import 'package:ecliniq/ecliniq_api/models/hospital.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
+import 'package:ecliniq/ecliniq_icons/assets/home/widgets/top_bar_widgets/location_search.dart';
 import 'package:ecliniq/ecliniq_modules/screens/hospital/pages/hospital_details.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
-import 'package:ecliniq/ecliniq_ui/lib/widgets/button/button.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
+import 'package:ecliniq/widgets/horizontal_divider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 class SpecialityHospitalList extends StatefulWidget {
-  const SpecialityHospitalList({super.key});
+  final String? initialSpeciality;
+
+  const SpecialityHospitalList({super.key, this.initialSpeciality});
 
   @override
   State<SpecialityHospitalList> createState() => _SpecialityHospitalListState();
@@ -20,6 +24,7 @@ class SpecialityHospitalList extends StatefulWidget {
 class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
   final HospitalService _hospitalService = HospitalService();
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _categoryScrollController = ScrollController();
 
   List<Hospital> _hospitals = [];
   bool _isLoading = true;
@@ -28,21 +33,57 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
   String _selectedCategory = 'All';
   final String _currentLocation = 'Vishnu Dev Nagar, Wakad';
 
-  // Hardcoded location as per request
   final double _latitude = 28.6139;
   final double _longitude = 77.209;
+
+  // Updated category list for hospitals
+  final List<String> _categories = [
+    'All',
+    'Multispeciality',
+    'Super Speciality',
+    'Eye Care',
+    'Dental Care',
+    'Orthopaedic',
+    'Cardiac Care',
+    'Maternity',
+    'Children',
+    'Cancer Care',
+  ];
+
+  // Keys for each category to measure their positions
+  final Map<String, GlobalKey> _categoryKeys = {};
 
   @override
   void initState() {
     super.initState();
+    // Initialize keys for all categories
+    for (var category in _categories) {
+      _categoryKeys[category] = GlobalKey();
+    }
+
+    if (widget.initialSpeciality != null) {
+      _selectedCategory = widget.initialSpeciality!;
+      // Add initial speciality if not in list
+      if (!_categories.contains(widget.initialSpeciality)) {
+        _categories.insert(1, widget.initialSpeciality!);
+        _categoryKeys[widget.initialSpeciality!] = GlobalKey();
+      }
+    }
+
     _fetchHospitals();
     _searchController.addListener(_onSearchChanged);
+
+    // Auto scroll to initial category after build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToCategory(_selectedCategory);
+    });
   }
 
   @override
   void dispose() {
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
+    _categoryScrollController.dispose();
     super.dispose();
   }
 
@@ -52,10 +93,38 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
     });
   }
 
+  void _scrollToCategory(String category) {
+    final key = _categoryKeys[category];
+    if (key?.currentContext != null) {
+      final RenderBox renderBox =
+          key!.currentContext!.findRenderObject() as RenderBox;
+      final position = renderBox.localToGlobal(Offset.zero);
+      final screenWidth = MediaQuery.of(context).size.width;
+      final boxWidth = renderBox.size.width;
+
+      // Calculate scroll offset to center the selected category
+      final scrollOffset =
+          _categoryScrollController.offset +
+          position.dx -
+          (screenWidth / 2) +
+          (boxWidth / 2);
+
+      _categoryScrollController.animateTo(
+        scrollOffset.clamp(
+          0.0,
+          _categoryScrollController.position.maxScrollExtent,
+        ),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   void _onCategorySelected(String category) {
     setState(() {
       _selectedCategory = category;
     });
+    _scrollToCategory(category);
   }
 
   Future<void> _fetchHospitals() async {
@@ -94,14 +163,27 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
   }
 
   List<Hospital> get _filteredHospitals {
-    if (_searchQuery.isEmpty) {
-      return _hospitals;
+    List<Hospital> filtered = _hospitals;
+
+    // Filter by category
+    if (_selectedCategory != 'All') {
+      filtered = filtered.where((hospital) {
+        final type = hospital.type.toLowerCase();
+        final category = _selectedCategory.toLowerCase();
+        return type.contains(category) || category.contains(type);
+      }).toList();
     }
-    return _hospitals.where((hospital) {
-      final name = hospital.name.toLowerCase();
-      final city = hospital.city.toLowerCase();
-      return name.contains(_searchQuery) || city.contains(_searchQuery);
-    }).toList();
+
+    // Filter by search query
+    if (_searchQuery.isNotEmpty) {
+      filtered = filtered.where((hospital) {
+        final name = hospital.name.toLowerCase();
+        final city = hospital.city.toLowerCase();
+        return name.contains(_searchQuery) || city.contains(_searchQuery);
+      }).toList();
+    }
+
+    return filtered;
   }
 
   @override
@@ -122,20 +204,24 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
         title: Align(
           alignment: Alignment.centerLeft,
           child: Text(
-            'Hospitals',
+            'Hospital',
             style: EcliniqTextStyles.headlineMedium.copyWith(
               color: const Color(0xff424242),
             ),
           ),
         ),
         actions: [
-          SvgPicture.asset(EcliniqIcons.sort.assetPath, width: 32, height: 32),
+          SvgPicture.asset(
+            EcliniqIcons.sortAlt.assetPath,
+            width: 32,
+            height: 32,
+          ),
           VerticalDivider(
-            color: Colors.grey[400],
+            color: Color(0xffD6D6D6),
             thickness: 1,
             width: 24,
-            indent: 12,
-            endIndent: 12,
+            indent: 18,
+            endIndent: 18,
           ),
           SvgPicture.asset(
             EcliniqIcons.filter.assetPath,
@@ -146,11 +232,11 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
-          child: Container(color: const Color(0xFFB8B8B8), height: 1.0),
+          child: Container(color: const Color(0xFFB8B8B8), height: 0.5),
         ),
       ),
       body: Container(
-        color: const Color(0xffF9F9F9),
+        color: Colors.white,
         child: Column(
           children: [
             const SizedBox(height: 8),
@@ -167,10 +253,10 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
   Widget _buildLocationSection() {
     return GestureDetector(
       onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Location picker coming soon!'),
-            duration: Duration(seconds: 2),
+        EcliniqBottomSheet.show(
+          context: context,
+          child: LocationBottomSheet(
+            currentLocation: 'Vishnu Dev Nagar, Wakad',
           ),
         );
       },
@@ -191,8 +277,14 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
                 color: const Color(0xff424242),
               ),
             ),
-            const SizedBox(width: 4),
-            const Icon(Icons.keyboard_arrow_down, size: 20, color: Color(0xff424242)),
+            SizedBox(width: 10),
+            Container(height: 20, width: 0.5, color: Color(0xffD6D6D6)),
+            const SizedBox(width: 8.0),
+            SvgPicture.asset(
+              EcliniqIcons.arrowDown.assetPath,
+              width: 20,
+              height: 20,
+            ),
           ],
         ),
       ),
@@ -201,122 +293,109 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
 
   Widget _buildSearchBar() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      height: 52,
+      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      height: 48,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xff626060), width: 0.7),
+        border: Border.all(color: Color(0xFF626060), width: 0.5),
       ),
-      child: TextField(
-        controller: _searchController,
-        decoration: InputDecoration(
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide.none,
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide.none,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide.none,
-          ),
-          filled: true,
-          fillColor: Colors.white,
-          prefixIcon: Container(
-            margin: const EdgeInsets.only(left: 4),
-            child: Image.asset(
+      child: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 12, right: 8),
+            child: SvgPicture.asset(
               EcliniqIcons.magnifierMyDoctor.assetPath,
-              width: 20,
-              height: 20,
+              width: 24,
+              height: 24,
             ),
           ),
-          suffixIcon: Container(
-            margin: const EdgeInsets.only(right: 8),
-            child: GestureDetector(
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Voice search coming soon!'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              },
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              textInputAction: TextInputAction.search,
+              style: const TextStyle(
+                color: Color(0xFF424242),
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Search Hospital',
+                hintStyle: TextStyle(
+                  color: Color(0xFF8E8E8E),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w400,
+                ),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+                isDense: true,
+              ),
+              cursorColor: Color(0xFF2372EC),
+              onTapOutside: (_) =>
+                  FocusManager.instance.primaryFocus?.unfocus(),
+            ),
+          ),
+          GestureDetector(
+            onTap: () {},
+            child: Padding(
+              padding: const EdgeInsets.only(right: 12),
               child: SvgPicture.asset(
                 EcliniqIcons.microphone.assetPath,
-                width: 16,
-                height: 16,
+                width: 32,
+                height: 32,
               ),
             ),
           ),
-          hintText: 'Search Hospitals',
-          hintStyle: const TextStyle(
-            color: Color(0xffD6D6D6),
-            fontSize: 18,
-            fontWeight: FontWeight.w400,
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 14,
-          ),
-        ),
-        style: const TextStyle(
-          color: Colors.black87,
-          fontSize: 16,
-          fontWeight: FontWeight.w400,
-        ),
+        ],
       ),
     );
   }
 
   Widget _buildCategoryFilters() {
-    final categories = [
-      'All',
-      'Multispeciality',
-      'Super Speciality',
-      'Eye Care',
-      'Dental Care',
-    ];
-
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(bottom: BorderSide(color: Colors.grey[300]!, width: 1)),
       ),
       child: SingleChildScrollView(
+        controller: _categoryScrollController,
         scrollDirection: Axis.horizontal,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
-            children: categories.map((category) {
+            children: _categories.map((category) {
               final isSelected = _selectedCategory == category;
               return GestureDetector(
+                key: _categoryKeys[category],
                 onTap: () => _onCategorySelected(category),
-                child: Container(
-                  padding: const EdgeInsets.only(
-                    left: 18,
-                    right: 26,
-                    top: 12,
-                    bottom: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: isSelected
-                            ? const Color(0xFF2372EC)
-                            : Colors.transparent,
-                        width: 2,
-                      ),
-                    ),
-                  ),
-                  child: Text(
-                    category,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w400,
-                      color: isSelected ? const Color(0xFF2372EC) : const Color(0xFF626060),
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 24),
+                  child: IntrinsicWidth(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Text(
+                            category,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w400,
+                              color: isSelected
+                                  ? Color(0xFF2372EC)
+                                  : Color(0xFF626060),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          height: 2,
+                          color: isSelected
+                              ? Color(0xFF2372EC)
+                              : Colors.transparent,
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -346,14 +425,12 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.local_hospital_outlined, size: 64, color: Colors.grey[400]),
-            const SizedBox(height: 16),
+            SvgPicture.asset(EcliniqIcons.noHospital.assetPath),
+            const SizedBox(height: 8),
             Text(
-              _searchQuery.isNotEmpty
-                  ? 'No hospitals found matching your search'
-                  : 'No hospitals available',
+              'No Hospital Match Found',
               style: EcliniqTextStyles.bodyMedium.copyWith(
-                color: Colors.grey[600],
+                color: Color(0xff424242),
               ),
               textAlign: TextAlign.center,
             ),
@@ -372,26 +449,13 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
   }
 
   Widget _buildShimmerLoading() {
-    return const Center(
-      child: CircularProgressIndicator(),
-    );
+    return const Center(child: CircularProgressIndicator());
   }
 
   Widget _buildHospitalCard(Hospital hospital) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.0),
-        border: Border.all(color: Colors.grey.shade200, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      decoration: BoxDecoration(color: Colors.white),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -399,52 +463,71 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
           Stack(
             clipBehavior: Clip.none,
             children: [
-              // Cover Image
               Container(
-                height: 196,
+                height: 120,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16.0),
-                    topRight: Radius.circular(16.0),
-                  ),
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
                   color: Colors.grey.shade100,
                 ),
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16.0),
-                    topRight: Radius.circular(16.0),
-                  ),
-                  child: hospital.image.isNotEmpty && _isValidImageUrl(hospital.image)
-                      ? Image.network(
-                          hospital.image,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return _buildImagePlaceholder();
-                          },
-                        )
-                      : _buildImagePlaceholder(),
+                child:
+                    hospital.image.isNotEmpty &&
+                        _isValidImageUrl(hospital.image)
+                    ? Image.network(
+                        hospital.image,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return _buildImagePlaceholder();
+                        },
+                      )
+                    : _buildImagePlaceholder(),
+              ),
+              Positioned(
+                top: 10,
+                right: 10,
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xffFEF9E6),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SvgPicture.asset(
+                            EcliniqIcons.star.assetPath,
+                            width: 18,
+                            height: 18,
+                          ),
+                          const SizedBox(width: 2),
+                          const Text(
+                            '4.0',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Color(0xffBE8B00),
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-
-              // Round Avatar on overlap
               Positioned(
-                left: 12,
-                top: 156, // 196 (image height) - 40 (half avatar height)
+                top: 60,
                 child: Container(
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Color(0xffF8FAFF),
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 3),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    border: Border.all(color: Color(0xff96BFFF), width: 0.5),
                   ),
                   child: Stack(
                     children: [
@@ -475,9 +558,12 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
               ),
             ],
           ),
-
           Padding(
-            padding: const EdgeInsets.only(left: 12.0, right: 12.0, bottom: 12.0, top: 48.0),
+            padding: const EdgeInsets.only(
+              right: 12.0,
+              bottom: 12.0,
+              top: 28.0,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -486,7 +572,7 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
                   hospital.name,
                   style: const TextStyle(
                     fontSize: 20,
-                    color: Colors.black87,
+                    color: Color(0xff424242),
                     fontWeight: FontWeight.w600,
                   ),
                   maxLines: 1,
@@ -495,65 +581,19 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
                 const SizedBox(height: 4),
                 Text(
                   '${hospital.type} | ${hospital.numberOfDoctors}+ Doctors',
-                  style: const TextStyle(fontSize: 16, color: Color(0xff424242)),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xff424242),
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xffFEF9E6),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SvgPicture.asset(
-                            EcliniqIcons.star.assetPath,
-                            width: 18,
-                            height: 18,
-                          ),
-                          const SizedBox(width: 2),
-                          const Text(
-                            '4.0',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Color(0xffBE8B00),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '●',
-                      style: TextStyle(
-                        color: Colors.grey.shade400,
-                        fontSize: 10,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Est in ${hospital.establishmentYear}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Color(0xff424242),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 4),
                 Row(
                   children: [
                     SvgPicture.asset(
-                      EcliniqIcons.mapPoint.assetPath,
+                      EcliniqIcons.mapPointBlack.assetPath,
                       width: 24,
                       height: 24,
                     ),
@@ -582,7 +622,10 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
                             decoration: BoxDecoration(
                               color: const Color(0xffF9F9F9),
                               borderRadius: BorderRadius.circular(4),
-                              border: Border.all(color: const Color(0xffB8B8B8)),
+                              border: Border.all(
+                                color: const Color(0xffB8B8B8),
+                                width: 0.5,
+                              ),
                             ),
                             child: Text(
                               hospital.distance > 0
@@ -591,7 +634,7 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: Color(0xff424242),
-                                fontWeight: FontWeight.w500,
+                                fontWeight: FontWeight.w400,
                               ),
                             ),
                           ),
@@ -600,19 +643,60 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    SvgPicture.asset(
+                      EcliniqIcons.clockCircle.assetPath,
+                      width: 24,
+                      height: 24,
+                    ),
+                    const SizedBox(width: 2),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              'OPD: 10:00 AM - 2:00 PM , 4:00 PM - 6:00 PM',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Color(0xff424242),
+                                fontWeight: FontWeight.w400,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 16),
-
                 Row(
                   children: [
                     Expanded(
-                      child: SizedBox(
-                        height: 50,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(4),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Color(0x4D2372EC),
+                              offset: Offset(2, 2),
+                              blurRadius: 10,
+                              spreadRadius: 0,
+                            ),
+                          ],
+                        ),
+                        height: 52,
                         child: ElevatedButton(
                           onPressed: () {
-                             EcliniqRouter.push(HospitalDetailScreen(hospitalId: hospital.id));
+                            EcliniqRouter.push(
+                              HospitalDetailScreen(hospitalId: hospital.id),
+                            );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2372EC), // Brand Primary
+                            backgroundColor: const Color(0xFF2372EC),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(4),
                             ),
@@ -627,7 +711,7 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
                                 style: TextStyle(
                                   fontSize: 18,
                                   color: Colors.white,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w500,
                                 ),
                                 maxLines: 1,
                               ),
@@ -653,6 +737,8 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
               ],
             ),
           ),
+          const SizedBox(height: 6),
+          HorizontalDivider(color: Color(0xffD6D6D6)),
         ],
       ),
     );
@@ -668,6 +754,7 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
   Widget _buildImagePlaceholder() {
     return Container(
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.all(Radius.circular(12)),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,

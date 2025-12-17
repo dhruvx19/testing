@@ -304,17 +304,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(
-              height: 120,
-              width: 120,
-              child: Image.asset(EcliniqIcons.notification.assetPath),
-            ),
+            SvgPicture.asset(EcliniqIcons.noNotifications.assetPath),
             const SizedBox(height: 4),
             Text(
               'No notifications yet',
-              style: EcliniqTextStyles.headlineSmall.copyWith(
+              style: EcliniqTextStyles.bodyMedium.copyWith(
                 color: const Color(0xff424242),
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w400,
               ),
             ),
             const SizedBox(height: 8),

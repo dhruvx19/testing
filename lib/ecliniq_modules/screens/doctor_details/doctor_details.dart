@@ -12,7 +12,7 @@ import 'package:ecliniq/ecliniq_modules/screens/booking/clinic_visit_slot_screen
 import 'package:ecliniq/ecliniq_modules/screens/doctor_details/widgets/common_widget.dart';
 import 'package:ecliniq/ecliniq_modules/screens/doctor_details/widgets/doctor_hospital_select_bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_modules/screens/doctor_details/widgets/doctor_location_change_sheet.dart';
-import 'package:ecliniq/ecliniq_modules/screens/home/widgets/easy_to_book.dart';
+import 'package:ecliniq/ecliniq_icons/assets/home/widgets/easy_to_book.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/widgets/basic_info.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
