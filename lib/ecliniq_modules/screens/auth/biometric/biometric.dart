@@ -14,12 +14,12 @@ class BiometricSetupPage extends StatefulWidget {
   _BiometricSetupPageState createState() => _BiometricSetupPageState();
 }
 
-class _BiometricSetupPageState extends State<BiometricSetupPage> 
+class _BiometricSetupPageState extends State<BiometricSetupPage>
     with TickerProviderStateMixin {
   bool _isBiometricAvailable = false;
   bool _isLoading = true;
   bool _isEnabling = false;
-  
+
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
   late AnimationController _fadeController;
@@ -40,13 +40,16 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
     _pulseAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
-    
+
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_fadeController);
-    
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(_fadeController);
+
     _pulseController.repeat(reverse: true);
   }
 
@@ -60,12 +63,12 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
   Future<void> _checkBiometricAvailability() async {
     try {
       final available = await BiometricService.isAvailable();
-      
+
       setState(() {
         _isBiometricAvailable = available;
         _isLoading = false;
       });
-      
+
       _fadeController.forward();
     } catch (e) {
       setState(() {
@@ -78,11 +81,11 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
 
   Future<void> _enableBiometric() async {
     setState(() => _isEnabling = true);
-    
+
     try {
       // Get MPIN from storage
       final mpin = await SecureStorageService.getMPIN();
-      
+
       if (mpin == null || mpin.isEmpty) {
         _showErrorSnackBar('MPIN not found. Please set up MPIN first.');
         setState(() => _isEnabling = false);
@@ -91,15 +94,17 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
 
       // Store MPIN with biometric protection
       final success = await SecureStorageService.storeMPINWithBiometric(mpin);
-      
+
       if (success) {
         HapticFeedback.heavyImpact();
-        
+
         if (mounted) {
           _showSuccessDialog();
         }
       } else {
-        _showErrorSnackBar('Failed to enable biometric authentication. Please try again.');
+        _showErrorSnackBar(
+          'Failed to enable biometric authentication. Please try again.',
+        );
       }
     } catch (e) {
       _showErrorSnackBar('Failed to enable biometric authentication.');
@@ -113,7 +118,7 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
   void _showSuccessDialog() {
     // Check if we came from login page (for setting up biometric)
     final cameFromLogin = Navigator.of(context).canPop();
-    
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -155,7 +160,6 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
     );
   }
 
-
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -174,7 +178,6 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
       (route) => route.isFirst,
     );
   }
-  
 
   @override
   Widget build(BuildContext context) {
@@ -260,7 +263,7 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
   Widget _buildBiometricAvailable() {
     final biometricName = BiometricService.getBiometricTypeName();
     final biometricIcon = BiometricService.getBiometricIcon();
-    
+
     return Column(
       children: [
         const SizedBox(height: 40),
@@ -273,11 +276,7 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
               color: Colors.blue.shade50,
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              biometricIcon,
-              size: 64,
-              color: Colors.blue,
-            ),
+            child: Icon(biometricIcon, size: 64, color: Colors.blue),
           ),
         ),
         const SizedBox(height: 32),
@@ -318,10 +317,7 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
                 ? const SizedBox(
                     height: 20,
                     width: 20,
-                    child: EcliniqLoader(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
+                    child: EcliniqLoader(color: Colors.white),
                   )
                 : Text(
                     'Enable $biometricName',
@@ -345,10 +341,7 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
             ),
             child: const Text(
               'Skip for now',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey),
             ),
           ),
         ),
@@ -367,11 +360,7 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
             color: Colors.grey.shade100,
             shape: BoxShape.circle,
           ),
-          child: Icon(
-            Icons.security,
-            size: 64,
-            color: Colors.grey.shade400,
-          ),
+          child: Icon(Icons.security, size: 64, color: Colors.grey.shade400),
         ),
         const SizedBox(height: 32),
         const Text(
@@ -409,10 +398,7 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
             ),
             child: const Text(
               'Continue',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
         ),
@@ -420,5 +406,3 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
     );
   }
 }
-
-
