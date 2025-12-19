@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class DoctorFilterBottomSheet extends StatefulWidget {
   const DoctorFilterBottomSheet({super.key, required this.onFilterChanged});
@@ -581,7 +582,7 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8.0),
-        border: Border.all(color: Color(0xff626060)),
+        border: Border.all(color: Color(0xff626060), width: 0.5),
       ),
       child: Animate(
         effects: const [
@@ -590,69 +591,78 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
             curve: Curves.easeInOut,
           ),
         ],
-        child: TextField(
-          autofocus: widget.autofocus,
-          controller: _controller,
-          decoration: InputDecoration(
-            enabledBorder: outlinedBorder,
-            focusedBorder: outlinedBorder,
-            border: outlinedBorder,
-            filled: true,
-            fillColor: Colors.white,
-            isDense: true,
-            suffixIcon: query.isNotEmpty
-                ? Animate(
-                    effects: const [
-                      FadeEffect(
-                        duration: Duration(milliseconds: 500),
-                        curve: Curves.easeInOut,
-                      ),
-                    ],
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.close,
-                        color: Colors.grey[600],
-                        size: 20,
-                      ),
-                      onPressed: () {
-                        if (widget.onClear != null) {
-                          widget.onClear!();
-                        }
-                        setState(() => query = '');
-                        _controller.clear();
-                      },
-                    ),
-                  )
-                : SizedBox(),
-            prefixIcon: Image.asset(
-              EcliniqIcons.magnifierMyDoctor.assetPath,
-              width: 2,
-              height: 2,
+        child: Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 12, right: 8),
+              child: SvgPicture.asset(
+                EcliniqIcons.magnifierMyDoctor.assetPath,
+                width: 24,
+                height: 24,
+              ),
             ),
-            hintText: widget.hintText,
-            hintStyle: TextStyle(
-              color: Colors.grey[500],
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
+            Expanded(
+              child: TextField(
+                autofocus: widget.autofocus,
+                controller: _controller,
+                decoration: InputDecoration(
+                  enabledBorder: outlinedBorder,
+                  focusedBorder: outlinedBorder,
+                  border: outlinedBorder,
+                  filled: true,
+                  fillColor: Colors.white,
+                  isDense: true,
+                  suffixIcon: query.isNotEmpty
+                      ? Animate(
+                          effects: const [
+                            FadeEffect(
+                              duration: Duration(milliseconds: 500),
+                              curve: Curves.easeInOut,
+                            ),
+                          ],
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.close,
+                              color: Colors.grey[600],
+                              size: 20,
+                            ),
+                            onPressed: () {
+                              if (widget.onClear != null) {
+                                widget.onClear!();
+                              }
+                              setState(() => query = '');
+                              _controller.clear();
+                            },
+                          ),
+                        )
+                      : SizedBox(),
+                  hintText: widget.hintText,
+                  hintStyle: TextStyle(
+                    color: Colors.grey[500],
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 20.0,
+                    vertical: 14.0,
+                  ),
+                ),
+                onChanged: search,
+                textInputAction: TextInputAction.search,
+                style: const TextStyle(
+                  color: Colors.black87,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                ),
+                textAlignVertical: TextAlignVertical.center,
+                cursorColor: Colors.blue,
+                cursorWidth: 1.5,
+                cursorHeight: 20,
+                onTapOutside: (event) =>
+                    FocusManager.instance.primaryFocus?.unfocus(),
+              ),
             ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 20.0,
-              vertical: 14.0,
-            ),
-          ),
-          onChanged: search,
-          textInputAction: TextInputAction.search,
-          style: const TextStyle(
-            color: Colors.black87,
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
-          ),
-          textAlignVertical: TextAlignVertical.center,
-          cursorColor: Colors.blue,
-          cursorWidth: 1.5,
-          cursorHeight: 20,
-          onTapOutside: (event) =>
-              FocusManager.instance.primaryFocus?.unfocus(),
+          ],
         ),
       ),
     );

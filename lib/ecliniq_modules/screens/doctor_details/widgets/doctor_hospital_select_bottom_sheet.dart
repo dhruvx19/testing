@@ -25,73 +25,61 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
   }
 
   void _onLocationTap(String locationId) {
-    final selected = _locations.firstWhere(
-      (loc) => loc.id == locationId,
-    );
+    final selected = _locations.firstWhere((loc) => loc.id == locationId);
     // Automatically navigate when location is selected
     Navigator.pop(context, selected);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Title
-                const Text(
-                  'Select Location',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF424242),
-                  ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Title
+              const Text(
+                'Select Location',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF424242),
                 ),
-                const SizedBox(height: 4),
+              ),
+              const SizedBox(height: 2),
 
-                // Description
-                Text(
-                  _buildDescription(),
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w400,
-                    color: Color(0xFF626060),
-                  ),
+              // Description
+              Text(
+                _buildDescription(),
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xFF626060),
                 ),
-                const SizedBox(height: 20),
+              ),
+              const SizedBox(height: 10),
 
-                // Location options
-                if (_locations.isEmpty)
-                  const _EmptyLocationState()
-                else
-                  ..._locations.map(
-                    (location) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: _LocationCard(
-                        location: location,
-                        isSelected: _selectedLocationId == location.id,
-                        onTap: () => _onLocationTap(location.id),
-                      ),
+              // Location options
+              if (_locations.isEmpty)
+                const _EmptyLocationState()
+              else
+                ..._locations.map(
+                  (location) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _LocationCard(
+                      location: location,
+                      isSelected: _selectedLocationId == location.id,
+                      onTap: () => _onLocationTap(location.id),
                     ),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -122,13 +110,11 @@ class _LocationCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFFF8FAFF) : Colors.white,
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF96BFFF)
-                :  Colors.white,
+            color: isSelected ? const Color(0xFF96BFFF) : Colors.white,
             width: 1,
           ),
           borderRadius: BorderRadius.circular(12),
@@ -136,9 +122,9 @@ class _LocationCard extends StatelessWidget {
         child: Row(
           children: [
             _RadioButton(isSelected: isSelected),
-            const SizedBox(width: 12),
+            const SizedBox(width: 8),
             _LocationIcon(type: location.type),
-            const SizedBox(width: 12),
+            const SizedBox(width: 8),
             Expanded(child: _LocationDetails(location: location)),
           ],
         ),
@@ -159,8 +145,8 @@ class _RadioButton extends StatelessWidget {
       width: 20,
       decoration: BoxDecoration(
         border: Border.all(
-          color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFD1D5DB),
-          width: 2,
+          color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF8E8E8E),
+          width: 1,
         ),
         shape: BoxShape.circle,
         color: isSelected ? const Color(0xFF2563EB) : Colors.white,
@@ -185,18 +171,13 @@ class _LocationIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
-
     return Container(
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color:  const Color(0xFFFFF7F0) ,
+        color: const Color(0xFFFFF7F0),
         borderRadius: BorderRadius.circular(54),
-        border: Border.all(
-          color: const Color(0xFFEC7600) ,
-          width: 0.5,
-        ),
+        border: Border.all(color: const Color(0xFFEC7600), width: 0.5),
       ),
       child: Center(
         child: SvgPicture.asset(
@@ -235,24 +216,33 @@ class _LocationDetails extends StatelessWidget {
         const SizedBox(height: 4),
         Row(
           children: [
-            Expanded(
+            Flexible(
               child: _IconTextRow(
-                icon: EcliniqIcons.map.assetPath,
+                icon: EcliniqIcons.mapPointBlack.assetPath,
                 text: location.area,
               ),
             ),
             const SizedBox(width: 4),
-            const Text(
-              '•',
-              style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-            ),
-            const SizedBox(width: 4),
-            Text(
-              location.distance,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF6B7280),
+
+            Flexible(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF9F9F9),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color: const Color(0xFFB8B8B8),
+                    width: 0.5,
+                  ),
+                ),
+                child: Text(
+                  location.distance,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xFF424242),
+                  ),
+                ),
               ),
             ),
           ],
@@ -273,7 +263,7 @@ class _IconTextRow extends StatelessWidget {
     return Row(
       children: [
         SvgPicture.asset(icon, width: 20, height: 20),
-        const SizedBox(width: 4),
+        const SizedBox(width: 2),
         Expanded(
           child: Text(
             text,
@@ -281,8 +271,8 @@ class _IconTextRow extends StatelessWidget {
               fontSize: 14,
               fontWeight: FontWeight.w400,
               color: Color(0xFF626060),
+              overflow: TextOverflow.ellipsis,
             ),
-            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],

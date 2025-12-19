@@ -148,10 +148,10 @@ class MoreSettingsMenuWidget extends StatelessWidget {
   Widget _buildDivider() {
     return Divider(
       height: 1,
-      thickness: 1,
-      color: Colors.grey[200],
-      indent: 16,
-      endIndent: 20,
+      thickness: 0.5,
+      color: Color(0xffD6D6D6),
+      indent: 8,
+      endIndent: 8,
     );
   }
 }
@@ -219,9 +219,9 @@ class _ReferEarnMenuItem extends StatelessWidget {
                     BlendMode.srcIn,
                   ),
                 ),
-                const SizedBox(width: 16),
-                Container(width: 1, height: 24, color: Color(0xffD6D6D6)),
-                const SizedBox(width: 16),
+                const SizedBox(width: 8),
+                Container(width: 0.5, height: 20, color: Color(0xffD6D6D6)),
+                const SizedBox(width: 8),
                 SvgPicture.asset(
                   EcliniqIcons.share.assetPath,
                   width: 24,

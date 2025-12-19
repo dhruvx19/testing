@@ -113,7 +113,7 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
               color: Color(0xFF424242),
             ),
           ),
-          const SizedBox(height: 8),
+      
           EcliniqText(
             'Enable your location for better services',
             style: EcliniqTextStyles.titleXLarge.copyWith(

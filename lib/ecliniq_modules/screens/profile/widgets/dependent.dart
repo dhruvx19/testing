@@ -32,7 +32,7 @@ class DependentsSection extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 15),
+        const SizedBox(height: 20),
         Center(
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -89,8 +89,8 @@ class _DependentCard extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            width: 70,
-            height: 70,
+            width: 52,
+            height: 52,
             decoration: BoxDecoration(
               color: isAdded ? Color(0xffF2F7FF) : Color(0xffF9F9F9),
               shape: BoxShape.circle,
@@ -141,8 +141,9 @@ class AppUpdateBanner extends StatelessWidget {
     return GestureDetector(
       onTap: onUpdate,
       child: Container(
+        height: 48,
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
         decoration: BoxDecoration(
           color: const Color(0xFF2372EC),
           borderRadius: BorderRadius.circular(8),

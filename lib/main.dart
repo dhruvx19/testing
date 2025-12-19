@@ -1,5 +1,6 @@
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
+import 'package:ecliniq/ecliniq_modules/screens/details/user_details.dart';
 import 'package:ecliniq/ecliniq_modules/screens/health_files/providers/health_files_provider.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/home_screen.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/provider/doctor_provider.dart';

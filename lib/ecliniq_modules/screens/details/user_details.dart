@@ -2,23 +2,22 @@ import 'dart:io';
 
 import 'package:ecliniq/ecliniq_core/auth/session_service.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
+import 'package:ecliniq/ecliniq_icons/assets/home/home_screen.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/details/widgets/add_profile_sheet.dart';
 import 'package:ecliniq/ecliniq_modules/screens/details/widgets/date_picker_sheet.dart';
-import 'package:ecliniq/ecliniq_icons/assets/home/home_screen.dart';
 import 'package:ecliniq/ecliniq_modules/screens/login/profile_help.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/colors.g.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
-import 'package:ecliniq/ecliniq_ui/lib/widgets/button/button.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 
 class UserDetails extends StatefulWidget {
   const UserDetails({super.key});
@@ -207,31 +206,38 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
 
         return SizedBox(
           width: double.infinity,
-          height: 46,
+          height: 52,
           child: GestureDetector(
-            onTap: isButtonEnabled
-                ? () => _handleSaveAndContinue(authProvider)
+            onTapDown: isButtonEnabled
+                ? (_) => setState(() => _isButtonPressed = true)
                 : null,
-            child: Container(
+            onTapUp: isButtonEnabled
+                ? (_) {
+                    setState(() => _isButtonPressed = false);
+                    _handleSaveAndContinue(authProvider);
+                  }
+                : null,
+            onTapCancel: isButtonEnabled
+                ? () => setState(() => _isButtonPressed = false)
+                : null,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 100),
               decoration: BoxDecoration(
-                color: _isButtonPressed
-                    ? Color(0xFF0E4395)
+                color: authProvider.isLoading
+                    ? const Color(0xFF2372EC)
+                    : _isButtonPressed
+                    ? const Color(0xFF0E4395) // Pressed color
                     : isButtonEnabled
-                    ? EcliniqButtonType.brandPrimary.backgroundColor(context)
-                    : EcliniqButtonType.brandPrimary.disabledBackgroundColor(
-                        context,
-                      ),
-                borderRadius: BorderRadius.circular(8),
+                    ? const Color(0xFF2372EC) // Enabled color
+                    : const Color(0xFFF9F9F9), // Disabled color
+                borderRadius: BorderRadius.circular(4),
               ),
               child: authProvider.isLoading
                   ? const Center(
                       child: SizedBox(
                         width: 20,
                         height: 20,
-                        child: EcliniqLoader(
-                          size: 20,
-                          color: Colors.white,
-                        ),
+                        child: EcliniqLoader(size: 20, color: Colors.white),
                       ),
                     )
                   : Row(
@@ -239,19 +245,23 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
                       children: [
                         Text(
                           'Save & Continue',
-                          style: EcliniqTextStyles.titleXLarge.copyWith(
-                            color: _isButtonPressed
+                          style: EcliniqTextStyles.headlineMedium.copyWith(
+                            color: isButtonEnabled
                                 ? Colors.white
-                                : isButtonEnabled
-                                ? Colors.white
-                                : Colors.grey,
+                                : const Color(0xffD6D6D6),
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Icon(
-                          Icons.arrow_forward,
-                          color: isButtonEnabled ? Colors.white : Colors.grey,
-                          size: 20,
+                        SvgPicture.asset(
+                          EcliniqIcons.arrowRightWhite.assetPath,
+                          width: 24,
+                          height: 24,
+                          colorFilter: ColorFilter.mode(
+                            isButtonEnabled
+                                ? Colors.white
+                                : const Color(0xFF8E8E8E),
+                            BlendMode.srcIn,
+                          ),
                         ),
                       ],
                     ),
@@ -270,7 +280,7 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
           appBar: AppBar(
             backgroundColor: EcliniqScaffold.primaryBlue,
             title: Text(
-              'Clinic Visit Slot',
+              'Profile Details',
               style: EcliniqTextStyles.headlineMedium.copyWith(
                 color: Colors.white,
               ),
@@ -283,16 +293,20 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
                 child: Row(
                   children: [
                     SvgPicture.asset(
-                      EcliniqIcons.questionMark.assetPath,
+                      EcliniqIcons.questionCircleWhite.assetPath,
                       width: 24,
                       height: 24,
                     ),
                     const SizedBox(width: 4),
                     const Text(
                       'Help',
-                      style: TextStyle(color: Colors.white, fontSize: 16),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 10),
                   ],
                 ),
               ),
@@ -315,7 +329,7 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
                       children: [
                         Expanded(
                           child: SingleChildScrollView(
-                            padding: const EdgeInsets.all(24),
+                            padding: const EdgeInsets.all(20),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -332,8 +346,8 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
                                             border: Border.all(
-                                              color: Primitives.lightBlue,
-                                              width: 2,
+                                              color: Color(0xff96BFFF),
+                                              width: 0.5,
                                             ),
                                             image: _selectedProfilePhoto != null
                                                 ? DecorationImage(
@@ -344,7 +358,7 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
                                                   )
                                                 : null,
                                             color: _selectedProfilePhoto == null
-                                                ? Primitives.lightBackground
+                                                ? Color(0xffF8FAFF)
                                                 : null,
                                           ),
                                           child: _selectedProfilePhoto == null
@@ -352,20 +366,27 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
                                                   mainAxisAlignment:
                                                       MainAxisAlignment.center,
                                                   children: [
-                                                    Icon(
-                                                      Icons.add,
-                                                      size: 34,
-                                                      color:
-                                                          Primitives.brightBlue,
+                                                    SvgPicture.asset(
+                                                      EcliniqIcons
+                                                          .add
+                                                          .assetPath,
+                                                      width: 48,
+                                                      height: 48,
+                                                      colorFilter:
+                                                          ColorFilter.mode(
+                                                            Color(0xff2372EC),
+                                                            BlendMode.srcIn,
+                                                          ),
                                                     ),
-                                                    const SizedBox(height: 4),
+
                                                     EcliniqText(
                                                       'Upload Photo',
                                                       style: EcliniqTextStyles
                                                           .headlineXMedium
                                                           .copyWith(
-                                                            color: Primitives
-                                                                .brightBlue,
+                                                            color: Color(
+                                                              0xff2372EC,
+                                                            ),
                                                           ),
                                                     ),
                                                   ],
@@ -400,7 +421,7 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
                                   ),
                                 ),
 
-                                const SizedBox(height: 32),
+                                const SizedBox(height: 22),
 
                                 _buildFormField(
                                   label: 'First Name',
@@ -415,7 +436,7 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
                                   },
                                 ),
 
-                                const SizedBox(height: 20),
+                                const SizedBox(height: 22),
 
                                 _buildFormField(
                                   label: 'Last Name',
@@ -430,11 +451,11 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
                                   },
                                 ),
 
-                                const SizedBox(height: 20),
+                                const SizedBox(height: 22),
 
                                 _buildDateField(),
 
-                                const SizedBox(height: 20),
+                                const SizedBox(height: 22),
 
                                 _buildGenderField(),
                               ],
@@ -443,9 +464,10 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
                         ),
 
                         Container(
-                          padding: const EdgeInsets.all(24),
+                          padding: const EdgeInsets.all(18),
                           child: _buildSaveButton(),
                         ),
+                        const SizedBox(height: 10),
                       ],
                     ),
                   ),
@@ -472,19 +494,20 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
           text: TextSpan(
             text: label,
             style: EcliniqTextStyles.headlineXMedium.copyWith(
-              color: Colors.black87,
+              color: Color(0xff626060),
             ),
             children: isRequired
                 ? [
                     const TextSpan(
-                      text: ' •',
-                      style: TextStyle(color: Colors.red),
+                      text: '•',
+
+                      style: TextStyle(fontSize: 20, color: Color(0xffD92D20)),
                     ),
                   ]
                 : null,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         TextFormField(
           controller: controller,
           validator: validator,
@@ -493,22 +516,26 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
           },
           decoration: InputDecoration(
             hintText: hintText,
-            hintStyle: TextStyle(color: Colors.grey.shade500),
+            hintStyle: TextStyle(
+              color: Color(0xffD6D6D6),
+              fontSize: 18,
+              fontWeight: FontWeight.w400,
+            ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Color(0xff626060), width: 0.5),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Color(0xff626060), width: 0.5),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.blue, width: 2),
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Color(0xff626060), width: 0.5),
             ),
             contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 16,
+              horizontal: 12,
+              vertical: 12,
             ),
             filled: true,
             fillColor: Colors.white,
@@ -526,18 +553,17 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
           text: TextSpan(
             text: 'Date Of Birth',
             style: EcliniqTextStyles.headlineXMedium.copyWith(
-              color: Colors.black87,
-              fontSize: 16,
+              color: Color(0xff626060),
             ),
             children: const [
               TextSpan(
-                text: ' *',
-                style: TextStyle(color: Colors.red),
+                text: '•',
+                style: TextStyle(fontSize: 20, color: Color(0xffD92D20)),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         TextFormField(
           controller: _dobController,
           readOnly: true,
@@ -550,23 +576,39 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
           },
           decoration: InputDecoration(
             hintText: 'DD/MM/YYYY',
-            hintStyle: TextStyle(color: Colors.grey.shade500),
-            suffixIcon: const Icon(Icons.calendar_today, color: Colors.grey),
+            hintStyle: TextStyle(
+              color: Color(0xffD6D6D6),
+              fontSize: 18,
+              fontWeight: FontWeight.w400,
+            ),
+
+            suffixIcon: Padding(
+              padding: const EdgeInsets.all(8),
+              child: SvgPicture.asset(
+                EcliniqIcons.calendarDate.assetPath,
+                width: 32,
+                height: 32,
+              ),
+            ),
+            suffixIconConstraints: const BoxConstraints(
+              minWidth: 48,
+              minHeight: 48,
+            ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Color(0xff626060), width: 0.5),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Color(0xff626060), width: 0.5),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.blue, width: 2),
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Color(0xff626060), width: 0.5),
             ),
             contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 16,
+              horizontal: 12,
+              vertical: 12,
             ),
             filled: true,
             fillColor: Colors.white,
@@ -589,27 +631,30 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
             ),
             children: const [
               TextSpan(
-                text: ' *',
-                style: TextStyle(color: Colors.red),
+                text: '•',
+
+                style: TextStyle(fontSize: 20, color: Color(0xffD92D20)),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 4),
         Row(
           children: [
-            Expanded(child: _buildGenderOption('male', Icons.male)),
+            Expanded(child: _buildGenderOption('Male', EcliniqIcons.men)),
             const SizedBox(width: 12),
-            Expanded(child: _buildGenderOption('Female', Icons.female)),
+            Expanded(child: _buildGenderOption('Female', EcliniqIcons.women)),
             const SizedBox(width: 12),
-            Expanded(child: _buildGenderOption('Other', Icons.person)),
+            Expanded(
+              child: _buildGenderOption('Other', EcliniqIcons.genderTrans),
+            ),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildGenderOption(String gender, IconData icon) {
+  Widget _buildGenderOption(String gender, EcliniqIcons icon) {
     final isSelected = _selectedGender == gender;
     return GestureDetector(
       onTap: () {
@@ -618,28 +663,31 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         decoration: BoxDecoration(
           border: Border.all(
-            color: isSelected ? Colors.blue : Colors.grey.shade300,
-            width: 1,
+            color: isSelected ? Color(0xff96BFFF) : Color(0xff8E8E8E),
+            width: 0.5,
           ),
           borderRadius: BorderRadius.circular(4),
-          color: isSelected ? Colors.blue.shade50 : Colors.white,
+          color: isSelected ? Color(0xffF2F7FF) : Colors.white,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: isSelected ? Colors.blue : Colors.black87,
-              size: 24,
+            SvgPicture.asset(
+              icon.assetPath,
+              width: 24,
+              height: 24,
+              colorFilter: isSelected
+                  ? ColorFilter.mode(Color(0xff2372EC), BlendMode.srcIn)
+                  : null,
             ),
             const SizedBox(width: 2),
             EcliniqText(
               gender,
               style: EcliniqTextStyles.headlineMedium.copyWith(
-                color: isSelected ? Primitives.brightBlue : Colors.black54,
+                color: isSelected ? Color(0xff2372EC) : Color(0xff424242),
               ),
             ),
           ],

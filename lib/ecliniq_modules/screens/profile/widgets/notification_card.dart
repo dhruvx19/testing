@@ -160,10 +160,10 @@ class _NotificationsSettingsWidgetState
   Widget _buildDivider() {
     return Divider(
       height: 1,
-      thickness: 1,
-      color: Colors.grey[200],
-      indent: 20,
-      endIndent: 20,
+      thickness: 0.5,
+      color: Color(0xffD6D6D6),
+      indent: 8,
+      endIndent: 8,
     );
   }
 }

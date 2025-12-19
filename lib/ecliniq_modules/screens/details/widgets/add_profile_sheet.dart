@@ -10,7 +10,7 @@ class ProfilePhotoSelector extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20), bottom: Radius.circular(16)),
       ),
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -18,22 +18,21 @@ class ProfilePhotoSelector extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               EcliniqText(
                 'Add Profile Photo',
                 style: EcliniqTextStyles.titleXLarge.copyWith(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xff424242),
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: 24),
-
+          const SizedBox(height: 22),
 
           _buildPhotoOption(
             context: context,
@@ -44,14 +43,13 @@ class ProfilePhotoSelector extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-
           _buildPhotoOption(
             context: context,
             title: 'Upload Photo',
             onTap: () => Navigator.pop(context, 'upload_photo'),
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
         ],
       ),
     );
@@ -67,10 +65,11 @@ class ProfilePhotoSelector extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+        height: 52,
+        
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.shade300),
-          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Color(0xff8E8E8E)),
+          borderRadius: BorderRadius.circular(4),
           color: Colors.white,
         ),
         child: Row(
@@ -79,9 +78,9 @@ class ProfilePhotoSelector extends StatelessWidget {
             Text(
               title,
               style: EcliniqTextStyles.titleMedium.copyWith(
-                fontSize: 16,
+                fontSize: 18,
                 fontWeight: FontWeight.w500,
-                color: Colors.black87,
+                color: Color(0xff424242),
               ),
             ),
           ],

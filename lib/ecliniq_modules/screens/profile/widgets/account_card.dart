@@ -23,7 +23,7 @@ class AccountSettingsMenu extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(10.0),
             child: Text(
               'Account',
               style: EcliniqTextStyles.headlineLarge.copyWith(
@@ -98,7 +98,7 @@ class AccountSettingsMenu extends StatelessWidget {
   Widget _buildDivider() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Divider(height: 1, thickness: 1, color: Colors.grey[200]),
+      child: Divider(height: 1, thickness: 0.5, color: Color(0xffD6D6D6)),
     );
   }
 }

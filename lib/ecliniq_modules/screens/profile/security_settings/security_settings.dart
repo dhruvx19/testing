@@ -73,9 +73,7 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
       context: context,
       barrierDismissible: false,
       barrierColor: Colors.black.withOpacity(0.3),
-      builder: (context) => Center(
-        child: EcliniqLoader(),
-      ),
+      builder: (context) => Center(child: EcliniqLoader()),
     );
 
     // Navigate immediately, API call happens in background on next page
@@ -90,7 +88,7 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
           ),
         ),
       );
-      
+
       // Dismiss loader when navigation completes
       if (mounted) {
         Navigator.of(context, rootNavigator: true).pop();
@@ -104,9 +102,7 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
       context: context,
       barrierDismissible: false,
       barrierColor: Colors.black.withOpacity(0.3),
-      builder: (context) => Center(
-        child: EcliniqLoader(),
-      ),
+      builder: (context) => Center(child: EcliniqLoader()),
     );
 
     // Navigate immediately, API call happens in background on next page
@@ -121,7 +117,7 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
           ),
         ),
       );
-      
+
       // Dismiss loader when navigation completes
       if (mounted) {
         Navigator.of(context, rootNavigator: true).pop();
@@ -131,7 +127,6 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
 
   @override
   Widget build(BuildContext context) {
-
     void handleBiometricPermission() {
       setState(() {
         isOn = !isOn;
@@ -145,29 +140,37 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
     }
 
     Future<void> onPressedChangeMPin() async {
-      // Show loader while navigating
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        barrierColor: Colors.black.withOpacity(0.3),
-        builder: (context) => Center(
-          child: EcliniqLoader(),
-        ),
-      );
+      // Preload phone number before navigating
+      String? phoneNumber;
+      String? maskedPhone;
 
-      // Navigate to change MPIN screen
+      try {
+        final phone = await SecureStorageService.getPhoneNumber();
+        if (phone != null && phone.isNotEmpty) {
+          String processedPhone = phone
+              .replaceAll(RegExp(r'^\+?91'), '')
+              .trim();
+          if (processedPhone.length == 10) {
+            phoneNumber = processedPhone;
+            maskedPhone =
+                '******${processedPhone.substring(processedPhone.length - 4)}';
+          }
+        }
+      } catch (e) {
+        print('Error loading phone number: $e');
+      }
+
+      // Navigate to change MPIN screen with preloaded phone number
       if (mounted) {
         await Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => const ChangeMPINScreen(),
+            builder: (context) => ChangeMPINScreen(
+              preloadedPhoneNumber: phoneNumber,
+              preloadedMaskedPhone: maskedPhone,
+            ),
           ),
         );
-        
-        // Dismiss loader when navigation completes
-        if (mounted) {
-          Navigator.of(context, rootNavigator: true).pop();
-        }
       }
     }
 
@@ -175,7 +178,10 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
+        leadingWidth: 58,
+        titleSpacing: 0,
         leading: IconButton(
+          padding: EdgeInsets.zero,
           icon: SvgPicture.asset(
             EcliniqIcons.arrowLeft.assetPath,
             width: 32,
@@ -198,9 +204,7 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
         ),
       ),
       body: _isInitialLoading
-          ? Center(
-              child: EcliniqLoader(size: 20),
-            )
+          ? Center(child: EcliniqLoader(size: 20))
           : Container(
               padding: EdgeInsets.symmetric(horizontal: 20),
               child: Column(
@@ -212,9 +216,9 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
                     _isExpanded,
                   ),
                   Container(
-                    color: Colors.grey.shade300,
+                    color: Color(0xffD6D6D6),
                     width: double.infinity,
-                    height: 1,
+                    height: 0.5,
                   ),
                   _buildTile(
                     EcliniqIcons.mail.assetPath,
@@ -222,31 +226,31 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
                     onPressedChangeEmail,
                     _isExpanded,
                   ),
-            Container(
-              color: Colors.grey.shade300,
-              width: double.infinity,
-              height: 1,
-            ),
-            _buildTile(
-              EcliniqIcons.password.assetPath,
-              'Change M-PIN',
-              onPressedChangeMPin,
-              _isExpanded,
-            ),
-            Container(
-              color: Colors.grey.shade300,
-              width: double.infinity,
-              height: 1,
-            ),
-            _buildTile(
-              EcliniqIcons.faceScanSquare.assetPath,
-              'Change Biometric Permissions',
-              onPressedChangeBiometricPermissions,
-              _isExpanded,
-            ),
-            if (_isExpanded) ...[
-              _buildDropDown(isOn, handleBiometricPermission),
-            ],
+                  Container(
+                    color: Color(0xffD6D6D6),
+                    width: double.infinity,
+                    height: 0.5,
+                  ),
+                  _buildTile(
+                    EcliniqIcons.password.assetPath,
+                    'Change M-PIN',
+                    onPressedChangeMPin,
+                    _isExpanded,
+                  ),
+                  Container(
+                    color: Color(0xffD6D6D6),
+                    width: double.infinity,
+                    height: 0.5,
+                  ),
+                  _buildTile(
+                    EcliniqIcons.faceScanSquare.assetPath,
+                    'Change Biometric Permissions',
+                    onPressedChangeBiometricPermissions,
+                    _isExpanded,
+                  ),
+                  if (_isExpanded) ...[
+                    _buildDropDown(isOn, handleBiometricPermission),
+                  ],
 
                   Spacer(),
                   Padding(
@@ -259,7 +263,10 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
                           color: Color(0xFFFFF8F8),
-                          border: Border.all(color: Color(0xffEB8B85), width: 0.5),
+                          border: Border.all(
+                            color: Color(0xffEB8B85),
+                            width: 0.5,
+                          ),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Row(
@@ -347,17 +354,26 @@ Widget _buildTile(
                       EcliniqIcons.angleRight.assetPath,
                       width: 24,
                       height: 24,
+                      colorFilter: ColorFilter.mode(
+                        Color(0xff424242),
+                        BlendMode.srcIn,
+                      ),
                     )
                   : (!isExpanded)
                   ? SvgPicture.asset(
                       EcliniqIcons.angleRight.assetPath,
                       width: 24,
                       height: 24,
+                      colorFilter: ColorFilter.mode(
+                        Color(0xff424242),
+                        BlendMode.srcIn,
+                      ),
                     )
                   : SvgPicture.asset(
                       EcliniqIcons.angleDown.assetPath,
                       width: 24,
                       height: 24,
+                      
                     ),
             ],
           ),

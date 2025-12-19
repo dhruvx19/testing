@@ -4,7 +4,7 @@ import 'package:ecliniq/ecliniq_api/auth_service.dart';
 import 'package:ecliniq/ecliniq_core/auth/session_service.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
-import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
@@ -15,12 +15,16 @@ class VerifyExistingAccount extends StatefulWidget {
   final String? challengeId;
   final String? maskedContact;
   final String? existingPhone;
+  final String? preloadedPhone;
+  final String? preloadedMaskedPhone;
 
   const VerifyExistingAccount({
     super.key,
     this.challengeId,
     this.maskedContact,
     this.existingPhone,
+    this.preloadedPhone,
+    this.preloadedMaskedPhone,
   });
 
   @override
@@ -31,8 +35,9 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
   final TextEditingController _otpController = TextEditingController();
   final AuthService _authService = AuthService();
 
-  bool _isLoading = false;
+  bool _isSendingOTP = false;
   bool _isButtonPressed = false;
+  bool _isVerifying = false;
   String? _errorMessage;
   String? _maskedContact;
   String? _challengeId;
@@ -44,15 +49,21 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
   @override
   void initState() {
     super.initState();
-    // Use provided data or fetch if not available
-    if (widget.challengeId != null && widget.maskedContact != null) {
+    
+    // If phone is preloaded, use it and send OTP immediately
+    if (widget.preloadedPhone != null && widget.preloadedMaskedPhone != null) {
+      _maskedContact = widget.preloadedMaskedPhone;
+      // Send OTP immediately without showing loading state
+      _sendOTPToExistingContact();
+    } else if (widget.challengeId != null && widget.maskedContact != null) {
+      // Use provided data if available
       _challengeId = widget.challengeId;
       _maskedContact = widget.maskedContact;
     } else {
-      // Show loading state and fetch OTP
-      _isLoading = true;
+      // Fallback: fetch OTP (this should rarely happen now)
       _sendOTPToExistingContact();
     }
+    
     _startTimer();
   }
 
@@ -65,6 +76,9 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
   }
 
   void _startTimer() {
+    _resendTimer = 150;
+    _canResend = false;
+    _timer?.cancel();
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       if (_isDisposed) {
         timer.cancel();
@@ -91,7 +105,7 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
     if (!mounted) return;
 
     setState(() {
-      _isLoading = true;
+      _isSendingOTP = true;
       _errorMessage = null;
     });
 
@@ -105,23 +119,34 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
       if (!mounted) return;
 
       if (result['success'] == true) {
+        // Process contact to ensure consistent format (remove +91 if present, we'll add it in display)
+        String contact = result['contact'] ?? '';
+        // Remove +91 prefix if present to ensure consistent display format
+        if (contact.startsWith('+91')) {
+          contact = contact.substring(3).trim();
+        } else if (contact.startsWith('91')) {
+          contact = contact.substring(2).trim();
+        }
+        
         setState(() {
           _challengeId = result['challengeId'];
-          _maskedContact =
-              result['contact']; // Use 'contact' field from new API
-          _isLoading = false;
+          // Only update masked contact if we don't have preloaded one
+          if (widget.preloadedMaskedPhone == null) {
+            _maskedContact = contact;
+          }
+          _isSendingOTP = false;
         });
       } else {
         setState(() {
           _errorMessage = result['message'] ?? 'Failed to send OTP';
-          _isLoading = false;
+          _isSendingOTP = false;
         });
       }
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _errorMessage = 'An error occurred: $e';
-        _isLoading = false;
+        _isSendingOTP = false;
       });
     }
   }
@@ -154,8 +179,11 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
       return;
     }
 
+    // Check if already verifying
+    if (_isVerifying) return;
+
     setState(() {
-      _isButtonPressed = true;
+      _isVerifying = true;
       _errorMessage = null;
     });
 
@@ -171,33 +199,104 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
       if (!mounted) return;
 
       if (result['success'] == true) {
+        // Reset verifying state
+        setState(() {
+          _isVerifying = false;
+        });
+        
         // Navigate to add mobile number screen with verificationToken
+        if (!mounted) return;
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) =>
                 AddMobileNumber(verificationToken: result['verificationToken']),
           ),
-        ).then((_) {
-          if (mounted) {
-            setState(() {
-              _isButtonPressed = false;
-            });
-          }
-        });
+        );
       } else {
         setState(() {
           _errorMessage = result['message'] ?? 'Failed to verify OTP';
-          _isButtonPressed = false;
+          _isVerifying = false;
+          _otpController.clear(); // Clear OTP on error
         });
       }
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _errorMessage = 'An error occurred: $e';
-        _isButtonPressed = false;
+        _isVerifying = false;
+        _otpController.clear(); // Clear OTP on error
       });
     }
+  }
+
+  bool get _isOtpValid => _otpController.text.length == 6;
+
+  Widget _buildVerifyButton() {
+    final isButtonEnabled = _isOtpValid && !_isVerifying;
+
+    return SizedBox(
+      width: double.infinity,
+      height: 52,
+      child: GestureDetector(
+        onTapDown: isButtonEnabled
+            ? (_) => setState(() => _isButtonPressed = true)
+            : null,
+        onTapUp: isButtonEnabled
+            ? (_) {
+                setState(() => _isButtonPressed = false);
+                _verifyAndProceed();
+              }
+            : null,
+        onTapCancel: isButtonEnabled
+            ? () => setState(() => _isButtonPressed = false)
+            : null,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 100),
+          decoration: BoxDecoration(
+            color: _isVerifying
+                ? const Color(0xFF2372EC)
+                : _isButtonPressed
+                    ? const Color(0xFF0E4395) // Pressed color
+                    : _isOtpValid
+                        ? const Color(0xFF2372EC) // Enabled color
+                        : const Color(0xffF9F9F9), // Disabled color
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Center(
+            child: _isVerifying
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: EcliniqLoader(color: Colors.white, size: 24),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Verify & Next',
+                        style: EcliniqTextStyles.headlineMedium.copyWith(
+                          color: _isOtpValid
+                              ? Colors.white
+                              : const Color(0xffD6D6D6),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      SvgPicture.asset(
+                        EcliniqIcons.arrowRight.assetPath,
+                        width: 24,
+                        height: 24,
+                        colorFilter: ColorFilter.mode(
+                          _isOtpValid ? Colors.white : const Color(0xff8E8E8E),
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      ),
+    );
   }
 
   String _formatTimer(int seconds) {
@@ -212,7 +311,10 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
+        leadingWidth: 58,
+        titleSpacing: 0,
         leading: IconButton(
+          padding: EdgeInsets.zero,
           icon: SvgPicture.asset(
             EcliniqIcons.arrowLeft.assetPath,
             width: 32,
@@ -220,22 +322,20 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            'Verify Existing Account',
-            style: EcliniqTextStyles.headlineMedium.copyWith(
-              color: Color(0xff424242),
-            ),
+        title: Text(
+          'Verify Existing Account',
+          style: EcliniqTextStyles.headlineMedium.copyWith(
+            color: const Color(0xff424242),
           ),
         ),
+        centerTitle: false,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.2),
-          child: Container(color: Color(0xFFB8B8B8), height: 1.0),
+          child: Container(color: const Color(0xFFB8B8B8), height: 1.0),
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -243,30 +343,10 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
             Text(
               'For your security, please verify your existing account information.',
               style: EcliniqTextStyles.headlineXMedium.copyWith(
-                color: Color(0xff424242),
+                color: const Color(0xff424242),
               ),
             ),
-            if (_isLoading && _maskedContact == null)
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ShimmerLoading(
-                      width: 200,
-                      height: 20,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    SizedBox(height: 8),
-                    ShimmerLoading(
-                      width: 150,
-                      height: 20,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ],
-                ),
-              )
-            else if (_maskedContact != null)
+            if (_maskedContact != null) ...[
               Row(
                 children: [
                   Text(
@@ -274,7 +354,7 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
                     style: EcliniqTextStyles.headlineMedium.copyWith(
                       fontWeight: FontWeight.w400,
                       fontSize: 18,
-                      color: Color(0xff424242),
+                      color: const Color(0xff424242),
                     ),
                   ),
                   Text(
@@ -282,133 +362,104 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
                     style: EcliniqTextStyles.headlineMedium.copyWith(
                       fontWeight: FontWeight.w500,
                       fontSize: 18,
+                      color: const Color(0xff424242),
                     ),
                   ),
                 ],
               ),
-            if (_errorMessage != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Text(
-                  _errorMessage!,
-                  style: EcliniqTextStyles.bodyMedium.copyWith(
-                    color: Colors.red,
-                  ),
-                ),
-              ),
-            SizedBox(height: 24),
-            PinCodeTextField(
-              appContext: context,
-              length: 6,
-              controller: _otpController,
-              autoFocus: true,
-              keyboardType: TextInputType.number,
-              animationType: AnimationType.fade,
-              pinTheme: PinTheme(
-                shape: PinCodeFieldShape.box,
-                borderRadius: BorderRadius.circular(8),
-                fieldHeight: 52,
-                fieldWidth: 45,
-                activeFillColor: Colors.white,
-                selectedFillColor: Colors.white,
-                inactiveFillColor: Colors.white,
-                activeColor: Color(0xff2372EC),
-                selectedColor: Colors.blue,
-                inactiveColor: Colors.grey.shade500,
-                borderWidth: 1,
-                activeBorderWidth: 0.5,
-                selectedBorderWidth: 1,
-                inactiveBorderWidth: 1,
-                fieldOuterPadding: EdgeInsets.symmetric(horizontal: 4),
-              ),
-              enableActiveFill: true,
-              errorTextSpace: 16,
-              onChanged: (value) {
-                if (mounted) {
-                  setState(() {});
-                }
-              },
-            ),
-            SizedBox(height: 8),
-            Row(
-              children: [
-                Text(
-                  'Didn’t receive the OTP',
-                  style: EcliniqTextStyles.bodySmall.copyWith(
-                    color: Color(0xff8E8E8E),
-                  ),
-                ),
-                Spacer(),
-                Row(
-                  children: [
-                    SvgPicture.asset(
-                      EcliniqIcons.clockCircle.assetPath,
-                      width: 16,
-                      height: 16,
+              if (_errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    _errorMessage!,
+                    style: EcliniqTextStyles.bodyMedium.copyWith(
+                      color: Colors.red,
                     ),
-                    SizedBox(width: 4),
-                    Text(
-                      _formatTimer(_resendTimer),
-                      style: EcliniqTextStyles.bodyMedium.copyWith(
-                        color: Colors.grey.shade600,
+                  ),
+                ),
+              const SizedBox(height: 24),
+              PinCodeTextField(
+                appContext: context,
+                length: 6,
+                controller: _otpController,
+                autoFocus: true,
+                keyboardType: TextInputType.number,
+                animationType: AnimationType.fade,
+                pinTheme: PinTheme(
+                  shape: PinCodeFieldShape.box,
+                  borderRadius: BorderRadius.circular(8),
+                  fieldHeight: 52,
+                  fieldWidth: 45,
+                  activeFillColor: Colors.white,
+                  selectedFillColor: Colors.white,
+                  inactiveFillColor: Colors.white,
+                  activeColor: const Color(0xff2372EC),
+                  selectedColor: const Color(0xff2372EC),
+                  inactiveColor: const Color(0xff626060),
+                  borderWidth: 1,
+                  activeBorderWidth: 0.5,
+                  selectedBorderWidth: 1,
+                  inactiveBorderWidth: 1,
+                  fieldOuterPadding: const EdgeInsets.symmetric(horizontal: 2),
+                ),
+                enableActiveFill: true,
+                errorTextSpace: 16,
+                onChanged: (value) {
+                  if (mounted) {
+                    setState(() {
+                      // Clear error message when user starts typing
+                      if (_errorMessage != null) {
+                        _errorMessage = null;
+                      }
+                    });
+                  }
+                },
+                onCompleted: (value) {
+                  // Auto-verify when 6 digits are entered
+                  // _verifyAndProceed(); // Uncomment if you want auto-submit
+                },
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Text(
+                    'Didn\'t receive the OTP',
+                    style: EcliniqTextStyles.bodySmall.copyWith(
+                      color: const Color(0xff8E8E8E),
+                    ),
+                  ),
+                  const Spacer(),
+                  Row(
+                    children: [
+                      SvgPicture.asset(
+                        EcliniqIcons.clockCircle.assetPath,
+                        width: 16,
+                        height: 16,
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            SizedBox(height: 8),
-            GestureDetector(
-              onTap: _canResend ? _resendOTP : null,
-              child: Text(
-                'Resend',
-                style: EcliniqTextStyles.headlineXMedium.copyWith(
-                  color: _canResend ? Color(0xff2372EC) : Colors.grey,
-                ),
-              ),
-            ),
-            Spacer(),
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: GestureDetector(
-                onTap: _isButtonPressed ? null : _verifyAndProceed,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: _isButtonPressed
-                        ? Color(0xFF0E4395)
-                        : (_otpController.text.length == 6)
-                        ? Colors.blue.shade800
-                        : Color(0xffF9F9F9),
-                    borderRadius: BorderRadius.circular(4),
+                      const SizedBox(width: 4),
+                      Text(
+                        _formatTimer(_resendTimer),
+                        style: EcliniqTextStyles.bodySmall.copyWith(
+                          color: const Color(0xff424242),
+                        ),
+                      ),
+                    ],
                   ),
-                  child: Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Verify & Next',
-                          style: EcliniqTextStyles.headlineMedium.copyWith(
-                            color: (_otpController.text.length == 6)
-                                ? Color(0xffffffff)
-                                : Color(0xffD6D6D6),
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        SvgPicture.asset(
-                          EcliniqIcons.arrowRight.assetPath,
-                          width: 24,
-                          height: 24,
-                          color: (_otpController.text.length == 6)
-                              ? Color(0xffffffff)
-                              : Color(0xff8E8E8E),
-                        ),
-                      ],
-                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: _canResend ? _resendOTP : null,
+                child: Text(
+                  'Resend',
+                  style: EcliniqTextStyles.headlineXMedium.copyWith(
+                    color: const Color(0xff2372EC),
                   ),
                 ),
               ),
-            ),
+              const Spacer(),
+              _buildVerifyButton(),
+            ],
           ],
         ),
       ),

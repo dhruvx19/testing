@@ -1,6 +1,5 @@
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 
 class ThankYou extends StatefulWidget {
   const ThankYou({super.key});
@@ -33,18 +32,17 @@ class _ThankYouState extends State<ThankYou> {
               fit: BoxFit.contain,
             ),
           ),
-          _buildHandle(),
-          const SizedBox(height: 16),
+
           Text(
             'Thank you for your Valuable Feedback!',
             style: const TextStyle(
-              fontSize: 24,
+              fontSize: 18,
               fontWeight: FontWeight.w500,
               color: Color(0xFF424242),
             ),
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 22),
 
           _buildSubmitButton(),
           const SizedBox(height: 8),
@@ -53,34 +51,32 @@ class _ThankYouState extends State<ThankYou> {
     );
   }
 
-  Widget _buildHandle() {
-    return Container(
-      width: 40,
-      height: 4,
-      decoration: BoxDecoration(
-        color: Colors.grey[300],
-        borderRadius: BorderRadius.circular(2),
-      ),
-    );
-  }
-
   Widget _buildSubmitButton() {
     return SizedBox(
       width: double.infinity,
       height: 52,
-      child: ElevatedButton(
-        onPressed: () {
+      child: GestureDetector(
+        onTapUp: (_) {
           Navigator.of(context).pop(_tempRating);
         },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF2372EC),
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-        ),
-        child: const Text(
-          'Ok',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 100),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: const Color(0xff8E8E8E), width: 0.5),
+          ),
+          child: const Center(
+            child: Text(
+              'Ok',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: Color(0xff424242),
+              ),
+            ),
+          ),
         ),
       ),
     );

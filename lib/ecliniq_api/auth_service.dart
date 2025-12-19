@@ -177,8 +177,22 @@ class AuthService {
         };
       }
 
+      // Check if success is explicitly false (error response)
+      final isExplicitlyFailed = responseData['success'] == false || 
+                                 responseData['success'] == 'false';
+      
+      if (isExplicitlyFailed) {
+        // API returned explicit failure
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 
+                    responseData['error'] ?? 
+                    'Invalid MPIN or login failed',
+        };
+      }
+
       // Check if success is true (handle both bool and string)
-      // If success field is missing but status is 200, assume success
+      // If success field is missing but status is 200, assume success (for backward compatibility)
       final isSuccess = responseData['success'] == true || 
                        responseData['success'] == 'true' ||
                        (responseData['success'] == null && response.statusCode == 200);

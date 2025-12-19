@@ -3,6 +3,7 @@ import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/provider/hospital_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/hospital/pages/hospital_details.dart';
+import 'package:ecliniq/ecliniq_modules/screens/search_specialities/speciality_hospital_list.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/button/button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -126,7 +127,9 @@ class _TopHospitalsWidgetState extends State<TopHospitalsWidget>
                   ),
                 ),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    EcliniqRouter.push(SpecialityHospitalList());
+                  },
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     minimumSize: Size.zero,
@@ -506,7 +509,7 @@ class _TopHospitalsWidgetState extends State<TopHospitalsWidget>
                 padding: const EdgeInsets.only(
                   left: 12.0,
                   right: 12.0,
-                  bottom: 12.0, 
+                  bottom: 12.0,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

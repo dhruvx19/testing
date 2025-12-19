@@ -119,7 +119,6 @@ enum EcliniqIcons {
   clockCircle('$_base/Clock Circle.svg'),
   arrowRightWhite('$_base/Arrow Right.svg'),
   arrowRight1('$_base/arrow_right.svg'),
-  close('$_base/close.png'),
   caseDoctor('$_base/Case.svg'),
   mailBlue('$_base/MailBlue.svg'),
   mapArrow('$_base/Map Arrow.svg'),
@@ -193,6 +192,17 @@ enum EcliniqIcons {
   locationSheet('$_base/location_sheet.svg'),
   noDoctor('$_base/no_doctor.svg'),
   noHospital('$_base/no_hospital.svg'),
+  calendarCheck('$_base/Calendar Checked.svg'),
+  bookingReceived('$_base/Plane.svg'),
+  verifiedCheckGreen('$_base/ verified_green.svg'),
+  questionCircleWhite('$_base/Question Circle Unfilled.svg'),
+  calendarDate('$_base/calendar_date.svg'),
+  men('$_base/Men.svg'),
+  women('$_base/Women.svg'),
+  genderTrans('$_base/Gender.svg'),
+  questionCircleFilled('$_base/Question Circle Black.svg'),
+  close('$_base/Close.svg'),
+  checkRounded('$_base/Check Round.svg'),
   noNotifications('$_base/no_notif.svg');
 
   //speciality

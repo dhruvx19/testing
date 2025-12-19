@@ -8,11 +8,11 @@ enum NotificationType {
   consultationCompleted,
   bookingConfirmed,
   bookingRequestReceived,
-  bookingCancelled,
-  paymentReceived,
-  prescriptionReady,
-  reminder,
-  labReportReady,
+  //bookingCancelled,
+  // paymentReceived,
+  // prescriptionReady,
+  // reminder,
+  // labReportReady,
 }
 
 class NotificationScreen extends StatefulWidget {
@@ -33,7 +33,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       title: 'Consultation Completed',
       message: 'Your consultation with ',
       highlightText: 'Dr. Milind Chauhan',
-      suffix: ' is Completed',
+      suffix: '',
       time: '3 min ago',
       isRead: false,
       isNew: true,
@@ -81,56 +81,56 @@ class _NotificationScreenState extends State<NotificationScreen> {
       isRead: true,
       isNew: false,
     ),
-    NotificationItem(
-      type: NotificationType.bookingCancelled,
-      title: 'Booking Cancelled',
-      message: 'Your appointment with ',
-      highlightText: 'Dr. Milind Chauhan',
-      suffix: ' has been cancelled.',
-      time: '1 hour ago',
-      isRead: true,
-      isNew: false,
-    ),
-    NotificationItem(
-      type: NotificationType.paymentReceived,
-      title: 'Payment Received',
-      message: 'Payment of ',
-      highlightText: '₹500',
-      suffix: ' received for consultation.',
-      time: '2 hours ago',
-      isRead: true,
-      isNew: false,
-    ),
-    NotificationItem(
-      type: NotificationType.prescriptionReady,
-      title: 'Prescription Ready',
-      message: 'Your prescription from ',
-      highlightText: 'Dr. Milind Chauhan',
-      suffix: ' is ready to view.',
-      time: '1 day ago',
-      isRead: true,
-      isNew: false,
-    ),
-    NotificationItem(
-      type: NotificationType.reminder,
-      title: 'Appointment Reminder',
-      message: 'Reminder: Your appointment with ',
-      highlightText: 'Dr. Milind Chauhan',
-      suffix: ' is tomorrow at 10:00 AM.',
-      time: '1 day ago',
-      isRead: true,
-      isNew: false,
-    ),
-    NotificationItem(
-      type: NotificationType.labReportReady,
-      title: 'Lab Report Ready',
-      message: 'Your ',
-      highlightText: 'Blood Test Report',
-      suffix: ' is now available.',
-      time: '2 days ago',
-      isRead: true,
-      isNew: false,
-    ),
+    // NotificationItem(
+    //   type: NotificationType.bookingCancelled,
+    //   title: 'Booking Cancelled',
+    //   message: 'Your appointment with ',
+    //   highlightText: 'Dr. Milind Chauhan',
+    //   suffix: ' has been cancelled.',
+    //   time: '1 hour ago',
+    //   isRead: true,
+    //   isNew: false,
+    // ),
+    // NotificationItem(
+    //   type: NotificationType.paymentReceived,
+    //   title: 'Payment Received',
+    //   message: 'Payment of ',
+    //   highlightText: '₹500',
+    //   suffix: ' received for consultation.',
+    //   time: '2 hours ago',
+    //   isRead: true,
+    //   isNew: false,
+    // ),
+    // NotificationItem(
+    //   type: NotificationType.prescriptionReady,
+    //   title: 'Prescription Ready',
+    //   message: 'Your prescription from ',
+    //   highlightText: 'Dr. Milind Chauhan',
+    //   suffix: ' is ready to view.',
+    //   time: '1 day ago',
+    //   isRead: true,
+    //   isNew: false,
+    // ),
+    // NotificationItem(
+    //   type: NotificationType.reminder,
+    //   title: 'Appointment Reminder',
+    //   message: 'Reminder: Your appointment with ',
+    //   highlightText: 'Dr. Milind Chauhan',
+    //   suffix: ' is tomorrow at 10:00 AM.',
+    //   time: '1 day ago',
+    //   isRead: true,
+    //   isNew: false,
+    // ),
+    // NotificationItem(
+    //   type: NotificationType.labReportReady,
+    //   title: 'Lab Report Ready',
+    //   message: 'Your ',
+    //   highlightText: 'Blood Test Report',
+    //   suffix: ' is now available.',
+    //   time: '2 days ago',
+    //   isRead: true,
+    //   isNew: false,
+    // ),
   ];
 
   List<NotificationItem> get filteredNotifications {
@@ -254,6 +254,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                               _buildNotificationCard(notification),
                         ),
                       ],
+                      SizedBox(height: 16,),
                       if (hasOlderNotifications) ...[
                         _buildSectionHeader('Older'),
                         ...olderNotifications.map(
@@ -261,7 +262,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
                               _buildNotificationCard(notification),
                         ),
                       ],
-                      const SizedBox(height: 16),
                     ],
                   )
                 : _buildEmptyState(),
@@ -279,7 +279,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       child: Text(
         title,
         style: EcliniqTextStyles.bodySmall.copyWith(
-          color: const Color(0xff424242),
+          color: const Color(0xff111111),
           fontWeight: FontWeight.w400,
         ),
       ),
@@ -323,12 +323,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
         _navigateToDetails(notification);
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.only(left: 16, right: 16, bottom: 0, top: 16),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE0E0E0)),
+          border: Border.all(color: Color(0x0D111111), width: 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -340,9 +340,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 Expanded(
                   child: Text(
                     notification.title,
-                    style: EcliniqTextStyles.bodyLarge.copyWith(
+                    style: EcliniqTextStyles.titleXBLarge.copyWith(
                       color: const Color(0xff424242),
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
@@ -355,22 +355,29 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     children: [
                       Text(
                         'View Details',
-                        style: EcliniqTextStyles.bodyMedium.copyWith(
+                        style: EcliniqTextStyles.bodySmall.copyWith(
                           color: const Color(0xFF2372EC),
                         ),
                       ),
-                      const SizedBox(width: 2),
-                      Icon(
-                        Icons.chevron_right,
-                        color: const Color(0xFF2372EC),
-                        size: 18,
+
+                      SvgPicture.asset(
+                        EcliniqIcons.arrowRightBlue.assetPath,
+                        width: 16,
+                        height: 16,
                       ),
                     ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Color(0x0D111111), width: 1),
+              ),
+            ),
+            const SizedBox(height: 8),
             // Content Row
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -385,15 +392,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     children: [
                       _buildMessageText(notification),
                       const SizedBox(height: 4),
-                      Text(
-                        notification.time,
-                        style: EcliniqTextStyles.bodySmall.copyWith(
-                          color: const Color(0xff8E8E8E),
-                        ),
-                      ),
                     ],
                   ),
                 ),
+
                 // Unread indicator
                 if (!notification.isRead)
                   Container(
@@ -401,11 +403,20 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     height: 10,
                     margin: const EdgeInsets.only(left: 8, top: 4),
                     decoration: const BoxDecoration(
-                      color: Color(0xFFE53935),
+                      color: Color(0xFFF1001D),
                       shape: BoxShape.circle,
                     ),
                   ),
               ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              notification.time,
+              style: EcliniqTextStyles.bodySmall.copyWith(
+                color: const Color(0x00000000).withOpacity(0.6),
+                fontSize: 14,
+                fontWeight: FontWeight.w300,
+              ),
             ),
           ],
         ),
@@ -414,51 +425,36 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 
   Widget _buildNotificationIcon(NotificationType type) {
-    IconData iconData;
+    EcliniqIcons iconData;
     Color iconColor;
     Color bgColor;
 
     switch (type) {
       case NotificationType.consultationCompleted:
-        iconData = Icons.check;
-        iconColor = const Color(0xFF4CAF50);
-        bgColor = const Color(0xFFE8F5E9);
+        iconData = EcliniqIcons.verifiedCheckGreen;
+        iconColor = const Color(0xFF3EAF3F);
+        bgColor = const Color(0xFFF2FFF3);
         break;
       case NotificationType.bookingConfirmed:
-        iconData = Icons.event_available;
-        iconColor = const Color(0xFF4CAF50);
-        bgColor = const Color(0xFFE8F5E9);
+        iconData = EcliniqIcons.calendarCheck;
+        iconColor = const Color(0xFF3EAF3F);
+        bgColor = const Color(0xFFF2FFF3);
         break;
       case NotificationType.bookingRequestReceived:
-        iconData = Icons.send;
-        iconColor = const Color(0xFF2372EC);
-        bgColor = const Color(0xFFE3F2FD);
+        iconData = EcliniqIcons.bookingReceived;
+        iconColor = const Color(0xFF96BFFF);
+        bgColor = const Color(0xFFF8FAFF);
         break;
-      case NotificationType.bookingCancelled:
-        iconData = Icons.cancel_outlined;
-        iconColor = const Color(0xFFE53935);
-        bgColor = const Color(0xFFFFEBEE);
-        break;
-      case NotificationType.paymentReceived:
-        iconData = Icons.payment;
-        iconColor = const Color(0xFF4CAF50);
-        bgColor = const Color(0xFFE8F5E9);
-        break;
-      case NotificationType.prescriptionReady:
-        iconData = Icons.description_outlined;
-        iconColor = const Color(0xFF9C27B0);
-        bgColor = const Color(0xFFF3E5F5);
-        break;
-      case NotificationType.reminder:
-        iconData = Icons.alarm;
-        iconColor = const Color(0xFFFF9800);
-        bgColor = const Color(0xFFFFF3E0);
-        break;
-      case NotificationType.labReportReady:
-        iconData = Icons.science_outlined;
-        iconColor = const Color(0xFF00BCD4);
-        bgColor = const Color(0xFFE0F7FA);
-        break;
+      // case NotificationType.bookingCancelled:
+      //   iconData = EcliniqIcons.cancel_outlined;
+      //   iconColor = const Color(0xFFE53935);
+      //   bgColor = const Color(0xFFFFEBEE);
+      //   break;
+      // case NotificationType.reminder:
+      //   iconData = EcliniqIcons.alarm;
+      //   iconColor = const Color(0xFFFF9800);
+      //   bgColor = const Color(0xFFFFF3E0);
+      //   break;
     }
 
     return Container(
@@ -467,9 +463,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
       decoration: BoxDecoration(
         color: bgColor,
         shape: BoxShape.circle,
-        border: Border.all(color: iconColor.withOpacity(0.3), width: 1),
+        border: Border.all(color: iconColor, width: 0.5),
       ),
-      child: Center(child: Icon(iconData, color: iconColor, size: 24)),
+      child: Center(
+        child: SvgPicture.asset(iconData.assetPath, width: 24, height: 24),
+      ),
     );
   }
 
@@ -480,17 +478,36 @@ class _NotificationScreenState extends State<NotificationScreen> {
           color: const Color(0xff424242),
         ),
         children: [
-          TextSpan(text: notification.message),
+          TextSpan(
+            text: notification.message,
+            style: const TextStyle(
+              fontSize: 16,
+              color: Color(0xff424242),
+              fontWeight: FontWeight.w300,
+            ),
+          ),
           TextSpan(
             text: notification.highlightText,
-            style: const TextStyle(fontWeight: FontWeight.w600),
+            style: const TextStyle(
+              fontSize: 16,
+              color: Color(0xff424242),
+              fontWeight: FontWeight.w500,
+            ),
           ),
-          TextSpan(text: notification.suffix),
+          TextSpan(
+            text: notification.suffix,
+            style: const TextStyle(
+              fontSize: 16,
+              color: Color(0xff424242),
+              fontWeight: FontWeight.w300,
+            ),
+          ),
           if (notification.tokenInfo != null)
             TextSpan(
               text: notification.tokenInfo,
               style: const TextStyle(
-                color: Color(0xFF4CAF50),
+                fontSize: 16,
+                color: Color(0xFF3EAF3F),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -572,16 +589,15 @@ class _NotificationScreenState extends State<NotificationScreen> {
               _buildFilterOption('Bookings', [
                 NotificationType.bookingConfirmed,
                 NotificationType.bookingRequestReceived,
-                NotificationType.bookingCancelled,
               ]),
-              _buildFilterOption('Payments', [
-                NotificationType.paymentReceived,
-              ]),
-              _buildFilterOption('Reports', [
-                NotificationType.prescriptionReady,
-                NotificationType.labReportReady,
-              ]),
-              _buildFilterOption('Reminders', [NotificationType.reminder]),
+              // _buildFilterOption('Payments', [
+              //   NotificationType.paymentReceived,
+              // ]),
+              // _buildFilterOption('Reports', [
+              //   NotificationType.prescriptionReady,
+              //   NotificationType.labReportReady,
+              // ]),
+              // _buildFilterOption('Reminders', [NotificationType.reminder]),
               const SizedBox(height: 16),
             ],
           ),
@@ -615,19 +631,19 @@ class _NotificationScreenState extends State<NotificationScreen> {
         break;
       case NotificationType.bookingConfirmed:
       case NotificationType.bookingRequestReceived:
-      case NotificationType.bookingCancelled:
-        // Navigate to booking details
-        break;
-      case NotificationType.paymentReceived:
-        // Navigate to payment details
-        break;
-      case NotificationType.prescriptionReady:
-        // Navigate to prescription
-        break;
-      case NotificationType.reminder:
-        // Navigate to appointment
-        break;
-      case NotificationType.labReportReady:
+        // case NotificationType.bookingCancelled:
+        //   // Navigate to booking details
+        //   break;
+        // case NotificationType.paymentReceived:
+        //   // Navigate to payment details
+        //   break;
+        // case NotificationType.prescriptionReady:
+        //   // Navigate to prescription
+        //   break;
+        // case NotificationType.reminder:
+        //   // Navigate to appointment
+        //   break;
+        // case NotificationType.labReportReady:
         // Navigate to lab reports
         break;
     }

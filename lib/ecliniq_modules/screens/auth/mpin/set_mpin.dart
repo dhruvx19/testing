@@ -201,14 +201,14 @@ class _MPINSetState extends State<MPINSet> with TickerProviderStateMixin {
             final hasValidSession = await SessionService.hasValidSession();
             if (hasValidSession) {
               // User is authenticated - this is change MPIN from security settings
-              // Navigate back to security settings
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const SecuritySettingsOptions(),
-                ),
-                (route) => false,
-              );
+              // Navigation stack: SecuritySettings -> ChangeMPIN -> MPINSet
+              // Pop twice to get back to SecuritySettings (pop MPINSet, then pop ChangeMPIN)
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context); // Pop MPINSet
+              }
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context); // Pop ChangeMPIN, now at SecuritySettings
+              }
             } else {
               // User is not authenticated - this is forget PIN from login
               // Navigate back to login

@@ -148,21 +148,23 @@ class ProfileHeader extends StatelessWidget {
             alignment: Alignment.bottomCenter,
             child: ShaderMask(
               shaderCallback: (bounds) {
-                return LinearGradient(
+                return const LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.white.withOpacity(1.0),
-                    Colors.white.withOpacity(0.0),
+                    Color(0xFFFFFFFF), // 100% opacity white at top
+                    Color(0x00FFFFFF), // 0% opacity white at bottom
                   ],
+                  stops: [0.0, 1.0],
                 ).createShader(bounds);
               },
+              blendMode: BlendMode.srcIn,
               child: const Text(
                 "Profile",
                 style: TextStyle(
-                  fontSize: 74,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 1,
+                  fontSize: 64,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.3,
                   color: Colors.white,
                 ),
               ),

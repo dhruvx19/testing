@@ -13,11 +13,11 @@ import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/action_snackbar.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/error_snackbar.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/success_snackbar.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 
 import '../../../../ecliniq_utils/responsive_helper.dart';
 
@@ -122,13 +122,13 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
       } else {
         String errorTitle = 'Failed to Add Dependent';
         String errorSubtitle = provider.errorMessage ?? 'Please try again';
-        
+
         if (provider.errorMessage != null) {
           final apiErrors = _parseApiErrors(provider.errorMessage!);
           if (apiErrors.isNotEmpty) {
             errorTitle = 'Action Required';
             errorSubtitle = apiErrors.join('\n');
-            
+
             ScaffoldMessenger.of(context).hideCurrentSnackBar();
             ScaffoldMessenger.of(context).showSnackBar(
               CustomActionSnackBar(
@@ -141,7 +141,7 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
             return;
           }
         }
-        
+
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
           CustomErrorSnackBar(
@@ -179,8 +179,7 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
           }).toList();
         }
       }
-    } catch (e) {
-    }
+    } catch (e) {}
     return [];
   }
 
@@ -245,262 +244,264 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                   top: Radius.circular(20),
                 ),
               ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: EdgeInsets.all(titlePadding),
-                  child: Text(
-                    'Add Dependent',
-                    style: EcliniqTextStyles.headlineLarge.copyWith(
-                      color: Color(0xff424242),
-                      fontWeight: FontWeight.w500,
-                      fontSize: 24,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.all(titlePadding),
+                    child: Text(
+                      'Add Dependent',
+                      style: EcliniqTextStyles.headlineLarge.copyWith(
+                        color: Color(0xff424242),
+                        fontWeight: FontWeight.w500,
+                        fontSize: 24,
+                      ),
                     ),
                   ),
-                ),
 
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: horizontalPadding,
-                    ),
-                    child: Column(
-                      children: [
-                        // Updated profile photo section matching UserDetails style
-                        Center(
-                          child: GestureDetector(
-                            onTap: () => _uploadPhoto(provider),
-                            child: Stack(
-                              children: [
-                                Container(
-                                  width: 120,
-                                  height: 120,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Color(0xff96BFFF),
-                                      width: 0.5,
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: horizontalPadding,
+                      ),
+                      child: Column(
+                        children: [
+                          // Updated profile photo section matching UserDetails style
+                          Center(
+                            child: GestureDetector(
+                              onTap: () => _uploadPhoto(provider),
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    width: 120,
+                                    height: 120,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Color(0xff96BFFF),
+                                        width: 0.5,
+                                      ),
+                                      image:
+                                          provider.selectedProfilePhoto != null
+                                          ? DecorationImage(
+                                              image: FileImage(
+                                                provider.selectedProfilePhoto!,
+                                              ),
+                                              fit: BoxFit.cover,
+                                            )
+                                          : null,
+                                      color:
+                                          provider.selectedProfilePhoto == null
+                                          ? Primitives.lightBackground
+                                          : null,
                                     ),
-                                    image: provider.selectedProfilePhoto != null
-                                        ? DecorationImage(
-                                            image: FileImage(
-                                              provider.selectedProfilePhoto!,
-                                            ),
-                                            fit: BoxFit.cover,
+                                    child: provider.selectedProfilePhoto == null
+                                        ? Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              SvgPicture.asset(
+                                                EcliniqIcons.add.assetPath,
+                                                width: 48,
+                                                height: 48,
+                                                colorFilter: ColorFilter.mode(
+                                                  Color(0xff2372EC),
+                                                  BlendMode.srcIn,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              EcliniqText(
+                                                'Upload \nPhoto',
+                                                textAlign: TextAlign.center,
+                                                style: EcliniqTextStyles
+                                                    .titleXLarge
+                                                    .copyWith(
+                                                      color: Color(0xff2372EC),
+                                                    ),
+                                              ),
+                                            ],
                                           )
                                         : null,
-                                    color: provider.selectedProfilePhoto == null
-                                        ? Primitives.lightBackground
-                                        : null,
                                   ),
-                                  child: provider.selectedProfilePhoto == null
-                                      ? Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            SvgPicture.asset(
-                                              EcliniqIcons.add.assetPath,
-                                              width: 48,
-                                              height: 48,
-                                              colorFilter: ColorFilter.mode(
-                                                Color(0xff2372EC),
-                                                BlendMode.srcIn,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            EcliniqText(
-                                              'Upload \nPhoto',
-                                              textAlign: TextAlign.center,
-                                              style: EcliniqTextStyles
-                                                  .titleXLarge
-                                                  .copyWith(
-                                                    color: Color(0xff2372EC),
-                                                  ),
-                                            ),
-                                          ],
-                                        )
-                                      : null,
-                                ),
 
-                                // Edit icon overlay when photo is selected
-                                if (provider.selectedProfilePhoto != null)
-                                  Positioned(
-                                    bottom: 0,
-                                    right: 0,
-                                    child: Container(
-                                      width: 40,
-                                      height: 40,
-                                      decoration: BoxDecoration(
-                                        color: Primitives.brightBlue,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
+                                  // Edit icon overlay when photo is selected
+                                  if (provider.selectedProfilePhoto != null)
+                                    Positioned(
+                                      bottom: 0,
+                                      right: 0,
+                                      child: Container(
+                                        width: 40,
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          color: Primitives.brightBlue,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.white,
+                                            width: 3,
+                                          ),
+                                        ),
+                                        child: const Icon(
+                                          Icons.edit,
                                           color: Colors.white,
-                                          width: 3,
+                                          size: 20,
                                         ),
                                       ),
-                                      child: const Icon(
-                                        Icons.edit,
-                                        color: Colors.white,
-                                        size: 20,
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(height: verticalSpacing),
+
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _isExpanded = !_isExpanded;
+                              });
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Personal Details',
+                                      style: EcliniqTextStyles.headlineMedium
+                                          .copyWith(color: Color(0xff424242)),
+                                    ),
+                                    Text(
+                                      '•',
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                        fontSize: 20,
                                       ),
                                     ),
-                                  ),
+                                  ],
+                                ),
+
+                                SvgPicture.asset(
+                                  width: 24,
+                                  height: 24,
+                                  _isExpanded
+                                      ? EcliniqIcons.arrowUp.assetPath
+                                      : EcliniqIcons.arrowDown.assetPath,
+                                  color: Color(0xff8E8E8E),
+                                ),
                               ],
                             ),
                           ),
-                        ),
 
-                        SizedBox(height: verticalSpacing),
-
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _isExpanded = !_isExpanded;
-                            });
-                          },
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    'Personal Details',
-                                    style: EcliniqTextStyles.headlineMedium
-                                        .copyWith(color: Color(0xff424242)),
-                                  ),
-                                  Text(
-                                    '•',
-                                    style: TextStyle(
-                                      color: Colors.red,
-                                      fontSize: 20,
+                          if (_isExpanded) ...[PersonalDetailsWidget()],
+                          SizedBox(height: 20),
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _isExpandedPhysicalInfo =
+                                    !_isExpandedPhysicalInfo;
+                              });
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Physical Info',
+                                      style: EcliniqTextStyles.headlineMedium
+                                          .copyWith(color: Color(0xff424242)),
                                     ),
-                                  ),
-                                ],
-                              ),
-
-                              SvgPicture.asset(
-                                width: 24,
-                                height: 24,
-                                _isExpanded
-                                    ? EcliniqIcons.arrowUp.assetPath
-                                    : EcliniqIcons.arrowDown.assetPath,
-                                color: Color(0xff8E8E8E),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        if (_isExpanded) ...[PersonalDetailsWidget()],
-                        SizedBox(height: 20),
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _isExpandedPhysicalInfo =
-                                  !_isExpandedPhysicalInfo;
-                            });
-                          },
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    'Physical Info',
-                                    style: EcliniqTextStyles.headlineMedium
-                                        .copyWith(color: Color(0xff424242)),
-                                  ),
-                                  Text(
-                                    '•',
-                                    style: TextStyle(
-                                      color: Colors.red,
-                                      fontSize: 20,
+                                    Text(
+                                      '•',
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                        fontSize: 20,
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                              SvgPicture.asset(
-                                width: 24,
-                                height: 24,
-                                _isExpandedPhysicalInfo
-                                    ? EcliniqIcons.arrowUp.assetPath
-                                    : EcliniqIcons.arrowDown.assetPath,
-                                color: Color(0xff8E8E8E),
-                              ),
-                            ],
+                                  ],
+                                ),
+                                SvgPicture.asset(
+                                  width: 24,
+                                  height: 24,
+                                  _isExpandedPhysicalInfo
+                                      ? EcliniqIcons.arrowUp.assetPath
+                                      : EcliniqIcons.arrowDown.assetPath,
+                                  color: Color(0xff8E8E8E),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        if (_isExpandedPhysicalInfo) ...[PhysicalInfoCard()],
-                      ],
-                    ),
-                  ),
-                ),
-
-                Container(
-  margin: EdgeInsets.symmetric(
-    horizontal: screenSize.getResponsiveValue(
-      mobile: 20.0,
-      mobileSmall: 16.0,
-      mobileMedium: 20.0,
-      mobileLarge: 24.0,
-    ),
-    vertical: screenSize.getResponsiveValue(
-      mobile: 18.0,
-      mobileSmall: 16.0,
-      mobileMedium: 18.0,
-      mobileLarge: 20.0,
-    ),
-  ),
-  child: SizedBox(
-    width: double.infinity,
-    height: buttonHeight,
-    child: GestureDetector(
-      onTap: provider.isLoading
-          ? null
-          : () {
-              _saveDependent(provider);
-            },
-      child: Container(
-        decoration: BoxDecoration(
-          color: provider.isFormValid
-              ? Color(0xFF2372EC)
-              : Color(0xFFF9F9F9),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Center(
-          child: provider.isLoading
-              ? SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: EcliniqLoader(
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Save',
-                      style: EcliniqTextStyles.titleXBLarge.copyWith(
-                        color: provider.isFormValid
-                            ? Colors.white
-                            : Color(0xffD6D6D6),
-                        fontWeight: FontWeight.w500,
+                          if (_isExpandedPhysicalInfo) ...[PhysicalInfoCard()],
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    
-                  ],
-                ),
-        ),
-      ),
-    ),
-  ),
-),
-                SizedBox(height: 8),
-              ],
-            ),
+                  ),
+
+                  Container(
+                    margin: EdgeInsets.symmetric(
+                      horizontal: screenSize.getResponsiveValue(
+                        mobile: 20.0,
+                        mobileSmall: 16.0,
+                        mobileMedium: 20.0,
+                        mobileLarge: 24.0,
+                      ),
+                      vertical: screenSize.getResponsiveValue(
+                        mobile: 18.0,
+                        mobileSmall: 16.0,
+                        mobileMedium: 18.0,
+                        mobileLarge: 20.0,
+                      ),
+                    ),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: buttonHeight,
+                      child: GestureDetector(
+                        onTap: provider.isLoading
+                            ? null
+                            : () {
+                                _saveDependent(provider);
+                              },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: provider.isFormValid
+                                ? Color(0xFF2372EC)
+                                : Color(0xFFF9F9F9),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Center(
+                            child: provider.isLoading
+                                ? SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: EcliniqLoader(
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  )
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'Save',
+                                        style: EcliniqTextStyles.titleXBLarge
+                                            .copyWith(
+                                              color: provider.isFormValid
+                                                  ? Colors.white
+                                                  : Color(0xffD6D6D6),
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                ],
+              ),
             ),
           );
         },

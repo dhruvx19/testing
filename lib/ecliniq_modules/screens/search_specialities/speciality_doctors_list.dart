@@ -8,10 +8,9 @@ import 'package:ecliniq/ecliniq_icons/assets/home/widgets/top_bar_widgets/locati
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/booking/clinic_visit_slot_screen.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
-import 'package:ecliniq/ecliniq_ui/lib/widgets/widgets.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/widgets.dart';
 import 'package:ecliniq/ecliniq_utils/bottom_sheets/filter_bottom_sheet.dart';
-import 'package:ecliniq/ecliniq_utils/bottom_sheets/sort_by_filter_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shimmer/shimmer.dart';
@@ -175,9 +174,9 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
 
   void _applySort() {
     if (_doctors.isEmpty || _selectedSortOption == null) return;
-    
+
     final option = _selectedSortOption!;
-    
+
     int safeCompare<T extends Comparable>(T? a, T? b) {
       if (a == null && b == null) return 0;
       if (a == null) return 1;
@@ -185,11 +184,11 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
       return a.compareTo(b);
     }
 
-    double? _computeFee(Doctor d) {
-       return d.fee;
+    double? computeFee(Doctor d) {
+      return d.fee;
     }
 
-    double? _computeDistance(Doctor d) {
+    double? computeDistance(Doctor d) {
       double? minDist;
       for (final h in d.hospitals) {
         final val = h.distanceKm;
@@ -203,22 +202,28 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
     setState(() {
       switch (option) {
         case 'Price: Low - High':
-          _doctors.sort((a, b) => safeCompare(_computeFee(a), _computeFee(b)));
+          _doctors.sort((a, b) => safeCompare(computeFee(a), computeFee(b)));
           break;
         case 'Price: High - Low':
-          _doctors.sort((a, b) => safeCompare(_computeFee(b), _computeFee(a)));
+          _doctors.sort((a, b) => safeCompare(computeFee(b), computeFee(a)));
           break;
         case 'Experience - Most Experience first':
           _doctors.sort((a, b) => safeCompare(b.experience, a.experience));
           break;
         case 'Distance - Nearest First':
-          _doctors.sort((a, b) => safeCompare(_computeDistance(a), _computeDistance(b)));
+          _doctors.sort(
+            (a, b) => safeCompare(computeDistance(a), computeDistance(b)),
+          );
           break;
         case 'Order A-Z':
-          _doctors.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+          _doctors.sort(
+            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+          );
           break;
         case 'Order Z-A':
-          _doctors.sort((a, b) => b.name.toLowerCase().compareTo(a.name.toLowerCase()));
+          _doctors.sort(
+            (a, b) => b.name.toLowerCase().compareTo(a.name.toLowerCase()),
+          );
           break;
         case 'Rating High - low':
           _doctors.sort((a, b) => safeCompare(b.rating, a.rating));
@@ -242,10 +247,12 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
 
     try {
       List<String>? specialityFilter;
-      
+
       // Merge tab selection with bottom sheet filter
-      if (_filterParams['specialities'] != null && (_filterParams['specialities'] as List).isNotEmpty) {
-         specialityFilter = (_filterParams['specialities'] as List).cast<String>();
+      if (_filterParams['specialities'] != null &&
+          (_filterParams['specialities'] as List).isNotEmpty) {
+        specialityFilter = (_filterParams['specialities'] as List)
+            .cast<String>();
       } else if (_selectedCategory != 'All') {
         specialityFilter = [_selectedCategory];
       }
@@ -604,10 +611,7 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SvgPicture.asset(
-              EcliniqIcons.noDoctor.assetPath,
-             
-            ),
+            SvgPicture.asset(EcliniqIcons.noDoctor.assetPath),
             const SizedBox(height: 8),
             Text(
               'No Doctor Match Found',
@@ -672,17 +676,9 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                         color: Colors.white,
                       ),
                       const SizedBox(height: 8),
-                      Container(
-                        width: 150,
-                        height: 16,
-                        color: Colors.white,
-                      ),
+                      Container(width: 150, height: 16, color: Colors.white),
                       const SizedBox(height: 8),
-                      Container(
-                        width: 100,
-                        height: 16,
-                        color: Colors.white,
-                      ),
+                      Container(width: 100, height: 16, color: Colors.white),
                     ],
                   ),
                 ),
@@ -1128,5 +1124,132 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
       return '$available Tokens Available';
     }
     return 'Tokens Available';
+  }
+}
+
+class SortByBottomSheet extends StatefulWidget {
+  final ValueChanged<String> onChanged;
+
+  const SortByBottomSheet({super.key, required this.onChanged});
+
+  @override
+  State<SortByBottomSheet> createState() => _SortByBottomSheetState();
+}
+
+class _SortByBottomSheetState extends State<SortByBottomSheet> {
+  String? selectedSortOption;
+
+  final List<String> sortOptions = [
+    'Relevance',
+    'Price: Low - High',
+    // 'Price: High - Low',
+    'Experience - Most Experience first',
+    'Distance - Nearest First',
+    // 'Order A-Z',
+    // 'Order Z-A',
+    'Rating High - low',
+    //'Rating Low - High',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.40,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      child: Column(
+        children: [
+          // Title
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Sort By',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xff424242),
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // List of sort options
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: sortOptions.length,
+              itemBuilder: (context, index) {
+                final option = sortOptions[index];
+                final isSelected = selectedSortOption == option;
+                return _buildSortOption(option, isSelected);
+              },
+            ),
+          ),
+
+          // Apply button
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSortOption(String option, bool isSelected) {
+    return InkWell(
+      onTap: () {
+        setState(() {
+          selectedSortOption = option;
+        });
+        widget.onChanged(option);
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Row(
+          children: [
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected ? Color(0xff2372EC) : Color(0xff8E8E8E),
+                  width: 1,
+                ),
+              ),
+              child: isSelected
+                  ? Center(
+                      child: Container(
+                        width: 12,
+                        height: 12,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xff2372EC),
+                        ),
+                      ),
+                    )
+                  : null,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                option,
+                style: const TextStyle(
+                  fontSize: 18,
+                  color: Color(0xff424242),
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

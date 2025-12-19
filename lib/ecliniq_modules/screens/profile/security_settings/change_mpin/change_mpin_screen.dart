@@ -6,14 +6,21 @@ import 'package:ecliniq/ecliniq_modules/screens/auth/mpin/set_mpin.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
-import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 
 class ChangeMPINScreen extends StatefulWidget {
-  const ChangeMPINScreen({super.key});
+  final String? preloadedPhoneNumber;
+  final String? preloadedMaskedPhone;
+  
+  const ChangeMPINScreen({
+    super.key,
+    this.preloadedPhoneNumber,
+    this.preloadedMaskedPhone,
+  });
 
   @override
   State<ChangeMPINScreen> createState() => _ChangeMPINScreenState();
@@ -21,22 +28,32 @@ class ChangeMPINScreen extends StatefulWidget {
 
 class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
   final TextEditingController _otpController = TextEditingController();
-  
+
   bool _isLoading = false;
   bool _isSendingOTP = false;
   bool _isVerifying = false;
+  bool _isButtonPressed = false;
   String? _errorMessage;
   String? _phoneNumber;
   String? _maskedPhone;
-  
+
   Timer? _timer;
-  int _resendTimer = 30; // 30 seconds
+  int _resendTimer = 30;
   bool _canResend = false;
 
   @override
   void initState() {
     super.initState();
-    _loadPhoneNumberAndSendOTP();
+    // If phone number is preloaded, use it and skip loading step
+    if (widget.preloadedPhoneNumber != null && widget.preloadedMaskedPhone != null) {
+      _phoneNumber = widget.preloadedPhoneNumber;
+      _maskedPhone = widget.preloadedMaskedPhone;
+      // Send OTP immediately without loading phone number
+      _sendOTP();
+    } else {
+      // Load phone number first, then send OTP
+      _loadPhoneNumberAndSendOTP();
+    }
   }
 
   @override
@@ -45,7 +62,7 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
     _otpController.dispose();
     super.dispose();
   }
-  
+
   void _startTimer() {
     _resendTimer = 30;
     _canResend = false;
@@ -75,10 +92,9 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
     });
 
     try {
-      // Get phone number from secure storage if not already loaded
       if (_phoneNumber == null) {
         final phone = await SecureStorageService.getPhoneNumber();
-        
+
         if (phone == null || phone.isEmpty) {
           setState(() {
             _errorMessage = 'Phone number not found. Please try again.';
@@ -87,9 +103,8 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
           return;
         }
 
-        // Remove country code if present
         String phoneNumber = phone.replaceAll(RegExp(r'^\+?91'), '').trim();
-        
+
         if (phoneNumber.length != 10) {
           setState(() {
             _errorMessage = 'Invalid phone number format.';
@@ -98,16 +113,39 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
           return;
         }
 
-        // Mask phone number for display (show last 4 digits)
         _maskedPhone = '******${phoneNumber.substring(phoneNumber.length - 4)}';
         _phoneNumber = phoneNumber;
       }
 
-      // Send OTP using forget MPIN API (same backend flow as change MPIN)
+      // Phone number loaded, now send OTP
       setState(() {
-        _isSendingOTP = true;
+        _isLoading = false;
       });
 
+      await _sendOTP();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = 'An error occurred: ${e.toString()}';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _sendOTP() async {
+    if (_phoneNumber == null) {
+      setState(() {
+        _errorMessage = 'Phone number is required';
+      });
+      return;
+    }
+
+    setState(() {
+      _isSendingOTP = true;
+      _errorMessage = null;
+    });
+
+    try {
       if (!mounted) return;
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final success = await authProvider.forgetMpinSendOtp(_phoneNumber!);
@@ -115,17 +153,13 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
       if (!mounted) return;
 
       if (success) {
-        // Update state to show OTP sent
         setState(() {
-          _isLoading = false;
           _isSendingOTP = false;
         });
-        
         _startTimer();
       } else {
         setState(() {
           _errorMessage = authProvider.errorMessage ?? 'Failed to send OTP';
-          _isLoading = false;
           _isSendingOTP = false;
         });
       }
@@ -133,24 +167,27 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
       if (!mounted) return;
       setState(() {
         _errorMessage = 'An error occurred: ${e.toString()}';
-        _isLoading = false;
         _isSendingOTP = false;
       });
     }
   }
 
   Future<void> _resendOTP() async {
-     if (!_canResend) return;
-     await _loadPhoneNumberAndSendOTP();
+    if (!_canResend) return;
+    await _sendOTP();
   }
 
   Future<void> _verifyAndProceed() async {
+    // Check if OTP is valid
     if (_otpController.text.length != 6) {
       setState(() {
         _errorMessage = 'Please enter a valid 6-digit OTP';
       });
       return;
     }
+
+    // Check if already verifying
+    if (_isVerifying) return;
 
     setState(() {
       _isVerifying = true;
@@ -159,22 +196,32 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final success = await authProvider.forgetMpinVerifyOtp(_otpController.text);
+      final success = await authProvider.forgetMpinVerifyOtp(
+        _otpController.text,
+      );
 
       if (!mounted) return;
 
       if (success) {
-          // Navigate to Set MPIN Screen
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-               builder: (context) => const MPINSet(isResetMode: true),
-            ),
-          );
+        // Reset verifying state
+        setState(() {
+          _isVerifying = false;
+        });
+
+        // Navigate to MPIN set screen
+        // Use push to maintain navigation stack (SecuritySettings -> ChangeMPIN -> MPINSet)
+        if (!mounted) return;
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const MPINSet(isResetMode: true),
+          ),
+        );
       } else {
         setState(() {
           _errorMessage = authProvider.errorMessage ?? 'Failed to verify OTP';
           _isVerifying = false;
+          _otpController.clear(); // Clear OTP on error
         });
       }
     } catch (e) {
@@ -182,6 +229,7 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
       setState(() {
         _errorMessage = 'An error occurred: $e';
         _isVerifying = false;
+        _otpController.clear(); // Clear OTP on error
       });
     }
   }
@@ -192,13 +240,85 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
     return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
   }
 
+  bool get _isOtpValid => _otpController.text.length == 6;
+
+  Widget _buildVerifyButton() {
+    final isButtonEnabled = _isOtpValid && !_isVerifying;
+
+    return SizedBox(
+      width: double.infinity,
+      height: 52,
+      child: GestureDetector(
+        onTapDown: isButtonEnabled
+            ? (_) => setState(() => _isButtonPressed = true)
+            : null,
+        onTapUp: isButtonEnabled
+            ? (_) {
+                setState(() => _isButtonPressed = false);
+                _verifyAndProceed();
+              }
+            : null,
+        onTapCancel: isButtonEnabled
+            ? () => setState(() => _isButtonPressed = false)
+            : null,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 100),
+          decoration: BoxDecoration(
+            color: _isVerifying
+                ? const Color(0xFF2372EC)
+                : _isButtonPressed
+                ? const Color(0xFF0E4395) // Pressed color
+                : _isOtpValid
+                ? const Color(0xFF2372EC) // Enabled color
+                : const Color(0xffF9F9F9), // Disabled color
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Center(
+            child: _isVerifying
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: EcliniqLoader(color: Colors.white, size: 24),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Verify & Next',
+                        style: EcliniqTextStyles.headlineMedium.copyWith(
+                          color: _isOtpValid
+                              ? Colors.white
+                              : const Color(0xffD6D6D6),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      SvgPicture.asset(
+                        EcliniqIcons.arrowRight.assetPath,
+                        width: 24,
+                        height: 24,
+                        colorFilter: ColorFilter.mode(
+                          _isOtpValid ? Colors.white : const Color(0xff8E8E8E),
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
+        leadingWidth: 58,
+        titleSpacing: 0,
         leading: IconButton(
+          padding: EdgeInsets.zero,
           icon: SvgPicture.asset(
             EcliniqIcons.arrowLeft.assetPath,
             width: 32,
@@ -206,33 +326,32 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            'Change M-PIN',
-            style: EcliniqTextStyles.headlineMedium.copyWith(
-              color: Color(0xff424242),
-            ),
+        title: Text(
+          'Change M-PIN',
+          style: EcliniqTextStyles.headlineMedium.copyWith(
+            color: const Color(0xff424242),
           ),
         ),
+        centerTitle: false,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.2),
-          child: Container(color: Color(0xFFB8B8B8), height: 1.0),
+          child: Container(color: const Color(0xFFB8B8B8), height: 1.0),
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'For your security, please verify your mobile number to change your M-PIN.',
+              'For your security, please verify your existing account information.',
               style: EcliniqTextStyles.headlineXMedium.copyWith(
-                color: Color(0xff424242),
+                color: const Color(0xff424242),
               ),
             ),
-            if (_isLoading || _isSendingOTP)
+            // Show shimmer only while loading phone number, not while sending OTP
+            if (_isLoading)
               Padding(
                 padding: const EdgeInsets.only(top: 24.0),
                 child: Column(
@@ -243,7 +362,7 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
                       height: 20,
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     ShimmerLoading(
                       width: 150,
                       height: 20,
@@ -251,210 +370,171 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
                     ),
                   ],
                 ),
-              )
-            else if (_maskedPhone != null) ...[
+              ),
+            if (_maskedPhone != null) ...[
+              Row(
+                children: [
+                  Text(
+                    'OTP sent to ',
+                    style: EcliniqTextStyles.headlineMedium.copyWith(
+                      fontWeight: FontWeight.w400,
+                      fontSize: 18,
+                      color: const Color(0xff424242),
+                    ),
+                  ),
+                  Text(
+                    '+91 $_maskedPhone',
+                    style: EcliniqTextStyles.headlineMedium.copyWith(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 18,
+                      color: const Color(0xff424242),
+                    ),
+                  ),
+                ],
+              ),
+              if (_errorMessage != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
-                  child: Row(
+                  child: Text(
+                    _errorMessage!,
+                    style: EcliniqTextStyles.bodyMedium.copyWith(
+                      color: Colors.red,
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 24),
+              PinCodeTextField(
+                appContext: context,
+                length: 6,
+                controller: _otpController,
+                autoFocus: true,
+                keyboardType: TextInputType.number,
+                animationType: AnimationType.fade,
+                pinTheme: PinTheme(
+                  shape: PinCodeFieldShape.box,
+                  borderRadius: BorderRadius.circular(8),
+                  fieldHeight: 52,
+                  fieldWidth: 45,
+                  activeFillColor: Colors.white,
+                  selectedFillColor: Colors.white,
+                  inactiveFillColor: Colors.white,
+                  activeColor: const Color(0xff2372EC),
+                  selectedColor: const Color(0xff2372EC),
+                  inactiveColor: const Color(0xff626060),
+                  borderWidth: 1,
+                  activeBorderWidth: 0.5,
+                  selectedBorderWidth: 1,
+                  inactiveBorderWidth: 1,
+                  fieldOuterPadding: const EdgeInsets.symmetric(horizontal: 2),
+                ),
+                enableActiveFill: true,
+                errorTextSpace: 16,
+                onChanged: (value) {
+                  if (mounted) {
+                    setState(() {
+                      // Clear error message when user starts typing
+                      if (_errorMessage != null) {
+                        _errorMessage = null;
+                      }
+                    });
+                  }
+                },
+                onCompleted: (value) {
+                  // Auto-verify when 6 digits are entered
+                  // _verifyAndProceed(); // Uncomment if you want auto-submit
+                },
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Text(
+                    'Didn\'t receive the OTP',
+                    style: EcliniqTextStyles.bodySmall.copyWith(
+                      color: const Color(0xff8E8E8E),
+                    ),
+                  ),
+                  const Spacer(),
+                  Row(
                     children: [
+                      SvgPicture.asset(
+                        EcliniqIcons.clockCircle.assetPath,
+                        width: 16,
+                        height: 16,
+                      ),
+                      const SizedBox(width: 4),
                       Text(
-                        'OTP sent to ',
-                        style: EcliniqTextStyles.headlineMedium.copyWith(
-                          fontWeight: FontWeight.w400,
-                          fontSize: 18,
+                        _formatTimer(_resendTimer),
+                        style: EcliniqTextStyles.bodySmall.copyWith(
                           color: Color(0xff424242),
                         ),
                       ),
-                      Text(
-                        '+91 $_maskedPhone',
-                        style: EcliniqTextStyles.headlineMedium.copyWith(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 18,
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: _canResend ? _resendOTP : null,
+                child: Text(
+                  'Resend',
+                  style: EcliniqTextStyles.headlineXMedium.copyWith(
+                    color: const Color(0xff2372EC),
+                  ),
+                ),
+              ),
+              const Spacer(),
+              _buildVerifyButton(),
+            ] else if (_errorMessage != null) ...[
+              Padding(
+                padding: const EdgeInsets.only(top: 16.0),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.red.shade200),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        color: Colors.red.shade600,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _errorMessage!,
+                          style: EcliniqTextStyles.bodyMedium.copyWith(
+                            color: Colors.red.shade600,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                if (_errorMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      _errorMessage!,
-                      style: EcliniqTextStyles.bodyMedium.copyWith(
-                        color: Colors.red,
-                      ),
-                    ),
-                  ),
-                SizedBox(height: 24),
-                PinCodeTextField(
-                  appContext: context,
-                  length: 6,
-                  controller: _otpController,
-                  autoFocus: true,
-                  keyboardType: TextInputType.number,
-                  animationType: AnimationType.fade,
-                  pinTheme: PinTheme(
-                    shape: PinCodeFieldShape.box,
-                    borderRadius: BorderRadius.circular(8),
-                    fieldHeight: 52,
-                    fieldWidth: 45,
-                    activeFillColor: Colors.white,
-                    selectedFillColor: Colors.white,
-                    inactiveFillColor: Colors.white,
-                    activeColor: Color(0xff2372EC),
-                    selectedColor: Colors.blue,
-                    inactiveColor: Colors.grey.shade500,
-                    borderWidth: 1,
-                    activeBorderWidth: 0.5,
-                    selectedBorderWidth: 1,
-                    inactiveBorderWidth: 1,
-                    fieldOuterPadding: EdgeInsets.symmetric(horizontal: 4),
-                  ),
-                  enableActiveFill: true,
-                  errorTextSpace: 16,
-                  onChanged: (value) {
-                    if (mounted) {
-                      setState(() {});
-                    }
-                  },
-                ),
-                SizedBox(height: 8),
-                Row(
-                  children: [
-                    Text(
-                      'Didn’t receive the OTP',
-                      style: EcliniqTextStyles.bodySmall.copyWith(
-                        color: Color(0xff8E8E8E),
-                      ),
-                    ),
-                    Spacer(),
-                    Row(
-                      children: [
-                        SvgPicture.asset(
-                          EcliniqIcons.clockCircle.assetPath,
-                          width: 16,
-                          height: 16,
-                        ),
-                        SizedBox(width: 4),
-                        Text(
-                          _formatTimer(_resendTimer),
-                          style: EcliniqTextStyles.bodyMedium.copyWith(
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                SizedBox(height: 8),
-                GestureDetector(
-                  onTap: _canResend ? _resendOTP : null,
-                  child: Text(
-                    'Resend',
-                    style: EcliniqTextStyles.headlineXMedium.copyWith(
-                      color: _canResend ? Color(0xff2372EC) : Colors.grey,
-                    ),
-                  ),
-                ),
-                Spacer(),
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: GestureDetector(
-                    onTap: _isVerifying ? null : _verifyAndProceed,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: _isVerifying
-                            ? Color(0xFF0E4395)
-                            : (_otpController.text.length == 6)
-                            ? Colors.blue.shade800
-                            : Color(0xffF9F9F9),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Center(
-                        child: _isVerifying
-                            ? SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: EcliniqLoader(
-                                  color: Colors.white,
-                                  size: 24,
-                                ),
-                              )
-                            : Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'Verify & Next',
-                                    style: EcliniqTextStyles.headlineMedium.copyWith(
-                                      color: (_otpController.text.length == 6)
-                                          ? Color(0xffffffff)
-                                          : Color(0xffD6D6D6),
-                                    ),
-                                  ),
-                                  SizedBox(width: 8),
-                                  SvgPicture.asset(
-                                    EcliniqIcons.arrowRight.assetPath,
-                                    width: 24,
-                                    height: 24,
-                                    color: (_otpController.text.length == 6)
-                                        ? Color(0xffffffff)
-                                        : Color(0xff8E8E8E),
-                                  ),
-                                ],
-                              ),
-                      ),
-                    ),
-                  ),
-                ),
-            ] else if (_errorMessage != null) ...[
-                // Error state (phone number load fail)
-                Padding(
-                  padding: const EdgeInsets.only(top: 16.0),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade50,
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 46,
+                child: ElevatedButton(
+                  onPressed: _loadPhoneNumberAndSendOTP,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xff0D47A1),
+                    shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.red.shade200),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.error_outline, color: Colors.red.shade600, size: 20),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            _errorMessage!,
-                            style: EcliniqTextStyles.bodyMedium.copyWith(
-                              color: Colors.red.shade600,
-                            ),
-                          ),
-                        ),
-                      ],
+                  ),
+                  child: Text(
+                    'Retry',
+                    style: EcliniqTextStyles.titleXLarge.copyWith(
+                      color: Colors.white,
                     ),
                   ),
                 ),
-                SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  height: 46,
-                  child: ElevatedButton(
-                    onPressed: _loadPhoneNumberAndSendOTP,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xff0D47A1),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: Text(
-                      'Retry',
-                      style: EcliniqTextStyles.titleXLarge.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
+              ),
             ],
           ],
         ),

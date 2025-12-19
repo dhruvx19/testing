@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:ecliniq/ecliniq_api/models/patient.dart';
 import 'package:ecliniq/ecliniq_api/patient_service.dart';
+import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:ecliniq/ecliniq_core/router/navigation_helper.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
@@ -24,9 +27,7 @@ import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:provider/provider.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -276,7 +277,7 @@ class _ProfilePageState extends State<ProfilePage>
                 child: Stack(
                   children: [
                     Container(
-                      height: topMargin * 2,
+                      height: topMargin * 1.8,
                       decoration: const BoxDecoration(
                         gradient: LinearGradient(
                           colors: [Color(0xFF2372EC), Color(0xFFF3F5FF)],
@@ -602,7 +603,7 @@ extension _ProfilePageContent on _ProfilePageState {
         .toList();
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       child: Column(
         children: [
           UserInfoSection(
@@ -611,36 +612,35 @@ extension _ProfilePageContent on _ProfilePageState {
             email: userEmail,
             isPhoneVerified: isPhoneVerified,
           ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 12),
           BasicInfoCards(age: age, gender: gender, bloodGroup: bloodGroup),
-          const SizedBox(height: 30),
+          const SizedBox(height: 16),
           PhysicalHealthCard(
             status: healthStatus,
             bmi: bmi,
             height: height,
             weight: weight,
           ),
-          Divider(color: Color(0xffD6D6D6), height: 40),
-
+          Divider(color: Color(0xffD6D6D6), thickness: 0.5, height: 40),
           DependentsSection(
             dependents: dependents,
             onAddDependent: _handleAddDependent,
             onDependentTap: _handleDependentTap,
           ),
-          Divider(color: Color(0xffD6D6D6), height: 40),
-          const SizedBox(height: 10),
+        Divider(color: Color(0xffD6D6D6), thickness: 0.5, height: 40),
+          const SizedBox(height: 14),
           AppUpdateBanner(
             currentVersion: currentVersion,
             newVersion: newVersion,
             onUpdate: _handleAppUpdate,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           AccountSettingsMenu(
             onPersonalDetailsPressed: _navigateToPersonalDetails,
             onMyDoctorsPressed: _onMyDoctorsPressed,
             onSecuritySettingsPressed: _navigateToSecuritySettings,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           NotificationsSettingsWidget(
             initialWhatsAppEnabled: patient.getWhatsAppNotifications,
             initialSmsEnabled: patient.getPhoneNotifications,
@@ -649,7 +649,7 @@ extension _ProfilePageContent on _ProfilePageState {
             initialPromotionalEnabled: patient.getPromotionalMessages,
             onSettingsChanged: _onNotificationSettingsChanged,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           MoreSettingsMenuWidget(
             appVersion: 'v1.0.0',
             supportEmail: 'Support@eclinicq.com',

@@ -1,24 +1,23 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:ecliniq/ecliniq_api/models/patient.dart' as patient_models;
+import 'package:ecliniq/ecliniq_api/patient_service.dart';
+import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
+import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
+import 'package:ecliniq/ecliniq_modules/screens/details/widgets/add_profile_sheet.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/personal_details/provider/personal_details_provider.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/colors.g.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:provider/provider.dart';
-import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-
-import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
-import 'package:ecliniq/ecliniq_api/patient_service.dart';
-import 'package:ecliniq/ecliniq_api/models/patient.dart' as patient_models;
-import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
-import 'package:ecliniq/ecliniq_modules/screens/details/widgets/add_profile_sheet.dart';
-import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
+import 'package:provider/provider.dart';
 
 import '../add_dependent/provider/dependent_provider.dart';
-import '../add_dependent/widgets/personal_details_card.dart';
 import '../add_dependent/widgets/blood_group_selection.dart';
 
 class PersonalDetails extends StatefulWidget {
@@ -55,7 +54,18 @@ class _PersonalDetailsState extends State<PersonalDetails> {
 
   String _monthName(int m) {
     const months = [
-      'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     if (m < 1 || m > 12) return '';
     return months[m - 1];
@@ -81,7 +91,8 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                   color: Color(0xff626060),
                 ),
               ),
-              if (isRequired) Text('•', style: TextStyle(color: Colors.red, fontSize: 20)),
+              if (isRequired)
+                Text('•', style: TextStyle(color: Colors.red, fontSize: 20)),
             ],
           ),
         ),
@@ -131,7 +142,8 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                     color: Color(0xff626060),
                   ),
                 ),
-                if (isRequired) Text('•', style: TextStyle(color: Colors.red, fontSize: 20)),
+                if (isRequired)
+                  Text('•', style: TextStyle(color: Colors.red, fontSize: 20)),
               ],
             ),
           ),
@@ -240,7 +252,8 @@ class _PersonalDetailsState extends State<PersonalDetails> {
           if (rawResp.statusCode == 200) {
             final body = jsonDecode(rawResp.body) as Map<String, dynamic>;
             final data = body['data'] as Map<String, dynamic>?;
-            final key = data?['profilePhoto'] ?? (data?['user']?['profilePhoto']);
+            final key =
+                data?['profilePhoto'] ?? (data?['user']?['profilePhoto']);
             if (key is String && key.isNotEmpty) {
               _profilePhotoKey = key;
               await _resolveImageUrl(key, token: token);
@@ -270,7 +283,8 @@ class _PersonalDetailsState extends State<PersonalDetails> {
     // Try public URL first
     try {
       final publicUri = Uri.parse(
-          '${Endpoints.storagePublicUrl}?key=${Uri.encodeComponent(key)}');
+        '${Endpoints.storagePublicUrl}?key=${Uri.encodeComponent(key)}',
+      );
       final resp = await http.get(
         publicUri,
         headers: {'Content-Type': 'application/json'},
@@ -288,7 +302,8 @@ class _PersonalDetailsState extends State<PersonalDetails> {
     // Fallback: auth-protected download URL
     try {
       final downloadUri = Uri.parse(
-          '${Endpoints.storageDownloadUrl}?key=${Uri.encodeComponent(key)}');
+        '${Endpoints.storageDownloadUrl}?key=${Uri.encodeComponent(key)}',
+      );
       final resp = await http.get(
         downloadUri,
         headers: {
@@ -341,9 +356,9 @@ class _PersonalDetailsState extends State<PersonalDetails> {
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error picking image: $e')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
         }
       }
     }
@@ -353,13 +368,15 @@ class _PersonalDetailsState extends State<PersonalDetails> {
     final auth = Provider.of<AuthProvider>(context, listen: false);
     final token = auth.authToken;
     if (token == null || token.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Authentication required')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Authentication required')));
       return;
     }
 
-    setState(() { _isLoading = true; });
+    setState(() {
+      _isLoading = true;
+    });
 
     try {
       String? photoKey = _profilePhotoKey;
@@ -380,16 +397,16 @@ class _PersonalDetailsState extends State<PersonalDetails> {
         height: int.tryParse(_heightController.text.trim()),
         weight: int.tryParse(_weightController.text.trim()),
         dob: _dob != null
-            ? '${_dob!.year.toString().padLeft(4,'0')}-${_dob!.month.toString().padLeft(2,'0')}-${_dob!.day.toString().padLeft(2,'0')}'
+            ? '${_dob!.year.toString().padLeft(4, '0')}-${_dob!.month.toString().padLeft(2, '0')}-${_dob!.day.toString().padLeft(2, '0')}'
             : null,
         profilePhoto: photoKey,
       );
 
       if (success) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Profile updated')));
         _selectedProfilePhoto = null;
         await _fetchPatientDetails();
       } else {
@@ -398,10 +415,12 @@ class _PersonalDetailsState extends State<PersonalDetails> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
-        setState(() { _isLoading = false; });
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
@@ -419,6 +438,8 @@ class _PersonalDetailsState extends State<PersonalDetails> {
             backgroundColor: Colors.white,
             appBar: AppBar(
               backgroundColor: Colors.white,
+              leadingWidth: 58,
+              titleSpacing: 0,
               leading: IconButton(
                 icon: SvgPicture.asset(
                   EcliniqIcons.arrowLeft.assetPath,
@@ -444,7 +465,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                 Row(
                   children: [
                     SvgPicture.asset(
-                      EcliniqIcons.questionMark.assetPath,
+                      EcliniqIcons.questionCircleFilled.assetPath,
                       width: 24,
                       height: 24,
                     ),
@@ -473,8 +494,8 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                         mainAxisSize: MainAxisSize.max,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const SizedBox(height: 12),
-                          // Avatar + change button
+                          const SizedBox(height: 26),
+
                           Stack(
                             children: [
                               Container(
@@ -485,6 +506,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                                   width: 50,
                                   height: 50,
                                   decoration: BoxDecoration(
+                                    color: Color(0xffF2F7FF),
                                     shape: BoxShape.circle,
                                     border: Border.all(
                                       color: Color(0xff96BFFF),
@@ -494,19 +516,27 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                                       if (_selectedProfilePhoto != null) {
                                         return DecorationImage(
                                           fit: BoxFit.cover,
-                                          image: FileImage(_selectedProfilePhoto!),
+                                          image: FileImage(
+                                            _selectedProfilePhoto!,
+                                          ),
                                         );
                                       }
-                                      if (_profilePhotoUrl != null && _profilePhotoUrl!.isNotEmpty) {
+                                      if (_profilePhotoUrl != null &&
+                                          _profilePhotoUrl!.isNotEmpty) {
                                         return DecorationImage(
                                           fit: BoxFit.cover,
-                                          image: NetworkImage(_profilePhotoUrl!),
+                                          image: NetworkImage(
+                                            _profilePhotoUrl!,
+                                          ),
                                         );
                                       }
                                       return null;
                                     }(),
                                   ),
-                                  child: (_selectedProfilePhoto == null && (_profilePhotoUrl == null || _profilePhotoUrl!.isEmpty))
+                                  child:
+                                      (_selectedProfilePhoto == null &&
+                                          (_profilePhotoUrl == null ||
+                                              _profilePhotoUrl!.isEmpty))
                                       ? ClipOval(
                                           child: SvgPicture.asset(
                                             'lib/ecliniq_icons/assets/Group.svg',
@@ -525,7 +555,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                                     width: 48,
                                     height: 48,
                                     decoration: BoxDecoration(
-                                      color: Colors.blue.shade700,
+                                      color: Color(0xff2372EC),
                                       borderRadius: BorderRadius.circular(25),
                                       border: Border.all(
                                         color: Colors.white,
@@ -533,10 +563,11 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                                       ),
                                     ),
                                     child: Padding(
-                                      padding: const EdgeInsets.all(3),
+                                      padding: const EdgeInsets.all(6),
                                       child: SvgPicture.asset(
                                         'lib/ecliniq_icons/assets/Refresh.svg',
-                                        fit: BoxFit.cover,
+                                        width: 32,
+                                        height: 32,
                                       ),
                                     ),
                                   ),
@@ -552,16 +583,10 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                               children: [
                                 Text(
                                   'Personal Details',
-                                  style: EcliniqTextStyles.headlineMedium.copyWith(
-                                    color: EcliniqColors.light.textPrimary,
-                                  ),
+                                  style: EcliniqTextStyles.headlineMedium
+                                      .copyWith(color: Color(0xff424242)),
                                 ),
-                                Text(
-                                  ' *',
-                                  style: EcliniqTextStyles.titleXBLarge.copyWith(
-                                    color: EcliniqColors.light.textDestructive,
-                                  ),
-                                ),
+                                Text('•', style: TextStyle(color: Color(0xffD92D20), fontSize: 20))
                               ],
                             ),
                           ),
@@ -573,7 +598,11 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                             controller: _firstNameController,
                             onChanged: (_) {},
                           ),
-                          Divider(color: EcliniqColors.light.strokeNeutralExtraSubtle, thickness: 1, height: 16),
+                          Divider(
+                            color: EcliniqColors.light.strokeNeutralExtraSubtle,
+                            thickness: 1,
+                            height: 16,
+                          ),
                           _buildTextField(
                             label: 'Last Name',
                             isRequired: true,
@@ -581,20 +610,33 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                             controller: _lastNameController,
                             onChanged: (_) {},
                           ),
-                          Divider(color: EcliniqColors.light.strokeNeutralExtraSubtle, thickness: 1, height: 16),
+                          Divider(
+                            color: EcliniqColors.light.strokeNeutralExtraSubtle,
+                            thickness: 1,
+                            height: 16,
+                          ),
                           _buildSelectField(
                             label: 'Date of Birth',
                             isRequired: true,
                             hint: 'Select Date',
-                            value: _dob != null ? '${_dob!.day.toString().padLeft(2,'0')} ${_monthName(_dob!.month)} ${_dob!.year}' : null,
+                            value: _dob != null
+                                ? '${_dob!.day.toString().padLeft(2, '0')} ${_monthName(_dob!.month)} ${_dob!.year}'
+                                : null,
                             onTap: () async {
                               final picked = await showDatePicker(
                                 context: context,
-                                initialDate: _dob ?? DateTime.now().subtract(const Duration(days: 365 * 25)),
+                                initialDate:
+                                    _dob ??
+                                    DateTime.now().subtract(
+                                      const Duration(days: 365 * 25),
+                                    ),
                                 firstDate: DateTime(1900),
                                 lastDate: DateTime.now(),
                               );
-                              if (picked != null) setState(() { _dob = picked; });
+                              if (picked != null)
+                                setState(() {
+                                  _dob = picked;
+                                });
                             },
                           ),
 
@@ -604,9 +646,8 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                             alignment: Alignment.centerLeft,
                             child: Text(
                               'Health Info',
-                              style: EcliniqTextStyles.titleXBLarge.copyWith(
-                                color: EcliniqColors.light.textPrimary,
-                                fontSize: 18,
+                              style: EcliniqTextStyles.headlineMedium.copyWith(
+                                color: Color(0xff424242),
                               ),
                             ),
                           ),
@@ -615,12 +656,15 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                             label: 'Blood Group',
                             isRequired: false,
                             hint: 'Select Blood Group',
-                            value: _bloodGroupController.text.isNotEmpty ? _bloodGroupController.text : null,
+                            value: _bloodGroupController.text.isNotEmpty
+                                ? _bloodGroupController.text
+                                : null,
                             onTap: () async {
-                              final selected = await EcliniqBottomSheet.show<String>(
-                                context: context,
-                                child: const BloodGroupSelectionSheet(),
-                              );
+                              final selected =
+                                  await EcliniqBottomSheet.show<String>(
+                                    context: context,
+                                    child: const BloodGroupSelectionSheet(),
+                                  );
                               if (selected != null && mounted) {
                                 setState(() {
                                   _bloodGroupController.text = selected;
@@ -628,7 +672,11 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                               }
                             },
                           ),
-                          Divider(color: EcliniqColors.light.strokeNeutralExtraSubtle, thickness: 1, height: 16),
+                          Divider(
+                            color: EcliniqColors.light.strokeNeutralExtraSubtle,
+                            thickness: 1,
+                            height: 16,
+                          ),
                           _buildTextField(
                             label: 'Height (cm)',
                             isRequired: false,
@@ -637,7 +685,11 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                             keyboardType: TextInputType.number,
                             onChanged: (_) {},
                           ),
-                          Divider(color: EcliniqColors.light.strokeNeutralExtraSubtle, thickness: 1, height: 16),
+                          Divider(
+                            color: EcliniqColors.light.strokeNeutralExtraSubtle,
+                            thickness: 1,
+                            height: 16,
+                          ),
                           _buildTextField(
                             label: 'Weight (kg)',
                             isRequired: false,
@@ -687,8 +739,8 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                                     style: EcliniqTextStyles.titleXBLarge
                                         .copyWith(
                                           color: EcliniqColors
-                                                .light
-                                                .textFixedLight,
+                                              .light
+                                              .textFixedLight,
                                           fontWeight: FontWeight.w600,
                                         ),
                                   ),

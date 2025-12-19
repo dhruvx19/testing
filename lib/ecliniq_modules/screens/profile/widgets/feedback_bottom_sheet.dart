@@ -1,4 +1,5 @@
 import 'package:ecliniq/ecliniq_icons/icons.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_utils/bottom_sheets/ratings/thank_you.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -24,6 +25,7 @@ class _FeedbackBottomSheetState extends State<FeedbackBottomSheet> {
   int _selectedRating = 0;
   final TextEditingController _feedbackController = TextEditingController();
   bool _isLoading = false;
+  bool _isButtonPressed = false;
 
   @override
   void dispose() {
@@ -44,10 +46,8 @@ class _FeedbackBottomSheetState extends State<FeedbackBottomSheet> {
     setState(() => _isLoading = false);
 
     if (mounted) {
-      Navigator.pop(context); // Close feedback bottom sheet first
-      await Future.delayed(
-        const Duration(milliseconds: 200),
-      ); // Optional: smooth transition
+      Navigator.pop(context);
+      await Future.delayed(const Duration(milliseconds: 200));
       await _showThankYouSheet(context);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Feedback submitted successfully!')),
@@ -56,11 +56,60 @@ class _FeedbackBottomSheetState extends State<FeedbackBottomSheet> {
   }
 
   Future<void> _showThankYouSheet(BuildContext context) async {
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const ThankYou(),
+    await EcliniqBottomSheet.show(context: context, child: ThankYou());
+  }
+
+  Widget _buildSubmitButton() {
+    final isButtonEnabled = _isFormValid && !_isLoading;
+
+    return SizedBox(
+      width: double.infinity,
+      height: 52,
+      child: GestureDetector(
+        onTapDown: isButtonEnabled
+            ? (_) => setState(() => _isButtonPressed = true)
+            : null,
+        onTapUp: isButtonEnabled
+            ? (_) {
+                setState(() => _isButtonPressed = false);
+                _submitFeedback();
+              }
+            : null,
+        onTapCancel: isButtonEnabled
+            ? () => setState(() => _isButtonPressed = false)
+            : null,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 100),
+          decoration: BoxDecoration(
+            color: _isLoading
+                ? const Color(0xff2372EC)
+                : _isButtonPressed
+                ? const Color(0xFF0E4395) // Pressed color
+                : _isFormValid
+                ? const Color(0xff2372EC) // Enabled color
+                : const Color(0xffF9F9F9), // Disabled color
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Center(
+            child: _isLoading
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: EcliniqLoader(size: 20, color: Colors.white),
+                  )
+                : Text(
+                    'Submit Feedback',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: _isFormValid
+                          ? Colors.white
+                          : const Color(0xffD6D6D6),
+                    ),
+                  ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -69,7 +118,10 @@ class _FeedbackBottomSheetState extends State<FeedbackBottomSheet> {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(16),
+          bottom: Radius.circular(16),
+        ),
       ),
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -146,7 +198,7 @@ class _FeedbackBottomSheetState extends State<FeedbackBottomSheet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Tell us what you love about the app, or what we could do better.',
                     style: TextStyle(
                       fontSize: 16,
@@ -160,20 +212,20 @@ class _FeedbackBottomSheetState extends State<FeedbackBottomSheet> {
                     maxLines: 5,
                     decoration: InputDecoration(
                       hintText: 'Enter your feedback here...',
-                      hintStyle: TextStyle(color: Color(0xffD6D6D6)),
+                      hintStyle: const TextStyle(color: Color(0xffD6D6D6)),
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Color(0xff8E8E8E)),
+                        borderSide: const BorderSide(color: Color(0xff8E8E8E)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Color(0xff8E8E8E)),
+                        borderSide: const BorderSide(color: Color(0xff8E8E8E)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Color(0xff8E8E8E)),
+                        borderSide: const BorderSide(color: Color(0xff8E8E8E)),
                       ),
                     ),
                   ),
@@ -186,42 +238,7 @@ class _FeedbackBottomSheetState extends State<FeedbackBottomSheet> {
             // Submit Button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: GestureDetector(
-                  onTap: _isLoading ? null : _submitFeedback,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: _isFormValid
-                          ? const Color(0xff2372EC)
-                          : const Color(0xffF9F9F9),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Center(
-                      child: _isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: EcliniqLoader(
-                                size: 20,
-                                color: Colors.white,
-                              ),
-                            )
-                          : Text(
-                              'Submit Feedback',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: _isFormValid
-                                    ? Colors.white
-                                    : const Color(0xffD6D6D6),
-                              ),
-                            ),
-                    ),
-                  ),
-                ),
-              ),
+              child: _buildSubmitButton(),
             ),
 
             const SizedBox(height: 24),

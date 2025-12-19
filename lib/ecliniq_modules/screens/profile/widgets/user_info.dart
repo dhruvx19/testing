@@ -37,7 +37,7 @@ class UserInfoSection extends StatelessWidget {
             color: Color(0xff424242),
           ),
         ),
-        SizedBox(height: 10),
+        SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -67,7 +67,7 @@ class UserInfoSection extends StatelessWidget {
           ],
         ),
         if (email.isNotEmpty) ...[
-          SizedBox(height: 6),
+          SizedBox(height: 4),
           Text(
             email,
             style: EcliniqTextStyles.bodyMedium.copyWith(

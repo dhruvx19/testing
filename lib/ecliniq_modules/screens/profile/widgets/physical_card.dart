@@ -23,7 +23,7 @@ class PhysicalHealthCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Color(0xffF8FAFF),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Color(0xffF2F7FF), width: 1),
       ),
       child: Column(
@@ -38,7 +38,7 @@ class PhysicalHealthCard extends StatelessWidget {
               fontSize: 16,
             ),
           ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 24),
           _BMIVisualization(bmi: bmi),
           const SizedBox(height: 10),
           Row(
@@ -89,14 +89,13 @@ class _BMIVisualization extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final totalWidth = constraints.maxWidth;
-        const bmiValueWidth = 60.0;
-        final barWidth = totalWidth - bmiValueWidth - 16;
+        const bmiValueWidth = 45.0; // Reduced from 60.0
+        final barWidth =
+            totalWidth - bmiValueWidth - 8; // Reduced spacing from 16
         final position = _calculatePosition();
 
-        // Fixed indicator width
         const indicatorWidth = 80.0;
 
-        // Calculate position and ensure indicator stays within bounds
         final rawPosition = (barWidth * position);
         final indicatorPosition = (rawPosition - (indicatorWidth / 2)).clamp(
           0.0,
@@ -110,6 +109,8 @@ class _BMIVisualization extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
                   child: Text(
                     'BMI',
                     style: EcliniqTextStyles.headlineLarge.copyWith(
@@ -119,16 +120,15 @@ class _BMIVisualization extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(width: 4),
+                SizedBox(width: 12),
                 Expanded(
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: [
                       _BMIBar(),
-                      // Positioned indicator with fixed width
                       Positioned(
                         left: indicatorPosition,
-                        top: -23, // Fixed distance above the bar
+                        top: -24,
                         child: _TriangleIndicator(
                           color: _getBMIColor(),
                           status: _getStatus(),
@@ -137,12 +137,14 @@ class _BMIVisualization extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 12),
                 FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
                   child: Text(
                     '22.3',
                     style: EcliniqTextStyles.headlineLarge.copyWith(
-                      fontSize: (MediaQuery.of(context).size.height * 0.03),
+                      fontSize: 24,
                       fontWeight: FontWeight.w700,
                       color: _getBMIColor(),
                       height: 1,
@@ -162,23 +164,17 @@ class _BMIBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 16,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      height: 20,
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
       child: ClipRRect(
         child: Row(
           children: [
             ..._buildBarSection(16, Color(0xff96BFFF)),
+            const SizedBox(width: 1),
             ..._buildBarSection(16, Color(0xff3EAF3F)),
+            const SizedBox(width: 1),
             ..._buildBarSection(16, Color(0xffE7AC09)),
+            const SizedBox(width: 1),
             ..._buildBarSection(16, Color(0xffF04248)),
           ],
         ),
@@ -191,10 +187,10 @@ class _BMIBar extends StatelessWidget {
       count,
       (i) => Expanded(
         child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 1),
+          margin: const EdgeInsets.symmetric(horizontal: 0.5),
           decoration: BoxDecoration(
             color: color,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(10),
           ),
         ),
       ),
@@ -214,20 +210,23 @@ class _TriangleIndicator extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 70,
-          height: 16,
+          width: 80,
+          height: 18,
           decoration: BoxDecoration(
             color: color,
             borderRadius: BorderRadius.circular(4),
           ),
-          child: Center(
-            child: FittedBox(
-              child: EcliniqText(
-                status,
-                style: EcliniqTextStyles.bodyMedium.copyWith(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
+          child: Padding(
+            padding: const EdgeInsets.all(0.3),
+            child: Center(
+              child: FittedBox(
+                child: EcliniqText(
+                  status,
+                  style: EcliniqTextStyles.bodyMedium.copyWith(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ),
@@ -280,7 +279,7 @@ class _InfoBox extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
 
-        border: Border.all(color: Color(0xffD6D6D6), width: 1),
+        border: Border.all(color: Color(0xffD6D6D6), width: 0.5),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(

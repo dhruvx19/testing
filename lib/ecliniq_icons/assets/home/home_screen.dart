@@ -1,8 +1,5 @@
 import 'package:ecliniq/ecliniq_core/router/navigation_helper.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
-import 'package:ecliniq/ecliniq_icons/icons.dart';
-import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
-import 'package:ecliniq/ecliniq_modules/screens/doctor_details/top_doctor/top_doctors.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/provider/doctor_provider.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/provider/hospital_provider.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/widgets/easy_to_book.dart';
@@ -12,6 +9,9 @@ import 'package:ecliniq/ecliniq_icons/assets/home/widgets/searched_specialities.
 import 'package:ecliniq/ecliniq_icons/assets/home/widgets/top_bar_widgets/location_search.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/widgets/top_bar_widgets/search_bar.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/widgets/top_hospitals.dart';
+import 'package:ecliniq/ecliniq_icons/icons.dart';
+import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
+import 'package:ecliniq/ecliniq_modules/screens/doctor_details/top_doctor/top_doctors.dart';
 import 'package:ecliniq/ecliniq_modules/screens/notifications/notification_screen.dart';
 import 'package:ecliniq/ecliniq_modules/screens/notifications/provider/notification_provider.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_navigation/bottom_navigation.dart';
@@ -40,7 +40,10 @@ class _HomeScreenState extends State<HomeScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkAndShowLocationSheet();
       _initializeDoctors();
-      Provider.of<NotificationProvider>(context, listen: false).fetchUnreadCount();
+      Provider.of<NotificationProvider>(
+        context,
+        listen: false,
+      ).fetchUnreadCount();
     });
   }
 
@@ -118,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen>
           body: SizedBox.expand(
             child: Column(
               children: [
-                const SizedBox(height: 40),
+                const SizedBox(height: 44),
                 _buildAppBar(),
                 LocationSelectorWidget(
                   currentLocation: 'Vishnu Dev Nagar, Wakad',
@@ -137,7 +140,6 @@ class _HomeScreenState extends State<HomeScreen>
                       children: [
                         Expanded(
                           child: RefreshIndicator(
-                            
                             onRefresh: _onRefresh,
                             child: SingleChildScrollView(
                               physics: const AlwaysScrollableScrollPhysics(),
@@ -146,7 +148,7 @@ class _HomeScreenState extends State<HomeScreen>
                                 children: [
                                   const SizedBox(height: 24),
                                   QuickActionsWidget(),
-                                const SizedBox(height: 24),
+                                  const SizedBox(height: 24),
                                   _buildTopDoctorsSection(),
                                   const SizedBox(height: 48),
                                   MostSearchedSpecialities(),
@@ -193,23 +195,52 @@ class _HomeScreenState extends State<HomeScreen>
             onTap: () async {
               await EcliniqRouter.push(NotificationScreen());
               if (mounted) {
-                Provider.of<NotificationProvider>(context, listen: false).fetchUnreadCount();
+                Provider.of<NotificationProvider>(
+                  context,
+                  listen: false,
+                ).fetchUnreadCount();
               }
             },
             child: Consumer<NotificationProvider>(
               builder: (context, provider, child) {
-                return Badge(
-                  label: Text(
-                    '${provider.unreadCount}',
-                    style: const TextStyle(color: Colors.white, fontSize: 10),
-                  ),
-                  isLabelVisible: provider.unreadCount > 0,
-                  backgroundColor: Colors.red,
-                  child: SvgPicture.asset(
-                    EcliniqIcons.notificationBell.assetPath,
-                    height: 32,
-                    width: 32,
-                  ),
+                return Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    SvgPicture.asset(
+                      EcliniqIcons.notificationBell.assetPath,
+                      height: 32,
+                      width: 32,
+                    ),
+                    if (provider.unreadCount > 0)
+                      Positioned(
+                        top: -12,
+                        right: -8,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          constraints: const BoxConstraints(
+                            minWidth: 20,
+                            minHeight: 20,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xffF04248),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              provider.unreadCount > 99
+                                  ? '99+'
+                                  : '${provider.unreadCount}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                height: 1,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 );
               },
             ),
