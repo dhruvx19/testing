@@ -337,7 +337,7 @@ class _MyVisitsState extends State<MyVisits>
       padding: EdgeInsets.only(
         left: 16,
         right: 16,
-        bottom: 6,
+        bottom: 2,
         top: 6,
       ), // Removed top padding
       child: ListView.builder(

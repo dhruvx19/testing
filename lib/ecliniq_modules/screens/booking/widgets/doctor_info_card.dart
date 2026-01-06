@@ -335,8 +335,8 @@ class DoctorInfoCard extends StatelessWidget {
         //     ],
         //   ),
         // ),
-        const Divider(height: 2, thickness: 0.3, color: Colors.grey),
-        SizedBox(height: 14),
+       // const Divider(height: 2, thickness: 0.3, color: Colors.grey),
+    
       ],
     );
   }

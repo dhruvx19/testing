@@ -1,5 +1,5 @@
 class Endpoints {
-  static const String localhost = 'http://192.0.0.2:3000';
+  static const String localhost = 'http://192.168.1.3:3000';
   static const String prod = '';
 
   static String get websocketBaseUrl => localhost.replaceAll('/api', '');

@@ -1289,15 +1289,27 @@ class PaymentDetailsCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        _buildPaymentRow('Consultation Fee', payment.consultationFee),
-        const SizedBox(height: 8),
         _buildPaymentRow(
-          'Service Fee & Tax',
-          payment.serviceFee,
-          originalAmount: payment.isServiceFeeWaived ? 40 : null,
-          isFree: payment.isServiceFeeWaived,
-          subtitle: payment.isServiceFeeWaived ? payment.waiverMessage : null,
+          'Consultation Fee',
+          payment.serviceFee > 0 ? 0.0 : payment.consultationFee,
+          subtitle: payment.serviceFee > 0 ? 'Pay at Clinic' : null,
         ),
+        if (payment.serviceFee > 0) ...[
+          const SizedBox(height: 8),
+          _buildPaymentRow(
+            'Service Fee & Tax',
+            payment.serviceFee,
+          ),
+        ] else ...[
+          const SizedBox(height: 8),
+          _buildPaymentRow(
+            'Service Fee & Tax',
+            payment.serviceFee,
+            originalAmount: payment.isServiceFeeWaived ? 40 : null,
+            isFree: payment.isServiceFeeWaived,
+            subtitle: payment.isServiceFeeWaived ? payment.waiverMessage : null,
+          ),
+        ],
         const SizedBox(height: 8),
         Divider(color: Color(0xffB8B8B8), thickness: 0.5, height: 1),
         const SizedBox(height: 16),
@@ -1319,8 +1331,10 @@ class PaymentDetailsCard extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  '₹00.00',
-                 style: TextStyle(
+                  payment.serviceFee > 0
+                      ? '₹${payment.serviceFee.toStringAsFixed(0)}'
+                      : '₹${payment.totalPayable.toStringAsFixed(0)}',
+                  style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF424242),
@@ -1383,13 +1397,21 @@ class PaymentDetailsCard extends StatelessWidget {
                   ),
                 if (originalAmount != null) const SizedBox(width: 8),
                 Text(
-                  isFree ? 'Free' : '₹${amount.toInt()}',
+                  subtitle == 'Pay at Clinic'
+                      ? 'Pay at Clinic'
+                      : isFree
+                          ? 'Free'
+                          : '₹${amount.toInt()}',
                   style: TextStyle(
                     fontSize: 18,
-                    fontWeight: isFree ? FontWeight.w500 : FontWeight.w400,
+                    fontWeight: isFree || subtitle == 'Pay at Clinic'
+                        ? FontWeight.w500
+                        : FontWeight.w400,
                     color: isFree
                         ? const Color(0xFF54B955)
-                        : const Color(0xFF424242),
+                        : subtitle == 'Pay at Clinic'
+                            ? const Color(0xFF424242)
+                            : const Color(0xFF424242),
                   ),
                 ),
               ],

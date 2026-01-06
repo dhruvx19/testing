@@ -1,5 +1,6 @@
 import 'package:ecliniq/ecliniq_core/location/location_permission_manager.dart';
 import 'package:ecliniq/ecliniq_core/location/location_service.dart';
+import 'package:ecliniq/ecliniq_core/location/location_storage_service.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/provider/doctor_provider.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/provider/hospital_provider.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
@@ -272,14 +273,21 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
 
     if (!mounted) return;
 
-    // 2. Get providers before popping context
+    // 2. Store location persistently
+    await LocationStorageService.storeLocation(
+      latitude: position.latitude,
+      longitude: position.longitude,
+      locationName: locationName,
+    );
+
+    // 3. Get providers before popping context
     final hospitalProvider = Provider.of<HospitalProvider>(
       context,
       listen: false,
     );
     final doctorProvider = Provider.of<DoctorProvider>(context, listen: false);
 
-    // 3. Update providers first before closing bottom sheet
+    // 4. Update providers first before closing bottom sheet
     hospitalProvider.setLocation(
       latitude: position.latitude,
       longitude: position.longitude,

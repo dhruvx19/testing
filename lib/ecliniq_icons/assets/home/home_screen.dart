@@ -20,6 +20,9 @@ import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
+import 'package:ecliniq/ecliniq_core/location/location_storage_service.dart';
+import 'package:ecliniq/ecliniq_core/location/location_permission_manager.dart';
+import 'package:ecliniq/ecliniq_core/location/location_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -65,28 +68,85 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
-  void _initializeDoctors() {
+  void _initializeDoctors() async {
     if (!_hasInitializedDoctors && mounted) {
       _hasInitializedDoctors = true;
       final doctorProvider = Provider.of<DoctorProvider>(
         context,
         listen: false,
       );
+      final hospitalProvider = Provider.of<HospitalProvider>(
+        context,
+        listen: false,
+      );
 
       // Check if doctors need to be fetched
       if (!doctorProvider.hasDoctors && !doctorProvider.isLoading) {
-        // Use default coordinates or get from hospital provider
-        final hospitalProvider = Provider.of<HospitalProvider>(
-          context,
-          listen: false,
-        );
+        // Try to get location from stored location first
+        double? latitude;
+        double? longitude;
+        String? locationName;
 
-        final latitude = hospitalProvider.currentLatitude ?? 28.6139;
-        final longitude = hospitalProvider.currentLongitude ?? 77.209;
+        final storedLocation = await LocationStorageService.getStoredLocation();
+        if (storedLocation != null) {
+          latitude = storedLocation['latitude'] as double;
+          longitude = storedLocation['longitude'] as double;
+          locationName = storedLocation['locationName'] as String?;
+          
+          // Update providers with stored location
+          hospitalProvider.setLocation(
+            latitude: latitude,
+            longitude: longitude,
+            locationName: locationName,
+          );
+          doctorProvider.setLocation(
+            latitude: latitude,
+            longitude: longitude,
+            locationName: locationName,
+          );
+        } else {
+          // Check if permission is granted and try to get current location
+          final isGranted = await LocationPermissionManager.isPermissionGranted();
+          if (isGranted) {
+            final permissionManager = LocationPermissionManager();
+            final position = await permissionManager.getCurrentLocationIfGranted();
+            if (position != null) {
+              latitude = position.latitude;
+              longitude = position.longitude;
+              
+              // Get location name
+              try {
+                final locationService = LocationService();
+                locationName = await locationService.getLocationName(
+                  position.latitude,
+                  position.longitude,
+                );
+              } catch (e) {
+                // Ignore error
+              }
+              
+              // Update providers
+              hospitalProvider.setLocation(
+                latitude: latitude,
+                longitude: longitude,
+                locationName: locationName,
+              );
+              doctorProvider.setLocation(
+                latitude: latitude,
+                longitude: longitude,
+                locationName: locationName,
+              );
+            }
+          }
+        }
+
+        // Use stored/provider location or fallback to defaults
+        final finalLatitude = latitude ?? hospitalProvider.currentLatitude ?? 28.6139;
+        final finalLongitude = longitude ?? hospitalProvider.currentLongitude ?? 77.209;
 
         doctorProvider.fetchTopDoctors(
-          latitude: latitude,
-          longitude: longitude,
+          latitude: finalLatitude,
+          longitude: finalLongitude,
           isRefresh: true,
         );
       }

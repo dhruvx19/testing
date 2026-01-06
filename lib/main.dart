@@ -1,8 +1,6 @@
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/main_flow/onboarding_screen.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
-import 'package:ecliniq/ecliniq_modules/screens/booking/booking_confirmed_screen.dart';
-import 'package:ecliniq/ecliniq_modules/screens/booking/request_sent.dart';
 import 'package:ecliniq/ecliniq_modules/screens/details/user_details.dart';
 import 'package:ecliniq/ecliniq_modules/screens/health_files/providers/health_files_provider.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/home_screen.dart';
@@ -92,7 +90,7 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      home: const BookingConfirmedScreen(selectedSlot: '', selectedDate: '', patientName: '', patientSubtitle: '', patientBadge: '',),
+      home: const LoginPage(),
     );
   }
 }

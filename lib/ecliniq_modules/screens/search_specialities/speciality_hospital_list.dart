@@ -13,6 +13,8 @@ import 'package:ecliniq/ecliniq_utils/bottom_sheets/sort_by_filter_bottom_sheet.
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:ecliniq/ecliniq_core/location/location_storage_service.dart';
+import 'package:ecliniq/ecliniq_modules/screens/search_specialities/widgets/hospital_filter_bottom_sheet.dart';
 
 class SpecialityHospitalList extends StatefulWidget {
   final String? initialSpeciality;
@@ -33,11 +35,12 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
   String? _errorMessage;
   String _searchQuery = '';
   String _selectedCategory = 'All';
-  final String _currentLocation = 'Vishnu Dev Nagar, Wakad';
+  String _currentLocation = 'Vishnu Dev Nagar, Wakad';
   String? _selectedSortOption;
+  HospitalFilterParams? _filterParams;
 
-  final double _latitude = 28.6139;
-  final double _longitude = 77.209;
+  double _latitude = 28.6139;
+  double _longitude = 77.209;
 
   // Updated category list for hospitals
   final List<String> _categories = [
@@ -73,13 +76,26 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
       }
     }
 
-    _fetchHospitals();
+    _loadLocationAndFetch();
     _searchController.addListener(_onSearchChanged);
 
     // Auto scroll to initial category after build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToCategory(_selectedCategory);
     });
+  }
+
+  Future<void> _loadLocationAndFetch() async {
+    // Load location from storage
+    final storedLocation = await LocationStorageService.getStoredLocation();
+    if (storedLocation != null) {
+      setState(() {
+        _latitude = storedLocation['latitude'] as double;
+        _longitude = storedLocation['longitude'] as double;
+        _currentLocation = storedLocation['locationName'] as String? ?? 'Current Location';
+      });
+    }
+    _fetchHospitals();
   }
 
   @override
@@ -145,8 +161,16 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
   }
 
   void _openFilter() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Hospital filters coming soon!')),
+    EcliniqBottomSheet.show(
+      context: context,
+      child: HospitalFilterBottomSheet(
+        currentFilter: _filterParams,
+        onFilterChanged: (filter) {
+          setState(() {
+            _filterParams = filter;
+          });
+        },
+      ),
     );
   }
 
@@ -250,6 +274,60 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
       }).toList();
     }
 
+    // Apply filter params
+    if (_filterParams != null && _filterParams!.hasFilters) {
+      filtered = filtered.where((hospital) {
+        // City filter
+        if (_filterParams!.city != null) {
+          if (!hospital.city
+              .toLowerCase()
+              .contains(_filterParams!.city!.toLowerCase())) {
+            return false;
+          }
+        }
+
+        // State filter
+        if (_filterParams!.state != null) {
+          if (!hospital.state
+              .toLowerCase()
+              .contains(_filterParams!.state!.toLowerCase())) {
+            return false;
+          }
+        }
+
+        // Type filter
+        if (_filterParams!.type != null) {
+          if (hospital.type.toLowerCase() !=
+              _filterParams!.type!.toLowerCase()) {
+            return false;
+          }
+        }
+
+        // Distance filter
+        if (_filterParams!.maxDistance != null) {
+          if (hospital.distance > _filterParams!.maxDistance!) {
+            return false;
+          }
+        }
+
+        // Min doctors filter
+        if (_filterParams!.minDoctors != null) {
+          if (hospital.numberOfDoctors < _filterParams!.minDoctors!) {
+            return false;
+          }
+        }
+
+        // Min beds filter
+        if (_filterParams!.minBeds != null) {
+          if (hospital.noOfBeds < _filterParams!.minBeds!) {
+            return false;
+          }
+        }
+
+        return true;
+      }).toList();
+    }
+
     return filtered;
   }
 
@@ -259,6 +337,7 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
+         surfaceTintColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           icon: SvgPicture.asset(
@@ -329,7 +408,7 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
         EcliniqBottomSheet.show(
           context: context,
           child: LocationBottomSheet(
-            currentLocation: 'Vishnu Dev Nagar, Wakad',
+            currentLocation: _currentLocation,
           ),
         );
       },

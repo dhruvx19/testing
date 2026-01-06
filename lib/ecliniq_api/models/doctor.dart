@@ -18,6 +18,7 @@ class Doctor {
   final List<DoctorHospital> hospitals;
   final List<DoctorClinic> clinics;
   final bool isFavourite;
+  final double? serviceFee;
 
   // Getters for backward compatibility or convenience
   List<String> get degreeTypes => qualifications;
@@ -51,9 +52,29 @@ class Doctor {
     required this.hospitals,
     required this.clinics,
     this.isFavourite = false,
+    this.serviceFee,
   });
 
   factory Doctor.fromJson(Map<String, dynamic> json) {
+    double? parseNumeric(dynamic value) {
+      if (value == null) return null;
+      if (value is String) return double.tryParse(value);
+      if (value is int) return value.toDouble();
+      if (value is double) return value;
+      if (value is num) return value.toDouble();
+      return double.tryParse(value.toString());
+    }
+
+    String? parsePracticeArea(dynamic value) {
+      if (value == null) return null;
+      if (value is String) return value;
+      if (value is List) {
+        if (value.isEmpty) return null;
+        return value.map((e) => e.toString()).join(', ');
+      }
+      return value.toString();
+    }
+
     return Doctor(
       id: json['id'] ?? '',
       name: json['name'] ?? '',
@@ -62,7 +83,7 @@ class Doctor {
       profilePhoto: json['profilePhoto'],
       headline: json['headline'],
       gender: json['gender'],
-      rating: json['rating'] != null ? (json['rating'] as num).toDouble() : null,
+      rating: parseNumeric(json['rating']),
       specializations: (json['specializations'] as List<dynamic>?)
               ?.map((item) => item.toString())
               .toList() ??
@@ -78,9 +99,9 @@ class Doctor {
       languages: (json['languages'] as List<dynamic>?)
           ?.map((item) => item.toString())
           .toList(),
-      practiceArea: json['practiceArea'],
-      fee: json['fee'] != null ? (json['fee'] as num).toDouble() : null,
-      distance: json['distance'] != null ? (json['distance'] as num).toDouble() : null,
+      practiceArea: parsePracticeArea(json['practiceArea']),
+      fee: parseNumeric(json['fee']),
+      distance: parseNumeric(json['distance']),
       availability: json['availability'],
       hospitals: (json['hospitals'] as List<dynamic>?)
               ?.map((item) => DoctorHospital.fromJson(item))
@@ -91,6 +112,7 @@ class Doctor {
               .toList() ??
           [],
       isFavourite: json['isFavourite'] ?? false,
+      serviceFee: parseNumeric(json['serviceFee']),
     );
   }
 
@@ -115,6 +137,7 @@ class Doctor {
       'hospitals': hospitals.map((e) => e.toJson()).toList(),
       'clinics': clinics.map((e) => e.toJson()).toList(),
       'isFavourite': isFavourite,
+      'serviceFee': serviceFee,
     };
   }
 }
@@ -141,15 +164,24 @@ class DoctorHospital {
   });
 
   factory DoctorHospital.fromJson(Map<String, dynamic> json) {
+    double? parseNumeric(dynamic value) {
+      if (value == null) return null;
+      if (value is String) return double.tryParse(value);
+      if (value is int) return value.toDouble();
+      if (value is double) return value;
+      if (value is num) return value.toDouble();
+      return double.tryParse(value.toString());
+    }
+
     return DoctorHospital(
       id: json['id'] ?? '',
       name: json['name'] ?? '',
       city: json['city'],
       state: json['state'],
-      latitude: json['latitude'] != null ? (json['latitude'] as num).toDouble() : null,
-      longitude: json['longitude'] != null ? (json['longitude'] as num).toDouble() : null,
-      consultationFee: json['consultationFee'] != null ? (json['consultationFee'] as num).toDouble() : null,
-      distance: json['distance'] != null ? (json['distance'] as num).toDouble() : null,
+      latitude: parseNumeric(json['latitude']),
+      longitude: parseNumeric(json['longitude']),
+      consultationFee: parseNumeric(json['consultationFee']),
+      distance: parseNumeric(json['distance']),
     );
   }
 
@@ -189,15 +221,24 @@ class DoctorClinic {
   });
 
   factory DoctorClinic.fromJson(Map<String, dynamic> json) {
+    double? parseNumeric(dynamic value) {
+      if (value == null) return null;
+      if (value is String) return double.tryParse(value);
+      if (value is int) return value.toDouble();
+      if (value is double) return value;
+      if (value is num) return value.toDouble();
+      return double.tryParse(value.toString());
+    }
+
     return DoctorClinic(
       id: json['id'] ?? '',
       name: json['name'] ?? '',
       city: json['city'],
       state: json['state'],
-      latitude: json['latitude'] != null ? (json['latitude'] as num).toDouble() : null,
-      longitude: json['longitude'] != null ? (json['longitude'] as num).toDouble() : null,
-      consultationFee: json['consultationFee'] != null ? (json['consultationFee'] as num).toDouble() : null,
-      distance: json['distance'] != null ? (json['distance'] as num).toDouble() : null,
+      latitude: parseNumeric(json['latitude']),
+      longitude: parseNumeric(json['longitude']),
+      consultationFee: parseNumeric(json['consultationFee']),
+      distance: parseNumeric(json['distance']),
     );
   }
 
@@ -701,7 +742,17 @@ class DoctorDetails {
       doctorHospitals: json['doctorHospitals'],
       workExperience: json['workExperience'],
       patientsServed: json['patientsServed'],
-      rating: json['rating'] != null ? (json['rating'] as num).toDouble() : null,
+      rating: json['rating'] != null
+          ? (json['rating'] is String
+              ? double.tryParse(json['rating'] as String)
+              : json['rating'] is int
+                  ? (json['rating'] as int).toDouble()
+                  : json['rating'] is double
+                      ? json['rating'] as double
+                      : json['rating'] is num
+                          ? (json['rating'] as num).toDouble()
+                          : double.tryParse(json['rating'].toString()))
+          : null,
       currentTokenNumber: json['currentTokenNumber'],
       contactDetails: json['contactDetails'] != null
           ? ContactDetails.fromJson(json['contactDetails'])

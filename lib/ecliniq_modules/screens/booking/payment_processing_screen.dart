@@ -6,12 +6,12 @@ import 'package:ecliniq/ecliniq_api/models/appointment.dart';
 import 'package:ecliniq/ecliniq_modules/screens/booking/booking_confirmed_screen.dart';
 import 'package:ecliniq/ecliniq_modules/screens/booking/request_sent.dart';
 import 'package:ecliniq/ecliniq_services.dart/phonepe_service.dart';
-// import 'package:ecliniq/ecliniq_modules/screens/booking/widgets/upi_app_selector.dart'; // Uncomment for production UPI selector UI
-
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'dart:io';
 
 class PaymentProcessingScreen extends StatefulWidget {
   final String appointmentId;
@@ -26,6 +26,9 @@ class PaymentProcessingScreen extends StatefulWidget {
 
   // App schema for PhonePe callback
   final String appSchema;
+
+  // Selected UPI app package name
+  final String? selectedUPIPackage;
 
   // Appointment details for success screen
   final String? doctorName;
@@ -49,6 +52,7 @@ class PaymentProcessingScreen extends StatefulWidget {
     required this.gatewayAmount,
     required this.provider,
     this.appSchema = 'ecliniq', // Your app's URL scheme
+    this.selectedUPIPackage,
     this.doctorName,
     this.doctorSpecialization,
     this.selectedSlot,
@@ -159,6 +163,27 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
     }
   }
 
+  Future<void> _openUPIApp(String packageName) async {
+    try {
+      if (Platform.isAndroid) {
+        // Try to open the app using package name
+        final uri = Uri.parse('package:$packageName');
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        } else {
+          // Fallback: try to open via intent
+          final intentUri = Uri.parse('intent://#Intent;package=$packageName;end');
+          if (await canLaunchUrl(intentUri)) {
+            await launchUrl(intentUri, mode: LaunchMode.externalApplication);
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error opening UPI app: $e');
+      // Continue with PhonePe SDK flow as fallback
+    }
+  }
+
   Future<void> _startPhonePePayment() async {
     try {
       // Validate requestPayload (preferred) or token (fallback)
@@ -170,10 +195,17 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
 
       setState(() {
         _currentStatus = PaymentStatus.processing;
-        _statusMessage = 'Opening PhonePe...\nYou can choose UPI apps, UPI ID, Card, or Net Banking';
+        _statusMessage = 'Opening payment app...';
       });
 
-      await Future.delayed(const Duration(milliseconds: 500));
+      // If specific UPI app is selected, try to open it directly
+      if (widget.selectedUPIPackage != null) {
+        await _openUPIApp(widget.selectedUPIPackage!);
+        // Wait a bit for app to open
+        await Future.delayed(const Duration(milliseconds: 300));
+      } else {
+        await Future.delayed(const Duration(milliseconds: 500));
+      }
 
       if (!mounted) return;
 

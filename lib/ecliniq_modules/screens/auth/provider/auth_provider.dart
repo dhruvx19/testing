@@ -6,6 +6,7 @@ import 'package:ecliniq/ecliniq_api/src/upload_service.dart';
 import 'package:ecliniq/ecliniq_core/auth/session_service.dart';
 import 'package:ecliniq/ecliniq_core/auth/secure_storage.dart';
 import 'package:ecliniq/ecliniq_core/auth/jwt_decoder.dart';
+import 'package:ecliniq/ecliniq_core/notifications/push_notification.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -57,6 +58,16 @@ class AuthProvider with ChangeNotifier {
       if (isExpired && _authToken != null) {
         // Token expired, clear session
         await clearSession();
+      } else if (_authToken != null && !isExpired) {
+        // User has valid session, register device token
+        try {
+          await EcliniqPushNotifications.registerDeviceToken(
+            authToken: _authToken!,
+          );
+        } catch (e) {
+          // Log error but don't fail initialization if device token registration fails
+          print('Warning: Failed to register device token on app init: $e');
+        }
       }
 
       //   print('⚠️ Storage health issues detected: ${health['issues']}');
@@ -161,6 +172,16 @@ class AuthProvider with ChangeNotifier {
               // Store tokens - JWT decoder will extract expiration from token
               // No need to pass expiresInSeconds as it will be decoded from JWT
               await SessionService.storeTokens(authToken: _authToken!);
+              
+              // Register device token after successful login
+              try {
+                await EcliniqPushNotifications.registerDeviceToken(
+                  authToken: _authToken!,
+                );
+              } catch (e) {
+                // Log error but don't fail login if device token registration fails
+                print('Warning: Failed to register device token after login: $e');
+              }
             } else {}
           } catch (e) {
             _errorMessage = 'Failed to parse authentication data';
@@ -521,6 +542,16 @@ class AuthProvider with ChangeNotifier {
             userIdToStore,
             phoneNumber,
           );
+          
+          // Register device token after successful login
+          try {
+            await EcliniqPushNotifications.registerDeviceToken(
+              authToken: _authToken!,
+            );
+          } catch (e) {
+            // Log error but don't fail login if device token registration fails
+            print('Warning: Failed to register device token after login: $e');
+          }
         } catch (e) {
           // If token storage fails, login should fail
           _isLoading = false;

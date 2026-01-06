@@ -5,6 +5,7 @@ import 'package:ecliniq/ecliniq_api/models/hospital.dart';
 import 'package:ecliniq/ecliniq_api/models/hospital_doctor_model.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HospitalService {
   // Private auth token storage (optional - can use dependency injection instead)
@@ -377,11 +378,29 @@ class HospitalService {
     }
 
     try {
+      // Use provided coordinates or get from stored location
+      double finalLatitude = latitude ?? 28.6139;
+      double finalLongitude = longitude ?? 77.209;
+      
+      if (latitude == null || longitude == null) {
+        try {
+          final storage = await SharedPreferences.getInstance();
+          final storedLat = storage.getDouble('user_latitude');
+          final storedLng = storage.getDouble('user_longitude');
+          if (storedLat != null && storedLng != null) {
+            finalLatitude = storedLat;
+            finalLongitude = storedLng;
+          }
+        } catch (e) {
+          // Use defaults if location not available
+        }
+      }
+      
       // Implement search endpoint when available
       // For now, fetch all hospitals and filter locally
       final response = await getTopHospitals(
-        latitude:  28.6139,
-        longitude:  77.209,
+        latitude: finalLatitude,
+        longitude: finalLongitude,
       );
 
       if (response.success) {

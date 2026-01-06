@@ -14,6 +14,7 @@ import 'package:ecliniq/ecliniq_utils/bottom_sheets/filter_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:ecliniq/ecliniq_core/location/location_storage_service.dart';
 
 class SpecialityDoctorsList extends StatefulWidget {
   final String? initialSpeciality;
@@ -34,13 +35,13 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
   String? _errorMessage;
   String _searchQuery = '';
   String _selectedCategory = 'All';
-  final String _currentLocation = 'Vishnu Dev Nagar, Wakad';
+  String _currentLocation = 'Vishnu Dev Nagar, Wakad';
   Timer? _debounceTimer;
   String? _selectedSortOption;
   Map<String, dynamic> _filterParams = {};
 
-  final double _latitude = 28.6139;
-  final double _longitude = 77.209;
+  double _latitude = 28.6139;
+  double _longitude = 77.209;
 
   // Updated category list to match UI
   final List<String> _categories = [
@@ -77,13 +78,26 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
         _categoryKeys[widget.initialSpeciality!] = GlobalKey();
       }
     }
-    _fetchDoctors();
+    _loadLocationAndFetch();
     _searchController.addListener(_onSearchChanged);
 
     // Auto scroll to initial category after build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToCategory(_selectedCategory);
     });
+  }
+
+  Future<void> _loadLocationAndFetch() async {
+    // Load location from storage
+    final storedLocation = await LocationStorageService.getStoredLocation();
+    if (storedLocation != null) {
+      setState(() {
+        _latitude = storedLocation['latitude'] as double;
+        _longitude = storedLocation['longitude'] as double;
+        _currentLocation = storedLocation['locationName'] as String? ?? 'Current Location';
+      });
+    }
+    _fetchDoctors();
   }
 
   @override
@@ -373,6 +387,7 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+         surfaceTintColor: Colors.transparent,
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(

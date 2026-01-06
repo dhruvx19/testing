@@ -45,8 +45,8 @@ class EcliniqBottomSheet with WidgetsBindingObserver {
           child: Padding(
             padding: EdgeInsets.only(
               top: 16,
-              left: horizontalPadding ?? 16,
-              right: horizontalPadding ?? 16,
+              left: horizontalPadding ?? 12,
+              right: horizontalPadding ?? 12,
               bottom: bottomPadding ?? 16,
             ),
             child: Column(

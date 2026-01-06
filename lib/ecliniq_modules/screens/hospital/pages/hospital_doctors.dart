@@ -7,6 +7,7 @@ import 'package:ecliniq/ecliniq_api/hospital_service.dart';
 import 'package:ecliniq/ecliniq_api/models/doctor.dart' as api_doctor;
 import 'package:ecliniq/ecliniq_api/models/hospital_doctor_model.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
+import 'package:ecliniq/ecliniq_core/location/location_storage_service.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/booking/clinic_visit_slot_screen.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
@@ -256,10 +257,21 @@ class _HospitalDoctorsScreenState extends State<HospitalDoctorsScreen> {
     });
 
     try {
+      // Get user location from stored location or provider
+      double? latitude;
+      double? longitude;
+
+      // Try to get from stored location
+      final storedLocation = await LocationStorageService.getStoredLocation();
+      if (storedLocation != null) {
+        latitude = storedLocation['latitude'] as double;
+        longitude = storedLocation['longitude'] as double;
+      }
+
       // Build filter request
       final request = api_doctor.FilterDoctorsRequest(
-        latitude: 28.6139, // TODO: Get from user's location
-        longitude: 77.209,
+        latitude: latitude ?? 28.6139,
+        longitude: longitude ?? 77.209,
         speciality: _normalizeSpecialities(_selectedSpecialities),
         gender: _otherFilters?['gender']?.toString().toUpperCase(),
         distance: (_otherFilters?['distance'] is num)

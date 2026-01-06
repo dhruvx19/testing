@@ -1,5 +1,6 @@
 import 'package:ecliniq/ecliniq_api/hospital_service.dart';
 import 'package:ecliniq/ecliniq_api/models/hospital.dart';
+import 'package:ecliniq/ecliniq_core/location/location_storage_service.dart';
 import 'package:flutter/material.dart';
 
 class HospitalProvider with ChangeNotifier {
@@ -62,13 +63,13 @@ class HospitalProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // Hardcoded coordinates as per request
-      const double hardcodedLat = 28.6139;
-      const double hardcodedLong = 77.209;
+      // Use provided coordinates (user's actual location)
+      final double requestLat = latitude;
+      final double requestLong = longitude;
 
       final response = await _hospitalService.getTopHospitals(
-        latitude: hardcodedLat,
-        longitude: hardcodedLong,
+        latitude: requestLat,
+        longitude: requestLong,
       );
 
       if (response.success) {

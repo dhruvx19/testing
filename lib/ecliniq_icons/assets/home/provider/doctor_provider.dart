@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:ecliniq/ecliniq_api/models/doctor.dart' as api;
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:ecliniq/ecliniq_modules/screens/doctor_details/top_doctor/model/top_doctor_model.dart';
+import 'package:ecliniq/ecliniq_core/location/location_storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -78,15 +79,15 @@ class DoctorProvider with ChangeNotifier {
       debugPrint('🔍 fetchTopDoctors called - lat: $latitude, lng: $longitude, isRefresh: $isRefresh');
       debugPrint('🔍 Current doctors count: ${_doctors?.length ?? 0}');
       
-      // Hardcoded coordinates as per request
-      const double hardcodedLat = 28.6139;
-      const double hardcodedLong = 77.209;
+      // Use provided coordinates (user's actual location)
+      final double requestLat = latitude;
+      final double requestLong = longitude;
       
       // Fetch directly to parse with UI model
       final url = Uri.parse(Endpoints.topDoctors);
       final requestBody = api.TopDoctorsRequest(
-        latitude: hardcodedLat,
-        longitude: hardcodedLong,
+        latitude: requestLat,
+        longitude: requestLong,
       );
 
       final httpResponse = await http.post(

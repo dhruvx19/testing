@@ -1050,7 +1050,6 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
             textAlign: TextAlign.center,
           ),
 
-       
           GestureDetector(
             behavior: HitTestBehavior.translucent,
             onTap: () {
@@ -1064,21 +1063,25 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: List.generate(4, (i) {
                       final ch = i < _entered.length
                           ? (_showPin ? _entered[i] : '*')
-                          : '';
+                          : '-';
                       return Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 8),
+                        margin: const EdgeInsets.symmetric(horizontal: 7),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
                               ch,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 18,
                                 fontFamily: 'Inter',
                                 fontWeight: FontWeight.w400,
+                                color: i < _entered.length
+                                    ? Colors.black
+                                    : Colors.grey.shade400,
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -1126,195 +1129,181 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
               ),
             ),
           ),
-          if (_isLoading)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16.0),
-              child: Center(
-                child: ShimmerLoading(
-                  width: 40,
-                  height: 40,
-                  borderRadius: BorderRadius.all(Radius.circular(20)),
-                ),
-              ),
-            )
-          else ...[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextButton(
-                      onPressed: _isLoading
-                          ? null
-                          : () {
-                              _navigateToForgotPin();
-                            },
-                      child: const Text(
-                        'Forgot PIN?',
-                        style: TextStyle(
-                          color: Color(0xff424242),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          fontFamily: 'Inter',
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                GestureDetector(
-                  onTap: _entered.isEmpty
-                      ? null
-                      : () {
-                          setState(() {
-                            _showPin = !_showPin;
-                          });
-                        },
-                  child: Row(
-                    children: [
-                      Text(
-                        'Show PIN',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          color: _entered.isEmpty
-                              ? Color(0xffB8B8B8)
-                              : (_showPin
-                                    ? const Color(0xFF2372EC)
-                                    : Color(0xffB8B8B8)),
-                        ),
-                      ),
-                      SizedBox(width: 6),
-                      SvgPicture.asset(
-                        _showPin
-                            ? EcliniqIcons.eyeOpen.assetPath
-                            : EcliniqIcons.eyeClosed.assetPath,
-                        width: 18,
-                        height: 18,
-                        colorFilter: ColorFilter.mode(
-                          _entered.isEmpty
-                              ? Color(0xffB8B8B8)
-                              : (_showPin
-                                    ? const Color(0xFF2372EC)
-                                    : Color(0xffB8B8B8)),
-                          BlendMode.srcIn,
-                        ),
-                        errorBuilder: (c, e, s) => const SizedBox.shrink(),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
 
-            if (_isBiometricAvailable) ...[
-              const SizedBox(height: 30),
-              Row(
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Expanded(
-                    child: Divider(thickness: 1, color: Color(0xFFEEEEEE)),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                    child: Text(
-                      'OR',
+                  TextButton(
+                    onPressed: _isLoading
+                        ? null
+                        : () {
+                            _navigateToForgotPin();
+                          },
+                    child: const Text(
+                      'Forgot PIN?',
                       style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontWeight: FontWeight.w500,
+                        color: Color(0xff424242),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        fontFamily: 'Inter',
                       ),
                     ),
-                  ),
-                  const Expanded(
-                    child: Divider(thickness: 1, color: Color(0xFFEEEEEE)),
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              Center(
-                child: _isBiometricEnabled
-                    ? OutlinedButton.icon(
-                        onPressed: _isLoading ? null : _handleBiometricLogin,
-                        icon: SvgPicture.asset(
-                          EcliniqIcons.faceId.assetPath,
-                          width: 22,
-                          height: 22,
-                        ),
-                        label: Text(
-                          _isLoading
-                              ? 'Authenticating...'
-                              : 'Use ${BiometricService.getBiometricTypeName()}',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w500,
-                            color: Color(0xFF2372EC),
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          minimumSize: const Size(150, 48),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 18,
-                            vertical: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          side: const BorderSide(color: Color(0x382372EC)),
-                          backgroundColor: Colors.blue.shade50,
-                          foregroundColor: Colors.blue.shade100,
-                        ),
-                      )
-                    : OutlinedButton.icon(
-                        onPressed: _isLoading
-                            ? null
-                            : () async {
-                                final mpin =
-                                    await SecureStorageService.getMPIN();
-                                if (mpin != null && mpin.isNotEmpty) {
-                                  await _requestBiometricPermission(mpin);
-                                  await _checkBiometricAvailability();
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Please enter MPIN first'),
-                                      backgroundColor: Colors.red,
-                                      duration: Duration(seconds: 2),
-                                    ),
-                                  );
-                                }
-                              },
-                        icon: SvgPicture.asset(
-                          EcliniqIcons.faceId.assetPath,
-                          width: 22,
-                          height: 22,
-                        ),
-                        label: Text(
-                          'Use ${BiometricService.getBiometricTypeName()}',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w500,
-                            color: Color(0xFF2372EC),
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          minimumSize: const Size(150, 48),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 18,
-                            vertical: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          side: const BorderSide(color: Color(0x382372EC)),
-                          backgroundColor: Colors.blue.shade50,
-                          foregroundColor: Colors.blue.shade100,
-                        ),
+              GestureDetector(
+                onTap: _entered.isEmpty
+                    ? null
+                    : () {
+                        setState(() {
+                          _showPin = !_showPin;
+                        });
+                      },
+                child: Row(
+                  children: [
+                    Text(
+                      'Show PIN',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: _entered.isEmpty
+                            ? Color(0xffB8B8B8)
+                            : (_showPin
+                                  ? const Color(0xFF2372EC)
+                                  : Color(0xff424242)),
                       ),
+                    ),
+                    SizedBox(width: 6),
+                    SvgPicture.asset(
+                      _showPin
+                          ? EcliniqIcons.eyeOpen.assetPath
+                          : EcliniqIcons.eyeClosed.assetPath,
+                      width: 18,
+                      height: 18,
+                      colorFilter: ColorFilter.mode(
+                        _entered.isEmpty
+                            ? Color(0xffB8B8B8)
+                            : (_showPin
+                                  ? const Color(0xFF2372EC)
+                                  : Color(0xff424242)),
+                        BlendMode.srcIn,
+                      ),
+                      errorBuilder: (c, e, s) => const SizedBox.shrink(),
+                    ),
+                  ],
+                ),
               ),
             ],
+          ),
+
+          if (_isBiometricAvailable) ...[
+            const SizedBox(height: 30),
+            Row(
+              children: [
+                const Expanded(
+                  child: Divider(thickness: 1, color: Color(0xFFEEEEEE)),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: Text(
+                    'OR',
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                const Expanded(
+                  child: Divider(thickness: 1, color: Color(0xFFEEEEEE)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Center(
+              child: _isBiometricEnabled
+                  ? OutlinedButton.icon(
+                      onPressed: _isLoading ? null : _handleBiometricLogin,
+                      icon: SvgPicture.asset(
+                        EcliniqIcons.faceId.assetPath,
+                        width: 22,
+                        height: 22,
+                      ),
+                      label: Text(
+                        _isLoading
+                            ? 'Authenticating...'
+                            : 'Use ${BiometricService.getBiometricTypeName()}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF2372EC),
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(150, 48),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        side: const BorderSide(color: Color(0x382372EC)),
+                        backgroundColor: Colors.blue.shade50,
+                        foregroundColor: Colors.blue.shade100,
+                      ),
+                    )
+                  : OutlinedButton.icon(
+                      onPressed: _isLoading
+                          ? null
+                          : () async {
+                              final mpin = await SecureStorageService.getMPIN();
+                              if (mpin != null && mpin.isNotEmpty) {
+                                await _requestBiometricPermission(mpin);
+                                await _checkBiometricAvailability();
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Please enter MPIN first'),
+                                    backgroundColor: Colors.red,
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                              }
+                            },
+                      icon: SvgPicture.asset(
+                        EcliniqIcons.faceId.assetPath,
+                        width: 22,
+                        height: 22,
+                      ),
+                      label: Text(
+                        'Use ${BiometricService.getBiometricTypeName()}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF2372EC),
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(150, 48),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        side: const BorderSide(color: Color(0x382372EC)),
+                        backgroundColor: Colors.blue.shade50,
+                        foregroundColor: Colors.blue.shade100,
+                      ),
+                    ),
+            ),
           ],
-          const SizedBox(height: 20),
         ],
       ),
     );

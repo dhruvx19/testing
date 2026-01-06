@@ -15,8 +15,8 @@ class DoctorService {
       final url = Uri.parse(Endpoints.topDoctors);
 
       final requestBody = TopDoctorsRequest(
-        latitude: 28.6139,
-        longitude: 77.209,
+        latitude: latitude,
+        longitude: longitude,
       );
 
       final response = await http.post(

@@ -55,7 +55,7 @@ class _SortByBottomSheetState extends State<SortByBottomSheet> {
             ),
           ),
 
-          SizedBox(height: 6),
+       
 
           // List of sort options
           Expanded(

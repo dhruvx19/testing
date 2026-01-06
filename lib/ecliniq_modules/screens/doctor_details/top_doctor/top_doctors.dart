@@ -328,6 +328,7 @@ class _DoctorInfo extends StatelessWidget {
             color: Color(0xff424242),
           ),
         ),
+        if(doctor.educationText.isNotEmpty)...[
         const SizedBox(height: 2),
         Text(
           doctor.educationText,
@@ -335,6 +336,7 @@ class _DoctorInfo extends StatelessWidget {
             color: Color(0xff424242),
           ),
         ),
+        ],
       ],
     );
   }
@@ -385,14 +387,12 @@ class _DoctorStats extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            doctor.experienceText,
-            style: EcliniqTextStyles.titleXLarge.copyWith(
-              color: Color(0xff424242),
-            ),
-            overflow: TextOverflow.ellipsis,
+        Text(
+          doctor.experienceText,
+          style: EcliniqTextStyles.titleXLarge.copyWith(
+            color: Color(0xff424242),
           ),
+          
         ),
         const SizedBox(width: 8),
         Container(

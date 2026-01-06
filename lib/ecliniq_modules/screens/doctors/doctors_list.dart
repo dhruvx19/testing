@@ -18,6 +18,9 @@ import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart'
     as ecliniq_sheet;
 import 'package:ecliniq/ecliniq_utils/bottom_sheets/sort_by_filter_bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
+import 'package:ecliniq/ecliniq_core/location/location_storage_service.dart';
+import 'package:provider/provider.dart';
+import 'package:ecliniq/ecliniq_icons/assets/home/provider/doctor_provider.dart' as doctor_provider;
 
 class DoctorsListScreen extends StatefulWidget {
   final FilterDoctorsRequest? initialFilter;
@@ -41,9 +44,43 @@ class _DoctorsListScreenState extends State<DoctorsListScreen> {
   @override
   void initState() {
     super.initState();
-    _currentFilter =
-        widget.initialFilter ??
-        FilterDoctorsRequest(latitude: 28.6139, longitude: 77.209);
+    _initializeFilter();
+  }
+
+  Future<void> _initializeFilter() async {
+    // Try to get location from stored location or provider
+    double? latitude;
+    double? longitude;
+
+    // First, try to get from stored location
+    final storedLocation = await LocationStorageService.getStoredLocation();
+    if (storedLocation != null) {
+      latitude = storedLocation['latitude'] as double;
+      longitude = storedLocation['longitude'] as double;
+    } else {
+      // Try to get from DoctorProvider if available
+      try {
+        final doctorProvider = Provider.of<doctor_provider.DoctorProvider>(
+          context,
+          listen: false,
+        );
+        if (doctorProvider.hasLocation) {
+          latitude = doctorProvider.currentLatitude;
+          longitude = doctorProvider.currentLongitude;
+        }
+      } catch (e) {
+        // Provider not available, use defaults
+      }
+    }
+
+    // Use stored/provider location or fallback to defaults
+    setState(() {
+      _currentFilter = widget.initialFilter ??
+          FilterDoctorsRequest(
+            latitude: latitude ?? 28.6139,
+            longitude: longitude ?? 77.209,
+          );
+    });
     _fetchDoctors();
   }
 

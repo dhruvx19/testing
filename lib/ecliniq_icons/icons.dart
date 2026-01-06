@@ -41,6 +41,11 @@ enum EcliniqIcons {
   coinLarge('$_base/CoinLarge.svg'),
   upcharCoin('$_base/upcharCoinLogo.svg'),
   upcharCoinSmall('$_base/upcharCoinSmall.svg'),
+  googlePay('$_base/gpay.png'),
+  bhimPay('$_base/bhim.png'),
+  phonePe('$_base/phonepe.png'),
+  card('$_base/Card.svg'),
+  cred('$_base/cred.png'),
   bell('$_base/Bell.png'),
   arrowUp('$_base/Angle Up.svg'),
   microphone('$_base/Microphone.svg'),
@@ -226,6 +231,7 @@ enum EcliniqIcons {
   reply('$_base/Reply.svg'),
   userBlue('$_base/UserBlueApp.svg'),
   infoCircleBlack('$_base/Info Circle Black.svg'),
+
   noNotifications('$_base/no_notif.svg');
 
   //speciality

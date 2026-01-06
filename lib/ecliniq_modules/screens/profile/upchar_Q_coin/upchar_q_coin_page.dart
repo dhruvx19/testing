@@ -1,9 +1,9 @@
 import 'package:ecliniq/ecliniq_icons/icons.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/colors.g.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
-import 'package:ecliniq/ecliniq_ui/lib/tokens/colors.g.dart';
-import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'Widgets/transaction_widgets.dart';
 
 class UpcharCoin extends StatefulWidget {

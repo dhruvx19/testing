@@ -11,6 +11,7 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:ecliniq/ecliniq_api/device_token_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 /// Background message handler - must be a top-level function
@@ -62,18 +63,27 @@ class EcliniqPushNotifications {
       
       log('Push notifications initialized');
 
-      // Register device token
-      await registerDeviceToken();
+      // Note: Device token registration will be called after user login
     } catch (e) {
       log('Error initializing push notifications: $e');
     }
   }
 
   /// Register device token with backend
-  static Future<void> registerDeviceToken() async {
+  /// Should be called after user successfully logs in
+  /// @param authToken - Authentication token for the logged-in user
+  static Future<void> registerDeviceToken({String? authToken}) async {
     try {
       final token = await getToken();
-      if (token == null) return;
+      if (token == null) {
+        log('FCM token is null, skipping device token registration');
+        return;
+      }
+
+      if (authToken == null || authToken.isEmpty) {
+        log('Auth token is missing, skipping device token registration');
+        return;
+      }
 
       final deviceInfo = DeviceInfoPlugin();
       final packageInfo = await PackageInfo.fromPlatform();
@@ -108,7 +118,10 @@ class EcliniqPushNotifications {
         deviceModel: deviceModel,
         appVersion: packageInfo.version,
         osVersion: osVersion,
+        authToken: authToken,
       );
+      
+      log('Device token registration initiated with auth token');
       
       // Listen for token refresh
       _messaging.onTokenRefresh.listen((newToken) async {
@@ -116,15 +129,25 @@ class EcliniqPushNotifications {
         print('=============================================');
         print('FCM TOKEN REFRESHED: $newToken');
         print('=============================================');
-        await DeviceTokenService().registerDeviceToken(
-          token: newToken,
-          platform: platform,
-          deviceId: deviceId,
-          deviceName: deviceName,
-          deviceModel: deviceModel,
-          appVersion: packageInfo.version,
-          osVersion: osVersion,
-        );
+        
+        // Get current auth token from storage
+        final prefs = await SharedPreferences.getInstance();
+        final currentAuthToken = prefs.getString('auth_token');
+        
+        if (currentAuthToken != null && currentAuthToken.isNotEmpty) {
+          await DeviceTokenService().registerDeviceToken(
+            token: newToken,
+            platform: platform,
+            deviceId: deviceId,
+            deviceName: deviceName,
+            deviceModel: deviceModel,
+            appVersion: packageInfo.version,
+            osVersion: osVersion,
+            authToken: currentAuthToken,
+          );
+        } else {
+          log('Auth token not available for token refresh registration');
+        }
       });
 
     } catch (e) {

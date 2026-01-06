@@ -3,6 +3,7 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ecliniq/ecliniq_core/location/location_service.dart';
+import 'package:ecliniq/ecliniq_core/location/location_storage_service.dart';
 
 /// Manager to handle location permissions and avoid repeated requests
 class LocationPermissionManager {
@@ -84,9 +85,27 @@ class LocationPermissionManager {
         return LocationPermissionStatus.deniedForever;
       }
 
-      // Check if we've asked before
+      // Check if we've asked before - if yes, don't ask again unless user explicitly requests
+      final hasAsked = await hasAskedForPermission();
+      if (hasAsked) {
+        // Check current permission status
+        final permission = await Geolocator.checkPermission();
+        if (permission == LocationPermission.denied) {
+          // Permission was asked before and denied, but not permanently
+          return LocationPermissionStatus.denied;
+        }
+        // If permission changed (e.g., user granted it in settings), update stored status
+        final isGrantedNow = permission == LocationPermission.whileInUse || 
+                            permission == LocationPermission.always;
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool(_keyLocationPermissionGranted, isGrantedNow);
+        if (isGrantedNow) {
+          return LocationPermissionStatus.granted;
+        }
+        return LocationPermissionStatus.denied;
+      }
       
-      // Request permission
+      // First time asking - request permission
       final permission = await Geolocator.requestPermission();
       final prefs = await SharedPreferences.getInstance();
       
@@ -119,7 +138,22 @@ class LocationPermissionManager {
         return null;
       }
       
-      return await _locationService.getCurrentPosition();
+      final position = await _locationService.getCurrentPosition();
+      
+      // Store location for future use
+      if (position != null) {
+        final locationName = await _locationService.getLocationName(
+          position.latitude,
+          position.longitude,
+        );
+        await LocationStorageService.storeLocation(
+          latitude: position.latitude,
+          longitude: position.longitude,
+          locationName: locationName,
+        );
+      }
+      
+      return position;
     } catch (e) {
       return null;
     }
