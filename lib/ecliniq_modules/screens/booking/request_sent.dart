@@ -54,7 +54,7 @@ class _AppointmentRequestScreenState extends State<AppointmentRequestScreen> {
   }
 
   Future<void> _makeApiCall() async {
-    await Future.delayed(const Duration(seconds: 10005));
+    await Future.delayed(const Duration(seconds: 30000000));
 
     if (mounted) {
       Navigator.pushReplacement(
@@ -101,14 +101,17 @@ class _AppointmentRequestScreenState extends State<AppointmentRequestScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SizedBox(height: MediaQuery.of(context).size.height * 0.1),
-                    
-                    SvgPicture.asset(EcliniqIcons.appointment1.assetPath),
+
+                    SvgPicture.asset(EcliniqIcons.appointment1.assetPath, 
+                      width: EcliniqTextStyles.getResponsiveIconSize(context, 240.0),
+                      height: EcliniqTextStyles.getResponsiveIconSize(context, 185.0),
+                    ),
 
                     const SizedBox(height: 24),
 
                     Text(
                       'Appointment Request',
-                      style: EcliniqTextStyles.headlineXLarge.copyWith(
+                      style: EcliniqTextStyles.responsiveHeadlineXLarge(context).copyWith(
                         color: Color(0xff424242),
                       ),
                     ),
@@ -117,13 +120,13 @@ class _AppointmentRequestScreenState extends State<AppointmentRequestScreen> {
                       textAlign: TextAlign.center,
                       text: TextSpan(
                         text: 'sent to ',
-                        style: EcliniqTextStyles.headlineXLarge.copyWith(
+                        style: EcliniqTextStyles.responsiveHeadlineXLarge(context).copyWith(
                           color: Color(0xff424242),
                         ),
                         children: [
                           TextSpan(
                             text: widget.doctorName ?? 'Doctor',
-                            style: EcliniqTextStyles.headlineXLarge.copyWith(
+                            style: EcliniqTextStyles.responsiveHeadlineXLarge(context).copyWith(
                               color: Color(0xff0D47A1),
                             ),
                           ),
@@ -131,8 +134,7 @@ class _AppointmentRequestScreenState extends State<AppointmentRequestScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 12),
-
+  SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 24.0)),
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
@@ -155,7 +157,7 @@ class _AppointmentRequestScreenState extends State<AppointmentRequestScreen> {
                           Expanded(
                             child: Text(
                               'Your booking request will be confirmed once the doctor approves it. You will receive your token number details via WhatsApp and SMS.',
-                              style: EcliniqTextStyles.titleXLarge.copyWith(
+                              style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                                 color: Color(0xff0D47A1),
                               ),
                             ),
@@ -170,43 +172,51 @@ class _AppointmentRequestScreenState extends State<AppointmentRequestScreen> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Color(0xffB8B8B8), width: 0.5),
+                        border: Border.all(
+                          color: Color(0xffB8B8B8),
+                          width: 0.5,
+                        ),
                       ),
-                      child: Column(
-                        children: [
-                          AppointmentDetailItem(
-                            iconAssetPath: EcliniqIcons.userBlue.assetPath,
-                            title: widget.patientName,
-                            subtitle: widget.patientSubtitle,
-                            badge: widget.patientBadge,
-                            showEdit: false,
-                          ),
-                          Divider(
-                            thickness: 0.5,
-                            color: Color(0xffB8B8B8),
-                            indent: 15,
-                            endIndent: 15,
-                          ),
-                          AppointmentDetailItem(
-                            iconAssetPath: EcliniqIcons.calendar.assetPath,
-                            title: widget.selectedSlot,
-                            subtitle: widget.selectedDate,
-                            showEdit: false,
-                          ),
-                          Divider(
-                            thickness: 0.5,
-                            color: Color(0xffB8B8B8),
-                            indent: 15,
-                            endIndent: 15,
-                          ),
-                          AppointmentDetailItem(
-                            iconAssetPath: EcliniqIcons.hospitalBuilding.assetPath,
-                            title: 'In-Clinic Consultation',
-                            subtitle:
-                                widget.hospitalAddress ?? 'Address not available',
-                            showEdit: false,
-                          ),
-                        ],
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 10.0),
+                        child: Column(
+                          children: [
+                            AppointmentDetailItem(
+                              iconAssetPath: EcliniqIcons.userBlue.assetPath,
+                              title: widget.patientName,
+                              subtitle: widget.patientSubtitle,
+                              badge: widget.patientBadge,
+                              showEdit: false,
+                            ),
+                            Divider(
+                              thickness: 0.5,
+                              color: Color(0xffB8B8B8),
+                              indent: 15,
+                              endIndent: 15,
+                            ),
+                            AppointmentDetailItem(
+                              iconAssetPath: EcliniqIcons.calendar.assetPath,
+                              title: widget.selectedSlot,
+                              subtitle: widget.selectedDate,
+                              showEdit: false,
+                            ),
+                            Divider(
+                              thickness: 0.5,
+                              color: Color(0xffB8B8B8),
+                              indent: 15,
+                              endIndent: 15,
+                            ),
+                            AppointmentDetailItem(
+                              iconAssetPath:
+                                  EcliniqIcons.hospitalBuilding.assetPath,
+                              title: 'In-Clinic Consultation',
+                              subtitle:
+                                  widget.hospitalAddress ??
+                                  'Address not available',
+                              showEdit: false,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
 
@@ -219,30 +229,31 @@ class _AppointmentRequestScreenState extends State<AppointmentRequestScreen> {
             // Fixed OK button at bottom
             Container(
               padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-               
-              ),
+              decoration: BoxDecoration(color: Colors.white),
               child: SafeArea(
                 top: false,
                 child: SizedBox(
                   width: double.infinity,
-                  height: 52,
+                  height: EcliniqTextStyles.getResponsiveButtonHeight(
+                    context,
+                    baseHeight: 52.0,
+                  ),
                   child: ElevatedButton(
                     onPressed: _handleOkPressed,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
-                  
+
                       side: BorderSide(color: Color(0xff8E8E8E), width: 0.5),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(
+                          EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
+                        ),
                       ),
                       elevation: 0,
                     ),
-                    child: const Text(
+                    child: Text(
                       'Ok',
-                      style: TextStyle(
-                        fontSize: 18,
+                      style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                         fontWeight: FontWeight.w500,
                         color: Color(0xff424242),
                       ),

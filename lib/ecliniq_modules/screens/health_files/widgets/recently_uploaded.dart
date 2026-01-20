@@ -1,15 +1,23 @@
 import 'dart:io';
 
+import 'package:ecliniq/ecliniq_core/notifications/local_notifications.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/health_files/file_type_screen.dart';
-import 'package:ecliniq/ecliniq_modules/screens/health_files/models/health_file_model.dart';
+import 'package:ecliniq/ecliniq_api/health_file_model.dart';
 import 'package:ecliniq/ecliniq_modules/screens/health_files/providers/health_files_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/health_files/utils/date_formatter.dart';
 import 'package:ecliniq/ecliniq_modules/screens/health_files/widgets/action_bottom_sheet.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/success_snackbar.dart';
+import 'package:ecliniq/ecliniq_utils/snackbar_helper.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 class RecentlyUploadedWidget extends StatelessWidget {
@@ -30,12 +38,12 @@ class RecentlyUploadedWidget extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Padding(
+               Padding(
                 padding: EdgeInsets.only(right: 16.0),
                 child: Text(
                   'Recently Uploaded',
-                  style: TextStyle(
-                    fontSize: 20,
+                  style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
+                
                     fontWeight: FontWeight.bold,
                     color: Color(0xff424242),
                   ),
@@ -106,6 +114,299 @@ class _RecentFileCardState extends State<RecentFileCard> {
       return EcliniqIcons.pdffile.assetPath;
     }
     return EcliniqIcons.pdffile.assetPath;
+  }
+
+  Future<void> _handleDownloadFile(BuildContext context, HealthFile file) async {
+    debugPrint('_handleDownloadFile called for file: ${file.fileName}, id: ${file.id}');
+
+    // Check storage permissions for Android - use default Android dialog like location
+    if (Platform.isAndroid) {
+      // Check both permission statuses
+      final storageStatus = await Permission.storage.status;
+      final manageStorageStatus = await Permission.manageExternalStorage.status;
+
+      // If neither permission is granted, request permission using default Android dialog
+      if (!storageStatus.isGranted && !manageStorageStatus.isGranted) {
+        // Determine which permission to request
+        Permission storagePermission = Permission.storage;
+        
+        // For Android 11+, try manageExternalStorage first if not permanently denied
+        if (manageStorageStatus != PermissionStatus.permanentlyDenied) {
+          storagePermission = Permission.manageExternalStorage;
+        }
+
+        // Request permission directly (shows default Android dialog)
+        final result = await storagePermission.request();
+        
+        if (!result.isGranted) {
+          if (context.mounted) {
+            if (result.isPermanentlyDenied) {
+              // Show dialog to open settings
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Storage Permission Required'),
+                  content: const Text(
+                    'Storage permission is permanently denied. Please enable it in app settings to download files.',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        Navigator.pop(context);
+                        await openAppSettings();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2372EC),
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Open Settings'),
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              SnackBarHelper.showErrorSnackBar(
+                context,
+                'Storage permission is required to download files',
+                duration: const Duration(seconds: 2),
+              );
+            }
+          }
+          return;
+        }
+      }
+    }
+
+    await _proceedWithDownload(context, file);
+  }
+
+  Future<void> _proceedWithDownload(BuildContext context, HealthFile file) async {
+    BuildContext? dialogContext;
+
+    try {
+      // Show loading indicator
+      if (context.mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) {
+            dialogContext = ctx;
+            return const Center(child: EcliniqLoader());
+          },
+        );
+      }
+
+      // Show "Download started" message
+      SnackBarHelper.showSnackBar(
+        context,
+        Platform.isIOS
+            ? 'Preparing file for download...'
+            : 'Download started. We\'ll notify you when it\'s complete.',
+        duration: const Duration(seconds: 2),
+      );
+
+      final sourceFile = File(file.filePath);
+
+      if (!await sourceFile.exists()) {
+        if (dialogContext != null && context.mounted) {
+          Navigator.of(dialogContext!, rootNavigator: true).pop();
+        }
+        if (context.mounted) {
+          SnackBarHelper.showErrorSnackBar(
+            context,
+            'File not found in storage',
+            duration: const Duration(seconds: 2),
+          );
+        }
+        return;
+      }
+
+      if (Platform.isAndroid) {
+        Directory targetDir;
+        final primaryDir = Directory('/storage/emulated/0/Download');
+        if (await primaryDir.exists()) {
+          targetDir = primaryDir;
+        } else {
+          final externalDir = await getExternalStorageDirectory();
+          if (externalDir == null) {
+            throw Exception('Unable to access storage directory. Please check storage permissions.');
+          }
+          targetDir = Directory(path.join(externalDir.path, 'Download'));
+          if (!await targetDir.exists()) {
+            await targetDir.create(recursive: true);
+          }
+        }
+
+        String fileName = file.fileName;
+        File destFile = File(path.join(targetDir.path, fileName));
+
+        int counter = 1;
+        while (await destFile.exists()) {
+          final nameWithoutExt = path.basenameWithoutExtension(fileName);
+          final ext = path.extension(fileName);
+          fileName = '${nameWithoutExt}_$counter$ext';
+          destFile = File(path.join(targetDir.path, fileName));
+          counter++;
+        }
+
+        await sourceFile.copy(destFile.path);
+
+        if (!await destFile.exists()) {
+          throw Exception('File copy failed - destination file does not exist.');
+        }
+
+        if (dialogContext != null && context.mounted) {
+          Navigator.of(dialogContext!, rootNavigator: true).pop();
+        }
+
+        if (context.mounted) {
+          CustomSuccessSnackBar.show(
+            context: context,
+            title: 'Download successful',
+            subtitle: 'File saved: $fileName',
+            duration: const Duration(seconds: 3),
+          );
+        }
+
+        await LocalNotifications.showDownloadSuccess(fileName: fileName);
+        return;
+      }
+
+      if (Platform.isIOS) {
+        final documentsDir = await getApplicationDocumentsDirectory();
+        final downloadsDir = Directory(path.join(documentsDir.path, 'Downloads'));
+
+        if (!await downloadsDir.exists()) {
+          await downloadsDir.create(recursive: true);
+        }
+
+        String fileName = file.fileName;
+        File destFile = File(path.join(downloadsDir.path, fileName));
+
+        int counter = 1;
+        while (await destFile.exists()) {
+          final nameWithoutExt = path.basenameWithoutExtension(fileName);
+          final ext = path.extension(fileName);
+          fileName = '${nameWithoutExt}_$counter$ext';
+          destFile = File(path.join(downloadsDir.path, fileName));
+          counter++;
+        }
+
+        await sourceFile.copy(destFile.path);
+
+        if (!await destFile.exists()) {
+          throw Exception('File copy failed - destination file does not exist.');
+        }
+
+        if (dialogContext != null && context.mounted) {
+          Navigator.of(dialogContext!, rootNavigator: true).pop();
+        }
+
+        if (context.mounted) {
+          CustomSuccessSnackBar.show(
+            context: context,
+            title: 'Download successful',
+            subtitle: 'File saved to app Downloads folder: $fileName',
+            duration: const Duration(seconds: 3),
+          );
+        }
+
+        await LocalNotifications.showDownloadSuccess(fileName: fileName);
+        return;
+      }
+    } catch (e) {
+      if (dialogContext != null && context.mounted) {
+        Navigator.of(dialogContext!, rootNavigator: true).pop();
+      }
+
+      if (context.mounted) {
+        SnackBarHelper.showErrorSnackBar(
+          context,
+          'Download failed: ${e.toString()}',
+          duration: const Duration(seconds: 3),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleDeleteFile(BuildContext context, HealthFile file) async {
+    debugPrint('_handleDeleteFile called for file: ${file.fileName}, id: ${file.id}');
+    BuildContext? dialogContext;
+
+    try {
+      // Show loading indicator
+      if (context.mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) {
+            dialogContext = ctx;
+            return const Center(child: EcliniqLoader());
+          },
+        );
+      }
+
+      final provider = context.read<HealthFilesProvider>();
+
+      debugPrint('Starting file deletion for: ${file.fileName}');
+      // Delete the file (provider handles both physical file and metadata)
+      final success = await provider.deleteFile(file);
+      debugPrint('File deletion result: $success');
+
+      // Refresh the file list to ensure UI updates
+      if (success && context.mounted) {
+        await provider.refresh();
+      }
+
+      // Close loading indicator - ensure it closes even if refresh fails
+      if (dialogContext != null && context.mounted) {
+        try {
+          Navigator.of(dialogContext!, rootNavigator: true).pop();
+        } catch (e) {
+          debugPrint('Error closing loading dialog: $e');
+        }
+        dialogContext = null;
+      }
+
+      if (!context.mounted) return;
+
+      if (success) {
+        CustomSuccessSnackBar.show(
+          context: context,
+          title: 'Success',
+          subtitle: 'File deleted successfully',
+          duration: const Duration(seconds: 2),
+        );
+      } else {
+        SnackBarHelper.showErrorSnackBar(
+          context,
+          'Failed to delete file. Please try again.',
+          duration: const Duration(seconds: 2),
+        );
+      }
+    } catch (e) {
+      // Close loading indicator if still open
+      if (dialogContext != null && context.mounted) {
+        try {
+          Navigator.of(dialogContext!, rootNavigator: true).pop();
+        } catch (_) {
+          debugPrint('Error closing loading dialog in catch:');
+        }
+        dialogContext = null;
+      }
+
+      if (context.mounted) {
+        SnackBarHelper.showErrorSnackBar(
+          context,
+          'Failed to delete file. Please try again.',
+          duration: const Duration(seconds: 2),
+        );
+      }
+    }
   }
 
   @override
@@ -187,8 +488,8 @@ class _RecentFileCardState extends State<RecentFileCard> {
                         children: [
                           Text(
                             widget.file.fileName,
-                            style: const TextStyle(
-                              fontSize: 18,
+                            style:  EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+                             
                               fontWeight: FontWeight.w400,
                               color: Color(0xFF424242),
                             ),
@@ -198,8 +499,8 @@ class _RecentFileCardState extends State<RecentFileCard> {
                
                           Text(
                             _formatDate(widget.file.createdAt),
-                            style: const TextStyle(
-                              fontSize: 14,
+                            style:  EcliniqTextStyles.responsiveBodySmall(context).copyWith(
+                       
                               fontWeight: FontWeight.w400,
                               color: Color(0xff8E8E8E),
                             ),
@@ -211,7 +512,12 @@ class _RecentFileCardState extends State<RecentFileCard> {
                     GestureDetector(
                       onTap: () => EcliniqBottomSheet.show(
                         context: context,
-                        child: ActionBottomSheet(healthFile: widget.file),
+                        child: ActionBottomSheet(
+                          healthFile: widget.file,
+                          parentContext: context,
+                          onDownloadDocument: () => _handleDownloadFile(context, widget.file),
+                          onDeleteDocument: () => _handleDeleteFile(context, widget.file),
+                        ),
                       ),
                       child: SvgPicture.asset(
                         EcliniqIcons.threeDots.assetPath,

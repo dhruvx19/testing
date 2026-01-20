@@ -3,8 +3,7 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:ecliniq/ecliniq_api/models/eta_update.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 
-/// WebSocket service for ETA (Estimated Time of Arrival) updates
-/// Manages Socket.IO connection and handles real-time ETA updates
+
 class ETAWebSocketService {
   IO.Socket? _socket;
   bool _isConnected = false;
@@ -28,13 +27,11 @@ class ETAWebSocketService {
   /// Connect to WebSocket server
   Future<void> connect() async {
     if (_isConnected || _isConnecting) {
-      print('🔌 WebSocket already connected or connecting');
       return;
     }
 
     try {
       _isConnecting = true;
-      print('🔌 Connecting to WebSocket server...');
 
       // Extract base URL from endpoints (remove /api path)
       final baseUrl = Endpoints.localhost.replaceAll('/api', '');
@@ -56,7 +53,6 @@ class ETAWebSocketService {
       _setupEventHandlers();
     } catch (e) {
       _isConnecting = false;
-      print('❌ Error connecting to WebSocket: $e');
       _errorController.add('Failed to connect: $e');
     }
   }
@@ -67,28 +63,24 @@ class ETAWebSocketService {
 
     // Connection events
     _socket!.onConnect((_) {
-      print('✅ WebSocket connected');
       _isConnected = true;
       _isConnecting = false;
       _connectionStatusController.add(true);
     });
 
     _socket!.onDisconnect((_) {
-      print('❌ WebSocket disconnected');
       _isConnected = false;
       _isConnecting = false;
       _connectionStatusController.add(false);
     });
 
     _socket!.onConnectError((error) {
-      print('❌ WebSocket connection error: $error');
       _isConnecting = false;
       _errorController.add('Connection error: $error');
     });
 
     // Join response
     _socket!.on('joined', (data) {
-      print('✅ Joined room: $data');
       try {
         if (data is Map<String, dynamic>) {
           final joinResponse = JoinResponse.fromJson(data);
@@ -100,39 +92,33 @@ class ETAWebSocketService {
           }
         }
       } catch (e) {
-        print('❌ Error parsing join response: $e');
       }
     });
 
     // ETA update event
     _socket!.on('eta_update', (data) {
-      print('📨 Received ETA update: $data');
       try {
         if (data is Map<String, dynamic>) {
           final update = ETAUpdate.fromJson(data);
           _etaUpdateController.add(update);
         }
       } catch (e) {
-        print('❌ Error parsing ETA update: $e');
       }
     });
 
     // Current token update for display screens
     _socket!.on('current_token_update', (data) {
-      print('📨 Received token update: $data');
       try {
         if (data is Map<String, dynamic>) {
           final update = SlotDisplayUpdate.fromJson(data);
           _slotDisplayUpdateController.add(update);
         }
       } catch (e) {
-        print('❌ Error parsing token update: $e');
       }
     });
 
     // Error event
     _socket!.on('error', (data) {
-      print('❌ WebSocket error: $data');
       String errorMessage = 'Unknown error';
       if (data is Map<String, dynamic> && data['message'] != null) {
         errorMessage = data['message'].toString();
@@ -161,7 +147,6 @@ class ETAWebSocketService {
       throw Exception('WebSocket not connected');
     }
 
-    print('🔌 Joining appointment room: $appointmentId');
     _socket!.emit('join_appointment', {
       'appointmentId': appointmentId,
       if (patientId != null) 'patientId': patientId,
@@ -185,7 +170,6 @@ class ETAWebSocketService {
       throw Exception('WebSocket not connected');
     }
 
-    print('🔌 Joining doctor session: doctor=$doctorId, slot=$slotId');
     _socket!.emit('join_doctor_session', {
       'doctorId': doctorId,
       'slotId': slotId,
@@ -207,7 +191,6 @@ class ETAWebSocketService {
       throw Exception('WebSocket not connected');
     }
 
-    print('🔌 Joining slot display: $slotId');
     _socket!.emit('join_slot_display', {
       'slotId': slotId,
     });
@@ -216,7 +199,6 @@ class ETAWebSocketService {
   /// Leave all rooms and disconnect
   Future<void> disconnect() async {
     if (_socket != null) {
-      print('🔌 Disconnecting WebSocket...');
       _socket!.disconnect();
       _socket!.dispose();
       _socket = null;

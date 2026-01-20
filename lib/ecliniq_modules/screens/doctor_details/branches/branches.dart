@@ -26,7 +26,7 @@ class Branches extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: Text(
             'Branches',
-            style: EcliniqTextStyles.headlineMedium.copyWith(
+            style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
               color: Color(0xff424242),
             ),
           ),

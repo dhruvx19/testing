@@ -165,10 +165,10 @@ class _CancelBottomSheetState extends State<CancelBottomSheet> {
             // width: 115,
           ),
              const SizedBox(height: 12),
-          const EcliniqText(
+           EcliniqText(
             'Are you sure you want cancel the booking?',
-            style: TextStyle(
-              fontSize: 18,
+            style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+         
               fontWeight: FontWeight.w500,
               color: Color(0xFF424242),
               
@@ -176,10 +176,10 @@ class _CancelBottomSheetState extends State<CancelBottomSheet> {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
-          const EcliniqText(
+           EcliniqText(
             'You can also change this booking at any time. Please note that the Service Fee and Tax are non-refundable if you cancel.',
-            style: TextStyle(
-              fontSize: 16,
+            style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+            
               fontWeight: FontWeight.w400,
               color: Color(0xFF626060),
             ),
@@ -210,7 +210,7 @@ class _CancelBottomSheetState extends State<CancelBottomSheet> {
                         children: [
                           Text(
                             'Yes',
-                            style: EcliniqTextStyles.headlineMedium.copyWith(
+                            style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                               color: Color(0xffF04248),
                             ),
                           ),
@@ -241,7 +241,7 @@ class _CancelBottomSheetState extends State<CancelBottomSheet> {
                         children: [
                           Text(
                             'No',
-                            style: EcliniqTextStyles.headlineMedium.copyWith(
+                            style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                               color: Color(0xff424242),
                             ),
                           ),

@@ -67,14 +67,11 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          ScaffoldMessenger.of(context).showSnackBar(
-            CustomErrorSnackBar(
-              context: context,
-              title: 'Image Error',
-              subtitle: 'Error picking image: $e',
-              duration: const Duration(seconds: 4),
-            ),
+          CustomErrorSnackBar.show(
+            context: context,
+            title: 'Image Error',
+            subtitle: 'Error picking image: $e',
+            duration: const Duration(seconds: 4),
           );
         }
       }
@@ -85,14 +82,11 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
     if (!provider.isFormValid) {
       final errorMessage = provider.getValidationErrorMessage();
 
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        CustomErrorSnackBar(
-          context: context,
-          title: 'Validation Failed',
-          subtitle: errorMessage,
-          duration: const Duration(seconds: 4),
-        ),
+      CustomErrorSnackBar.show(
+        context: context,
+        title: 'Validation Failed',
+        subtitle: errorMessage,
+        duration: const Duration(seconds: 4),
       );
       return;
     }
@@ -105,14 +99,11 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
           widget.onDependentAdded!();
         }
 
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          CustomSuccessSnackBar(
-            context: context,
-            title: 'Dependent Saved',
-            subtitle: 'Your changes have been saved successfully',
-            duration: const Duration(seconds: 3),
-          ),
+        CustomSuccessSnackBar.show(
+          context: context,
+          title: 'Dependent Saved',
+          subtitle: 'Your changes have been saved successfully',
+          duration: const Duration(seconds: 3),
         );
 
         await Future.delayed(const Duration(milliseconds: 800));
@@ -129,38 +120,29 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
             errorTitle = 'Action Required';
             errorSubtitle = apiErrors.join('\n');
 
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-            ScaffoldMessenger.of(context).showSnackBar(
-              CustomActionSnackBar(
-                context: context,
-                title: errorTitle,
-                subtitle: errorSubtitle,
-                duration: const Duration(seconds: 6),
-              ),
+            CustomActionSnackBar.show(
+              context: context,
+              title: errorTitle,
+              subtitle: errorSubtitle,
+              duration: const Duration(seconds: 6),
             );
             return;
           }
         }
 
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          CustomErrorSnackBar(
-            context: context,
-            title: errorTitle,
-            subtitle: errorSubtitle,
-            duration: const Duration(seconds: 4),
-          ),
+        CustomErrorSnackBar.show(
+          context: context,
+          title: errorTitle,
+          subtitle: errorSubtitle,
+          duration: const Duration(seconds: 4),
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        CustomErrorSnackBar(
-          context: context,
-          title: 'Error',
-          subtitle: 'An error occurred: $e',
-          duration: const Duration(seconds: 4),
-        ),
+      CustomErrorSnackBar.show(
+        context: context,
+        title: 'Error',
+        subtitle: 'An error occurred: $e',
+        duration: const Duration(seconds: 4),
       );
     }
   }
@@ -239,13 +221,17 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                  context,
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 child: Text(
                   'Add Dependent',
-                  style: EcliniqTextStyles.headlineLarge.copyWith(
+                  style: EcliniqTextStyles.responsiveHeadlineXLarge(context).copyWith(
                     color: Color(0xff424242),
                     fontWeight: FontWeight.w500,
-                    fontSize: 24,
+         
                   ),
                 ),
               ),
@@ -256,7 +242,7 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                     minHeight: 400,
                   ),
                   child: SingleChildScrollView(
-                    padding: EdgeInsets.all(16),
+                    padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -267,8 +253,8 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                             child: Stack(
                               children: [
                                 Container(
-                                  width: 100,
-                                  height: 100,
+                                  width: EcliniqTextStyles.getResponsiveWidth(context, 100),
+                                  height: EcliniqTextStyles.getResponsiveHeight(context, 100),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     border: Border.all(
@@ -294,8 +280,8 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                                           children: [
                                             SvgPicture.asset(
                                               EcliniqIcons.add.assetPath,
-                                              width: 44,
-                                              height: 44,
+                                              width: EcliniqTextStyles.getResponsiveIconSize(context, 44),
+                                              height: EcliniqTextStyles.getResponsiveIconSize(context, 44),
                                               colorFilter: ColorFilter.mode(
                                                 Color(0xff2372EC),
                                                 BlendMode.srcIn,
@@ -305,11 +291,9 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                                             EcliniqText(
                                               'Upload \nPhoto',
                                               textAlign: TextAlign.center,
-                                              style: EcliniqTextStyles
-                                                  .titleXLarge
-                                                  .copyWith(
+                                              style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                                                     color: Color(0xff2372EC),
-                                                    fontSize: 16,
+                                                    
                                                   ),
                                             ),
                                           ],
@@ -323,8 +307,8 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                                     bottom: 0,
                                     right: 0,
                                     child: Container(
-                                      width: 32,
-                                      height: 32,
+                                      width: EcliniqTextStyles.getResponsiveWidth(context, 32),
+                                      height: EcliniqTextStyles.getResponsiveHeight(context, 32),
                                       decoration: BoxDecoration(
                                         color: Primitives.brightBlue,
                                         shape: BoxShape.circle,
@@ -333,10 +317,10 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                                           width: 2,
                                         ),
                                       ),
-                                      child: const Icon(
+                                      child: Icon(
                                         Icons.edit,
                                         color: Colors.white,
-                                        size: 16,
+                                        size: EcliniqTextStyles.getResponsiveIconSize(context, 16),
                                       ),
                                     ),
                                   ),
@@ -345,7 +329,9 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                           ),
                         ),
 
-                        SizedBox(height: 16),
+                        SizedBox(
+                          height: EcliniqTextStyles.getResponsiveSpacing(context, 16),
+                        ),
 
                         GestureDetector(
                           onTap: () {
@@ -360,22 +346,22 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                                 children: [
                                   Text(
                                     'Personal Details',
-                                    style: EcliniqTextStyles.headlineMedium
+                                    style: EcliniqTextStyles.responsiveHeadlineMedium(context)
                                         .copyWith(color: Color(0xff424242)),
                                   ),
                                   Text(
                                     '•',
-                                    style: TextStyle(
+                                    style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
                                       color: Colors.red,
-                                      fontSize: 20,
+                                 
                                     ),
                                   ),
                                 ],
                               ),
 
                               SvgPicture.asset(
-                                width: 24,
-                                height: 24,
+                                width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+                                height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
                                 _isExpanded
                                     ? EcliniqIcons.arrowUp.assetPath
                                     : EcliniqIcons.arrowDown.assetPath,
@@ -386,7 +372,9 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                         ),
 
                         if (_isExpanded) ...[PersonalDetailsWidget()],
-                        SizedBox(height: 24),
+                        SizedBox(
+                          height: EcliniqTextStyles.getResponsiveSpacing(context, 24),
+                        ),
                         GestureDetector(
                           onTap: () {
                             setState(() {
@@ -401,14 +389,14 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                                 children: [
                                   Text(
                                     'Physical Info',
-                                    style: EcliniqTextStyles.headlineMedium
+                                    style: EcliniqTextStyles.responsiveHeadlineMedium(context)
                                         .copyWith(color: Color(0xff424242)),
                                   ),
                                 ],
                               ),
                               SvgPicture.asset(
-                                width: 24,
-                                height: 24,
+                                width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+                                height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
                                 _isExpandedPhysicalInfo
                                     ? EcliniqIcons.arrowUp.assetPath
                                     : EcliniqIcons.arrowDown.assetPath,
@@ -418,14 +406,17 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                           ),
                         ),
                         if (_isExpandedPhysicalInfo) ...[PhysicalInfoCard()],
-                        SizedBox(height: 20),
+                        SizedBox(
+                          height: EcliniqTextStyles.getResponsiveSpacing(context, 20),
+                        ),
                       ],
                     ),
                   ),
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(
+                padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+                  context,
                   left: horizontalPadding,
                   right: horizontalPadding,
                   top: 22,
@@ -433,7 +424,10 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                 ),
                 child: SizedBox(
                   width: double.infinity,
-                  height: buttonHeight,
+                  height: EcliniqTextStyles.getResponsiveButtonHeight(
+                    context,
+                    baseHeight: buttonHeight,
+                  ),
                   child: GestureDetector(
                     onTap: provider.isLoading
                         ? null
@@ -445,13 +439,15 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                         color: provider.isFormValid
                             ? Color(0xFF2372EC)
                             : Color(0xFFF9F9F9),
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(
+                          EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
+                        ),
                       ),
                       child: Center(
                         child: provider.isLoading
                             ? SizedBox(
-                                height: 20,
-                                width: 20,
+                                height: EcliniqTextStyles.getResponsiveHeight(context, 20),
+                                width: EcliniqTextStyles.getResponsiveWidth(context, 20),
                                 child: EcliniqLoader(
                                   color: Colors.white,
                                   size: 20,
@@ -462,7 +458,7 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                                 children: [
                                   Text(
                                     'Save',
-                                    style: EcliniqTextStyles.titleXBLarge
+                                    style: EcliniqTextStyles.responsiveTitleXBLarge(context)
                                         .copyWith(
                                           color: provider.isFormValid
                                               ? Colors.white
@@ -470,7 +466,9 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                                           fontWeight: FontWeight.w500,
                                         ),
                                   ),
-                                  const SizedBox(width: 8),
+                                  SizedBox(
+                                    width: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+                                  ),
                                 ],
                               ),
                       ),

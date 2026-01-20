@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:ecliniq/ecliniq_api/doctor_service.dart';
 import 'package:ecliniq/ecliniq_api/models/doctor.dart' as api_doctor;
 import 'package:ecliniq/ecliniq_api/models/hospital_doctor_model.dart';
+import 'package:ecliniq/ecliniq_api/storage_service.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/widgets/top_bar_widgets/location_search.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
@@ -14,7 +16,8 @@ import 'package:ecliniq/ecliniq_utils/bottom_sheets/filter_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:ecliniq/ecliniq_core/location/location_storage_service.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 class SpecialityDoctorsList extends StatefulWidget {
   final String? initialSpeciality;
@@ -27,8 +30,10 @@ class SpecialityDoctorsList extends StatefulWidget {
 
 class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
   final DoctorService _doctorService = DoctorService();
+  final StorageService _storageService = StorageService();
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _categoryScrollController = ScrollController();
+  final SpeechToText _speechToText = SpeechToText();
 
   List<Doctor> _doctors = [];
   bool _isLoading = true;
@@ -40,8 +45,10 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
   String? _selectedSortOption;
   Map<String, dynamic> _filterParams = {};
 
-  double _latitude = 28.6139;
-  double _longitude = 77.209;
+  double _latitude = 12.9173;
+  double _longitude = 77.6377;
+  bool _speechEnabled = false;
+  bool _isListening = false;
 
   // Updated category list to match UI
   final List<String> _categories = [
@@ -80,6 +87,7 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
     }
     _loadLocationAndFetch();
     _searchController.addListener(_onSearchChanged);
+    _initSpeech();
 
     // Auto scroll to initial category after build
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -87,16 +95,217 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
     });
   }
 
-  Future<void> _loadLocationAndFetch() async {
-    // Load location from storage
-    final storedLocation = await LocationStorageService.getStoredLocation();
-    if (storedLocation != null) {
-      setState(() {
-        _latitude = storedLocation['latitude'] as double;
-        _longitude = storedLocation['longitude'] as double;
-        _currentLocation = storedLocation['locationName'] as String? ?? 'Current Location';
-      });
+  Future<void> _initSpeech() async {
+    try {
+      _speechEnabled = await _speechToText.initialize(
+        onError: (error) {
+          if (mounted) {
+            setState(() => _isListening = false);
+          }
+          final errorMsg = error.errorMsg.toLowerCase();
+          if (!errorMsg.contains('no_match') &&
+              !errorMsg.contains('listen_failed')) {
+            developer.log(
+              'Speech recognition initialization error: ${error.errorMsg}',
+            );
+          }
+        },
+        onStatus: (status) {
+          developer.log('Speech recognition status: $status');
+          if (mounted) {
+            if (status == 'notListening' ||
+                status == 'done' ||
+                status == 'doneNoResult') {
+              setState(() => _isListening = false);
+            } else if (status == 'listening') {
+              setState(() => _isListening = true);
+            }
+          }
+        },
+      );
+      if (mounted) {
+        setState(() {});
+      }
+      developer.log('Speech recognition initialized: $_speechEnabled');
+    } catch (e) {
+      developer.log('Error initializing speech recognition: $e');
+      _speechEnabled = false;
+      if (mounted) {
+        setState(() {});
+      }
     }
+  }
+
+  void _startListening() async {
+    if (_isListening) {
+      return;
+    }
+
+    if (!_speechEnabled) {
+      await _initSpeech();
+      if (!_speechEnabled) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Speech recognition is not available. Please check your permissions.',
+              ),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      }
+    }
+
+    final isAvailable = await _speechToText.initialize(
+      onError: (error) {
+        developer.log('Speech recognition error: ${error.errorMsg}');
+        final errorMsg = error.errorMsg.toLowerCase();
+        if (errorMsg.contains('no_match') ||
+            errorMsg.contains('listen_failed') ||
+            errorMsg.contains('error_network_error')) {
+          developer.log('Expected speech recognition error: ${error.errorMsg}');
+          if (mounted) {
+            setState(() => _isListening = false);
+          }
+          return;
+        }
+
+        if (mounted) {
+          setState(() => _isListening = false);
+          if (errorMsg.contains('error_permission') ||
+              errorMsg.contains('permission')) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Microphone permission is required for voice search.',
+                ),
+                duration: Duration(seconds: 2),
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Speech recognition error: ${error.errorMsg}'),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+        }
+      },
+      onStatus: (status) {
+        developer.log('Speech recognition status: $status');
+        if (mounted) {
+          if (status == 'notListening' ||
+              status == 'done' ||
+              status == 'doneNoResult') {
+            setState(() => _isListening = false);
+          } else if (status == 'listening') {
+            setState(() => _isListening = true);
+          }
+        }
+      },
+    );
+
+    if (!isAvailable) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Speech recognition is not available. Please check your permissions.',
+            ),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+      return;
+    }
+
+    try {
+      await _speechToText.listen(
+        onResult: _onSpeechResult,
+        listenFor: const Duration(seconds: 30),
+        pauseFor: const Duration(seconds: 3),
+        partialResults: true,
+        localeId: 'en_US',
+        cancelOnError: false,
+        listenMode: ListenMode.confirmation,
+      );
+
+      if (mounted) {
+        setState(() {
+          _isListening = true;
+        });
+      }
+    } catch (e) {
+      developer.log('Error starting speech recognition: $e');
+      if (mounted) {
+        setState(() => _isListening = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error starting voice search: ${e.toString()}'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  void _stopListening() async {
+    try {
+      await _speechToText.stop();
+      if (mounted) {
+        setState(() {
+          _isListening = false;
+        });
+      }
+      developer.log('Speech recognition stopped');
+    } catch (e) {
+      developer.log('Error stopping speech recognition: $e');
+      if (mounted) {
+        setState(() {
+          _isListening = false;
+        });
+      }
+    }
+  }
+
+  void _onSpeechResult(SpeechRecognitionResult result) {
+    developer.log(
+      'Speech result: ${result.recognizedWords}, final: ${result.finalResult}',
+    );
+
+    // Update the search controller with recognized words
+    _searchController.text = result.recognizedWords;
+    _searchController.selection = TextSelection.fromPosition(
+      TextPosition(offset: result.recognizedWords.length),
+    );
+
+    setState(() {
+      _searchQuery = result.recognizedWords.toLowerCase();
+    });
+
+    if (result.finalResult) {
+      _stopListening();
+    }
+  }
+
+  void _toggleVoiceSearch() {
+    if (_isListening) {
+      _stopListening();
+    } else {
+      _startListening();
+    }
+  }
+
+  Future<void> _loadLocationAndFetch() async {
+    // Hardcoded location values
+    setState(() {
+      _latitude = 12.9173;
+      _longitude = 77.6377;
+      _currentLocation = 'Current Location';
+    });
     _fetchDoctors();
   }
 
@@ -106,6 +315,7 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
     _searchController.dispose();
     _categoryScrollController.dispose();
     _debounceTimer?.cancel();
+    _speechToText.cancel();
     super.dispose();
   }
 
@@ -155,9 +365,14 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
     EcliniqBottomSheet.show(
       context: context,
       child: SortByBottomSheet(
+        initialSortOption: _selectedSortOption,
         onChanged: (option) {
           setState(() {
-            _selectedSortOption = option;
+            if (option.isEmpty) {
+              _selectedSortOption = null;
+            } else {
+              _selectedSortOption = option;
+            }
             _applySort();
           });
         },
@@ -168,22 +383,119 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
   void _openFilter() {
     EcliniqBottomSheet.show(
       context: context,
+      borderRadius: 0,
+      backgroundColor: Colors.transparent,
       child: DoctorFilterBottomSheet(
         onFilterChanged: (params) {
           setState(() {
-            _filterParams = params;
-            // Update selected category if specialities changed in filter
-            if (params['specialities'] != null &&
-                (params['specialities'] as List).isNotEmpty) {
-              // If single speciality, select it in tabs, else 'All' or keep as is?
-              // For now, let filter override or coexist.
-              // The API request prioritizes explicit speciality list.
+            // Check if filters are empty (reset was called)
+            if (!_hasActiveFiltersInParams(params)) {
+              _filterParams = {};
+              // Call initial API when filters are reset
+              _fetchDoctorsInitial();
+            } else {
+              _filterParams = params;
+              // Call filtered API when filters are applied
+              _fetchDoctors();
             }
           });
-          _fetchDoctors();
         },
       ),
     );
+  }
+
+  Future<void> _fetchDoctorsInitial() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      // When no filters, only use category if selected
+      List<String>? specialityFilter;
+      if (_selectedCategory != 'All') {
+        specialityFilter = [_selectedCategory];
+      }
+
+      final request = api_doctor.FilterDoctorsRequest(
+        latitude: 12.9173,
+        longitude: 77.6377,
+        speciality: specialityFilter,
+        gender: null,
+        distance: null,
+        workExperience: null,
+        availability: null,
+      );
+
+      final response = await _doctorService.getFilteredDoctors(request);
+
+      if (response.success && response.data != null && mounted) {
+        final convertedDoctors = response.data!.doctors.map((apiDoctor) {
+          return Doctor(
+            id: apiDoctor.id,
+            firstName: apiDoctor.firstName ?? '',
+            lastName: apiDoctor.lastName ?? '',
+            headline: apiDoctor.headline,
+            specialization: apiDoctor.specializations.join(', '),
+            qualifications: apiDoctor.degreeTypes.join(', '),
+            experience: apiDoctor.yearOfExperience,
+            rating: apiDoctor.rating,
+            fee: apiDoctor.fee,
+            timings: null,
+            availability: null,
+            profilePhoto: apiDoctor.profilePhoto,
+            hospitals: apiDoctor.hospitals.map((h) {
+              return DoctorHospital(
+                id: h.id,
+                name: h.name,
+                city: h.city,
+                state: h.state,
+                latitude: h.latitude,
+                longitude: h.longitude,
+                distanceKm: h.distance,
+                consultationFee: h.consultationFee?.toString(),
+              );
+            }).toList(),
+            clinics: apiDoctor.clinics,
+          );
+        }).toList();
+
+        if (mounted) {
+          setState(() {
+            _doctors = convertedDoctors;
+            _isLoading = false;
+          });
+          _applySort();
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _errorMessage = response.message;
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Failed to load doctors: ${e.toString()}';
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  bool _hasActiveFiltersInParams(Map<String, dynamic> params) {
+    return (params['specialities'] as List?)?.isNotEmpty == true ||
+        params['availability'] != null ||
+        params['gender'] != null ||
+        params['experience'] != null ||
+        (params['distance'] != null && (params['distance'] as num) != 50);
+  }
+
+  bool _hasActiveFilters() {
+    if (_filterParams.isEmpty) return false;
+    return _hasActiveFiltersInParams(_filterParams);
   }
 
   void _applySort() {
@@ -272,8 +584,8 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
       }
 
       final request = api_doctor.FilterDoctorsRequest(
-        latitude: _latitude,
-        longitude: _longitude,
+        latitude: 12.9173, // Hardcoded latitude
+        longitude: 77.6377, // Hardcoded longitude
         speciality: specialityFilter,
         gender: _filterParams['gender']?.toString().toUpperCase(),
         distance: (_filterParams['distance'] is num)
@@ -387,14 +699,22 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-         surfaceTintColor: Colors.transparent,
+        leadingWidth: 58,
+        titleSpacing: 0,
+        surfaceTintColor: Colors.transparent,
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: SvgPicture.asset(
             EcliniqIcons.backArrow.assetPath,
-            width: 32,
-            height: 32,
+            width: EcliniqTextStyles.getResponsiveIconSize(
+                        context,
+                        32.0,
+                      ),
+                      height: EcliniqTextStyles.getResponsiveIconSize(
+                        context,
+                        32.0,
+                      ),
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -402,36 +722,68 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
           alignment: Alignment.centerLeft,
           child: Text(
             'Doctors',
-            style: EcliniqTextStyles.headlineMedium.copyWith(
-              color: Color(0xff424242),
-            ),
+            style: EcliniqTextStyles.responsiveHeadlineMedium(
+              context,
+            ).copyWith(color: Color(0xff424242)),
           ),
         ),
         actions: [
-          IconButton(
-            onPressed: _openSort,
-            icon: SvgPicture.asset(
-              EcliniqIcons.sortAlt.assetPath,
-              width: 32,
-              height: 32,
+          Row(
+            children: [
+              IconButton(
+                onPressed: _openSort,
+                icon: SvgPicture.asset(
+                  EcliniqIcons.sortAlt.assetPath,
+                  width: EcliniqTextStyles.getResponsiveIconSize(context, 32),
+                      height: EcliniqTextStyles.getResponsiveIconSize(context, 32),
+                ),
+              ),
+
+            SizedBox(
+              width: EcliniqTextStyles.getResponsiveSpacing(context, 1.5),
             ),
+              VerticalDivider(
+                color: Color(0xffD6D6D6),
+                thickness: 1,
+                width: 0.5,
+                indent: 18,
+                endIndent: 18,
+              ),
+              SizedBox(
+                width: EcliniqTextStyles.getResponsiveSpacing(context, 1.5),
+              ),
+
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  IconButton(
+                    onPressed: _openFilter,
+                    icon: SvgPicture.asset(
+                      EcliniqIcons.filter.assetPath,
+                      width: EcliniqTextStyles.getResponsiveIconSize(context, 32),
+                      height: EcliniqTextStyles.getResponsiveIconSize(context, 32),
+                    ),
+                  ),
+                  if (_hasActiveFilters())
+                    Positioned(
+                      right: 4,
+                      top: 3,
+                      child: Container(
+                        width: 10,
+                        height: 10,
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              SizedBox(
+                width: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+              ),
+            ],
           ),
-          VerticalDivider(
-            color: Color(0xffD6D6D6),
-            thickness: 1,
-            width: 24,
-            indent: 18,
-            endIndent: 18,
-          ),
-          IconButton(
-            onPressed: _openFilter,
-            icon: SvgPicture.asset(
-              EcliniqIcons.filter.assetPath,
-              width: 32,
-              height: 32,
-            ),
-          ),
-          const SizedBox(width: 8),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
@@ -442,7 +794,9 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
         color: Colors.white,
         child: Column(
           children: [
-            const SizedBox(height: 8),
+            SizedBox(
+              height: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+            ),
             _buildLocationSection(),
             _buildSearchBar(),
             _buildCategoryFilters(),
@@ -462,29 +816,43 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
         );
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+          context,
+          horizontal: 16,
+          vertical: 8,
+        ),
         color: Colors.white,
         child: Row(
           children: [
             SvgPicture.asset(
               EcliniqIcons.mapPointBlue.assetPath,
-              width: 24,
-              height: 24,
+              width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+              height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
             ),
-            const SizedBox(width: 8),
+            SizedBox(
+              width: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+            ),
             Text(
               _currentLocation,
-              style: EcliniqTextStyles.headlineXMedium.copyWith(
-                color: Color(0xff424242),
-              ),
+              style: EcliniqTextStyles.responsiveHeadlineXMedium(
+                context,
+              ).copyWith(color: Color(0xff424242)),
             ),
-            SizedBox(width: 10),
-            Container(height: 20, width: 0.5, color: Color(0xffD6D6D6)),
-            const SizedBox(width: 8.0),
+            SizedBox(
+              width: EcliniqTextStyles.getResponsiveSpacing(context, 10),
+            ),
+            Container(
+              height: EcliniqTextStyles.getResponsiveHeight(context, 20),
+              width: 0.5,
+              color: Color(0xffD6D6D6),
+            ),
+            SizedBox(
+              width: EcliniqTextStyles.getResponsiveSpacing(context, 8.0),
+            ),
             SvgPicture.asset(
               EcliniqIcons.arrowDown.assetPath,
-              width: 20,
-              height: 20,
+              width: EcliniqTextStyles.getResponsiveIconSize(context, 20),
+              height: EcliniqTextStyles.getResponsiveIconSize(context, 20),
             ),
           ],
         ),
@@ -494,39 +862,53 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
 
   Widget _buildSearchBar() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      height: 48,
+      margin: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+        context,
+        horizontal: 14,
+        vertical: 8,
+      ),
+      height: EcliniqTextStyles.getResponsiveButtonHeight(
+        context,
+        baseHeight: 48.0,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(
+          EcliniqTextStyles.getResponsiveBorderRadius(context, 8),
+        ),
         border: Border.all(color: Color(0xFF626060), width: 0.5),
       ),
       child: Row(
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 12, right: 8),
+            padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+              context,
+              left: 12,
+              right: 8,
+              top: 0,
+              bottom: 0,
+            ),
             child: SvgPicture.asset(
               EcliniqIcons.magnifierMyDoctor.assetPath,
-              width: 24,
-              height: 24,
+              width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+              height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
             ),
           ),
           Expanded(
             child: TextField(
               controller: _searchController,
               textInputAction: TextInputAction.search,
-              style: const TextStyle(
-                color: Color(0xFF424242),
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-              ),
+              style: EcliniqTextStyles.responsiveTitleXLarge(
+                context,
+              ).copyWith(color: Color(0xFF424242), fontWeight: FontWeight.w400),
               decoration: InputDecoration(
                 hintText: 'Search Doctor',
-                hintStyle: TextStyle(
-                  color: Color(0xFF8E8E8E),
-                  fontSize: 18,
-                  fontWeight: FontWeight.w400,
-                ),
+                hintStyle: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                    .copyWith(
+                      color: Color(0xFF8E8E8E),
+
+                      fontWeight: FontWeight.w400,
+                    ),
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,
                 focusedBorder: InputBorder.none,
@@ -539,13 +921,40 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
             ),
           ),
           GestureDetector(
-            onTap: () {},
+            onTap: _toggleVoiceSearch,
             child: Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: SvgPicture.asset(
-                EcliniqIcons.microphone.assetPath,
-                width: 32,
-                height: 32,
+              padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+                context,
+                right: 12,
+                top: 0,
+                bottom: 0,
+                left: 0,
+              ),
+              child: Container(
+                padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 4),
+                // decoration: _isListening
+                //     ? BoxDecoration(
+                //         shape: BoxShape.circle,
+                //         boxShadow: [
+                //           BoxShadow(
+                //             color: const Color(0xFF2372EC).withOpacity(0.5),
+                //             blurRadius: 12,
+                //             spreadRadius: 2,
+                //           ),
+                //         ],
+                //       )
+                //     : null,
+                child: SvgPicture.asset(
+                  EcliniqIcons.microphone.assetPath,
+                  width: 32,
+                  height: 32,
+                  colorFilter: _isListening
+                      ? const ColorFilter.mode(
+                          Color(0xFF2372EC),
+                          BlendMode.srcIn,
+                        )
+                      : null,
+                ),
               ),
             ),
           ),
@@ -581,13 +990,15 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           child: Text(
                             category,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w400,
-                              color: isSelected
-                                  ? Color(0xFF2372EC)
-                                  : Color(0xFF626060),
-                            ),
+                            style:
+                                EcliniqTextStyles.responsiveHeadlineBMedium(
+                                  context,
+                                ).copyWith(
+                                  fontWeight: FontWeight.w400,
+                                  color: isSelected
+                                      ? Color(0xFF2372EC)
+                                      : Color(0xFF626060),
+                                ),
                           ),
                         ),
                         Container(
@@ -630,9 +1041,9 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
             const SizedBox(height: 8),
             Text(
               'No Doctor Match Found',
-              style: EcliniqTextStyles.bodyMedium.copyWith(
-                color: Color(0xff424242),
-              ),
+              style: EcliniqTextStyles.responsiveBodyMedium(
+                context,
+              ).copyWith(color: Color(0xff424242)),
               textAlign: TextAlign.center,
             ),
           ],
@@ -750,8 +1161,8 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 80,
-                    height: 80,
+                    width: EcliniqTextStyles.getResponsiveWidth(context, 80),
+                  height: EcliniqTextStyles.getResponsiveHeight(context, 80),
                     decoration: BoxDecoration(
                       color: Color(0xffF8FAFF),
                       shape: BoxShape.circle,
@@ -760,13 +1171,35 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                     child: Stack(
                       children: [
                         Center(
-                          child: Text(
-                            _getInitials(doctor.name),
-                            style: TextStyle(
-                              fontSize: 30,
-                              color: Colors.blue.shade700,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          child: FutureBuilder<String?>(
+                            future: _getDoctorProfilePhotoUrl(doctor),
+                            builder: (context, snapshot) {
+                              final imageUrl = snapshot.data;
+                              if (imageUrl != null && imageUrl.isNotEmpty) {
+                                return ClipOval(
+                                  child: Image.network(
+                                    imageUrl,
+                                    width: 80,
+                                    height: 80,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Text(
+                                        _getInitials(doctor.name),
+                                        style: EcliniqTextStyles.responsiveHeadlineXXXLarge(
+                                          context,
+                                        ).copyWith(color: Colors.blue.shade700),
+                                      );
+                                    },
+                                  ),
+                                );
+                              }
+                              return Text(
+                                _getInitials(doctor.name),
+                                style: EcliniqTextStyles.responsiveHeadlineXXXLarge(
+                                  context,
+                                ).copyWith(color: Colors.blue.shade700),
+                              );
+                            },
                           ),
                         ),
                         Positioned(
@@ -788,26 +1221,26 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                       children: [
                         Text(
                           doctor.name,
-                          style: EcliniqTextStyles.headlineLarge.copyWith(
-                            color: const Color(0xFF424242),
-                          ),
+                          style: EcliniqTextStyles.responsiveHeadlineLarge(
+                            context,
+                          ).copyWith(color: const Color(0xFF424242)),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           doctor.specialization.isNotEmpty
                               ? doctor.specialization
                               : 'General',
-                          style: EcliniqTextStyles.titleXLarge.copyWith(
-                            color: const Color(0xFF424242),
-                          ),
+                          style: EcliniqTextStyles.responsiveTitleXLarge(
+                            context,
+                          ).copyWith(color: const Color(0xFF424242)),
                         ),
                         if (doctor.qualifications.isNotEmpty) ...[
                           const SizedBox(height: 2),
                           Text(
                             doctor.qualifications,
-                            style: EcliniqTextStyles.titleXLarge.copyWith(
-                              color: const Color(0xFF424242),
-                            ),
+                            style: EcliniqTextStyles.responsiveTitleXLarge(
+                              context,
+                            ).copyWith(color: const Color(0xFF424242)),
                           ),
                         ],
                       ],
@@ -828,12 +1261,12 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                           width: 24,
                           height: 24,
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 8),
                         Text(
                           '${doctor.experience}yrs of exp',
-                          style: EcliniqTextStyles.titleXLarge.copyWith(
-                            color: const Color(0xFF626060),
-                          ),
+                          style: EcliniqTextStyles.responsiveTitleXLarge(
+                            context,
+                          ).copyWith(color: const Color(0xFF626060)),
                         ),
                         const SizedBox(width: 8),
                         Container(
@@ -866,11 +1299,13 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                             const SizedBox(width: 2),
                             Text(
                               doctor.rating?.toStringAsFixed(1) ?? '4.0',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Color(0xffBE8B00),
-                                fontWeight: FontWeight.w400,
-                              ),
+                              style:
+                                  EcliniqTextStyles.responsiveTitleXLarge(
+                                    context,
+                                  ).copyWith(
+                                    color: Color(0xffBE8B00),
+                                    fontWeight: FontWeight.w400,
+                                  ),
                             ),
                           ],
                         ),
@@ -886,12 +1321,10 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        doctor.fee != null
-                            ? '₹${doctor.fee}'
-                            : 'Fee Unavailable',
-                        style: EcliniqTextStyles.titleXLarge.copyWith(
-                          color: const Color(0xFF626060),
-                        ),
+                        doctor.fee != null ? '₹${doctor.fee}' : 'N.A.',
+                        style: EcliniqTextStyles.responsiveTitleXLarge(
+                          context,
+                        ).copyWith(color: const Color(0xFF626060)),
                       ),
                     ],
                   ),
@@ -903,13 +1336,13 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                         width: 24,
                         height: 24,
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           _formatTimings(doctor.timings),
-                          style: EcliniqTextStyles.titleXLarge.copyWith(
-                            color: const Color(0xFF626060),
-                          ),
+                          style: EcliniqTextStyles.responsiveTitleXLarge(
+                            context,
+                          ).copyWith(color: const Color(0xFF626060)),
                         ),
                       ),
                     ],
@@ -922,39 +1355,43 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                         width: 24,
                         height: 24,
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 8),
                       Text(
                         _currentLocation,
-                        style: EcliniqTextStyles.titleXLarge.copyWith(
-                          color: const Color(0xFF626060),
-                        ),
+                        style: EcliniqTextStyles.responsiveTitleXLarge(
+                          context,
+                        ).copyWith(color: const Color(0xFF626060)),
                       ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Color(0xffF9F9F9),
-                          borderRadius: BorderRadius.circular(4),
-                          border: Border.all(
-                            color: Color(0xffB8B8B8),
-                            width: 0.5,
+                      if (_getDistanceText(doctor) != 'Nearby') ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Color(0xffF9F9F9),
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(
+                              color: Color(0xffB8B8B8),
+                              width: 0.5,
+                            ),
+                          ),
+                          child: Text(
+                            _getDistanceText(doctor),
+                            style:
+                                EcliniqTextStyles.responsiveTitleXLarge(
+                                  context,
+                                ).copyWith(
+                                  color: Color(0xff424242),
+                                  fontWeight: FontWeight.w400,
+                                ),
                           ),
                         ),
-                        child: Text(
-                          _getDistanceText(doctor),
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Color(0xff424242),
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ),
+                      ],
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Container(
                     padding: EdgeInsets.all(6),
                     decoration: BoxDecoration(
@@ -963,93 +1400,90 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                     ),
                     child: Text(
                       _getTokenAvailability(doctor),
-                      style: EcliniqTextStyles.bodySmallProminent.copyWith(
-                        color: Colors.green[600],
-                      ),
+                      style: EcliniqTextStyles.responsiveTitleXLarge(
+                        context,
+                      ).copyWith(color: Color(0xff3EAF3F)),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
-              Padding(
-                padding: const EdgeInsets.only(left: 4.0, right: 4.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 1,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 15,
+              Row(
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 15,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Color(0xffF2FFF3),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Center(
+                        child: Text(
+                          _getAvailabilityStatus(doctor),
+                          textAlign: TextAlign.center,
+                          style: EcliniqTextStyles.responsiveTitleXLarge(
+                            context,
+                          ).copyWith(color: Color(0xff3EAF3F)),
                         ),
-                        decoration: BoxDecoration(
-                          color: _getAvailabilityColor(doctor),
-                          borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    flex: 1,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(4),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color(0x4D2372EC),
+                            offset: Offset(2, 2),
+                            blurRadius: 10,
+                            spreadRadius: 0,
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          EcliniqRouter.push(
+                            ClinicVisitSlotScreen(
+                              doctorId: doctor.id,
+                              hospitalId: doctor.hospitals.isNotEmpty
+                                  ? doctor.hospitals.first.id
+                                  : '',
+                              doctorName: doctor.name,
+                              doctorSpecialization:
+                                  doctor.specialization.isNotEmpty
+                                  ? doctor.specialization
+                                  : null,
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2372EC),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          elevation: 0,
                         ),
-                        child: Center(
+                        child: FittedBox(
                           child: Text(
-                            _getAvailabilityStatus(doctor),
-                            textAlign: TextAlign.center,
-                            style: EcliniqTextStyles.titleXLarge.copyWith(
-                              color: Color(0xff3EAF3F),
-                            ),
+                            'Book Appointment',
+                            style: EcliniqTextStyles.responsiveHeadlineMedium(
+                              context,
+                            ).copyWith(color: Colors.white),
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      flex: 1,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(4),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Color(0x4D2372EC),
-                              offset: Offset(2, 2),
-                              blurRadius: 10,
-                              spreadRadius: 0,
-                            ),
-                          ],
-                        ),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            EcliniqRouter.push(
-                              ClinicVisitSlotScreen(
-                                doctorId: doctor.id,
-                                hospitalId: doctor.hospitals.isNotEmpty
-                                    ? doctor.hospitals.first.id
-                                    : '',
-                                doctorName: doctor.name,
-                                doctorSpecialization:
-                                    doctor.specialization.isNotEmpty
-                                    ? doctor.specialization
-                                    : null,
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2372EC),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: FittedBox(
-                            child: Text(
-                              'Book Appointment',
-                              style: EcliniqTextStyles.headlineMedium.copyWith(
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -1064,6 +1498,21 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
     if (parts.isEmpty) return '';
     if (parts.length == 1) return parts[0][0].toUpperCase();
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  Future<String?> _getDoctorProfilePhotoUrl(Doctor doctor) async {
+    if (doctor.profilePhoto == null || doctor.profilePhoto!.isEmpty) {
+      return null;
+    }
+    // If already a full URL, return as-is
+    if (doctor.profilePhoto!.startsWith('http://') || doctor.profilePhoto!.startsWith('https://')) {
+      return doctor.profilePhoto;
+    }
+    // Get public URL if it starts with "public/"
+    if (doctor.profilePhoto!.startsWith('public/')) {
+      return await _storageService.getPublicUrl(doctor.profilePhoto);
+    }
+    return null;
   }
 
   String _formatTimings(String? timings) {
@@ -1144,15 +1593,34 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
 
 class SortByBottomSheet extends StatefulWidget {
   final ValueChanged<String> onChanged;
+  final String? initialSortOption;
 
-  const SortByBottomSheet({super.key, required this.onChanged});
+  const SortByBottomSheet({
+    super.key,
+    required this.onChanged,
+    this.initialSortOption,
+  });
 
   @override
   State<SortByBottomSheet> createState() => _SortByBottomSheetState();
 }
 
 class _SortByBottomSheetState extends State<SortByBottomSheet> {
-  String? selectedSortOption;
+  late String? selectedSortOption;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedSortOption = widget.initialSortOption;
+  }
+
+  void _resetSort() {
+    setState(() {
+      selectedSortOption = null;
+    });
+    // Emit empty string to clear sort in parent
+    widget.onChanged('');
+  }
 
   final List<String> sortOptions = [
     'Relevance',
@@ -1175,27 +1643,47 @@ class _SortByBottomSheetState extends State<SortByBottomSheet> {
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
+          bottomLeft: Radius.circular(16),
+          bottomRight: Radius.circular(16),
         ),
       ),
       child: Column(
         children: [
           // Title
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
             child: Align(
               alignment: Alignment.centerLeft,
-              child: Text(
-                'Sort By',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xff424242),
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Sort By',
+                    style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                        .copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xff424242),
+                        ),
+                  ),
+                  GestureDetector(
+                    onTap: _resetSort,
+                    child: Text(
+                      'Reset',
+                      style:
+                          EcliniqTextStyles.responsiveHeadlineBMedium(
+                            context,
+                          ).copyWith(
+                            fontWeight: FontWeight.w400,
+                            color: Color(0xff2372EC),
+                          ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 4),
 
           // List of sort options
           Expanded(
@@ -1255,11 +1743,11 @@ class _SortByBottomSheetState extends State<SortByBottomSheet> {
             Expanded(
               child: Text(
                 option,
-                style: const TextStyle(
-                  fontSize: 18,
-                  color: Color(0xff424242),
-                  fontWeight: FontWeight.w400,
-                ),
+                style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                    .copyWith(
+                      color: Color(0xff424242),
+                      fontWeight: FontWeight.w400,
+                    ),
               ),
             ),
           ],

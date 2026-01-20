@@ -75,30 +75,38 @@ class _RatingBottomSheetState extends State<RatingBottomSheet> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.fromLTRB(
-        16,
-        16,
-        16,
-        MediaQuery.of(context).viewInsets.bottom + 24,
+        EcliniqTextStyles.getResponsivePadding(context, 16),
+        EcliniqTextStyles.getResponsivePadding(context, 16),
+        EcliniqTextStyles.getResponsivePadding(context, 16),
+        MediaQuery.of(context).viewInsets.bottom + EcliniqTextStyles.getResponsivePadding(context, 24),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildHandle(),
-          const SizedBox(height: 16),
+          SizedBox(
+            height: EcliniqTextStyles.getResponsiveSpacing(context, 16),
+          ),
           Text(
             'How was your Experience with ${widget.doctorName}?',
-            style: const TextStyle(
-              fontSize: 24,
+            style:  EcliniqTextStyles.responsiveHeadlineXLarge(context).copyWith(
+       
               fontWeight: FontWeight.w500,
               color: Color(0xFF424242),
             ),
           ),
 
-          const SizedBox(height: 16),
+          SizedBox(
+            height: EcliniqTextStyles.getResponsiveSpacing(context, 16),
+          ),
           _buildRatingStars(),
-          const SizedBox(height: 24),
+          SizedBox(
+            height: EcliniqTextStyles.getResponsiveSpacing(context, 24),
+          ),
           _buildSubmitButton(),
-          const SizedBox(height: 8),
+          SizedBox(
+            height: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+          ),
         ],
       ),
     );
@@ -110,7 +118,9 @@ class _RatingBottomSheetState extends State<RatingBottomSheet> {
       height: 4,
       decoration: BoxDecoration(
         color: Colors.grey[300],
-        borderRadius: BorderRadius.circular(2),
+        borderRadius: BorderRadius.circular(
+          EcliniqTextStyles.getResponsiveBorderRadius(context, 2),
+        ),
       ),
     );
   }
@@ -120,23 +130,27 @@ class _RatingBottomSheetState extends State<RatingBottomSheet> {
       builder: (context, setModalState) {
         return Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16),
+          padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16),
           decoration: BoxDecoration(
             color: const Color(0xFFF8FAFF),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(
+              EcliniqTextStyles.getResponsiveBorderRadius(context, 8),
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+               Text(
                 'Rate your Experience :',
-                style: TextStyle(
-                  fontSize: 18,
+                style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+                
                   fontWeight: FontWeight.w400,
                   color: Color(0xFF2372EC),
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(
+                height: EcliniqTextStyles.getResponsiveSpacing(context, 12),
+              ),
               Row(
                 children: List.generate(5, (index) {
                   final filled = index < _tempRating;
@@ -147,13 +161,19 @@ class _RatingBottomSheetState extends State<RatingBottomSheet> {
                       });
                     },
                     child: Padding(
-                      padding: const EdgeInsets.only(right: 18),
+                      padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+                        context,
+                        right: 18,
+                        top: 0,
+                        bottom: 0,
+                        left: 0,
+                      ),
                       child: SvgPicture.asset(
                         filled
                             ? EcliniqIcons.starRateExp.assetPath
                             : EcliniqIcons.starRateExpUnfilled.assetPath,
-                        width: 32,
-                        height: 32,
+                        width: EcliniqTextStyles.getResponsiveIconSize(context, 32),
+                        height: EcliniqTextStyles.getResponsiveIconSize(context, 32),
                       ),
                     ),
                   );
@@ -224,13 +244,13 @@ class _RatingBottomSheetState extends State<RatingBottomSheet> {
         await Future.delayed(const Duration(milliseconds: 500));
         if (mounted) {
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          ScaffoldMessenger.of(context).showSnackBar(
-            CustomSuccessSnackBar(
+       
+            CustomSuccessSnackBar.show(
               context: context,
               title: 'Rating Submitted',
               subtitle: res['message']?.toString() ?? 'Thank you for your feedback!',
               duration: const Duration(seconds: 3),
-            ),
+      
           );
         }
       } else {
@@ -277,20 +297,20 @@ class _RatingBottomSheetState extends State<RatingBottomSheet> {
               size: 64,
             ),
             const SizedBox(height: 16),
-            const Text(
+             Text(
               'Thank You!',
-              style: TextStyle(
-                fontSize: 20,
+              style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
+             
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF424242),
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+             Text(
               'Your feedback helps us improve our services',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
+              style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+           
                 color: Color(0xFF8E8E8E),
               ),
             ),
@@ -301,10 +321,10 @@ class _RatingBottomSheetState extends State<RatingBottomSheet> {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: const Text(
+            child:  Text(
               'OK',
-              style: TextStyle(
-                fontSize: 16,
+              style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+                
                 fontWeight: FontWeight.w500,
                 color: Color(0xFF2372EC),
               ),
@@ -370,7 +390,7 @@ class _RatingBottomSheetState extends State<RatingBottomSheet> {
               else ...[
                 Text(
                   'Submit Feedback',
-                  style: EcliniqTextStyles.titleXLarge.copyWith(
+                  style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                     color: _isButtonPressed
                         ? Colors.white
                         : isButtonEnabled

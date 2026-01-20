@@ -208,7 +208,7 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
           alignment: Alignment.centerLeft,
           child: Text(
             'Booking Details',
-            style: EcliniqTextStyles.headlineMedium.copyWith(
+            style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
               color: Color(0xff424242),
             ),
           ),
@@ -227,9 +227,9 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
               ),
               Text(
                 ' Help',
-                style: EcliniqTextStyles.titleXBLarge.copyWith(
+                style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                   color: Color(0xff424242),
-                  fontSize: 18,
+                
                   fontWeight: FontWeight.w400,
                 ),
               ),
@@ -309,11 +309,15 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+            Icon(
+              Icons.error_outline,
+              size: EcliniqTextStyles.getResponsiveIconSize(context, 64),
+              color: Colors.red[300],
+            ),
             const SizedBox(height: 16),
             Text(
               _errorMessage ?? 'Failed to load appointment details',
-              style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+              style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith( color: Colors.grey[700]),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -429,14 +433,14 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
               // Check if appointment is already rescheduled
               final isAlreadyRescheduled = _appointment?.isRescheduled ?? false;
               if (isAlreadyRescheduled) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  CustomErrorSnackBar(
+              
+             CustomErrorSnackBar.show(
                     context: context,
                     title: 'Cannot Reschedule',
                     subtitle:
                         'This appointment has already been rescheduled. You cannot reschedule it again.',
                     duration: const Duration(seconds: 3),
-                  ),
+                 
                 );
                 return;
               }
@@ -526,8 +530,8 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
               children: [
                 Text(
                   'View Cancellation Policy',
-                  style: TextStyle(
-                    fontSize: 14,
+                  style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
+            
                     color: Color(0xff424242),
                     fontWeight: FontWeight.w400,
                     decoration: TextDecoration.underline,

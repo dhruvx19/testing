@@ -91,21 +91,8 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
 
   Future<void> _initializeAndStartPayment() async {
     try {
-      print('========== PAYMENT PROCESSING START ==========');
-      print('Appointment ID: ${widget.appointmentId}');
-      print('Merchant Txn ID: ${widget.merchantTransactionId}');
-      print('Request payload present: ${widget.requestPayload != null}');
       if (widget.requestPayload != null) {
-        print('Request payload length: ${widget.requestPayload!.length}');
       }
-      print('Token: ${widget.token}');
-      print('Order ID: ${widget.orderId}');
-      print('Total amount: ${widget.totalAmount}');
-      print('Wallet amount: ${widget.walletAmount}');
-      print('Gateway amount: ${widget.gatewayAmount}');
-      print('Provider: ${widget.provider}');
-      print('App schema: ${widget.appSchema}');
-      print('==============================================');
       
       // Validate requestPayload (preferred) or token/orderId (fallback)
       if (widget.requestPayload == null || widget.requestPayload!.isEmpty) {
@@ -138,14 +125,6 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
           enableLogs: !isProduction,
         );
 
-        print('========== PHONEPE SDK INIT ==========');
-        print('Initialized: $initialized');
-        print('Is production: $isProduction');
-        print('Merchant ID: $merchantId');
-        print('Flow ID: $userId');
-        print('Environment: ${_phonePeService.environment}');
-        print('Package name: ${_phonePeService.packageName}');
-        print('======================================');
 
         if (!initialized) {
           throw PhonePeException('Failed to initialize PhonePe SDK');
@@ -209,27 +188,10 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
 
       if (!mounted) return;
 
-      print('========== STARTING PHONEPE PAYMENT ==========');
       if (widget.requestPayload != null) {
-        print('Using requestPayload from backend (preferred method)');
-        print('Request payload length: ${widget.requestPayload!.length}');
       } else {
-        print('Using token/orderId (fallback method)');
-        print('Token: ${widget.token}');
-        print('Order ID: ${widget.orderId}');
       }
-      print('App schema: ${widget.appSchema}');
-      print('Environment: ${_phonePeService.environment}');
-      print('Package name: ${_phonePeService.packageName}');
-      print('==============================================');
 
-      // PhonePe SDK will automatically:
-      // 1. Open PhonePe app (or simulator in sandbox mode)
-      // 2. Show all payment options (UPI apps, UPI ID, Card, Net Banking)
-      // 3. User selects payment method and completes payment
-      // 4. Returns to app via deep link (appSchema)
-      //
-      // Use requestPayload directly if available (preferred), otherwise fallback to token/orderId
       final result = await _phonePeService.startPayment(
         requestPayload: widget.requestPayload, // Base64-encoded payload from backend (preferred)
         token: widget.token, // PhonePe SDK token from backend (fallback)
@@ -237,14 +199,8 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
         appSchema: widget.appSchema, // 'ecliniq' - your app's URL scheme
       );
 
-      print('========== PHONEPE PAYMENT RESULT ==========');
-      print('Success: ${result.success}');
-      print('Status: ${result.status}');
-      print('Error: ${result.error}');
-      print('Data: ${result.data}');
-      print('===========================================');
 
-      // Check the SDK result before verifying with backend
+
       if (result.success) {
         // SDK reported success, verify with backend
         await _verifyPayment();
@@ -260,10 +216,6 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
         await _verifyPayment();
       }
     } catch (e) {
-      print('========== PHONEPE PAYMENT EXCEPTION ==========');
-      print('Exception: $e');
-      print('Exception type: ${e.runtimeType}');
-      print('===============================================');
       
       // On error, check if it's a cancellation or app not found
       final errorString = e.toString().toLowerCase();
@@ -299,25 +251,16 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
     });
 
     try {
-      print('========== VERIFYING PAYMENT ==========');
-      print('Polling status for: ${widget.merchantTransactionId}');
-      print('=======================================');
       
       final statusData = await _paymentService.pollPaymentUntilComplete(
         widget.merchantTransactionId,
         onStatusUpdate: (status) {
-          print('Status update: ${status.status}');
           setState(() {
             _statusMessage = 'Checking payment status: ${status.status}';
           });
         },
       );
 
-      print('========== PAYMENT STATUS RESULT ==========');
-      print('Status data: ${statusData?.toJson()}');
-      print('Is success: ${statusData?.isSuccess}');
-      print('Status: ${statusData?.status}');
-      print('==========================================');
 
       if (statusData == null) {
         setState(() {
@@ -447,7 +390,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
           automaticallyImplyLeading: false,
           title: Text(
             'Payment Processing',
-            style: EcliniqTextStyles.headlineMedium.copyWith(
+            style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
               color: const Color(0xff424242),
             ),
           ),
@@ -464,7 +407,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
                   const SizedBox(height: 32),
                   Text(
                     _statusMessage,
-                    style: EcliniqTextStyles.headlineLarge.copyWith(
+                    style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
                       color: const Color(0xff424242),
                     ),
                     textAlign: TextAlign.center,
@@ -495,7 +438,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
                                   _currentStatus == PaymentStatus.processing
                                       ? 'Please complete the payment in the UPI app that opened. Do not close this screen.'
                                       : 'Verifying your payment. Please wait...',
-                                  style: EcliniqTextStyles.headlineXMedium.copyWith(
+                                  style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                                     color: const Color(0xFF1976D2),
                                   ),
                                 ),
@@ -516,7 +459,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
                       ),
                       child: Text(
                         _errorMessage!,
-                        style: EcliniqTextStyles.headlineXMedium.copyWith(
+                        style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                           color: const Color(0xFFD32F2F),
                         ),
                         textAlign: TextAlign.center,
@@ -535,7 +478,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
                       ),
                       child: Text(
                         'Try Again',
-                        style: EcliniqTextStyles.headlineMedium.copyWith(color: Colors.white),
+                        style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(color: Colors.white),
                       ),
                     ),
                   ],
@@ -559,7 +502,11 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
             color: const Color(0xFF4CAF50).withOpacity(0.1),
             shape: BoxShape.circle,
           ),
-          child: const Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 80),
+          child: Icon(
+            Icons.check_circle,
+            color: Color(0xFF4CAF50),
+            size: EcliniqTextStyles.getResponsiveIconSize(context, 80),
+          ),
         );
       case PaymentStatus.failed:
       case PaymentStatus.timeout:
@@ -569,7 +516,11 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
             color: const Color(0xFFD32F2F).withOpacity(0.1),
             shape: BoxShape.circle,
           ),
-          child: const Icon(Icons.error, color: Color(0xFFD32F2F), size: 80),
+          child: Icon(
+            Icons.error,
+            color: Color(0xFFD32F2F),
+            size: EcliniqTextStyles.getResponsiveIconSize(context, 80),
+          ),
         );
       default:
         return const SizedBox(
@@ -593,7 +544,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Payment Details',
-            style: EcliniqTextStyles.headlineMedium.copyWith(
+            style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
               color: const Color(0xff424242), fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
           _buildPaymentRow('Total Amount', widget.totalAmount),
@@ -615,9 +566,9 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(isSubItem ? '  • $label' : label,
-          style: EcliniqTextStyles.headlineXMedium.copyWith(color: const Color(0xff626060))),
+          style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(color: const Color(0xff626060))),
         Text('₹${amount.toStringAsFixed(0)}',
-          style: EcliniqTextStyles.headlineXMedium.copyWith(
+          style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
             color: const Color(0xff424242),
             fontWeight: isSubItem ? FontWeight.normal : FontWeight.bold)),
       ],

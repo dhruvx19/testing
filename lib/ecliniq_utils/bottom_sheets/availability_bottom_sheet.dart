@@ -1,3 +1,4 @@
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 
 class AvailabilityFilterBottomSheet extends StatefulWidget {
@@ -38,14 +39,14 @@ class _AvailabilityFilterBottomSheetState
       ),
       child: Column(
         children: [
-          const Padding(
+           Padding(
             padding: EdgeInsets.only(left: 16, right: 16, top: 22),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 'Availability Filter',
-                style: TextStyle(
-                  fontSize: 18,
+                style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+            
                   fontWeight: FontWeight.w500,
                   color: Color(0xff424242),
                 ),
@@ -78,12 +79,18 @@ class _AvailabilityFilterBottomSheetState
         Navigator.pop(context, option);
       },
       child: Padding(
-        padding: EdgeInsets.only(top: 16, bottom: 8),
+        padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+          context,
+          top: 16,
+          bottom: 8,
+          left: 0,
+          right: 0,
+        ),
         child: Row(
           children: [
             Container(
-              height: 24,
-              width: 24,
+              height: EcliniqTextStyles.getResponsiveHeight(context, 24),
+              width: EcliniqTextStyles.getResponsiveWidth(context, 24),
               decoration: BoxDecoration(
                 border: Border.all(
                   color: isSelected
@@ -96,7 +103,7 @@ class _AvailabilityFilterBottomSheetState
               ),
               child: isSelected
                   ? Container(
-                      margin: const EdgeInsets.all(5),
+                      margin: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 5),
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white,
@@ -108,8 +115,8 @@ class _AvailabilityFilterBottomSheetState
             Expanded(
               child: Text(
                 option,
-                style: const TextStyle(
-                  fontSize: 18,
+                style:  EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+               
                   color: Color(0xff424242),
                   fontWeight: FontWeight.w400,
                 ),

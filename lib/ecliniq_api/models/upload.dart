@@ -6,7 +6,7 @@ class UploadUrlRequest {
 
   Map<String, dynamic> toJson() {
     return {
-      'contentType': contentType,  // Fixed: was 'contenttype', now 'contentType'
+      'contentType': contentType, 
     };
   }
 }
@@ -74,11 +74,11 @@ class PatientDetailsRequest {
 
   Map<String, dynamic> toJson() {
     return {
-      'firstName': firstName,  // Fixed: camelCase
-      'lastName': lastName,    // Fixed: camelCase
+      'firstName': firstName, 
+      'lastName': lastName,   
       'dob': dob,
       'gender': gender,
-      if (profilePhoto != null) 'profilePhoto': profilePhoto,  // Fixed: camelCase
+      if (profilePhoto != null) 'profilePhoto': profilePhoto, 
     };
   }
 }

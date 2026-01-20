@@ -96,7 +96,10 @@ class _DatePickerBottomSheetState extends State<DatePickerBottomSheet> {
 
     return SizedBox(
       width: double.infinity,
-      height: 52,
+      height: EcliniqTextStyles.getResponsiveButtonHeight(
+        context,
+        baseHeight: 52.0,
+      ),
       child: GestureDetector(
         onTapDown: isEnabled
             ? (_) => setState(() => _isButtonPressed = true)
@@ -118,24 +121,28 @@ class _DatePickerBottomSheetState extends State<DatePickerBottomSheet> {
                 : _isButtonPressed
                 ? const Color(0xFF0E4395)
                 : const Color(0xFF2372EC),
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(
+              EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+            ),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SvgPicture.asset(
                 EcliniqIcons.checkRounded.assetPath,
-                width: 24,
-                height: 24,
+                width: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
+                height: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
                 colorFilter: ColorFilter.mode(
                   isEnabled ? Colors.white : Colors.grey[400]!,
                   BlendMode.srcIn,
                 ),
               ),
-              const SizedBox(width: 4),
+              SizedBox(
+                width: EcliniqTextStyles.getResponsiveSpacing(context, 4.0),
+              ),
               Text(
                 'Save',
-                style: EcliniqTextStyles.headlineMedium.copyWith(
+                style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                   color: isEnabled ? Colors.white : Colors.grey[400],
                 ),
               ),
@@ -232,13 +239,13 @@ class _DatePickerBottomSheetState extends State<DatePickerBottomSheet> {
             return GestureDetector(
               onTap: isEnabled ? () => onTap(actualIndex) : null,
               child: Container(
-                height: 28,
+                height: EcliniqTextStyles.getResponsiveSize(context, 28.0),
                 alignment: Alignment.center,
                 child: Text(
                   itemBuilder(actualIndex),
                   textAlign: textAlign,
                   style: TextStyle(
-                    fontSize: fontSize,
+                    fontSize: EcliniqTextStyles.getResponsiveSize(context, fontSize),
                     fontWeight: FontWeight.w400,
                     color: textColor,
                   ),
@@ -260,12 +267,22 @@ class _DatePickerBottomSheetState extends State<DatePickerBottomSheet> {
       child: SingleChildScrollView(
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 0),
-          decoration: const BoxDecoration(
+          padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+            context,
+            left: 16.0,
+            right: 16.0,
+            top: 16.0,
+            bottom: 0.0,
+          ),
+          decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(16),
-              topRight: Radius.circular(16),
+              topLeft: Radius.circular(
+                EcliniqTextStyles.getResponsiveBorderRadius(context, 16.0),
+              ),
+              topRight: Radius.circular(
+                EcliniqTextStyles.getResponsiveBorderRadius(context, 16.0),
+              ),
             ),
           ),
           child: Column(
@@ -274,28 +291,34 @@ class _DatePickerBottomSheetState extends State<DatePickerBottomSheet> {
             children: [
               EcliniqText(
                 widget.title ?? 'Select Date Of Birth',
-                style: EcliniqTextStyles.headlineMedium.copyWith(
+                style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                   color: Color(0xff424242),
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(
+                height: EcliniqTextStyles.getResponsiveSpacing(context, 20.0),
+              ),
               Padding(
-                padding: const EdgeInsets.only(right: 22, left: 22),
+                padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+                  context,
+                  right: 22.0,
+                  left: 22.0,
+                ),
                 child: Stack(
                   children: [
                     // Single grey container for all three pickers
                     Positioned(
-                      top:
-                          84, 
+                      top: EcliniqTextStyles.getResponsiveSize(context, 84.0),
                       left: 0,
-                      right:0,
+                      right: 0,
                       child: Container(
-                        height: 30,
-                       
+                        height: EcliniqTextStyles.getResponsiveSize(context, 30.0),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF3F3F3),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(
+                            EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0),
+                          ),
                         ),
                       ),
                     ),
@@ -365,8 +388,13 @@ class _DatePickerBottomSheetState extends State<DatePickerBottomSheet> {
                 ),
               ),
 
-               const SizedBox(height: 22),
+              SizedBox(
+                height: EcliniqTextStyles.getResponsiveSpacing(context, 22.0),
+              ),
               _buildSaveButton(),
+              SizedBox(
+                height: EcliniqTextStyles.getResponsiveSpacing(context, 20.0),
+              ),
             ],
           ),
         ),

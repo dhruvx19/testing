@@ -1,4 +1,5 @@
 import 'package:ecliniq/ecliniq_icons/icons.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -9,42 +10,51 @@ class DeleteFileBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.fromLTRB(
-        16,
-        16,
-        16,
-        MediaQuery.of(context).viewInsets.bottom + 24,
+        EcliniqTextStyles.getResponsivePadding(context, 16),
+        EcliniqTextStyles.getResponsivePadding(context, 16),
+        EcliniqTextStyles.getResponsivePadding(context, 16),
+        MediaQuery.of(context).viewInsets.bottom + EcliniqTextStyles.getResponsivePadding(context, 24),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
-            width: 142,
-            height: 110,
+            width: EcliniqTextStyles.getResponsiveWidth(context, 142),
+            height: EcliniqTextStyles.getResponsiveHeight(context, 110),
             child: SvgPicture.asset(EcliniqIcons.deleteFile.assetPath),
           ),
 
-          const SizedBox(height: 16),
+          SizedBox(
+            height: EcliniqTextStyles.getResponsiveSpacing(context, 16),
+          ),
           Text(
             'Are you sure you want delete Selected files?',
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 18,
+            style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
               fontWeight: FontWeight.w500,
               color: Color(0xFF424242),
             ),
           ),
           Text(
-            'Once file is deleted can’t be restore',
-            style: const TextStyle(
-              fontSize: 16,
+            'Once file is deleted can\'t be restored',
+            style:  EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+            
               fontWeight: FontWeight.w400,
               color: Color(0xFF626060),
             ),
           ),
 
-          const SizedBox(height: 16),
+          SizedBox(
+            height: EcliniqTextStyles.getResponsiveSpacing(context, 16),
+          ),
           Padding(
-            padding: const EdgeInsets.only(left: 4.0, right: 4.0),
+            padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+              context,
+              left: 4.0,
+              right: 4.0,
+              top: 0,
+              bottom: 0,
+            ),
             child: Row(
               children: [
                 Expanded(
@@ -54,34 +64,44 @@ class DeleteFileBottomSheet extends StatelessWidget {
                       Navigator.of(context, rootNavigator: false).pop(true);
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
+                      padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                        context,
                         horizontal: 8,
                         vertical: 12,
                       ),
                       decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xFFEB8B85), width: 0.5),
+                        border: Border.all(
+                          color: const Color(0xFFEB8B85),
+                          width: 0.5,
+                        ),
                         color: const Color(0xFFFFF8F8),
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(
+                          EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
+                        ),
                       ),
-                      child: const Row(
+                      child:  Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
                             'Yes',
-                            style: TextStyle(
-                              fontSize: 18,
+                            style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+                  
                               fontWeight: FontWeight.w500,
                               color: Color(0xffF04248),
                             ),
                           ),
-                          SizedBox(width: 8),
+                          SizedBox(
+                            width: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+                          ),
                         ],
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(
+                  width: EcliniqTextStyles.getResponsiveSpacing(context, 12),
+                ),
                 Expanded(
                   flex: 1,
                   child: GestureDetector(
@@ -89,28 +109,36 @@ class DeleteFileBottomSheet extends StatelessWidget {
                       Navigator.of(context, rootNavigator: false).pop(false);
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
+                      padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                        context,
                         horizontal: 8,
                         vertical: 12,
                       ),
                       decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xff8E8E8E), width: 0.5),
+                        border: Border.all(
+                          color: const Color(0xff8E8E8E),
+                          width: 0.5,
+                        ),
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(
+                          EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
+                        ),
                       ),
-                      child: const Row(
+                      child:  Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
                             'No',
-                            style: TextStyle(
-                              fontSize: 18,
+                            style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+                            
                               fontWeight: FontWeight.w500,
                               color: Color(0xff424242),
                             ),
                           ),
-                          SizedBox(width: 8),
+                          SizedBox(
+                            width: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+                          ),
                         ],
                       ),
                     ),

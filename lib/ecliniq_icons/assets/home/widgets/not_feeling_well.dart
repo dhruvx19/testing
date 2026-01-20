@@ -1,6 +1,8 @@
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/search_specialities/search_specialities_page.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shimmer/shimmer.dart';
@@ -13,7 +15,7 @@ class NotFeelingWell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (showShimmer) {
-      return _buildShimmer();
+      return _buildShimmer(context);
     }
 
     return LayoutBuilder(
@@ -25,101 +27,242 @@ class NotFeelingWell extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 8,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: Color(0xFF96BFFF),
-                    borderRadius: BorderRadius.only(
-                      topRight: Radius.circular(4),
-                      bottomRight: Radius.circular(4),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: EcliniqTextStyles.getResponsiveSize(context, 8.0),
+                      height: EcliniqTextStyles.getResponsiveSize(
+                        context,
+                        24.0,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Color(0xFF96BFFF),
+                        borderRadius: BorderRadius.only(
+                          topRight: Radius.circular(
+                            EcliniqTextStyles.getResponsiveBorderRadius(
+                              context,
+                              4.0,
+                            ),
+                          ),
+                          bottomRight: Radius.circular(
+                            EcliniqTextStyles.getResponsiveBorderRadius(
+                              context,
+                              4.0,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
+                    SizedBox(
+                      width: EcliniqTextStyles.getResponsiveSpacing(
+                        context,
+                        12.0,
+                      ),
+                    ),
+                    Expanded(
+                      child: EcliniqText(
                         'Not Feeling Well?',
-                        style: TextStyle(
-                          fontSize: 20.0,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xff424242),
-                        ),
+                        style: EcliniqTextStyles.responsiveHeadlineLarge(
+                          context,
+                        ).copyWith(color: Color(0xff424242)),
                       ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        EcliniqRouter.push(SearchSpecialities());
+                      },
+                      style: TextButton.styleFrom(
+                        padding:
+                            EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                              context,
+                              horizontal: 8.0,
+                              vertical: 4.0,
+                            ),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          EcliniqText(
+                            'View All',
+                            style: EcliniqTextStyles.responsiveHeadlineXMedium(
+                              context,
+                            ).copyWith(color: Color(0xFF2372EC)),
+                          ),
 
-                      Text(
-                        'Select the symptom you are experiencing',
-                        style: TextStyle(
-                          fontSize: 13.0,
-                          color: Color(0xff8E8E8E),
-                          fontWeight: FontWeight.w400,
-                        ),
+                          SvgPicture.asset(
+                            EcliniqIcons.arrowRightBlue.assetPath,
+                            width: EcliniqTextStyles.getResponsiveIconSize(
+                              context,
+                              24.0,
+                            ),
+                            height: EcliniqTextStyles.getResponsiveIconSize(
+                              context,
+                              24.0,
+                            ),
+                            colorFilter: const ColorFilter.mode(
+                              Color(0xFF2372EC),
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                TextButton(
-                  onPressed: () {
-                    EcliniqRouter.push(SearchSpecialities());
-                  },
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                Padding(
+                  padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+                    context,
+                    left: 20.0,
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'View All',
-                        style: TextStyle(
-                          color: Color(0xFF2372EC),
-                          fontWeight: FontWeight.w400,
-                          fontSize: 18.0,
-                        ),
-                      ),
-
-                      SvgPicture.asset(
-                        EcliniqIcons.arrowRightBlue.assetPath,
-                        width: 24,
-                        height: 24,
-                        colorFilter: const ColorFilter.mode(
-                          Color(0xFF2372EC),
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                    ],
+                  child: EcliniqText(
+                    'Select the symptom you are experiencing',
+                    style: EcliniqTextStyles.responsiveBodyMediumProminent(
+                      context,
+                    ).copyWith(color: Color(0xff8E8E8E)),
                   ),
                 ),
               ],
             ),
 
-            SizedBox(height: 8),
+            SizedBox(
+              height: EcliniqTextStyles.getResponsiveSpacing(context, 8.0),
+            ),
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(
+                context,
+                16.0,
+              ),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _buildSymptomButton(context, 'Fever', () {}),
-                    SizedBox(width: 16),
-                    _buildSymptomButton(context, 'Headache', () {}),
-                    SizedBox(width: 16),
-                    _buildSymptomButton(context, 'Stomach Pain', () {}),
-                    SizedBox(width: 16),
-                    _buildSymptomButton(context, 'Cold & Cough', () {}),
-                    SizedBox(width: 16),
-                    _buildSymptomButton(context, 'Join Pain', () {}),
-                    SizedBox(width: 16),
-                    _buildSymptomButton(context, 'Acidity', () {}),
-                    SizedBox(width: 16),
+                    _buildSymptomButton(
+                      context,
+                      'Fever/Chills',
+                      EcliniqIcons.fever,
+                      () {},
+                    ),
+                    SizedBox(
+                      width: EcliniqTextStyles.getResponsiveSpacing(
+                        context,
+                        16.0,
+                      ),
+                    ),
+                    _buildSymptomButton(
+                      context,
+                      'Headache',
+                      EcliniqIcons.headache,
+                      () {},
+                    ),
+                    SizedBox(
+                      width: EcliniqTextStyles.getResponsiveSpacing(
+                        context,
+                        16.0,
+                      ),
+                    ),
+                    _buildSymptomButton(
+                      context,
+                      'Stomach Pain',
+                      EcliniqIcons.stomachPain,
+                      () {},
+                    ),
+                    SizedBox(
+                      width: EcliniqTextStyles.getResponsiveSpacing(
+                        context,
+                        16.0,
+                      ),
+                    ),
+                    _buildSymptomButton(
+                      context,
+                      'Cold & Cough',
+                      EcliniqIcons.coughCold,
+                      () {},
+                    ),
+                    SizedBox(
+                      width: EcliniqTextStyles.getResponsiveSpacing(
+                        context,
+                        16.0,
+                      ),
+                    ),
+                    _buildSymptomButton(
+                      context,
+                      'Body Pain',
+                      EcliniqIcons.bodyPain,
+                      () {},
+                    ),
+                    SizedBox(
+                      width: EcliniqTextStyles.getResponsiveSpacing(
+                        context,
+                        16.0,
+                      ),
+                    ),
+                    _buildSymptomButton(
+                      context,
+                      'Back Pain',
+                      EcliniqIcons.backPain,
+                      () {},
+                    ),
+                    SizedBox(
+                      width: EcliniqTextStyles.getResponsiveSpacing(
+                        context,
+                        16.0,
+                      ),
+                    ),
+                    _buildSymptomButton(
+                      context,
+                      'Breathing Difficulty',
+                      EcliniqIcons.breathingProblem,
+                      () {},
+                    ),
+                    SizedBox(
+                      width: EcliniqTextStyles.getResponsiveSpacing(
+                        context,
+                        16.0,
+                      ),
+                    ),
+                    _buildSymptomButton(
+                      context,
+                      'Skin Rash /Itching',
+                      EcliniqIcons.itchingOrSkinProblem,
+                      () {},
+                    ),
+                    SizedBox(
+                      width: EcliniqTextStyles.getResponsiveSpacing(
+                        context,
+                        16.0,
+                      ),
+                    ),
+                    _buildSymptomButton(
+                      context,
+                      'Periods Problem',
+                      EcliniqIcons.periodsProblem,
+                      () {},
+                    ),
+                    SizedBox(
+                      width: EcliniqTextStyles.getResponsiveSpacing(
+                        context,
+                        16.0,
+                      ),
+                    ),
+                    _buildSymptomButton(
+                      context,
+                      'Sleep Problem',
+                      EcliniqIcons.sleepProblem,
+                      () {},
+                    ),
+                    SizedBox(
+                      width: EcliniqTextStyles.getResponsiveSpacing(
+                        context,
+                        16.0,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -134,50 +277,66 @@ class NotFeelingWell extends StatelessWidget {
   Widget _buildSymptomButton(
     BuildContext context,
     String title,
-
+    EcliniqIcons icon, // Add this parameter
     VoidCallback onTap,
   ) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-
         child: Container(
-          width: 120,
-          height: 110,
+          width: EcliniqTextStyles.getResponsiveWidth(context, 120.0),
+          height: EcliniqTextStyles.getResponsiveHeight(context, 124.0),
           decoration: BoxDecoration(
             color: Color(0xFfF8FAFF),
-            borderRadius: BorderRadius.circular(8.0),
+            borderRadius: BorderRadius.circular(
+              EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0),
+            ),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(10.0),
+            padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(
+              context,
+              10.0,
+            ),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 52,
-                  height: 52,
+                  width: EcliniqTextStyles.getResponsiveSize(context, 48.0),
+                  height: EcliniqTextStyles.getResponsiveSize(context, 48.0),
                   decoration: BoxDecoration(
                     color: Color(0xFF2372EC),
                     shape: BoxShape.circle,
                   ),
                   child: Center(
-                    child: Image.asset(
-                      EcliniqIcons.generalPhysician.assetPath,
-                      width: 52,
-                      height: 52,
+                    child: SvgPicture.asset(
+                      // Changed from Image.asset to SvgPicture.asset
+                      icon.assetPath,
+                      width: EcliniqTextStyles.getResponsiveIconSize(
+                        context,
+                        48.0,
+                      ),
+                      height: EcliniqTextStyles.getResponsiveIconSize(
+                        context,
+                        48.0,
+                      ),
                     ),
                   ),
                 ),
-                SizedBox(height: 8),
-                FittedBox(
-                  child: Text(
+                SizedBox(
+                  height: EcliniqTextStyles.getResponsiveSpacing(context, 8.0),
+                ),
+                Flexible(
+                  child: EcliniqText(
                     title,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xff424242),
-                      fontSize: 16.0,
-                      fontWeight: FontWeight.w400,
-                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: EcliniqTextStyles.responsiveTitleXLarge(
+                      context,
+                      
+                    ).copyWith(color: Color(0xff424242), fontWeight: FontWeight.w400),
                   ),
                 ),
               ],
@@ -188,24 +347,30 @@ class NotFeelingWell extends StatelessWidget {
     );
   }
 
-  Widget _buildShimmer() {
+  Widget _buildShimmer(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
             Container(
-              width: 8,
-              height: 24,
+              width: EcliniqTextStyles.getResponsiveSize(context, 8.0),
+              height: EcliniqTextStyles.getResponsiveSize(context, 24.0),
               decoration: BoxDecoration(
                 color: Color(0xFF96BFFF),
                 borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(4),
-                  bottomRight: Radius.circular(4),
+                  topRight: Radius.circular(
+                    EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+                  ),
+                  bottomRight: Radius.circular(
+                    EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+                  ),
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(
+              width: EcliniqTextStyles.getResponsiveSpacing(context, 12.0),
+            ),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,24 +379,51 @@ class NotFeelingWell extends StatelessWidget {
                     baseColor: Colors.grey.shade300,
                     highlightColor: Colors.grey.shade100,
                     child: Container(
-                      height: 20,
-                      width: 150,
+                      height: EcliniqTextStyles.getResponsiveSize(
+                        context,
+                        20.0,
+                      ),
+                      width: EcliniqTextStyles.getResponsiveWidth(
+                        context,
+                        150.0,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(4.0),
+                        borderRadius: BorderRadius.circular(
+                          EcliniqTextStyles.getResponsiveBorderRadius(
+                            context,
+                            4.0,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(
+                    height: EcliniqTextStyles.getResponsiveSpacing(
+                      context,
+                      4.0,
+                    ),
+                  ),
                   Shimmer.fromColors(
                     baseColor: Colors.grey.shade300,
                     highlightColor: Colors.grey.shade100,
                     child: Container(
-                      height: 14,
-                      width: 200,
+                      height: EcliniqTextStyles.getResponsiveSize(
+                        context,
+                        14.0,
+                      ),
+                      width: EcliniqTextStyles.getResponsiveWidth(
+                        context,
+                        200.0,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(4.0),
+                        borderRadius: BorderRadius.circular(
+                          EcliniqTextStyles.getResponsiveBorderRadius(
+                            context,
+                            4.0,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -240,19 +432,25 @@ class NotFeelingWell extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 20.0)),
 
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
-              _buildSymptomButtonShimmer(),
-              const SizedBox(width: 16),
-              _buildSymptomButtonShimmer(),
-              const SizedBox(width: 16),
-              _buildSymptomButtonShimmer(),
-              const SizedBox(width: 16),
-              _buildSymptomButtonShimmer(),
+              _buildSymptomButtonShimmer(context),
+              SizedBox(
+                width: EcliniqTextStyles.getResponsiveSpacing(context, 16.0),
+              ),
+              _buildSymptomButtonShimmer(context),
+              SizedBox(
+                width: EcliniqTextStyles.getResponsiveSpacing(context, 16.0),
+              ),
+              _buildSymptomButtonShimmer(context),
+              SizedBox(
+                width: EcliniqTextStyles.getResponsiveSpacing(context, 16.0),
+              ),
+              _buildSymptomButtonShimmer(context),
             ],
           ),
         ),
@@ -260,16 +458,18 @@ class NotFeelingWell extends StatelessWidget {
     );
   }
 
-  Widget _buildSymptomButtonShimmer() {
+  Widget _buildSymptomButtonShimmer(BuildContext context) {
     return Shimmer.fromColors(
       baseColor: Colors.grey.shade300,
       highlightColor: Colors.grey.shade100,
       child: Container(
-        width: 120,
-        height: 100,
+        width: EcliniqTextStyles.getResponsiveWidth(context, 120.0),
+        height: EcliniqTextStyles.getResponsiveHeight(context, 100.0),
         decoration: BoxDecoration(
           color: Color(0xFfF8FAFF),
-          borderRadius: BorderRadius.circular(8.0),
+          borderRadius: BorderRadius.circular(
+            EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0),
+          ),
         ),
       ),
     );

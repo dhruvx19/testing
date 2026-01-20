@@ -105,22 +105,22 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
 
       if (response.success && response.data != null) {
         final user = response.data!.user;
-        
-          if (mounted) {
-           // Update phone number
-           if (user?.phone != null) {
-             _existingPhone = user!.phone;
-             // Also update secure storage if phone is stored there
-             await SecureStorageService.storePhoneNumber(user.phone!);
-           }
-           
-           // Update email
-           if (user?.emailId != null) {
-             _existingEmail = user!.emailId;
-           }
-           
-           setState(() {});
-         }
+
+        if (mounted) {
+          // Update phone number
+          if (user?.phone != null) {
+            _existingPhone = user!.phone;
+            // Also update secure storage if phone is stored there
+            await SecureStorageService.storePhoneNumber(user.phone!);
+          }
+
+          // Update email
+          if (user?.emailId != null) {
+            _existingEmail = user!.emailId;
+          }
+
+          setState(() {});
+        }
       }
     } catch (e) {
       print('Error refreshing user info: $e');
@@ -160,17 +160,20 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
       }
 
       // Show success snackbar if phone was changed successfully
-      if (result != null && result is Map && result['success'] == true && result['type'] == 'phone') {
+      if (result != null &&
+          result is Map &&
+          result['success'] == true &&
+          result['type'] == 'phone') {
         // Refresh user info from API to get updated phone number
         await _refreshUserInfo();
-        
+
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            CustomSuccessSnackBar(
+    
+            CustomSuccessSnackBar.show(
               title: 'Mobile number changed successfully!',
               subtitle: 'Your mobile number has been updated',
               context: context,
-            ),
+    
           );
         }
       }
@@ -210,17 +213,19 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
       }
 
       // Show success snackbar if email was changed successfully
-      if (result != null && result is Map && result['success'] == true && result['type'] == 'email') {
+      if (result != null &&
+          result is Map &&
+          result['success'] == true &&
+          result['type'] == 'email') {
         // Refresh user info from API to get updated email
         await _refreshUserInfo();
-        
+
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            CustomSuccessSnackBar(
+            CustomSuccessSnackBar.show(
               title: 'Email changed successfully!',
               subtitle: 'Your email address has been updated',
               context: context,
-            ),
+            
           );
         }
       }
@@ -266,13 +271,13 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
               // Use postFrameCallback to ensure the page is fully built before showing snackbar
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (mounted && context.mounted) {
-                  final scaffoldMessenger = ScaffoldMessenger.of(context);
-                  scaffoldMessenger.showSnackBar(
-                    CustomSuccessSnackBar(
+     
+           
+                    CustomSuccessSnackBar.show(
                       title: 'M-PIN changed successfully!',
                       subtitle: 'Your M-PIN has been updated',
                       context: context,
-                    ),
+                 
                   );
                 }
               });
@@ -287,30 +292,21 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
 
       try {
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        
+
         // Clear session
         final success = await authProvider.logout();
-        
+
         if (success && mounted) {
           // Navigate to login page and clear navigation stack
-          EcliniqRouter.pushAndRemoveUntil(
-            const LoginPage(),
-            (route) => false,
-          );
+          EcliniqRouter.pushAndRemoveUntil(const LoginPage(), (route) => false);
         } else if (mounted) {
           // If logout failed, still navigate to login for security
-          EcliniqRouter.pushAndRemoveUntil(
-            const LoginPage(),
-            (route) => false,
-          );
+          EcliniqRouter.pushAndRemoveUntil(const LoginPage(), (route) => false);
         }
       } catch (e) {
         // Even if there's an error, navigate to login for security
         if (mounted) {
-          EcliniqRouter.pushAndRemoveUntil(
-            const LoginPage(),
-            (route) => false,
-          );
+          EcliniqRouter.pushAndRemoveUntil(const LoginPage(), (route) => false);
         }
       }
     }
@@ -334,7 +330,7 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
           alignment: Alignment.centerLeft,
           child: Text(
             'Security Settings',
-            style: EcliniqTextStyles.headlineMedium.copyWith(
+            style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
               color: Color(0xff424242),
             ),
           ),
@@ -351,6 +347,7 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
               child: Column(
                 children: [
                   _buildTile(
+                     context:   context,
                     EcliniqIcons.smartphone.assetPath,
                     'Change Mobile Number',
                     onPressedChangeMobileNumber,
@@ -362,6 +359,7 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
                     height: 0.5,
                   ),
                   _buildTile(
+                     context:   context,
                     EcliniqIcons.mail.assetPath,
                     'Change Email ID',
                     onPressedChangeEmail,
@@ -373,6 +371,7 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
                     height: 0.5,
                   ),
                   _buildTile(
+                     context:   context,
                     EcliniqIcons.password.assetPath,
                     'Change M-PIN',
                     onPressedChangeMPin,
@@ -384,65 +383,76 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
                     height: 0.5,
                   ),
                   _buildTile(
+                     context:   context,
                     EcliniqIcons.faceScanSquare.assetPath,
                     'Change Biometric Permissions',
                     onPressedChangeBiometricPermissions,
                     _isExpanded,
                   ),
                   if (_isExpanded) ...[
-                    _buildDropDown(isOn, handleBiometricPermission),
+                    _buildDropDown( context:   context,isOn, handleBiometricPermission),
                   ],
-                  Container(
-                    color: Color(0xffD6D6D6),
-                    width: double.infinity,
-                    height: 0.5,
-                  ),
-                  _buildTile(
-                    EcliniqIcons.logout.assetPath,
-                    'Logout',
-                    onPressedLogout,
-                    _isExpanded,
-                  ),
 
+                  // Container(
+                  //   color: Color(0xffD6D6D6),
+                  //   width: double.infinity,
+                  //   height: 0.5,
+                  // ),
+                  // _buildTile(
+                  //   EcliniqIcons.logout.assetPath,
+                  //   'Logout',
+                  //   onPressedLogout,
+                  //   _isExpanded,
+                  // ),
                   Spacer(),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 30),
                     child: GestureDetector(
                       onTap: () {
-                         ScaffoldMessenger.of(context).showSnackBar(
-                        CustomSuccessSnackBar(
-                          title: 'OTP verified successfully!',
-                          subtitle: 'You can now reset your MPIN',
-                          context: context,
-                        ),
-                      );
+                          CustomSuccessSnackBar.show(
+                            title: 'OTP verified successfully!',
+                            subtitle: 'You can now reset your MPIN',
+                            context: context,
+                      
+                        );
                       },
                       child: Container(
                         width: double.infinity,
-                        height: 52,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        height: EcliniqTextStyles.getResponsiveButtonHeight(
+                          context,
+                          baseHeight: 52.0,
+                        ),
+                        padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                          context,
+                          horizontal: 0,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: Color(0xFFFFF8F8),
                           border: Border.all(
                             color: Color(0xffEB8B85),
                             width: 0.5,
                           ),
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(
+                            EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
+                          ),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             SvgPicture.asset(
                               EcliniqIcons.delete.assetPath,
-                              width: 24,
-                              height: 24,
+                              width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+                              height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
                             ),
-                            const SizedBox(width: 8),
-                            const Text(
+                            SizedBox(
+                              width: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+                            ),
+                            Text(
                               'Delete Account',
-                              style: TextStyle(
+                              style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                                 color: Color(0xffF04248),
-                                fontSize: 18,
+
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -476,6 +486,7 @@ Widget _buildTile(
   VoidCallback? onPressed,
   bool isExpanded, {
   String? subtitle,
+  required BuildContext context,
 }) {
   return TextButton(
     onPressed: onPressed,
@@ -494,27 +505,32 @@ Widget _buildTile(
         children: [
           Row(
             children: [
-              SvgPicture.asset(icon, width: 24, height: 24),
-              SizedBox(width: 8),
+              SvgPicture.asset(
+                icon,
+                width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+                height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+              ),
+              SizedBox(
+                width: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+              ),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
-                      style: EcliniqTextStyles.bodyMedium.copyWith(
+                      style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                         fontWeight: FontWeight.w400,
                         color: Color(0xff424242),
-                        fontSize: 18,
                       ),
                     ),
                     if (subtitle != null) ...[
                       SizedBox(height: 4),
                       Text(
                         subtitle,
-                        style: EcliniqTextStyles.bodySmall.copyWith(
+                        style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                           color: Colors.grey.shade600,
-                          fontSize: 14,
+             
                         ),
                       ),
                     ],
@@ -554,37 +570,38 @@ Widget _buildTile(
   );
 }
 
-Widget _buildDropDown(bool isOn, VoidCallback onPressed) {
+Widget _buildDropDown(bool isOn, VoidCallback onPressed,
+    {required BuildContext context}) {
   return Column(
     children: [
       Row(
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Face Lock Permission',
-                style: EcliniqTextStyles.bodyMedium.copyWith(
-                  fontWeight: FontWeight.w400,
-                  color: Color(0xff424242),
-                  fontSize: 18,
-                ),
-              ),
-  
-              FittedBox(
-                child: Text(
-                  'Keep it turn ON to unlock app quickly without \ninputting m-pin. ',
-                  overflow: TextOverflow.visible,
-                  style: EcliniqTextStyles.bodyMedium.copyWith(
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Face Lock Permission',
+                  style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                     fontWeight: FontWeight.w400,
-                    color: Color(0xff8E8E8E),
-                    fontSize: 14,
+                    color: Color(0xff424242),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  'Keep it turn ON to unlock app quickly without inputting m-pin.',
+                  style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xff8E8E8E),
+          
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
-          Spacer(),
+          const SizedBox(width: 12),
           SizedBox(
             width: 40,
             height: 23,

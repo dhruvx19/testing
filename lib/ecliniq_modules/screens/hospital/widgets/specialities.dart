@@ -1,6 +1,8 @@
 import 'package:ecliniq/ecliniq_api/models/hospital.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
-import 'package:ecliniq/widgets/horizontal_divider.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
+import 'package:ecliniq/ecliniq_utils/horizontal_divider.dart';
+import 'package:ecliniq/ecliniq_utils/phone_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -36,13 +38,13 @@ class MedicalSpecialtiesWidget extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
+              Text(
                 'Medical Specialties',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xff424242),
-                ),
+                style: EcliniqTextStyles.responsiveHeadlineLarge(context)
+                    .copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xff424242),
+                    ),
               ),
             ],
           ),
@@ -63,11 +65,11 @@ class MedicalSpecialtiesWidget extends StatelessWidget {
                   ),
                   child: Text(
                     specialty,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xff424242),
-                    ),
+                    style: EcliniqTextStyles.responsiveTitleXLarge(context)
+                        .copyWith(
+                          fontWeight: FontWeight.w400,
+                          color: Color(0xff424242),
+                        ),
                   ),
                 );
               }).toList(),
@@ -111,13 +113,13 @@ class HospitalServicesWidget extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
+              Text(
                 'Hospital Services & Facilities',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xff424242),
-                ),
+                style: EcliniqTextStyles.responsiveHeadlineLarge(context)
+                    .copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xff424242),
+                    ),
               ),
             ],
           ),
@@ -138,11 +140,11 @@ class HospitalServicesWidget extends StatelessWidget {
                   ),
                   child: Text(
                     service,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xff424242),
-                    ),
+                    style: EcliniqTextStyles.responsiveTitleXLarge(context)
+                        .copyWith(
+                          fontWeight: FontWeight.w400,
+                          color: Color(0xff424242),
+                        ),
                   ),
                 );
               }).toList(),
@@ -191,18 +193,18 @@ class CertificatesWidget extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
+              Text(
                 'Certificates & Accreditations',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xff424242),
-                ),
+                style: EcliniqTextStyles.responsiveHeadlineLarge(context)
+                    .copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xff424242),
+                    ),
               ),
             ],
           ),
           Padding(
-       padding: const EdgeInsets.only(top: 8, left: 16, right: 16),
+            padding: const EdgeInsets.only(top: 8, left: 16, right: 16),
             child: Wrap(
               spacing: 16,
               runSpacing: 12,
@@ -227,11 +229,11 @@ class CertificatesWidget extends StatelessWidget {
                       const SizedBox(width: 8),
                       Text(
                         cert['name'] as String,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                          color: Color(0xff424242),
-                        ),
+                        style: EcliniqTextStyles.responsiveTitleXLarge(context)
+                            .copyWith(
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xff424242),
+                            ),
                       ),
                     ],
                   ),
@@ -269,13 +271,13 @@ class ContactDetailsWidget extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
+              Text(
                 'Contact Details',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xff424242),
-                ),
+                style: EcliniqTextStyles.responsiveHeadlineLarge(context)
+                    .copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xff424242),
+                    ),
               ),
             ],
           ),
@@ -284,6 +286,7 @@ class ContactDetailsWidget extends StatelessWidget {
             child: Column(
               children: [
                 _buildContactItem(
+                  context: context,
                   icon: EcliniqIcons.mailBlue,
 
                   title: 'contact@manipalbaner.com',
@@ -294,6 +297,7 @@ class ContactDetailsWidget extends StatelessWidget {
                 HorizontalDivider(),
                 const SizedBox(height: 8),
                 _buildContactItem(
+                  context: context,
                   icon: EcliniqIcons.hospitalBuilding,
 
                   title: '9876543210',
@@ -305,6 +309,7 @@ class ContactDetailsWidget extends StatelessWidget {
                 HorizontalDivider(),
                 const SizedBox(height: 8),
                 _buildContactItem(
+                  context: context,
                   icon: EcliniqIcons.callEmergency,
 
                   title: '02068138888',
@@ -317,6 +322,8 @@ class ContactDetailsWidget extends StatelessWidget {
 
                 const SizedBox(height: 8),
                 _buildContactItem(
+                  context: context,
+
                   icon: EcliniqIcons.sirenRounded,
 
                   title: '02068138888',
@@ -328,6 +335,7 @@ class ContactDetailsWidget extends StatelessWidget {
                 HorizontalDivider(),
                 const SizedBox(height: 8),
                 _buildContactItem(
+                  context: context,
                   icon: EcliniqIcons.drop,
 
                   title: '02068138888',
@@ -350,10 +358,15 @@ class ContactDetailsWidget extends StatelessWidget {
     required String subtitle,
     bool showCallButton = false,
     required VoidCallback onTap,
+    required BuildContext context,
   }) {
     return Row(
       children: [
-        SvgPicture.asset(icon.assetPath, width: 32, height: 32),
+        SvgPicture.asset(
+          icon.assetPath,
+          width: EcliniqTextStyles.getResponsiveIconSize(context, 32),
+          height: EcliniqTextStyles.getResponsiveIconSize(context, 32),
+        ),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -361,26 +374,33 @@ class ContactDetailsWidget extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xff424242),
-                ),
+                style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                    .copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xff424242),
+                    ),
               ),
               const SizedBox(height: 2),
               Text(
                 subtitle,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  color: Color(0xff8E8E8E),
-                ),
+                style: EcliniqTextStyles.responsiveTitleXLarge(context)
+                    .copyWith(
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xff8E8E8E),
+                    ),
               ),
             ],
           ),
         ),
         if (showCallButton)
-          SvgPicture.asset(EcliniqIcons.phone.assetPath, width: 26, height: 26),
+          GestureDetector(
+            onTap: () => PhoneLauncher.launchPhoneCall(title),
+            child: SvgPicture.asset(
+              EcliniqIcons.phone.assetPath,
+              width: EcliniqTextStyles.getResponsiveIconSize(context, 26),
+              height: EcliniqTextStyles.getResponsiveIconSize(context, 26),
+            ),
+          ),
         SizedBox(width: 4),
       ],
     );

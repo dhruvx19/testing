@@ -6,9 +6,6 @@ import 'package:ecliniq/ecliniq_modules/screens/profile/my_doctors/model/doctor_
 import 'package:http/http.dart' as http;
 
 class PatientService {
-  /// Get patient details for the authenticated user
-  /// @param authToken - Authentication token from AuthProvider
-  /// @returns PatientDetailsResponse with patient data or error
   Future<PatientDetailsResponse> getPatientDetails({
     required String authToken,
   }) async {
@@ -21,10 +18,7 @@ class PatientService {
         'x-access-token': authToken,
       };
 
-      final response = await http.get(
-        url,
-        headers: headers,
-      );
+      final response = await http.get(url, headers: headers);
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
@@ -54,19 +48,12 @@ class PatientService {
     }
   }
 
-  /// Add a dependent for the authenticated patient
-  /// @param authToken - Authentication token from AuthProvider
-  /// @param request - AddDependentRequest with dependent details
-  /// @returns AddDependentResponse with created dependent data or error
   Future<AddDependentResponse> addDependent({
     required String authToken,
     required AddDependentRequest request,
   }) async {
     try {
       final url = Uri.parse(Endpoints.addDependent);
-      print('🌐 Calling add-dependent API: $url');
-      print('📤 Request body: ${jsonEncode(request.toJson())}');
-      print('🔑 Auth token present: ${authToken.isNotEmpty} (length: ${authToken.length})');
 
       final headers = <String, String>{
         'Content-Type': 'application/json',
@@ -74,15 +61,12 @@ class PatientService {
         'x-access-token': authToken,
       };
 
-      print('📤 Sending POST request with authentication headers...');
       final response = await http.post(
         url,
         headers: headers,
         body: jsonEncode(request.toJson()),
       );
-      
-      print('📥 Response status: ${response.statusCode}');
-      print('📥 Response body: ${response.body}');
+
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseData = jsonDecode(response.body);
@@ -127,10 +111,7 @@ class PatientService {
         'x-access-token': authToken,
       };
 
-      final response = await http.get(
-        url,
-        headers: headers,
-      );
+      final response = await http.get(url, headers: headers);
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
@@ -142,7 +123,8 @@ class PatientService {
           message:
               responseData['message'] ??
               'Failed to fetch dependents: ${response.statusCode}',
-          data: [],
+          self: null,
+          dependents: [],
           errors: response.body,
           meta: null,
           timestamp: DateTime.now().toIso8601String(),
@@ -152,7 +134,8 @@ class PatientService {
       return GetDependentsResponse(
         success: false,
         message: 'Network error: $e',
-        data: [],
+        self: null,
+        dependents: [],
         errors: e.toString(),
         meta: null,
         timestamp: DateTime.now().toIso8601String(),
@@ -175,10 +158,7 @@ class PatientService {
         'x-access-token': authToken,
       };
 
-      final response = await http.get(
-        url,
-        headers: headers,
-      );
+      final response = await http.get(url, headers: headers);
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
@@ -239,14 +219,16 @@ class PatientService {
             responseData['data'] is Map<String, dynamic> &&
             (responseData['data']['data'] is Map<String, dynamic> ||
                 responseData['data'] is Map<String, dynamic>)) {
-          final normalized = responseData['data']['data'] ?? responseData['data'];
+          final normalized =
+              responseData['data']['data'] ?? responseData['data'];
           return PatientDetailsResponse(
             success: true,
             message: responseData['message'] ?? 'Updated successfully',
             data: PatientDetailsData.fromJson(normalized),
             errors: null,
             meta: null,
-            timestamp: responseData['timestamp'] ?? DateTime.now().toIso8601String(),
+            timestamp:
+                responseData['timestamp'] ?? DateTime.now().toIso8601String(),
           );
         }
         return PatientDetailsResponse.fromJson(responseData);
@@ -254,7 +236,8 @@ class PatientService {
         final responseData = jsonDecode(response.body);
         return PatientDetailsResponse(
           success: false,
-          message: responseData['message'] ??
+          message:
+              responseData['message'] ??
               'Failed to update preferences: ${response.statusCode}',
           data: null,
           errors: response.body,
@@ -288,10 +271,7 @@ class PatientService {
         'x-access-token': authToken,
       };
 
-      final response = await http.post(
-        url,
-        headers: headers,
-      );
+      final response = await http.post(url, headers: headers);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return jsonDecode(response.body);
@@ -317,10 +297,7 @@ class PatientService {
         'x-access-token': authToken,
       };
 
-      final response = await http.delete(
-        url,
-        headers: headers,
-      );
+      final response = await http.delete(url, headers: headers);
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -332,4 +309,3 @@ class PatientService {
     }
   }
 }
-

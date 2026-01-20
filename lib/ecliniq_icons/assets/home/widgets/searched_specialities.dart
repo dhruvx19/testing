@@ -1,6 +1,9 @@
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/search_specialities/search_specialities_page.dart';
+import 'package:ecliniq/ecliniq_modules/screens/search_specialities/speciality_doctors_list.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shimmer/shimmer.dart';
@@ -13,7 +16,7 @@ class MostSearchedSpecialities extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (showShimmer) {
-      return _buildShimmer();
+      return _buildShimmer(context);
     }
 
     return LayoutBuilder(
@@ -28,75 +31,78 @@ class MostSearchedSpecialities extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 8,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: Color(0xFF96BFFF),
-                    borderRadius: BorderRadius.only(
-                      topRight: Radius.circular(4),
-                      bottomRight: Radius.circular(4),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: EcliniqTextStyles.getResponsiveSize(context, 8.0),
+                      height: EcliniqTextStyles.getResponsiveSize(context, 24.0),
+                      decoration: BoxDecoration(
+                        color: Color(0xFF96BFFF),
+                        borderRadius: BorderRadius.only(
+                          topRight: Radius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0)),
+                          bottomRight: Radius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0)),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
+                    SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 12.0)),
+                    Expanded(
+                      child: EcliniqText(
                         'Most Searched Specialties',
-                        style: TextStyle(
-                          fontSize: 20.0,
-                          fontWeight: FontWeight.w600,
+                        style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
                           color: Color(0xff424242),
                         ),
                       ),
-               
-                      Text(
-                        'Near you',
-                        style: TextStyle(
-                          fontSize: 13.0,
-                          color: Color(0xff8E8E8E),
-                          fontWeight: FontWeight.w400,
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        EcliniqRouter.push(SearchSpecialities());
+                      },
+                      style: TextButton.styleFrom(
+                        padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                          context,
+                          horizontal: 8.0,
+                          vertical: 4.0,
                         ),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
-                    ],
-                  ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          EcliniqText(
+                            'View All',
+                            style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
+                              color: Color(0xFF2372EC),
+                            ),
+                          ),
+                          SvgPicture.asset(
+                            EcliniqIcons.arrowRightBlue.assetPath,
+                            width: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
+                            height: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
+                            colorFilter: const ColorFilter.mode(
+                              Color(0xFF2372EC),
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                TextButton(
-                  onPressed: () {
-                    EcliniqRouter.push(SearchSpecialities());
-                  },
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                 Padding(
+                  padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+                    context,
+                    left: 20.0,
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'View All',
-                        style: TextStyle(
-                          color: Color(0xFF2372EC),
-                          fontWeight: FontWeight.w400,
-                          fontSize: 18.0,
-                        ),
-                      ),
-                      SvgPicture.asset(
-                        EcliniqIcons.arrowRightBlue.assetPath,
-                        width: 24,
-                        height: 24,
-                        colorFilter: const ColorFilter.mode(
-                          Color(0xFF2372EC),
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                    ],
+                  child: EcliniqText(
+                    'Near you',
+                    style: EcliniqTextStyles.responsiveBodyMediumProminent(context).copyWith(
+                      color: Color(0xff8E8E8E),
+                    ),
                   ),
                 ),
               ],
@@ -104,7 +110,11 @@ class MostSearchedSpecialities extends StatelessWidget {
             SizedBox(height: isSmallScreen ? 12.0 : 16.0),
 
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 2),
+              padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                context,
+                horizontal: 16.0,
+                vertical: 2.0,
+              ),
               child: Column(
                 children: [
                   Row(
@@ -115,9 +125,12 @@ class MostSearchedSpecialities extends StatelessWidget {
                           cardWidth: cardWidth,
                           cardHeight: cardHeight,
                           iconPath: EcliniqIcons.generalPhysician.assetPath,
-
                           title: 'General\nPhysician',
-                          onTap: () => EcliniqRouter(),
+                          onTap: () {
+                            EcliniqRouter.push(
+                              SpecialityDoctorsList(initialSpeciality: 'General Physician'),
+                            );
+                          },
                         ),
                       ),
                       SizedBox(width: cardSpacing),
@@ -127,9 +140,12 @@ class MostSearchedSpecialities extends StatelessWidget {
                           cardWidth: cardWidth,
                           cardHeight: cardHeight,
                           iconPath: EcliniqIcons.gynaecologist.assetPath,
-
                           title: 'Women\'s\nHealth',
-                          onTap: () => EcliniqRouter(),
+                          onTap: () {
+                            EcliniqRouter.push(
+                              SpecialityDoctorsList(initialSpeciality: 'Gynaecologist'),
+                            );
+                          },
                         ),
                       ),
                       SizedBox(width: cardSpacing),
@@ -139,14 +155,17 @@ class MostSearchedSpecialities extends StatelessWidget {
                           cardWidth: cardWidth,
                           cardHeight: cardHeight,
                           iconPath: EcliniqIcons.ophthalmologist.assetPath,
-
                           title: 'Eye\nCare',
-                          onTap: () => EcliniqRouter(),
+                          onTap: () {
+                            EcliniqRouter.push(
+                              SpecialityDoctorsList(initialSpeciality: 'Ophthalmologist'),
+                            );
+                          },
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 16),
+                  SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 16.0)),
                   Row(
                     children: [
                       Expanded(
@@ -155,9 +174,12 @@ class MostSearchedSpecialities extends StatelessWidget {
                           cardWidth: cardWidth,
                           cardHeight: cardHeight,
                           iconPath: EcliniqIcons.dentist.assetPath,
-
                           title: 'Dental\nCare',
-                          onTap: () => EcliniqRouter(),
+                          onTap: () {
+                            EcliniqRouter.push(
+                              SpecialityDoctorsList(initialSpeciality: 'Dentist'),
+                            );
+                          },
                         ),
                       ),
                       SizedBox(width: cardSpacing),
@@ -167,9 +189,12 @@ class MostSearchedSpecialities extends StatelessWidget {
                           cardWidth: cardWidth,
                           cardHeight: cardHeight,
                           iconPath: EcliniqIcons.pediatrician.assetPath,
-
                           title: 'Child\nSpecialist',
-                          onTap: () => EcliniqRouter(),
+                          onTap: () {
+                            EcliniqRouter.push(
+                              SpecialityDoctorsList(initialSpeciality: 'Pediatrician'),
+                            );
+                          },
                         ),
                       ),
                       SizedBox(width: cardSpacing),
@@ -179,9 +204,12 @@ class MostSearchedSpecialities extends StatelessWidget {
                           cardWidth: cardWidth,
                           cardHeight: cardHeight,
                           iconPath: EcliniqIcons.ent.assetPath,
-
                           title: 'Ear, Nose\n& Throat',
-                          onTap: () => EcliniqRouter(),
+                          onTap: () {
+                            EcliniqRouter.push(
+                              SpecialityDoctorsList(initialSpeciality: 'ENT'),
+                            );
+                          },
                         ),
                       ),
                     ],
@@ -211,14 +239,17 @@ class MostSearchedSpecialities extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 12.0)),
         child: Container(
-          width: 150,
-          height: 130,
-          padding: EdgeInsets.all(isSmallScreen ? 6.0 : 12.0),
+          width: EcliniqTextStyles.getResponsiveWidth(context, 150.0),
+          height: EcliniqTextStyles.getResponsiveHeight(context, 130.0),
+          padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(
+            context,
+            isSmallScreen ? 6.0 : 12.0,
+          ),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12.0),
+            borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 12.0)),
             border: Border.all(color: Color(0xffB8B8B8), width: 0.5),
           ),
           child: Column(
@@ -226,24 +257,26 @@ class MostSearchedSpecialities extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 52,
-                height: 52,
+                width: EcliniqTextStyles.getResponsiveSize(context, 52.0),
+                height: EcliniqTextStyles.getResponsiveSize(context, 52.0),
                 decoration: BoxDecoration(
                   color: Color(0xFFF8FAFF),
-                  borderRadius: BorderRadius.circular(99.0),
+                  borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 99.0)),
                 ),
                 child: Center(
-                  child: Image.asset(iconPath, width: 52, height: 52),
+                  child: Image.asset(
+                    iconPath,
+                    width: EcliniqTextStyles.getResponsiveIconSize(context, 52.0),
+                    height: EcliniqTextStyles.getResponsiveIconSize(context, 52.0),
+                  ),
                 ),
               ),
-              SizedBox(height: isSmallScreen ? 6.0 : 8.0),
+              SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, isSmallScreen ? 6.0 : 8.0)),
               Flexible(
-                child: Text(
+                child: EcliniqText(
                   title,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
+                  style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                     color: Color(0xff424242),
                     height: 1.2,
                   ),
@@ -258,24 +291,24 @@ class MostSearchedSpecialities extends StatelessWidget {
     );
   }
 
-  Widget _buildShimmer() {
+  Widget _buildShimmer(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
             Container(
-              width: 8,
-              height: 24,
+              width: EcliniqTextStyles.getResponsiveSize(context, 8.0),
+              height: EcliniqTextStyles.getResponsiveSize(context, 24.0),
               decoration: BoxDecoration(
                 color: Color(0xFF96BFFF),
                 borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(4),
-                  bottomRight: Radius.circular(4),
+                  topRight: Radius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0)),
+                  bottomRight: Radius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0)),
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 12.0)),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -284,24 +317,24 @@ class MostSearchedSpecialities extends StatelessWidget {
                     baseColor: Colors.grey.shade300,
                     highlightColor: Colors.grey.shade100,
                     child: Container(
-                      height: 18,
-                      width: 200,
+                      height: EcliniqTextStyles.getResponsiveSize(context, 18.0),
+                      width: EcliniqTextStyles.getResponsiveWidth(context, 200.0),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(4.0),
+                        borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0)),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 4.0)),
                   Shimmer.fromColors(
                     baseColor: Colors.grey.shade300,
                     highlightColor: Colors.grey.shade100,
                     child: Container(
-                      height: 14,
-                      width: 100,
+                      height: EcliniqTextStyles.getResponsiveSize(context, 14.0),
+                      width: EcliniqTextStyles.getResponsiveWidth(context, 100.0),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(4.0),
+                        borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0)),
                       ),
                     ),
                   ),
@@ -310,29 +343,33 @@ class MostSearchedSpecialities extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 16.0)),
 
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
+          padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+            context,
+            horizontal: 10.0,
+            vertical: 0,
+          ),
           child: Column(
             children: [
               Row(
                 children: [
-                  Expanded(child: _buildSpecialtyCardShimmer()),
-                  const SizedBox(width: 12),
-                  Expanded(child: _buildSpecialtyCardShimmer()),
-                  const SizedBox(width: 12),
-                  Expanded(child: _buildSpecialtyCardShimmer()),
+                  Expanded(child: _buildSpecialtyCardShimmer(context)),
+                  SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 12.0)),
+                  Expanded(child: _buildSpecialtyCardShimmer(context)),
+                  SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 12.0)),
+                  Expanded(child: _buildSpecialtyCardShimmer(context)),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 16.0)),
               Row(
                 children: [
-                  Expanded(child: _buildSpecialtyCardShimmer()),
-                  const SizedBox(width: 12),
-                  Expanded(child: _buildSpecialtyCardShimmer()),
-                  const SizedBox(width: 12),
-                  Expanded(child: _buildSpecialtyCardShimmer()),
+                  Expanded(child: _buildSpecialtyCardShimmer(context)),
+                  SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 12.0)),
+                  Expanded(child: _buildSpecialtyCardShimmer(context)),
+                  SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 12.0)),
+                  Expanded(child: _buildSpecialtyCardShimmer(context)),
                 ],
               ),
             ],
@@ -342,15 +379,15 @@ class MostSearchedSpecialities extends StatelessWidget {
     );
   }
 
-  Widget _buildSpecialtyCardShimmer() {
+  Widget _buildSpecialtyCardShimmer(BuildContext context) {
     return Shimmer.fromColors(
       baseColor: Colors.grey.shade300,
       highlightColor: Colors.grey.shade100,
       child: Container(
-        height: 128,
+        height: EcliniqTextStyles.getResponsiveHeight(context, 128.0),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12.0),
+          borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 12.0)),
           border: Border.all(color: Colors.grey.shade200),
         ),
       ),

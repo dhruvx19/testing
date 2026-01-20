@@ -36,12 +36,12 @@ class _AddEmailAddressState extends State<AddEmailAddress> {
   Future<void> _requestNewOTP() async {
     if (_emailController.text.isEmpty || !_emailController.text.contains('@')) {
       // Show validation error as snackbar
-      ScaffoldMessenger.of(context).showSnackBar(
-        CustomErrorSnackBar(
+      
+  CustomErrorSnackBar.show(
           title: 'Invalid email address',
           subtitle: 'Please enter a valid email address',
           context: context,
-        ),
+        
       );
       return;
     }
@@ -86,15 +86,15 @@ class _AddEmailAddressState extends State<AddEmailAddress> {
         setState(() {
           _isLoading = false;
         });
-        
+
         // Show error snackbar instead of inline error
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            CustomErrorSnackBar(
+ 
+   CustomErrorSnackBar.show(
               title: 'Failed to send OTP',
               subtitle: result['message'] ?? 'Failed to send OTP to new email',
               context: context,
-            ),
+      
           );
         }
       }
@@ -103,15 +103,14 @@ class _AddEmailAddressState extends State<AddEmailAddress> {
       setState(() {
         _isLoading = false;
       });
-      
+
       // Show error snackbar for exceptions
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          CustomErrorSnackBar(
+CustomErrorSnackBar.show(
             title: 'Error',
             subtitle: 'An error occurred: $e',
             context: context,
-          ),
+   
         );
       }
     }
@@ -163,7 +162,7 @@ class _AddEmailAddressState extends State<AddEmailAddress> {
                     children: [
                       Text(
                         'Continue',
-                        style: EcliniqTextStyles.headlineMedium.copyWith(
+                        style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                           color: _isEmailValid
                               ? Colors.white
                               : const Color(0xffD6D6D6),
@@ -208,7 +207,7 @@ class _AddEmailAddressState extends State<AddEmailAddress> {
         ),
         title: Text(
           'Add Email Address',
-          style: EcliniqTextStyles.headlineMedium.copyWith(
+          style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
             color: Color(0xff424242),
           ),
         ),
@@ -226,7 +225,7 @@ class _AddEmailAddressState extends State<AddEmailAddress> {
           children: [
             Text(
               'Enter a new Email Address, and we will send an OTP for verification.',
-              style: EcliniqTextStyles.headlineXMedium.copyWith(
+              style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                 color: Color(0xff424242),
               ),
             ),
@@ -252,20 +251,20 @@ class _AddEmailAddressState extends State<AddEmailAddress> {
                           focusNode: _emailFocusNode,
                           keyboardType: TextInputType.emailAddress,
                           autofocus: true,
-                          style: const TextStyle(
-                            fontSize: 18,
+                          style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                             fontWeight: FontWeight.w400,
                             color: Color(0xff424242),
                           ),
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             border: InputBorder.none,
                             hintText: 'Enter Email',
                             contentPadding: EdgeInsets.zero,
-                            hintStyle: TextStyle(
-                              color: Color(0xffD6D6D6),
-                              fontSize: 18,
-                              fontWeight: FontWeight.w400,
-                            ),
+                            hintStyle: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                                .copyWith(
+                                  color: Color(0xffD6D6D6),
+
+                                  fontWeight: FontWeight.w400,
+                                ),
                           ),
                           onChanged: (value) {
                             if (mounted) {
@@ -289,7 +288,7 @@ class _AddEmailAddressState extends State<AddEmailAddress> {
                 padding: const EdgeInsets.only(top: 8.0),
                 child: Text(
                   _errorMessage!,
-                  style: EcliniqTextStyles.bodyMedium.copyWith(
+                  style: EcliniqTextStyles.responsiveBodyMedium(context).copyWith(
                     color: Colors.red,
                   ),
                 ),
@@ -300,7 +299,7 @@ class _AddEmailAddressState extends State<AddEmailAddress> {
               children: [
                 Text(
                   'By Continuing, you agree to our',
-                  style: EcliniqTextStyles.bodySmall.copyWith(
+                  style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                     color: Color(0xff8E8E8E),
                   ),
                 ),
@@ -308,23 +307,21 @@ class _AddEmailAddressState extends State<AddEmailAddress> {
                   children: [
                     Text(
                       'Terms & Conditions',
-                      style: EcliniqTextStyles.headlineMedium.copyWith(
-                        fontSize: 18,
+                      style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                         fontWeight: FontWeight.w400,
                         color: Color(0xff424242),
                       ),
                     ),
                     Text(
                       ' and ',
-                      style: EcliniqTextStyles.bodySmall.copyWith(
+                      style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
+                        fontWeight: FontWeight.w400,
                         color: Color(0xff8E8E8E),
-                        fontSize: 20,
                       ),
                     ),
                     Text(
                       'Privacy Policy',
-                      style: EcliniqTextStyles.headlineMedium.copyWith(
-                        fontSize: 18,
+                      style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                         fontWeight: FontWeight.w400,
                         color: Color(0xff424242),
                       ),

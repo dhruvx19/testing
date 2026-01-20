@@ -1,3 +1,4 @@
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -62,8 +63,8 @@ class PermissionRequestDialog extends StatelessWidget {
             // Message
             Text(
               message,
-              style: const TextStyle(
-                fontSize: 16,
+              style:  EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+               
                 color: Color(0xFF8E8E8E),
                 height: 1.5,
               ),
@@ -87,10 +88,10 @@ class PermissionRequestDialog extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: const Text(
+                    child:  Text(
                       'Cancel',
-                      style: TextStyle(
-                        fontSize: 16,
+                      style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+                   
                         fontWeight: FontWeight.w500,
                         color: Color(0xFF424242),
                       ),
@@ -120,10 +121,10 @@ class PermissionRequestDialog extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: const Text(
+                    child:  Text(
                       'Allow',
-                      style: TextStyle(
-                        fontSize: 16,
+                      style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+             
                         fontWeight: FontWeight.w500,
                         color: Colors.white,
                       ),

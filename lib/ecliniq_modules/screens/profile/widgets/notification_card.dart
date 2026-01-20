@@ -70,7 +70,7 @@ class _NotificationsSettingsWidgetState
             padding: const EdgeInsets.all(8),
             child: Text(
               'Notifications',
-              style: EcliniqTextStyles.headlineLarge.copyWith(
+              style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
                 color: Color(0xff8E8E8E),
               ),
             ),
@@ -209,7 +209,11 @@ class _NotificationToggleItem extends StatelessWidget {
           SizedBox(
             width: 24,
             height: 24,
-            child: SvgPicture.asset(_getIconPath(), width: 24, height: 24),
+            child: SvgPicture.asset(
+              _getIconPath(),
+              width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+              height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+            ),
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -218,14 +222,14 @@ class _NotificationToggleItem extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: EcliniqTextStyles.headlineXMedium.copyWith(
+                  style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                     color: Color(0xff424242),
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: EcliniqTextStyles.bodySmall.copyWith(
+                  style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                     color: Color(0xff8E8E8E),
                   ),
                 ),

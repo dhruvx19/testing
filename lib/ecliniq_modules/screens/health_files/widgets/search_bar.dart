@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:ecliniq/ecliniq_icons/icons.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -40,6 +41,16 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
   void initState() {
     super.initState();
     _controller = widget.controller ?? TextEditingController();
+    query = _controller.text;
+    if (widget.controller != null) {
+      _controller.addListener(() {
+        if (mounted) {
+          setState(() {
+            query = _controller.text;
+          });
+        }
+      });
+    }
   }
 
   Future<void> search(String text) async {
@@ -120,9 +131,9 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
                   height: 20,
                 ),
             hintText: widget.hintText,
-            hintStyle: TextStyle(
+            hintStyle: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
               color: Colors.grey[500],
-              fontSize: 16,
+        
               fontWeight: FontWeight.w400,
             ),
             contentPadding: const EdgeInsets.symmetric(
@@ -132,9 +143,9 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
           ),
           onChanged: search,
           textInputAction: TextInputAction.search,
-          style: const TextStyle(
+          style:  EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
             color: Colors.black87,
-            fontSize: 16,
+          
             fontWeight: FontWeight.w400,
           ),
           textAlignVertical: TextAlignVertical.center,

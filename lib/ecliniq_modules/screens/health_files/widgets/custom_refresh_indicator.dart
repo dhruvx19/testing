@@ -1,4 +1,3 @@
-import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 import 'package:flutter/material.dart';
 
 /// Custom RefreshIndicator wrapper that uses styled RefreshIndicator

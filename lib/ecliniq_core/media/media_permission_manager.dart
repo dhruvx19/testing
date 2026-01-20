@@ -2,39 +2,32 @@ import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'package:permission_handler/permission_handler.dart';
 
-/// Manager to handle media permissions (camera, photos, files) for health files upload
 class MediaPermissionManager {
-  /// Request all media permissions upfront
-  /// This should be called when user enters the health files page
   static Future<MediaPermissionStatus> requestAllPermissions() async {
     if (kIsWeb) {
       return MediaPermissionStatus.allGranted;
     }
 
     try {
-      // On iOS, request permissions one at a time to avoid conflicts
-      // Request camera permission first
       final cameraStatus = await _requestCameraPermission();
-      
-      // Add a small delay on iOS to ensure system dialogs don't conflict
+
       if (Platform.isIOS) {
         await Future.delayed(const Duration(milliseconds: 300));
       }
-      
+
       // Request photos permission
       final photosStatus = await _requestPhotosPermission();
-      
-      // Files permission is handled by file_picker itself, no need to request here
-      
+
+
       // Determine overall status
-      if (cameraStatus == MediaPermissionResult.granted && 
+      if (cameraStatus == MediaPermissionResult.granted &&
           photosStatus == MediaPermissionResult.granted) {
         return MediaPermissionStatus.allGranted;
       } else if (cameraStatus == MediaPermissionResult.permanentlyDenied ||
-                 photosStatus == MediaPermissionResult.permanentlyDenied) {
+          photosStatus == MediaPermissionResult.permanentlyDenied) {
         return MediaPermissionStatus.somePermanentlyDenied;
       } else if (cameraStatus == MediaPermissionResult.denied ||
-                 photosStatus == MediaPermissionResult.denied) {
+          photosStatus == MediaPermissionResult.denied) {
         return MediaPermissionStatus.someDenied;
       } else {
         return MediaPermissionStatus.partialGranted;
@@ -49,36 +42,33 @@ class MediaPermissionManager {
   static Future<MediaPermissionResult> _requestCameraPermission() async {
     try {
       final status = await Permission.camera.status;
-      
+
       debugPrint('Camera permission current status: $status');
-      
+
       // If already granted or limited, return granted
       if (status.isGranted || status.isLimited) {
         return MediaPermissionResult.granted;
       }
-      
+
       // If permanently denied, return permanently denied (user must go to Settings)
       if (status.isPermanentlyDenied) {
         debugPrint('Camera permission is permanently denied');
         return MediaPermissionResult.permanentlyDenied;
       }
-      
-      // On iOS, if status is denied (was denied before), requesting again might make it permanently denied
-      // So we should only request if status is notDetermined (never asked)
-      // On Android, we can request even if denied
+
       if (Platform.isIOS && status.isDenied) {
-        // On iOS, if already denied once, don't request again to avoid permanent denial
-        // Instead, return denied so the caller can handle it appropriately
-        debugPrint('Camera permission was previously denied on iOS. User must grant in Settings.');
+        debugPrint(
+          'Camera permission was previously denied on iOS. User must grant in Settings.',
+        );
         return MediaPermissionResult.denied;
       }
-      
-      // Request permission - this will show the system dialog
-      // This will only happen if status is notDetermined (first time request) or on Android
-      debugPrint('Requesting camera permission. Current status: $status, isNotDetermined:');
+
+      debugPrint(
+        'Requesting camera permission. Current status: $status, isNotDetermined:',
+      );
       final newStatus = await Permission.camera.request();
       debugPrint('Camera permission request result: $newStatus');
-      
+
       if (newStatus.isGranted || newStatus.isLimited) {
         return MediaPermissionResult.granted;
       } else if (newStatus.isPermanentlyDenied) {
@@ -97,36 +87,32 @@ class MediaPermissionManager {
   static Future<MediaPermissionResult> _requestPhotosPermission() async {
     try {
       final status = await Permission.photos.status;
-      
+
       debugPrint('Photos permission current status: $status');
-      
+
       // If already granted or limited, return granted
       if (status.isGranted || status.isLimited) {
         return MediaPermissionResult.granted;
       }
-      
+
       // If permanently denied, return permanently denied (user must go to Settings)
       if (status.isPermanentlyDenied) {
         debugPrint('Photos permission is permanently denied');
         return MediaPermissionResult.permanentlyDenied;
       }
-      
-      // On iOS, if status is denied (was denied before), requesting again might make it permanently denied
-      // So we should only request if status is notDetermined (never asked)
-      // On Android, we can request even if denied
       if (Platform.isIOS && status.isDenied) {
-        // On iOS, if already denied once, don't request again to avoid permanent denial
-        // Instead, return denied so the caller can handle it appropriately
-        debugPrint('Photos permission was previously denied on iOS. User must grant in Settings.');
+        debugPrint(
+          'Photos permission was previously denied on iOS. User must grant in Settings.',
+        );
         return MediaPermissionResult.denied;
       }
-      
-      // Request permission - this will show the system dialog
-      // This will only happen if status is notDetermined (first time request) or on Android
-      debugPrint('Requesting photos permission. Current status: $status, isNotDetermined: ');
+
+      debugPrint(
+        'Requesting photos permission. Current status: $status, isNotDetermined: ',
+      );
       final newStatus = await Permission.photos.request();
       debugPrint('Photos permission request result: $newStatus');
-      
+
       if (newStatus.isGranted || newStatus.isLimited) {
         return MediaPermissionResult.granted;
       } else if (newStatus.isPermanentlyDenied) {
@@ -175,7 +161,9 @@ class MediaPermissionManager {
   }
 
   /// Get permission status for a specific permission
-  static Future<MediaPermissionResult> getPermissionStatus(Permission permission) async {
+  static Future<MediaPermissionResult> getPermissionStatus(
+    Permission permission,
+  ) async {
     if (kIsWeb) return MediaPermissionResult.granted;
     try {
       final status = await permission.status;
@@ -194,40 +182,37 @@ class MediaPermissionManager {
   }
 
   /// Request a specific permission
-  static Future<MediaPermissionResult> requestPermission(Permission permission) async {
+  static Future<MediaPermissionResult> requestPermission(
+    Permission permission,
+  ) async {
     if (kIsWeb) return MediaPermissionResult.granted;
     try {
       final status = await permission.status;
-      
+
       debugPrint('Permission $permission current status: $status');
-      
+
       // If already granted or limited, return granted
       if (status.isGranted || status.isLimited) {
         return MediaPermissionResult.granted;
       }
-      
+
       // If permanently denied, return permanently denied (user must go to Settings)
       if (status.isPermanentlyDenied) {
         debugPrint('Permission $permission is permanently denied');
         return MediaPermissionResult.permanentlyDenied;
       }
-      
-      // On iOS, if status is denied (was denied before), requesting again might make it permanently denied
-      // So we should only request if status is notDetermined (never asked)
-      // On Android, we can request even if denied
+
       if (Platform.isIOS && status.isDenied) {
-        // On iOS, if already denied once, don't request again to avoid permanent denial
-        // Instead, return denied so the caller can show Settings dialog
-        debugPrint('Permission $permission was previously denied on iOS. User must grant in Settings.');
+        debugPrint(
+          'Permission $permission was previously denied on iOS. User must grant in Settings.',
+        );
         return MediaPermissionResult.denied;
       }
-      
-      // Request permission - this will show the system dialog
-      // This will only happen if status is notDetermined (first time request) or on Android
+
       debugPrint('Requesting permission $permission. Current status: $status');
       final newStatus = await permission.request();
       debugPrint('Permission $permission request result: $newStatus');
-      
+
       if (newStatus.isGranted || newStatus.isLimited) {
         return MediaPermissionResult.granted;
       } else if (newStatus.isPermanentlyDenied) {
@@ -252,10 +237,4 @@ enum MediaPermissionStatus {
 }
 
 /// Result of a single permission request
-enum MediaPermissionResult {
-  granted,
-  denied,
-  permanentlyDenied,
-  error,
-}
-
+enum MediaPermissionResult { granted, denied, permanentlyDenied, error }

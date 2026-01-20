@@ -14,9 +14,10 @@ class DoctorService {
     try {
       final url = Uri.parse(Endpoints.topDoctors);
 
+      // Hardcoded latitude and longitude
       final requestBody = TopDoctorsRequest(
-        latitude: latitude,
-        longitude: longitude,
+        latitude: 12.9173,
+        longitude: 77.6377,
       );
 
       final response = await http.post(
@@ -57,10 +58,15 @@ class DoctorService {
     try {
       final url = Uri.parse(Endpoints.filteredDoctors);
 
+      // Override with hardcoded latitude and longitude
+      final requestJson = request.toJson();
+      requestJson['latitude'] = 12.9173;
+      requestJson['longitude'] = 77.6377;
+
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(request.toJson()),
+        body: jsonEncode(requestJson),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {

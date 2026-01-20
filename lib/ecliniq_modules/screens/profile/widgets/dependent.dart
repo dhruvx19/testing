@@ -1,4 +1,5 @@
 import 'package:ecliniq/ecliniq_icons/icons.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -24,8 +25,8 @@ class DependentsSection extends StatelessWidget {
           child: Center(
             child: Text(
               "Add Dependents",
-              style: TextStyle(
-                fontSize: 16,
+              style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+            
                 color: Color(0xff626060),
                 fontWeight: FontWeight.w400,
               ),
@@ -101,7 +102,11 @@ class _DependentCard extends StatelessWidget {
             ),
             child: Center(
               child: isAdded
-                  ? Icon(Icons.person, size: 35, color: Colors.orange[700])
+                  ? Icon(
+                      Icons.person,
+                      size: EcliniqTextStyles.getResponsiveIconSize(context, 35),
+                      color: Colors.orange[700],
+                    )
                   : SvgPicture.asset(
                       EcliniqIcons.add.assetPath,
                       width: 34,
@@ -112,8 +117,8 @@ class _DependentCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 16,
+            style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+           
               fontWeight: FontWeight.w400,
               color: Color(0xff626060),
             ),
@@ -157,11 +162,11 @@ class AppUpdateBanner extends StatelessWidget {
               height: 24,
             ),
             const SizedBox(width: 10),
-            const Text(
+             Text(
               "App Update Available",
-              style: TextStyle(
+              style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                 color: Colors.white,
-                fontSize: 18,
+                
                 fontWeight: FontWeight.w400,
               ),
             ),
@@ -174,9 +179,9 @@ class AppUpdateBanner extends StatelessWidget {
               ),
               child: Text(
                 newVersion ?? currentVersion,
-                style: const TextStyle(
+                style:  EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                   color: Color(0xFF2372EC),
-                  fontSize: 14,
+                  
                   fontWeight: FontWeight.w400,
                 ),
               ),

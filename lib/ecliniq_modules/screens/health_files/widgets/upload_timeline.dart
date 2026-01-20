@@ -13,16 +13,28 @@ import 'package:provider/provider.dart';
 class UploadTimeline extends StatelessWidget {
   const UploadTimeline({super.key});
 
+  /// Calculate the spacing between the last file and expand timeline
+  /// Returns 16px spacing as requested
   double _getExpandTimelineTopPadding(int fileCount) {
+    // Always return 16px spacing between files and expand timeline
+    return 16.0;
+  }
+  
+  /// Calculate the stack height based on number of files
+  /// Ensures expand timeline is positioned correctly below the last file
+  double _getStackHeight(int fileCount) {
     switch (fileCount) {
       case 1:
-        return 30.0;
+        // One file: stack height should accommodate the file + 16px spacing
+        return 100.0; // Approximate card height
       case 2:
-        return 30.0;
+        // Two files: second file at top 65, needs space for card
+        return 165.0; // 65 (top position) + ~100 (card height)
       case 3:
-        return 40.0;
+        // Three files: third file at top 130, needs space for card
+        return 230.0; // 130 (top position) + ~100 (card height)
       default:
-        return 30.0;
+        return 100.0;
     }
   }
 
@@ -46,17 +58,17 @@ class UploadTimeline extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+               Text(
                 'Upload Timeline',
-                style: TextStyle(
-                  fontSize: 20,
+                style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
+         
                   fontWeight: FontWeight.w600,
                   color: Color(0xff424242),
                 ),
               ),
               const SizedBox(height: 16),
               SizedBox(
-                height: 180,
+                height: _getStackHeight(recentFiles.length),
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
@@ -110,7 +122,7 @@ class UploadTimeline extends StatelessWidget {
                   ],
                 ),
               ),
-     
+              // 16px spacing between files and expand timeline
               SizedBox(
                 height: _getExpandTimelineTopPadding(recentFiles.length),
               ),
@@ -123,7 +135,7 @@ class UploadTimeline extends StatelessWidget {
                   children: [
                     Text(
                       'Expand Timeline',
-                      style: EcliniqTextStyles.headlineXMedium.copyWith(
+                      style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                         color: EcliniqScaffold.darkBlue,
                       ),
                     ),

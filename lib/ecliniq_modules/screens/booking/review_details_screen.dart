@@ -7,6 +7,7 @@ import 'package:ecliniq/ecliniq_api/models/patient.dart';
 import 'package:ecliniq/ecliniq_api/models/payment.dart';
 import 'package:ecliniq/ecliniq_api/patient_service.dart';
 import 'package:ecliniq/ecliniq_api/payment_service.dart';
+import 'package:ecliniq/ecliniq_api/wallet_service.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/widgets/top_bar_widgets/easy_way_book.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
@@ -18,6 +19,8 @@ import 'package:ecliniq/ecliniq_modules/screens/login/profile_help.dart';
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/widgets/common.dart'
     hide DoctorInfoCard;
 import 'package:ecliniq/ecliniq_services.dart/phonepe_service.dart';
+import 'package:ecliniq/ecliniq_utils/bottom_sheets/select_member_bottom_sheet.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/button/button.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
@@ -44,6 +47,7 @@ class ReviewDetailsScreen extends StatefulWidget {
   final String? locationName;
   final String? locationAddress;
   final String? locationDistance;
+  final PatientDetailsData? currentUserDetails;
 
   const ReviewDetailsScreen({
     super.key,
@@ -62,6 +66,7 @@ class ReviewDetailsScreen extends StatefulWidget {
     this.locationName,
     this.locationAddress,
     this.locationDistance,
+    this.currentUserDetails,
   }) : assert(
          hospitalId != null || clinicId != null,
          'Either hospitalId or clinicId must be provided',
@@ -78,6 +83,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
   final PatientService _patientService = PatientService();
   final PaymentService _paymentService = PaymentService();
   final PhonePeService _phonePeService = PhonePeService();
+  final WalletService _walletService = WalletService();
   final TextEditingController _reasonController = TextEditingController();
   final TextEditingController _referByController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -113,7 +119,15 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
     super.initState();
     _loadPatientId();
     _fetchHospitalAddress();
-    _fetchCurrentUserDetails();
+
+    // Use passed user details if available, otherwise fetch
+    if (widget.currentUserDetails != null) {
+      _currentUserDetails = widget.currentUserDetails;
+      _patientId = widget.currentUserDetails!.userId;
+      _isLoadingUserDetails = false;
+    } else {
+      _fetchCurrentUserDetails();
+    }
 
     if (widget.doctor != null) {
       _doctor = widget.doctor;
@@ -213,10 +227,32 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
   }
 
   Future<void> _fetchWalletBalance() async {
-    // TODO: Implement API call to fetch wallet balance
-    setState(() {
-      _walletBalance = 200.0; // Mock balance
-    });
+    if (_authToken == null || _authToken!.isEmpty) {
+      setState(() {
+        _walletBalance = 0.0;
+      });
+      return;
+    }
+
+    try {
+      final response = await _walletService.getBalance(authToken: _authToken!);
+      if (mounted) {
+        setState(() {
+          if (response.success && response.data != null) {
+            _walletBalance = response.data!.balance;
+          } else {
+            _walletBalance = 0.0;
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _walletBalance = 0.0;
+        });
+      }
+      debugPrint('Failed to fetch wallet balance: $e');
+    }
   }
 
   Future<void> _fetchCurrentUserDetails() async {
@@ -235,7 +271,13 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
         return;
       }
 
+      // Fetch patient details
       final response = await _patientService.getPatientDetails(
+        authToken: authToken,
+      );
+
+      // Fetch dependents to get self data
+      final dependentsResponse = await _patientService.getDependents(
         authToken: authToken,
       );
 
@@ -245,6 +287,12 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
             _currentUserDetails = response.data;
             _patientId = response.data!.userId;
           }
+
+          // Auto-select self if available
+          if (dependentsResponse.success && dependentsResponse.self != null) {
+            _selectedDependent = dependentsResponse.self;
+          }
+
           _isLoadingUserDetails = false;
         });
       }
@@ -293,6 +341,76 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
       return _formatDependentSubtitle(_selectedDependent!);
     }
     return _formatUserSubtitle();
+  }
+
+  /// Extract error message from response errors
+  /// Handles errors as List of objects with 'message' field or as String
+  String _extractErrorMessage(dynamic errors, String defaultMessage) {
+    if (errors == null) {
+      return defaultMessage;
+    }
+
+    // If errors is a List
+    if (errors is List) {
+      if (errors.isEmpty) {
+        return defaultMessage;
+      }
+      
+      // Extract messages from error objects
+      final messages = errors
+          .where((error) => error is Map && error['message'] != null)
+          .map((error) => error['message'].toString())
+          .where((msg) => msg.isNotEmpty)
+          .toList();
+      
+      if (messages.isNotEmpty) {
+        return messages.join(', ');
+      }
+      
+      // If no message field, try to convert first item to string
+      return errors.first.toString();
+    }
+
+    // If errors is a Map with 'message' field
+    if (errors is Map && errors['message'] != null) {
+      return errors['message'].toString();
+    }
+
+    // If errors is a String
+    if (errors is String) {
+      return errors;
+    }
+
+    // Fallback to string representation
+    return errors.toString();
+  }
+
+  Future<void> _openSelectMemberBottomSheet() async {
+    final selectedDependent = await EcliniqBottomSheet.show<DependentData>(
+      context: context,
+      child: SelectMemberBottomSheet(
+        currentlySelectedDependent: _selectedDependent,
+      ),
+    );
+
+    if (selectedDependent != null && mounted) {
+      // Use post-frame callback to avoid state updates during layout
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            // If self is selected, clear _selectedDependent to use _currentUserDetails
+            // Otherwise, set the selected dependent which will update gender, age, and DOB
+            if (selectedDependent.isSelf) {
+              _selectedDependent = null;
+            } else {
+              _selectedDependent = selectedDependent;
+            }
+            // This will trigger a rebuild and update appointment details
+            // including name, gender, age, and DOB through _buildPatientInfo()
+          });
+        }
+      });
+    }
   }
 
   Future<void> _fetchDoctorDetails() async {
@@ -564,13 +682,16 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
       }
 
       final age = _calculateAgeFromDob(_selectedDependent!.dob);
+      
+      // Capitalize gender properly
+      final gender = capitalize(_selectedDependent!.gender);
 
       return PatientInfo(
         name: _selectedDependent!.fullName,
-        gender: capitalize(_selectedDependent!.gender),
+        gender: gender,
         dateOfBirth: dobStr,
         age: age,
-        isSelf: false,
+        isSelf: _selectedDependent!.isSelf,
       );
     } else {
       String dobStr = '';
@@ -661,7 +782,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
           alignment: Alignment.centerLeft,
           child: Text(
             'Review Details',
-            style: EcliniqTextStyles.headlineMedium.copyWith(
+            style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
               color: Color(0xff424242),
             ),
           ),
@@ -679,12 +800,10 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                   height: 24,
                 ),
                 const SizedBox(width: 4),
-                const Text(
+                 Text(
                   'Help',
-                  style: TextStyle(
+                  style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                     color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w400,
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -723,17 +842,26 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                 children: [
                   RepaintBoundary(
                     child: Padding(
-                      padding: const EdgeInsets.only(left: 16, right: 16),
+                      padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                        context,
+                        horizontal: 16,
+                        vertical: 0,
+                      ),
                       child: AppointmentDetailsSection(
                         patient: _buildPatientInfo(),
                         timeInfo: _buildAppointmentTimeInfo(),
+                        onEditPatient: _openSelectMemberBottomSheet,
                       ),
                     ),
                   ),
                   const SizedBox(height: 8),
                   RepaintBoundary(
                     child: Padding(
-                      padding: const EdgeInsets.only(left: 16, right: 16),
+                      padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                        context,
+                        horizontal: 16,
+                        vertical: 0,
+                      ),
                       child: ClinicLocationCard(clinic: _buildClinicInfo()),
                     ),
                   ),
@@ -742,14 +870,20 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                     padding: EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
                       'Reason for Visit',
-                      style: EcliniqTextStyles.headlineXMedium.copyWith(
+                      style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                         color: Color(0xff626060),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(
+                    height: EcliniqTextStyles.getResponsiveSpacing(context, 4),
+                  ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                      context,
+                      horizontal: 16,
+                      vertical: 0,
+                    ),
                     child: StatefulBuilder(
                       builder: (context, setState) {
                         return TextFormField(
@@ -760,10 +894,8 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                           minLines: 1,
                           decoration: InputDecoration(
                             hintText: 'Enter Reason for Visit',
-                            hintStyle: const TextStyle(
+                            hintStyle: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                               color: Color(0xffD6D6D6),
-                              fontSize: 18,
-                              fontWeight: FontWeight.w400,
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -787,17 +919,15 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                                 width: 0.5,
                               ),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(
+                            contentPadding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                              context,
                               horizontal: 12,
                               vertical: 14,
                             ),
                             counterText: '',
                             suffixText: '${_reasonController.text.length}/150',
-                            suffixStyle: const TextStyle(
+                            suffixStyle: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                               color: Color(0xff8E8E8E),
-                              fontSize: 14,
-
-                              fontWeight: FontWeight.w400,
                             ),
                           ),
                           onChanged: (_) => setState(() {}),
@@ -805,27 +935,39 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                       },
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: EcliniqTextStyles.getResponsiveSpacing(context, 16),
+                  ),
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                      context,
+                      horizontal: 16,
+                      vertical: 0,
+                    ),
                     child: Text(
                       'Refer By',
-                      style: EcliniqTextStyles.headlineXMedium.copyWith(
+                      style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                         color: Color(0xff626060),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(
+                    height: EcliniqTextStyles.getResponsiveSpacing(context, 4),
+                  ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                      context,
+                      horizontal: 16,
+                      vertical: 0,
+                    ),
                     child: TextFormField(
                       key: const ValueKey('refer_by_field'),
                       controller: _referByController,
                       decoration: InputDecoration(
                         hintText: 'Enter Who Refer you',
-                        hintStyle: const TextStyle(
+                        hintStyle:  EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                           color: Color(0xffD6D6D6),
-                          fontSize: 18,
+                        
                           fontWeight: FontWeight.w400,
                         ),
                         focusedBorder: OutlineInputBorder(
@@ -850,7 +992,8 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                             width: 0.5,
                           ),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(
+                        contentPadding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                          context,
                           horizontal: 12,
                           vertical: 14,
                         ),
@@ -862,13 +1005,13 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                   // Wallet checkbox section (only for new appointments)
                   RepaintBoundary(
                     child: Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Payment Details',
-                            style: EcliniqTextStyles.headlineLarge.copyWith(
+                            style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
                               color: Color(0xff424242),
                             ),
                           ),
@@ -878,12 +1021,12 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                             children: [
                               Text(
                                 'Consultation Fee',
-                                style: EcliniqTextStyles.headlineXMedium
+                                style: EcliniqTextStyles.responsiveHeadlineXMedium(context)
                                     .copyWith(color: Color(0xff626060)),
                               ),
                               Text(
                                 'Pay at Clinic',
-                                style: EcliniqTextStyles.headlineXMedium
+                                style: EcliniqTextStyles.responsiveHeadlineXMedium(context)
                                     .copyWith(color: Color(0xff424242)),
                               ),
                             ],
@@ -897,7 +1040,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                                   children: [
                                     Text(
                                       'Service Fee & Tax',
-                                      style: EcliniqTextStyles.headlineXMedium
+                                      style: EcliniqTextStyles.responsiveHeadlineXMedium(context)
                                           .copyWith(color: Color(0xff626060)),
                                     ),
                                     const SizedBox(width: 6),
@@ -910,7 +1053,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                                 ),
                                 Text(
                                   '₹${_serviceFee.toStringAsFixed(0)}',
-                                  style: EcliniqTextStyles.headlineXMedium
+                                  style: EcliniqTextStyles.responsiveHeadlineXMedium(context)
                                       .copyWith(color: Color(0xff424242)),
                                 ),
                               ],
@@ -924,7 +1067,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                                   children: [
                                     Text(
                                       'Service Fee & Tax',
-                                      style: EcliniqTextStyles.headlineXMedium
+                                      style: EcliniqTextStyles.responsiveHeadlineXMedium(context)
                                           .copyWith(color: Color(0xff626060)),
                                     ),
                                     const SizedBox(width: 6),
@@ -939,13 +1082,13 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                                   children: [
                                     Text(
                                       '₹49',
-                                      style: EcliniqTextStyles.headlineXLMedium
+                                      style: EcliniqTextStyles.responsiveHeadlineXLMedium(context)
                                           .copyWith(color: Color(0xff8E8E8E)),
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
                                       'Free',
-                                      style: EcliniqTextStyles.headlineMedium
+                                      style: EcliniqTextStyles.responsiveHeadlineMedium(context)
                                           .copyWith(color: Color(0xff54B955)),
                                     ),
                                   ],
@@ -955,7 +1098,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                             const SizedBox(height: 4),
                             Text(
                               'We care for you and provide a free booking',
-                              style: EcliniqTextStyles.buttonSmall.copyWith(
+                              style: EcliniqTextStyles.responsiveButtonSmall(context).copyWith(
                                 color: Color(0xff54B955),
                               ),
                             ),
@@ -974,7 +1117,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                                 _serviceFee > 0
                                     ? 'Total Payable Now'
                                     : 'Total Payable',
-                                style: EcliniqTextStyles.headlineLarge.copyWith(
+                                style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
                                   color: Color(0xff424242),
                                 ),
                               ),
@@ -982,7 +1125,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                                 _serviceFee > 0
                                     ? '₹${_serviceFee.toStringAsFixed(0)}'
                                     : '₹00.00',
-                                style: EcliniqTextStyles.headlineLarge.copyWith(
+                                style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
                                   color: Color(0xff424242),
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -1006,7 +1149,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
             _buildPaymentBottomBar()
           else
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
@@ -1020,42 +1163,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
               ),
               child: SafeArea(child: _buildConfirmVisitButtonForZeroFee()),
             ),
-
-          // Payment processing loader overlay
-          if (_isProcessingPayment)
-            Container(
-              color: Colors.black.withOpacity(0.5),
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const EcliniqLoader(size: 50, color: Color(0xFF1976D2)),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Processing Payment...',
-                        style: EcliniqTextStyles.headlineMedium.copyWith(
-                          color: const Color(0xff424242),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Please complete the payment in the UPI app',
-                        style: EcliniqTextStyles.headlineXMedium.copyWith(
-                          color: const Color(0xff626060),
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
         ],
       ),
     );
@@ -1065,26 +1172,24 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
     if (_isBooking) return;
 
     if (!widget.isReschedule && _reasonController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        CustomErrorSnackBar(
+        CustomErrorSnackBar.show(
           context: context,
           title: 'Reason required',
           subtitle: 'Please enter a reason for visit',
           duration: const Duration(seconds: 4),
-        ),
+      
       );
       return;
     }
 
-    // Check if payment method is selected when service fee > 0
-    if (_serviceFee > 0 && _selectedPaymentMethodPackage == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        CustomErrorSnackBar(
+    // Check if payment method is selected when service fee > 0 and wallet is not used
+    if (_serviceFee > 0 && !_useWallet && _selectedPaymentMethodPackage == null) {
+        CustomErrorSnackBar.show(
           context: context,
           title: 'Payment Method Required',
           subtitle: 'Please select a payment method',
           duration: const Duration(seconds: 4),
-        ),
+     
       );
       return;
     }
@@ -1094,13 +1199,12 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
     final finalPatientId = _currentUserDetails?.userId ?? _patientId;
 
     if (finalPatientId == null || finalPatientId.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        CustomErrorSnackBar(
+        CustomErrorSnackBar.show(
           context: context,
           title: 'Patient ID Required',
           subtitle: 'Unable to get patient information. Please try again.',
           duration: const Duration(seconds: 4),
-        ),
+       
       );
       return;
     }
@@ -1137,7 +1241,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                   tokenNumber: tokenNumber,
                   patientName: _getCurrentUserName(),
                   patientSubtitle: _getCurrentUserSubtitle(),
-                  patientBadge: _selectedDependent?.relation ?? 'You',
+                  patientBadge: _selectedDependent?.formattedRelation ?? 'You',
                 ),
               ),
             );
@@ -1147,26 +1251,26 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
             });
 
             String errorMessage = 'Failed to reschedule appointment';
-            if (response.errors != null &&
-                response.errors.toString().isNotEmpty) {
-              errorMessage = response.errors.toString();
+            if (response.errors != null) {
+              errorMessage = _extractErrorMessage(response.errors, errorMessage);
             } else if (response.message.isNotEmpty) {
               errorMessage = response.message;
             }
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              CustomErrorSnackBar(
+              CustomErrorSnackBar.show(
                 context: context,
                 title: 'Reschedule Failed',
                 subtitle: errorMessage,
                 duration: const Duration(seconds: 4),
-              ),
+           
             );
           }
         }
       } else {
         // Book new appointment
-        final isDependent = _selectedDependent != null;
+        // Check if selected member is a dependent (not self)
+        final isDependent =
+            _selectedDependent != null && !_selectedDependent!.isSelf;
         final request = BookAppointmentRequest(
           patientId: finalPatientId,
           doctorId: widget.doctorId,
@@ -1192,14 +1296,8 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                 : null;
 
             // Debug logging
-            print('========== BOOKING RESPONSE DEBUG ==========');
-            print('Response success: ${response.success}');
-            print('Response data type: ${response.data.runtimeType}');
             if (responseDataJson != null) {
-              print('responseDataJson keys: ${responseDataJson.keys}');
-              print('paymentRequired: ${responseDataJson['paymentRequired']}');
             }
-            print('============================================');
 
             // Check if payment data is present (new backend format)
             if (responseDataJson != null &&
@@ -1207,11 +1305,13 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                 responseDataJson['paymentRequired'] == true) {
               final paymentData = BookingPaymentData.fromJson(responseDataJson);
 
-              // Check if total amount is 0 (no payment required)
-              if (paymentData.totalAmount == 0 ||
-                  (!paymentData.requiresGateway &&
-                      paymentData.walletAmount == 0)) {
-                // No payment required, go directly to request sent screen
+              // Check if total amount is 0, gateway amount is 0, service fee was 0, or wallet is used
+              // If any of these conditions are true, skip payment and go directly to request sent screen
+              if (paymentData.totalAmount == 0 || 
+                  paymentData.gatewayAmount == 0 ||
+                  _serviceFee == 0 ||
+                  _useWallet) {
+                // No payment required or wallet payment, go directly to request sent screen
                 final appointmentData = response.data is AppointmentData
                     ? response.data as AppointmentData
                     : null;
@@ -1229,7 +1329,8 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                       tokenNumber: tokenNumber,
                       patientName: _getCurrentUserName(),
                       patientSubtitle: _getCurrentUserSubtitle(),
-                      patientBadge: _selectedDependent?.relation ?? 'You',
+                      patientBadge:
+                          _selectedDependent?.formattedRelation ?? 'You',
                       merchantTransactionId: paymentData.merchantTransactionId,
                       paymentMethod: paymentData.provider,
                       totalAmount: paymentData.totalAmount,
@@ -1242,11 +1343,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
               }
 
               if (paymentData.requiresGateway) {
-                print('========== NAVIGATING TO PAYMENT ==========');
-                print('Appointment ID: ${paymentData.appointmentId}');
-                print('Merchant Txn ID: ${paymentData.merchantTransactionId}');
-                print('Gateway amount: ${paymentData.gatewayAmount}');
-                print('==========================================');
 
                 // Validate payment data
                 if (paymentData.requestPayload == null ||
@@ -1256,14 +1352,13 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                       _isBooking = false;
                     });
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      CustomErrorSnackBar(
+                    CustomErrorSnackBar.show(
                         context: context,
                         title: 'Payment Error',
                         subtitle:
                             'Payment data is missing. Please try booking again.',
                         duration: const Duration(seconds: 4),
-                      ),
+                    
                     );
                     return;
                   }
@@ -1274,22 +1369,27 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                       _isBooking = false;
                     });
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      CustomErrorSnackBar(
+                      CustomErrorSnackBar.show(
                         context: context,
                         title: 'Payment Error',
                         subtitle:
                             'Order ID is missing. Please try booking again.',
                         duration: const Duration(seconds: 4),
-                      ),
+                 
                     );
                     return;
                   }
                 }
 
-                // Use the pre-selected payment method
-                if (_selectedPaymentMethodPackage != null) {
-                  if (_selectedPaymentMethodPackage == 'WALLET') {
+                // Use the pre-selected payment method or default to Google Pay if service fee was 0
+                String? paymentPackage = _selectedPaymentMethodPackage;
+                if (paymentPackage == null && _serviceFee == 0) {
+                  // Default to Google Pay when service fee was 0 but payment is required
+                  paymentPackage = 'com.google.android.apps.nbu.paisa.user';
+                }
+
+                if (paymentPackage != null) {
+                  if (paymentPackage == 'WALLET') {
                     // Wallet-only payment, go to request sent
                     final appointmentData = response.data is AppointmentData
                         ? response.data as AppointmentData
@@ -1309,7 +1409,8 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                           tokenNumber: tokenNumber,
                           patientName: _getCurrentUserName(),
                           patientSubtitle: _getCurrentUserSubtitle(),
-                          patientBadge: _selectedDependent?.relation ?? 'You',
+                          patientBadge:
+                              _selectedDependent?.formattedRelation ?? 'You',
                           merchantTransactionId:
                               paymentData.merchantTransactionId,
                           paymentMethod: paymentData.provider,
@@ -1323,9 +1424,23 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                     // UPI payment, process payment with loader
                     await _processUPIPayment(
                       paymentData: paymentData,
-                      selectedUPIPackage: _selectedPaymentMethodPackage!,
+                      selectedUPIPackage: paymentPackage,
                     );
                   }
+                } else {
+                  // No payment method selected and service fee > 0, show error
+                  setState(() {
+                    _isBooking = false;
+                  });
+
+           
+                    CustomErrorSnackBar.show(
+                      context: context,
+                      title: 'Payment Method Required',
+                      subtitle: 'Please select a payment method',
+                      duration: const Duration(seconds: 4),
+                
+                  );
                 }
               } else {
                 // Wallet-only payment
@@ -1346,7 +1461,8 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                       tokenNumber: tokenNumber,
                       patientName: _getCurrentUserName(),
                       patientSubtitle: _getCurrentUserSubtitle(),
-                      patientBadge: _selectedDependent?.relation ?? 'You',
+                      patientBadge:
+                          _selectedDependent?.formattedRelation ?? 'You',
                       merchantTransactionId: paymentData.merchantTransactionId,
                       paymentMethod: paymentData.provider,
                       totalAmount: paymentData.totalAmount,
@@ -1389,7 +1505,8 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                     tokenNumber: tokenNumber,
                     patientName: _getCurrentUserName(),
                     patientSubtitle: _getCurrentUserSubtitle(),
-                    patientBadge: _selectedDependent?.relation ?? 'You',
+                    patientBadge:
+                        _selectedDependent?.formattedRelation ?? 'You',
                   ),
                 ),
               );
@@ -1400,20 +1517,19 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
             });
 
             String errorMessage = 'Failed to book appointment';
-            if (response.errors != null &&
-                response.errors.toString().isNotEmpty) {
-              errorMessage = response.errors.toString();
+            if (response.errors != null) {
+              errorMessage = _extractErrorMessage(response.errors, errorMessage);
             } else if (response.message.isNotEmpty) {
               errorMessage = response.message;
             }
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              CustomErrorSnackBar(
+        
+CustomErrorSnackBar.show(
                 context: context,
                 title: 'Booking Failed',
                 subtitle: errorMessage,
                 duration: const Duration(seconds: 4),
-              ),
+             
             );
           }
         }
@@ -1424,56 +1540,18 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
           _isBooking = false;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          CustomErrorSnackBar(
+
+          CustomErrorSnackBar.show(
             context: context,
             title: widget.isReschedule ? 'Reschedule Failed' : 'Booking Failed',
             subtitle: e.toString().replaceFirst('Exception: ', ''),
             duration: const Duration(seconds: 4),
-          ),
+        
         );
       }
     }
   }
 
-  Widget _buildConfirmVisitButton() {
-    final isButtonEnabled = !_isBooking;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: isButtonEnabled ? _onConfirmVisit : null,
-        borderRadius: BorderRadius.circular(4),
-        child: Container(
-          width: double.infinity,
-          height: 52,
-          decoration: BoxDecoration(
-            color: isButtonEnabled
-                ? EcliniqButtonType.brandPrimary.backgroundColor(context)
-                : EcliniqButtonType.brandPrimary.disabledBackgroundColor(
-                    context,
-                  ),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: _isBooking
-              ? const Center(
-                  child: EcliniqLoader(size: 24, color: Colors.white),
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      _getButtonText(),
-                      style: EcliniqTextStyles.headlineMedium.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildConfirmVisitButtonForZeroFee() {
     final isButtonEnabled = !_isBooking;
@@ -1482,26 +1560,36 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
       color: Colors.transparent,
       child: InkWell(
         onTap: isButtonEnabled ? _onConfirmVisit : null,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(
+          EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
+        ),
         child: Container(
           width: double.infinity,
-          height: 52,
+          height: EcliniqTextStyles.getResponsiveButtonHeight(
+            context,
+            baseHeight: 52.0,
+          ),
           decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: Color(0x4D2372EC),
-                offset: Offset(2, 2),
-                blurRadius: 10,
-                spreadRadius: 0,
-              ),
-            ],
+            boxShadow: _isBooking
+                ? [] // No shadow when loading
+                : [
+                    BoxShadow(
+                      color: Color(0x4D2372EC),
+                      offset: Offset(2, 2),
+                      blurRadius: 10,
+                      spreadRadius: 0,
+                    ),
+                  ],
             color: isButtonEnabled
                 ? const Color(0xFF2372EC)
                 : const Color(0xFFE0E0E0),
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(
+              EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
+            ),
           ),
           child: Padding(
-            padding: const EdgeInsets.only(
+            padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+              context,
               left: 12,
               top: 6,
               bottom: 6,
@@ -1514,57 +1602,49 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Left side - Amount and Total
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            '₹00.00',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: isButtonEnabled
-                                  ? Colors.white
-                                  : const Color(0xff8E8E8E),
-                              height: 1.0,
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '₹00.00',
+                              style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
+                                color: Colors.white,
+                                height: 1.0,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Total',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w300,
-                              color: isButtonEnabled
-                                  ? Colors.white
-                                  : const Color(0xff8E8E8E),
-                              height: 1.0,
+                            Text(
+                              'Total',
+                              style: EcliniqTextStyles.responsiveBodyMedium(context).copyWith(
+                                fontWeight: FontWeight.w300,
+                                color: isButtonEnabled
+                                    ? Colors.white
+                                    : const Color(0xff8E8E8E),
+                                height: 1.0,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
+
                       // Right side - Confirm Visit and arrow
                       Row(
                         children: [
                           Text(
                             'Confirm Visit',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: isButtonEnabled
-                                  ? Colors.white
-                                  : const Color(0xff8E8E8E),
+                            style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
+                              color: Colors.white,
                             ),
                           ),
-                          const SizedBox(width: 8),
+
                           Transform.rotate(
                             angle: 1.5708,
                             child: SvgPicture.asset(
                               EcliniqIcons.arrowUp.assetPath,
-                              width: 24,
-                              height: 24,
+                              width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+                              height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
                               colorFilter: ColorFilter.mode(
                                 isButtonEnabled
                                     ? Colors.white
@@ -1583,257 +1663,260 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
     );
   }
 
-  String _getButtonText() {
-    if (widget.isReschedule) {
-      return 'Confirm Reschedule';
-    }
 
-    if (_serviceFee > 0) {
-      return 'Proceed to Payment';
-    } else {
-      return 'Confirm Visit';
-    }
-  }
-
-  Widget _buildPaymentBottomBar() {
-    return Container(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 28),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 2,
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Wallet balance checkbox
-          Row(
-            children: [
-              SvgPicture.asset(
-                EcliniqIcons.upcharCoinSmall.assetPath,
+ Widget _buildPaymentBottomBar() {
+  return Container(
+    padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+      context,
+      left: 16,
+      right: 16,
+      top: 16,
+      bottom: 28,
+    ),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.2),
+          spreadRadius: 2,
+          blurRadius: 8,
+          offset: const Offset(0, -2),
+        ),
+      ],
+    ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Wallet balance checkbox
+        Row(
+          children: [
+            Image.asset(
+              EcliniqIcons.upcharCoinSmall1.assetPath,
+              width: 24,
+              height: 24,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Upchar-Q Coin Balance : ₹${_walletBalance.toStringAsFixed(2)}',
+                style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
+                  color: Color(0xff424242),
+                ),
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  _useWallet = !_useWallet;
+                });
+              },
+              child: Container(
                 width: 24,
                 height: 24,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Upchar-Q Coin Balance : ₹${_walletBalance.toStringAsFixed(2)}',
-                  style: EcliniqTextStyles.headlineXMedium.copyWith(
-                    fontSize: 14,
-                    color: Color(0xff424242),
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _useWallet = !_useWallet;
-                  });
-                },
-                child: Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
+                decoration: BoxDecoration(
+                  color: _useWallet
+                      ? const Color(0xFF2372EC)
+                      : Colors.transparent,
+                  border: Border.all(
                     color: _useWallet
                         ? const Color(0xFF2372EC)
-                        : Colors.transparent,
-                    border: Border.all(
-                      color: _useWallet
-                          ? const Color(0xFF2372EC)
-                          : const Color(0xFF8E8E8E),
-                      width: 1,
-                    ),
-                    borderRadius: BorderRadius.circular(4),
+                        : const Color(0xFF8E8E8E),
+                    width: 1,
                   ),
-                  child: _useWallet
-                      ? const Icon(Icons.check, size: 18, color: Colors.white)
-                      : null,
+                  borderRadius: BorderRadius.circular(4),
                 ),
+                child: _useWallet
+                    ? Icon(
+                        Icons.check,
+                        size: EcliniqTextStyles.getResponsiveIconSize(context, 18),
+                        color: Colors.white,
+                      )
+                    : null,
               ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Container(height: 0.5, color: const Color(0xffB8B8B8)),
-          const SizedBox(height: 8),
-          // Payment method selector
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => _showPaymentMethodBottomSheet(),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Icon and "Pay using" in same row
-                      Row(
-                        children: [
-                          if (_selectedPaymentMethodPackage != null)
-                            Image.asset(
-                              _getIconForPackage(
-                                _selectedPaymentMethodPackage!,
-                              ),
-                              width: 20,
-                              height: 20,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Icon(
-                                  Icons.payment,
-                                  size: 20,
-                                  color: Color(0xFF2372EC),
-                                );
-                              },
-                            )
-                          else
-                            Image.asset(
-                              EcliniqIcons.googlePay.assetPath,
-                              width: 20,
-                              height: 20,
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(height: 0.5, color: const Color(0xffB8B8B8)),
+        const SizedBox(height: 8),
+        // Payment method selector and button
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Left side - Payment method selector
+            Expanded(
+              child: GestureDetector(
+                onTap: _isBooking ? null : () => _showPaymentMethodBottomSheet(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Icon and "Pay using" in same row
+                    Row(
+                      children: [
+                        if (_selectedPaymentMethodPackage != null)
+                          Image.asset(
+                            _getIconForPackage(
+                              _selectedPaymentMethodPackage!,
                             ),
-                          const SizedBox(width: 2),
-                          Text(
+                            width: 20,
+                            height: 20,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Icon(
+                                Icons.payment,
+                                size: 20,
+                                color: Color(0xFF2372EC),
+                              );
+                            },
+                          )
+                        else
+                          Image.asset(
+                            EcliniqIcons.googlePay.assetPath,
+                            width: 20,
+                            height: 20,
+                          ),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
                             'Pay using',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
+                            style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                               color: Color(0xff424242),
                             ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
-                          const SizedBox(width: 8),
-                          SvgPicture.asset(
-                            EcliniqIcons.arrowUp.assetPath,
-                            width: 16,
-                            height: 16,
-                            colorFilter: const ColorFilter.mode(
-                              Color(0xff626060),
-                              BlendMode.srcIn,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 2),
-                      // Payment method name below
-                      Text(
-                        _selectedPaymentMethod ?? 'Google Pay UPI',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w300,
-                          color: _selectedPaymentMethod != null
-                              ? Color(0xff424242)
-                              : Color(0xff8E8E8E),
                         ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Right side - Pay & Confirm button
-              GestureDetector(
-                onTap: _isBooking ? null : () => _onConfirmVisit(),
-                child: Container(
-                  height: 52,
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Color(0x4D2372EC),
-                        offset: Offset(2, 2),
-                        blurRadius: 10,
-                        spreadRadius: 0,
-                      ),
-                    ],
-                    color: const Color(0xFF2372EC),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                      left: 12,
-                      top: 6,
-                      bottom: 6,
-                      right: 12,
-                    ),
-                    child: _isBooking
-                        ? const Center(
-                            child: EcliniqLoader(size: 24, color: Colors.white),
-                          )
-                        : Row(
-                            mainAxisSize: MainAxisSize.min,
-                            // mainAxisAlignment: MainAxisAlignment.center,
-                            // crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              // Amount and Total
-                              Flexible(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '₹${_serviceFee.toStringAsFixed(0)}',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.white,
-                                        height: 1.0,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      'Total',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w300,
-                                        color: Colors.white,
-                                        height: 1.0,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 34),
-                              // Pay & Confirm text
-                              Expanded(
-                                child: Text(
-                                  'Pay & Confirm',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-
-                              Transform.rotate(
-                                angle: 1.5708,
-                                child: SvgPicture.asset(
-                                  EcliniqIcons.arrowUp.assetPath,
-                                  width: 24,
-                                  height: 24,
-                                  colorFilter: const ColorFilter.mode(
-                                    Colors.white,
-                                    BlendMode.srcIn,
-                                  ),
-                                ),
-                              ),
-                            ],
+                        const SizedBox(width: 4),
+                        SvgPicture.asset(
+                          EcliniqIcons.arrowUp.assetPath,
+                          width: 16,
+                          height: 16,
+                          colorFilter: const ColorFilter.mode(
+                            Color(0xff626060),
+                            BlendMode.srcIn,
                           ),
-                  ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    // Payment method name below
+                    Text(
+                      _selectedPaymentMethod ?? 'Google Pay UPI',
+                      style: EcliniqTextStyles.responsiveBodyMedium(context).copyWith(
+                        fontWeight: FontWeight.w300,
+                        color: _selectedPaymentMethod != null
+                            ? Color(0xff424242)
+                            : Color(0xff8E8E8E),
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+            ),
+            const SizedBox(width: 12),
+
+            // Right side - Pay & Confirm button
+            GestureDetector(
+              onTap: _isBooking ? null : () => _onConfirmVisit(),
+              child: Container(
+                height: EcliniqTextStyles.getResponsiveButtonHeight(
+                  context,
+                  baseHeight: 52.0,
+                ),
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0x4D2372EC),
+                      offset: Offset(2, 2),
+                      blurRadius: 10,
+                      spreadRadius: 0,
+                    ),
+                  ],
+                  color: const Color(0xFF2372EC),
+                  borderRadius: BorderRadius.circular(
+                    EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
+                  ),
+                ),
+                child: Padding(
+                  padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+                    context,
+                    left: 12,
+                    top: 6,
+                    bottom: 6,
+                    right: 12,
+                  ),
+                  child: _isBooking
+                      ? SizedBox(
+                          width: 180, // Fixed width for loading state
+                          child: const Center(
+                            child: EcliniqLoader(size: 24, color: Colors.white),
+                          ),
+                        )
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Amount and Total
+                            Flexible(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '₹${_serviceFee.toStringAsFixed(0)}',
+                                    style: EcliniqTextStyles.responsiveTitleXBLarge(context).copyWith(
+                                      color: Colors.white,
+                                      height: 1.0,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Total',
+                                    style: EcliniqTextStyles.responsiveBodyMediumProminent(context).copyWith(
+                                      fontWeight: FontWeight.w300,
+                                      color: Colors.white,
+                                      height: 1.0,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 34),
+                            // Pay & Confirm text
+                            Expanded(
+                              child: Text(
+                                'Pay & Confirm',
+                                style: EcliniqTextStyles.responsiveTitleXBLarge(context).copyWith(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+
+                            Transform.rotate(
+                              angle: 1.5708,
+                              child: SvgPicture.asset(
+                                EcliniqIcons.arrowUp.assetPath,
+                                width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+                                height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+                                colorFilter: const ColorFilter.mode(
+                                  Colors.white,
+                                  BlendMode.srcIn,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
 
   String _getIconForPackage(String packageName) {
     final paymentMethods = [
@@ -1878,13 +1961,22 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
       ),
     );
 
-    if (selectedMethod != null && mounted) {
+    if (mounted) {
       setState(() {
-        _selectedPaymentMethod = selectedMethod['name'] as String?;
-        _selectedPaymentMethodPackage =
-            selectedMethod['packageName'] as String?;
-        if (selectedMethod.containsKey('useWallet')) {
-          _useWallet = selectedMethod['useWallet'] as bool;
+        if (selectedMethod != null) {
+          _selectedPaymentMethod = selectedMethod['name'] as String?;
+          _selectedPaymentMethodPackage =
+              selectedMethod['packageName'] as String?;
+          if (selectedMethod.containsKey('useWallet')) {
+            _useWallet = selectedMethod['useWallet'] as bool;
+          }
+        } else {
+          // If bottom sheet closed without selection, default to Google Pay
+          if (_selectedPaymentMethodPackage == null) {
+            _selectedPaymentMethod = 'Gpay';
+            _selectedPaymentMethodPackage =
+                'com.google.android.apps.nbu.paisa.user';
+          }
         }
       });
     }
@@ -1907,8 +1999,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
             'user_${DateTime.now().millisecondsSinceEpoch}';
 
         const merchantId = 'M237OHQ3YCVAO_2511191950';
-        // Set to true for production (requires real PhonePe app)
-        // Set to false for sandbox (requires PhonePe Simulator app)
         const isProduction =
             false; // Change to true if you have real PhonePe app installed
 
@@ -1985,7 +2075,8 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                     tokenNumber: verifyResponse.data!.tokenNo.toString(),
                     patientName: _getCurrentUserName(),
                     patientSubtitle: _getCurrentUserSubtitle(),
-                    patientBadge: _selectedDependent?.relation ?? 'You',
+                    patientBadge:
+                        _selectedDependent?.formattedRelation ?? 'You',
                     merchantTransactionId: paymentData.merchantTransactionId,
                     paymentMethod: paymentData.provider,
                     totalAmount: paymentData.totalAmount,
@@ -1995,13 +2086,13 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                 ),
               );
             } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                CustomErrorSnackBar(
+             
+          CustomErrorSnackBar.show(
                   context: context,
                   title: 'Payment Verification Failed',
                   subtitle: verifyResponse.message,
                   duration: const Duration(seconds: 4),
-                ),
+           
               );
             }
           }
@@ -2010,15 +2101,15 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
             setState(() {
               _isProcessingPayment = false;
             });
-            ScaffoldMessenger.of(context).showSnackBar(
-              CustomErrorSnackBar(
+
+    CustomErrorSnackBar.show(
                 context: context,
                 title: 'Payment Failed',
                 subtitle: statusData?.status == 'FAILED'
                     ? 'Payment failed. Please try again.'
                     : 'Payment verification timed out. Please check My Visits.',
                 duration: const Duration(seconds: 4),
-              ),
+              
             );
           }
         }
@@ -2027,13 +2118,13 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
           setState(() {
             _isProcessingPayment = false;
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-            CustomErrorSnackBar(
+
+       CustomErrorSnackBar.show(
               context: context,
               title: 'Payment Cancelled',
               subtitle: 'Payment was cancelled. You can try booking again.',
               duration: const Duration(seconds: 4),
-            ),
+          
           );
         }
       }
@@ -2042,17 +2133,16 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
         setState(() {
           _isProcessingPayment = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          CustomErrorSnackBar(
+       
+        CustomErrorSnackBar.show(
             context: context,
             title: 'Payment Error',
             subtitle: e.toString().replaceFirst('Exception: ', ''),
             duration: const Duration(seconds: 4),
-          ),
+      
         );
       }
     }
   }
 }
 
-// Simple payment method selection bottom sheet (before booking)

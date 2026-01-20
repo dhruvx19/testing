@@ -7,9 +7,15 @@ import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/cancel
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/completed.dart';
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/confirmed.dart';
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/requested.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
+import 'package:ecliniq/ecliniq_modules/screens/notifications/notification_screen.dart';
+import 'package:ecliniq/ecliniq_modules/screens/notifications/provider/notification_provider.dart';
+import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_navigation/bottom_navigation.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/error_snackbar.dart';
 import 'package:ecliniq/ecliniq_ui/scripts/ecliniq_ui.dart';
 import 'package:ecliniq/ecliniq_utils/bottom_sheets/ratings/rate_your_exp_bottom_sheet.dart';
 import 'package:flutter/material.dart';
@@ -68,6 +74,12 @@ class _MyVisitsState extends State<MyVisits>
   void initState() {
     super.initState();
     _loadAppointments();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<NotificationProvider>(
+        context,
+        listen: false,
+      ).fetchUnreadCount();
+    });
   }
 
   void _onTabTapped(int index) {
@@ -263,12 +275,12 @@ class _MyVisitsState extends State<MyVisits>
   }
 
   void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        behavior: SnackBarBehavior.floating,
-      ),
+    CustomErrorSnackBar.show(
+      context: context,
+      title: 'Error',
+      subtitle: message,
+      duration: const Duration(seconds: 3),
+      
     );
   }
 
@@ -318,8 +330,7 @@ class _MyVisitsState extends State<MyVisits>
         child: Text(
           title,
           textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 18,
+          style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
             fontWeight: FontWeight.w400,
             color: isSelected ? Color(0xFF2372EC) : Color(0xFF626060),
           ),
@@ -365,11 +376,13 @@ class _MyVisitsState extends State<MyVisits>
               child: Center(
                 child: Text(
                   filters[index],
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w400,
-                    color: isSelected ? Color(0xff2372EC) : Color(0xFF626060),
-                  ),
+                  style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                      .copyWith(
+                        fontWeight: FontWeight.w400,
+                        color: isSelected
+                            ? Color(0xff2372EC)
+                            : Color(0xFF626060),
+                      ),
                 ),
               ),
             ),
@@ -388,11 +401,17 @@ class _MyVisitsState extends State<MyVisits>
       onTap: () => _navigateToDetailPage(appointment),
       child: Container(
         width: screenWidth - (horizontalMargin * 2),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        margin: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+          context,
+          horizontal: 16,
+          vertical: 8,
+        ),
 
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(
+            EcliniqTextStyles.getResponsiveBorderRadius(context, 12),
+          ),
           border: Border.all(color: Color(0xffD6D6D6), width: 0.5),
         ),
         child: Column(
@@ -400,7 +419,8 @@ class _MyVisitsState extends State<MyVisits>
           children: [
             _buildStatusHeader(appointment),
             Padding(
-              padding: EdgeInsets.only(
+              padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+                context,
                 left: 16,
                 top: 12,
                 right: 16,
@@ -409,11 +429,17 @@ class _MyVisitsState extends State<MyVisits>
               child: Column(
                 children: [
                   _buildDoctorInfo(appointment),
-                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: EcliniqTextStyles.getResponsiveSpacing(context, 12),
+                  ),
                   _buildAppointmentDetails(appointment),
-                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: EcliniqTextStyles.getResponsiveSpacing(context, 12),
+                  ),
                   _buildPatientInfo(appointment),
-                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: EcliniqTextStyles.getResponsiveSpacing(context, 12),
+                  ),
                   _buildActionButtons(appointment),
                 ],
               ),
@@ -469,11 +495,9 @@ class _MyVisitsState extends State<MyVisits>
               children: [
                 Text(
                   statusText,
-                  style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w400,
-                  color: textColor,
-                ),
+                  style: EcliniqTextStyles.responsiveHeadlineBMedium(
+                    context,
+                  ).copyWith(fontWeight: FontWeight.w400, color: textColor),
                 ),
                 const Spacer(),
                 if (appointment.tokenNumber != null)
@@ -482,19 +506,23 @@ class _MyVisitsState extends State<MyVisits>
                       children: [
                         TextSpan(
                           text: 'Token Number ',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Color(0xff424242),
-                            fontWeight: FontWeight.w300,
-                          ),
+                          style:
+                              EcliniqTextStyles.responsiveHeadlineBMedium(
+                                context,
+                              ).copyWith(
+                                color: Color(0xff424242),
+                                fontWeight: FontWeight.w300,
+                              ),
                         ),
                         TextSpan(
                           text: appointment.tokenNumber,
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Color(0xff3EAF3F),
-                            fontWeight: FontWeight.w700,
-                          ),
+                          style:
+                              EcliniqTextStyles.responsiveHeadlineBMedium(
+                                context,
+                              ).copyWith(
+                                color: Color(0xff3EAF3F),
+                                fontWeight: FontWeight.w700,
+                              ),
                         ),
                       ],
                     ),
@@ -506,19 +534,19 @@ class _MyVisitsState extends State<MyVisits>
               children: [
                 Text(
                   statusText,
-                  style: EcliniqTextStyles.headlineZMedium.copyWith(
-                    color: textColor,
-                  ),
+                  style: EcliniqTextStyles.responsiveHeadlineZMedium(
+                    context,
+                  ).copyWith(color: textColor),
                 ),
                 if (appointment.tokenNumber != null) ...[
                   const SizedBox(width: 8),
                   Text(
                     'Token Number ${appointment.tokenNumber}',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white.withOpacity(0.9),
-                      fontWeight: FontWeight.w300,
-                    ),
+                    style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                        .copyWith(
+                          color: Colors.white.withOpacity(0.9),
+                          fontWeight: FontWeight.w300,
+                        ),
                   ),
                 ],
               ],
@@ -545,11 +573,9 @@ class _MyVisitsState extends State<MyVisits>
                   child: Center(
                     child: Text(
                       'D',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF2196F3),
-                      ),
+                      style: EcliniqTextStyles.responsiveHeadlineXXLargeBold(
+                        context,
+                      ).copyWith(color: Color(0xFF2196F3)),
                     ),
                   ),
                 ),
@@ -573,22 +599,20 @@ class _MyVisitsState extends State<MyVisits>
             children: [
               Text(
                 appointment.doctorName,
-                style: EcliniqTextStyles.headlineLarge.copyWith(
-                  color: Color(0xFF424242),
-                ),
+                style: EcliniqTextStyles.responsiveHeadlineLarge(
+                  context,
+                ).copyWith(color: Color(0xFF424242)),
               ),
               Text(
                 appointment.specialization,
-                style: TextStyle(
-                  fontSize: 14,
+                style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                   fontWeight: FontWeight.w400,
                   color: Color(0xFF424242),
                 ),
               ),
               Text(
                 appointment.qualification,
-                style: TextStyle(
-                  fontSize: 14,
+                style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                   fontWeight: FontWeight.w400,
                   color: Color(0xFF424242),
                 ),
@@ -611,11 +635,9 @@ class _MyVisitsState extends State<MyVisits>
         const SizedBox(width: 8),
         Text(
           '${appointment.date} | ${appointment.time}',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
-            color: Color(0xFF626060),
-          ),
+          style: EcliniqTextStyles.responsiveTitleXLarge(
+            context,
+          ).copyWith(fontWeight: FontWeight.w400, color: Color(0xFF626060)),
         ),
       ],
     );
@@ -635,22 +657,18 @@ class _MyVisitsState extends State<MyVisits>
           child: Center(
             child: Text(
               'DB',
-              style: TextStyle(
-                color: Color(0xffEC7600),
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-              ),
+              style: EcliniqTextStyles.responsiveBody2xSmallRegular(
+                context,
+              ).copyWith(color: Color(0xffEC7600), fontWeight: FontWeight.w500),
             ),
           ),
         ),
         const SizedBox(width: 8),
         Text(
           appointment.patientName,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
-            color: Color(0xFF626060),
-          ),
+          style: EcliniqTextStyles.responsiveTitleXLarge(
+            context,
+          ).copyWith(fontWeight: FontWeight.w400, color: Color(0xFF626060)),
         ),
       ],
     );
@@ -662,25 +680,37 @@ class _MyVisitsState extends State<MyVisits>
       case AppointmentStatus.requested:
         return SizedBox(
           width: double.infinity,
-          child: OutlinedButton(
+          height: EcliniqTextStyles.getResponsiveButtonHeight(
+            context,
+            baseHeight: 52.0,
+          ),
+         
+          child: ElevatedButton(
             onPressed: () => _navigateToDetailPage(appointment),
-            style: OutlinedButton.styleFrom(
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.white,
               side: BorderSide(color: Color(0xFF8E8E8E), width: 0.5),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(4),
               ),
-              padding: const EdgeInsets.symmetric(vertical: 12),
+              padding:  EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                  context,
+                  horizontal: 0,
+                  vertical: 12,
+                ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   'View Details',
-                  style: TextStyle(
-                    color: Color(0xFF424242),
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                      .copyWith(
+                        color: Color(0xFF424242),
+
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
                 const SizedBox(width: 4),
                 SvgPicture.asset(
@@ -707,9 +737,9 @@ class _MyVisitsState extends State<MyVisits>
                 ),
                 child: Text(
                   'View Details',
-                  style: EcliniqTextStyles.headlineXMedium.copyWith(
-                    color: Color(0xFF2372EC),
-                  ),
+                  style: EcliniqTextStyles.responsiveHeadlineXMedium(
+                    context,
+                  ).copyWith(color: Color(0xFF2372EC)),
                 ),
               ),
             ),
@@ -726,9 +756,9 @@ class _MyVisitsState extends State<MyVisits>
                 ),
                 child: Text(
                   'Book Again',
-                  style: EcliniqTextStyles.headlineMedium.copyWith(
-                    color: Colors.white,
-                  ),
+                  style: EcliniqTextStyles.responsiveHeadlineMedium(
+                    context,
+                  ).copyWith(color: Colors.white),
                 ),
               ),
             ),
@@ -757,11 +787,9 @@ class _MyVisitsState extends State<MyVisits>
           children: [
             Text(
               'Rate Doctor :',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                color: Color(0xff424242),
-              ),
+              style: EcliniqTextStyles.responsiveTitleXLarge(
+                context,
+              ).copyWith(fontWeight: FontWeight.w400, color: Color(0xff424242)),
             ),
             const Spacer(),
             Row(
@@ -830,10 +858,59 @@ class _MyVisitsState extends State<MyVisits>
                             width: 140,
                           ),
                           const Spacer(),
-                          SvgPicture.asset(
-                            EcliniqIcons.notificationBell.assetPath,
-                            height: 32,
-                            width: 32,
+                          GestureDetector(
+                            onTap: () async {
+                              await EcliniqRouter.push(NotificationScreen());
+                              if (mounted) {
+                                Provider.of<NotificationProvider>(
+                                  context,
+                                  listen: false,
+                                ).fetchUnreadCount();
+                              }
+                            },
+                            child: Consumer<NotificationProvider>(
+                              builder: (context, provider, child) {
+                                return Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    SvgPicture.asset(
+                                      EcliniqIcons.notificationBell.assetPath,
+                                      height: 32,
+                                      width: 32,
+                                    ),
+                                    if (provider.unreadCount > 0)
+                                      Positioned(
+                                        top: -12,
+                                        right: -8,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(4),
+                                          constraints: const BoxConstraints(
+                                            minWidth: 20,
+                                            minHeight: 20,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xffF04248),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Center(
+                                            child: EcliniqText(
+                                              provider.unreadCount > 99
+                                                  ? '99+'
+                                                  : '${provider.unreadCount}',
+                                              style: EcliniqTextStyles
+                                                  .headlineSmall
+                                                  .copyWith(
+                                                    color: Colors.white,
+                                                    height: 1,
+                                                  ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                );
+                              },
+                            ),
                           ),
                         ],
                       ),
@@ -859,14 +936,19 @@ class _MyVisitsState extends State<MyVisits>
                                   ? Center(
                                       child: Text(
                                         'No appointments found',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: Color(0xFF666666),
-                                        ),
+                                        style:
+                                            EcliniqTextStyles.responsiveTitleXLarge(
+                                              context,
+                                            ).copyWith(
+                                              color: Color(0xFF666666),
+                                            ),
                                       ),
                                     )
                                   : ListView.builder(
-                                      padding: EdgeInsets.only(top: 20, bottom: 50),
+                                      padding: EdgeInsets.only(
+                                        top: 20,
+                                        bottom: 50,
+                                      ),
                                       itemCount: currentAppointments.length,
                                       itemBuilder: (context, index) {
                                         final appointment =
@@ -877,8 +959,6 @@ class _MyVisitsState extends State<MyVisits>
                                       },
                                     ),
                             ),
-
-                       
                           ],
                         ),
                       ),

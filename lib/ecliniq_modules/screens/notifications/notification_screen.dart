@@ -1,7 +1,16 @@
+import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
+import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/cancelled.dart';
+import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/completed.dart';
+import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/confirmed.dart';
+import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/requested.dart';
+import 'package:ecliniq/ecliniq_modules/screens/notifications/models/notification_model.dart';
+import 'package:ecliniq/ecliniq_modules/screens/notifications/provider/notification_provider.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:provider/provider.dart';
 
 // Enum for notification types
 enum NotificationType {
@@ -25,248 +34,411 @@ class NotificationScreen extends StatefulWidget {
 class _NotificationScreenState extends State<NotificationScreen> {
   String selectedTab = 'All';
 
-  // Sample notification data
-  List<NotificationItem> allNotifications = [
-    // New Notifications
-    NotificationItem(
-      type: NotificationType.consultationCompleted,
-      title: 'Consultation Completed',
-      message: 'Your consultation with ',
-      highlightText: 'Dr. Milind Chauhan',
-      suffix: '',
-      time: '3 min ago',
-      isRead: false,
-      isNew: true,
-    ),
-    NotificationItem(
-      type: NotificationType.bookingConfirmed,
-      title: 'Booking Confirmed',
-      message: 'Your appointment confirmed with ',
-      highlightText: 'Dr. Milind Chauhan.',
-      suffix: ' ',
-      tokenInfo: 'Token #24. (Est.Time: 10:45AM)',
-      time: '3 min ago',
-      isRead: false,
-      isNew: true,
-    ),
-    NotificationItem(
-      type: NotificationType.bookingRequestReceived,
-      title: 'Booking Request Received',
-      message: 'Your appointment request with ',
-      highlightText: 'Dr. Milind Chauhan',
-      suffix: ' has been received.',
-      time: '3 min ago',
-      isRead: false,
-      isNew: true,
-    ),
-    // Older Notifications
-    NotificationItem(
-      type: NotificationType.bookingConfirmed,
-      title: 'Booking Confirmed',
-      message: 'Your appointment confirmed with ',
-      highlightText: 'Dr. Milind Chauhan.',
-      suffix: ' ',
-      tokenInfo: 'Token #24. (Est.Time: 10:45AM)',
-      time: '3 min ago',
-      isRead: false,
-      isNew: false,
-    ),
-    NotificationItem(
-      type: NotificationType.bookingRequestReceived,
-      title: 'Booking Request Received',
-      message: 'Your appointment request with ',
-      highlightText: 'Dr. Milind Chauhan',
-      suffix: ' has been received.',
-      time: '5 min ago',
-      isRead: true,
-      isNew: false,
-    ),
-    // NotificationItem(
-    //   type: NotificationType.bookingCancelled,
-    //   title: 'Booking Cancelled',
-    //   message: 'Your appointment with ',
-    //   highlightText: 'Dr. Milind Chauhan',
-    //   suffix: ' has been cancelled.',
-    //   time: '1 hour ago',
-    //   isRead: true,
-    //   isNew: false,
-    // ),
-    // NotificationItem(
-    //   type: NotificationType.paymentReceived,
-    //   title: 'Payment Received',
-    //   message: 'Payment of ',
-    //   highlightText: '₹500',
-    //   suffix: ' received for consultation.',
-    //   time: '2 hours ago',
-    //   isRead: true,
-    //   isNew: false,
-    // ),
-    // NotificationItem(
-    //   type: NotificationType.prescriptionReady,
-    //   title: 'Prescription Ready',
-    //   message: 'Your prescription from ',
-    //   highlightText: 'Dr. Milind Chauhan',
-    //   suffix: ' is ready to view.',
-    //   time: '1 day ago',
-    //   isRead: true,
-    //   isNew: false,
-    // ),
-    // NotificationItem(
-    //   type: NotificationType.reminder,
-    //   title: 'Appointment Reminder',
-    //   message: 'Reminder: Your appointment with ',
-    //   highlightText: 'Dr. Milind Chauhan',
-    //   suffix: ' is tomorrow at 10:00 AM.',
-    //   time: '1 day ago',
-    //   isRead: true,
-    //   isNew: false,
-    // ),
-    // NotificationItem(
-    //   type: NotificationType.labReportReady,
-    //   title: 'Lab Report Ready',
-    //   message: 'Your ',
-    //   highlightText: 'Blood Test Report',
-    //   suffix: ' is now available.',
-    //   time: '2 days ago',
-    //   isRead: true,
-    //   isNew: false,
-    // ),
-  ];
-
-  List<NotificationItem> get filteredNotifications {
-    if (selectedTab == 'Unread') {
-      return allNotifications.where((n) => !n.isRead).toList();
-    }
-    return allNotifications;
-  }
-
-  List<NotificationItem> get newNotifications =>
-      filteredNotifications.where((n) => n.isNew).toList();
-
-  List<NotificationItem> get olderNotifications =>
-      filteredNotifications.where((n) => !n.isNew).toList();
-
-  bool get hasUnreadNotifications => allNotifications.any((n) => !n.isRead);
-
-  void markAllAsRead() {
-    setState(() {
-      for (var notification in allNotifications) {
-        notification.isRead = true;
+  @override
+  void initState() {
+    super.initState();
+    // Load notifications after the first frame
+    Future.microtask(() {
+      if (mounted) {
+        _loadNotifications();
       }
     });
   }
 
-  void markAsRead(NotificationItem notification) {
-    setState(() {
-      notification.isRead = true;
-    });
+  /// Load notifications from API
+  Future<void> _loadNotifications() async {
+    final provider = Provider.of<NotificationProvider>(context, listen: false);
+    await provider.fetchAllNotifications();
+  }
+
+  /// Get notifications from provider
+  List<NotificationModel> get _allNotifications {
+    final provider = Provider.of<NotificationProvider>(context);
+    final data = provider.allNotifications?['data'];
+    if (data == null) return [];
+
+    final allData = data['all'];
+    if (allData == null) return [];
+
+    final newList = (allData['new'] as List<dynamic>?) ?? [];
+    final olderList = (allData['older'] as List<dynamic>?) ?? [];
+
+    final allNotifications = <NotificationModel>[];
+    allNotifications.addAll(
+      newList.map((item) => NotificationModel.fromJson(item)),
+    );
+    allNotifications.addAll(
+      olderList.map((item) => NotificationModel.fromJson(item)),
+    );
+
+    return allNotifications;
+  }
+
+  /// Get unread notifications from provider
+  List<NotificationModel> get _unreadNotifications {
+    final provider = Provider.of<NotificationProvider>(context);
+    final data = provider.allNotifications?['data'];
+    if (data == null) return [];
+
+    final unreadData = data['unread'];
+    if (unreadData == null) return [];
+
+    final newList = (unreadData['new'] as List<dynamic>?) ?? [];
+    final olderList = (unreadData['older'] as List<dynamic>?) ?? [];
+
+    final unreadNotifications = <NotificationModel>[];
+    unreadNotifications.addAll(
+      newList.map((item) => NotificationModel.fromJson(item)),
+    );
+    unreadNotifications.addAll(
+      olderList.map((item) => NotificationModel.fromJson(item)),
+    );
+
+    return unreadNotifications;
+  }
+
+  /// Get filtered notifications based on selected tab
+  List<NotificationModel> get _filteredNotifications {
+    if (selectedTab == 'Unread') {
+      return _unreadNotifications;
+    }
+    return _allNotifications;
+  }
+
+  /// Get new notifications (from "new" array)
+  List<NotificationModel> get _newNotifications {
+    final provider = Provider.of<NotificationProvider>(context);
+    final data = provider.allNotifications?['data'];
+    if (data == null) return [];
+
+    final allData = selectedTab == 'All' ? data['all'] : data['unread'];
+    if (allData == null) return [];
+
+    final newList = (allData['new'] as List<dynamic>?) ?? [];
+    return newList.map((item) => NotificationModel.fromJson(item)).toList();
+  }
+
+  /// Get older notifications (from "older" array)
+  List<NotificationModel> get _olderNotifications {
+    final provider = Provider.of<NotificationProvider>(context);
+    final data = provider.allNotifications?['data'];
+    if (data == null) return [];
+
+    final allData = selectedTab == 'All' ? data['all'] : data['unread'];
+    if (allData == null) return [];
+
+    final olderList = (allData['older'] as List<dynamic>?) ?? [];
+    return olderList.map((item) => NotificationModel.fromJson(item)).toList();
+  }
+
+  /// Check if there are unread notifications
+  bool get _hasUnreadNotifications {
+    final provider = Provider.of<NotificationProvider>(context);
+    return provider.unreadCount > 0;
+  }
+
+  /// Mark all notifications as read
+  Future<void> _markAllAsRead() async {
+    final provider = Provider.of<NotificationProvider>(context, listen: false);
+    final success = await provider.markAllAsRead();
+    if (success) {
+      // Refresh notifications
+      await provider.fetchAllNotifications();
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              provider.errorMessage ?? 'Failed to mark all as read',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Mark notification as read
+  Future<void> _markAsRead(NotificationModel notification) async {
+    if (notification.isRead) return;
+
+    final provider = Provider.of<NotificationProvider>(context, listen: false);
+    final success = await provider.markAsRead(notification.id);
+    if (success) {
+      // Refresh notifications
+      await provider.fetchAllNotifications();
+    }
+  }
+
+  /// Convert NotificationModel to NotificationItem for UI
+  NotificationItem _toNotificationItem(NotificationModel model) {
+    // Extract doctor name, token, and estimated time from metadata if available
+    String doctorName = '';
+    String token = '';
+    String estimatedTime = '';
+    
+    if (model.metadata?.data != null) {
+      doctorName = model.metadata!.data!['doctorName']?.toString() ?? 
+                   model.metadata!.data!['doctor_name']?.toString() ?? '';
+      // Extract tokenNo from metadata (as per API response)
+      token = model.metadata!.data!['tokenNo']?.toString() ?? 
+              model.metadata!.data!['token']?.toString() ?? 
+              model.metadata!.data!['tokenNumber']?.toString() ?? '';
+      estimatedTime = model.metadata!.data!['estimatedTime']?.toString() ?? 
+                      model.metadata!.data!['estTime']?.toString() ?? 
+                      model.metadata!.data!['time']?.toString() ?? '';
+    }
+
+    // Determine notification type and build message based on subject
+    NotificationType type = NotificationType.bookingRequestReceived;
+    String title = model.subject;
+    String message = '';
+    String highlightText = '';
+    String suffix = '';
+    String? tokenInfo;
+    String? tokenNumber;
+    String? estTime;
+
+    // Handle APPOINTMENT_CONFIRMED
+    if (model.subject == 'APPOINTMENT_CONFIRMED') {
+      type = NotificationType.bookingConfirmed;
+      title = 'Booking Confirmed';
+      
+      // Build message: "Your appointment confirmed with Dr. [doctorName]. Token #[token]. (Est.Time: [time])"
+      // Check if doctorName already has "Dr." prefix to avoid duplication
+      String doctorPart = '';
+      if (doctorName.isNotEmpty) {
+        doctorPart = doctorName.trim().startsWith('Dr.') 
+            ? doctorName.trim() 
+            : 'Dr. ${doctorName.trim()}';
+      } else {
+        doctorPart = 'the doctor';
+      }
+      message = 'Your appointment confirmed with';
+      highlightText = doctorPart;
+      
+      // Store token and time separately for green display
+      tokenNumber = token.isNotEmpty ? token : null;
+      estTime = estimatedTime.isNotEmpty ? estimatedTime : null;
+      
+      // Build suffix (period after doctor name)
+      suffix = '.';
+    }
+    // Handle APPOINTMENT_REQUESTED
+    else if (model.subject == 'APPOINTMENT_REQUESTED') {
+      type = NotificationType.bookingRequestReceived;
+      title = 'Booking Request Received';
+      
+      // Build message: "Your appointment request with Dr. [doctorName] has been received."
+      // Check if doctorName already has "Dr." prefix to avoid duplication
+      String doctorPart = '';
+      if (doctorName.isNotEmpty) {
+        doctorPart = doctorName.trim().startsWith('Dr.') 
+            ? doctorName.trim() 
+            : 'Dr. ${doctorName.trim()}';
+      } else {
+        doctorPart = 'the doctor';
+      }
+      message = 'Your appointment request with';
+      highlightText = doctorPart;
+      suffix = ' has been received.';
+    }
+    // Handle other appointment types (backward compatibility)
+    else if (model.category == 'APPOINTMENT') {
+      if (model.subject.toLowerCase().contains('confirmed')) {
+        type = NotificationType.bookingConfirmed;
+      } else if (model.subject.toLowerCase().contains('completed') ||
+          model.subject.toLowerCase().contains('consultation')) {
+        type = NotificationType.consultationCompleted;
+      } else {
+        type = NotificationType.bookingRequestReceived;
+      }
+      
+      // Use original message and highlight doctor name if available
+      message = model.message;
+      highlightText = doctorName.isNotEmpty ? doctorName : '';
+      suffix = '';
+    }
+    // Default case
+    else {
+      message = model.message;
+      highlightText = doctorName.isNotEmpty ? doctorName : '';
+      suffix = '';
+    }
+
+    return NotificationItem(
+      id: model.id,
+      type: type,
+      title: title,
+      message: message,
+      highlightText: highlightText,
+      suffix: suffix,
+      tokenInfo: tokenInfo,
+      tokenNumber: tokenNumber,
+      estimatedTime: estTime,
+      time: model.timeAgo,
+      isRead: model.isRead,
+      isNew: false, // We'll handle new/older separately
+      entityType: model.entityType,
+      entityId: model.entityId,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    bool hasNewNotifications = newNotifications.isNotEmpty;
-    bool hasOlderNotifications = olderNotifications.isNotEmpty;
-    bool hasAnyNotifications = hasNewNotifications || hasOlderNotifications;
+    return Consumer<NotificationProvider>(
+      builder: (context, provider, child) {
+        final isLoading = provider.isLoading;
+        final hasNewNotifications = _newNotifications.isNotEmpty;
+        final hasOlderNotifications = _olderNotifications.isNotEmpty;
+        final hasAnyNotifications =
+            hasNewNotifications || hasOlderNotifications;
 
-    return Scaffold(
+        if (isLoading && provider.allNotifications == null) {
+          return Scaffold(
+            backgroundColor: Colors.white,
+            appBar: _buildAppBar(),
+            body: _buildShimmerLoading(),
+          );
+        }
+
+        if (provider.errorMessage != null &&
+            provider.allNotifications == null) {
+          return Scaffold(
+            backgroundColor: Colors.white,
+            appBar: _buildAppBar(),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(provider.errorMessage ?? 'Error loading notifications'),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _loadNotifications,
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return Scaffold(
+          backgroundColor: Colors.white,
+          appBar: _buildAppBar(),
+          body: Column(
+            children: [
+              // Filter tabs
+              Padding(
+                padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16.0),
+                child: Row(
+                  children: [
+                    _buildTabButton('All'),
+                    SizedBox(
+                      width: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+                    ),
+                    _buildTabButton('Unread'),
+                    const Spacer(),
+                    if (_hasUnreadNotifications)
+                      GestureDetector(
+                        onTap: _markAllAsRead,
+                        child: Row(
+                          children: [
+                            SvgPicture.asset(
+                              EcliniqIcons.doubleMark.assetPath,
+                              width: EcliniqTextStyles.getResponsiveIconSize(context, 18),
+                              height: EcliniqTextStyles.getResponsiveIconSize(context, 18),
+                            ),
+                            SizedBox(
+                              width: EcliniqTextStyles.getResponsiveSpacing(context, 4),
+                            ),
+                            Text(
+                              'Mark all as Read',
+                              style: EcliniqTextStyles.responsiveBodyMedium(context).copyWith(
+                                color: const Color(0xff424242),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+
+              // Content
+              Expanded(
+                child: hasAnyNotifications
+                    ? ListView(
+                        children: [
+                          if (hasNewNotifications) ...[
+                            _buildSectionHeader('New'),
+                            ..._newNotifications.map(
+                              (notification) => _buildNotificationCard(
+                                _toNotificationItem(notification),
+                                notification,
+                              ),
+                            ),
+                          ],
+                          SizedBox(
+                            height: EcliniqTextStyles.getResponsiveSpacing(context, 16),
+                          ),
+                          if (hasOlderNotifications) ...[
+                            _buildSectionHeader('Older'),
+                            ..._olderNotifications.map(
+                              (notification) => _buildNotificationCard(
+                                _toNotificationItem(notification),
+                                notification,
+                              ),
+                            ),
+                          ],
+                        ],
+                      )
+                    : _buildEmptyState(),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: SvgPicture.asset(
-            EcliniqIcons.backArrow.assetPath,
-            width: 32,
-            height: 32,
-          ),
-          onPressed: () => Navigator.pop(context),
+      surfaceTintColor: Colors.white,
+      elevation: 0,
+      leading: IconButton(
+        icon: SvgPicture.asset(
+          EcliniqIcons.backArrow.assetPath,
+          width: 32,
+          height: 32,
         ),
-        title: Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            'Notifications',
-            style: EcliniqTextStyles.headlineMedium.copyWith(
-              color: Color(0xff424242),
-            ),
+        onPressed: () => Navigator.pop(context),
+      ),
+      title: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          'Notifications',
+          style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
+            color: const Color(0xff424242),
           ),
-        ),
-        actions: [
-          IconButton(
-            icon: SvgPicture.asset(
-              EcliniqIcons.notifilter.assetPath,
-              width: 40,
-              height: 40,
-            ),
-            onPressed: () {
-              _showFilterBottomSheet();
-            },
-          ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.5),
-          child: Container(color: Color(0xFFB8B8B8), height: 0.5),
         ),
       ),
-      body: Column(
-        children: [
-          // Filter tabs
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                _buildTabButton('All'),
-                const SizedBox(width: 8),
-                _buildTabButton('Unread'),
-                const Spacer(),
-                if (hasUnreadNotifications)
-                  GestureDetector(
-                    onTap: markAllAsRead,
-                    child: Row(
-                      children: [
-                        SvgPicture.asset(
-                          EcliniqIcons.doubleMark.assetPath,
-                          width: 18,
-                          height: 18,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Mark all as Read',
-                          style: EcliniqTextStyles.bodyMedium.copyWith(
-                            color: const Color(0xff424242),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
+      actions: [
+        IconButton(
+          icon: SvgPicture.asset(
+            EcliniqIcons.notifilter.assetPath,
+            width: 40,
+            height: 40,
           ),
-
-          // Content
-          Expanded(
-            child: hasAnyNotifications
-                ? ListView(
-                    children: [
-                      if (hasNewNotifications) ...[
-                        _buildSectionHeader('New'),
-                        ...newNotifications.map(
-                          (notification) =>
-                              _buildNotificationCard(notification),
-                        ),
-                      ],
-                      SizedBox(height: 16,),
-                      if (hasOlderNotifications) ...[
-                        _buildSectionHeader('Older'),
-                        ...olderNotifications.map(
-                          (notification) =>
-                              _buildNotificationCard(notification),
-                        ),
-                      ],
-                    ],
-                  )
-                : _buildEmptyState(),
-          ),
-        ],
+          onPressed: () {
+            _showFilterBottomSheet();
+          },
+        ),
+      ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(0.5),
+        child: Container(color: const Color(0xFFB8B8B8), height: 0.5),
       ),
     );
   }
@@ -278,7 +450,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       color: const Color(0xFFF7F6FA),
       child: Text(
         title,
-        style: EcliniqTextStyles.bodySmall.copyWith(
+        style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
           color: const Color(0xff111111),
           fontWeight: FontWeight.w400,
         ),
@@ -305,7 +477,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         ),
         child: Text(
           label,
-          style: EcliniqTextStyles.headlineXMedium.copyWith(
+          style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
             color: isSelected
                 ? const Color(0xFF2372EC)
                 : const Color(0xff626060),
@@ -316,17 +488,25 @@ class _NotificationScreenState extends State<NotificationScreen> {
     );
   }
 
-  Widget _buildNotificationCard(NotificationItem notification) {
+  Widget _buildNotificationCard(
+    NotificationItem notification,
+    NotificationModel model,
+  ) {
+    // Set background color based on notification type
+    final backgroundColor = notification.type == NotificationType.bookingRequestReceived
+        ? const Color(0xFFF9F9F9)
+        : Colors.white;
+
     return GestureDetector(
       onTap: () {
-        markAsRead(notification);
-        _navigateToDetails(notification);
+        _markAsRead(model);
+        _navigateToDetails(notification, model);
       },
       child: Container(
         margin: const EdgeInsets.only(left: 16, right: 16, bottom: 0, top: 16),
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: backgroundColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Color(0x0D111111), width: 1),
         ),
@@ -340,7 +520,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 Expanded(
                   child: Text(
                     notification.title,
-                    style: EcliniqTextStyles.titleXBLarge.copyWith(
+                    style: EcliniqTextStyles.responsiveTitleXBLarge(context).copyWith(
                       color: const Color(0xff424242),
                       fontWeight: FontWeight.w500,
                     ),
@@ -348,14 +528,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 ),
                 GestureDetector(
                   onTap: () {
-                    markAsRead(notification);
-                    _navigateToDetails(notification);
+                    _markAsRead(model);
+                    _navigateToDetails(notification, model);
                   },
                   child: Row(
                     children: [
                       Text(
                         'View Details',
-                        style: EcliniqTextStyles.bodySmall.copyWith(
+                        style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                           color: const Color(0xFF2372EC),
                         ),
                       ),
@@ -412,9 +592,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
             const SizedBox(height: 8),
             Text(
               notification.time,
-              style: EcliniqTextStyles.bodySmall.copyWith(
+              style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                 color: const Color(0x00000000).withOpacity(0.6),
-                fontSize: 14,
+              
                 fontWeight: FontWeight.w300,
               ),
             ),
@@ -466,52 +646,95 @@ class _NotificationScreenState extends State<NotificationScreen> {
         border: Border.all(color: iconColor, width: 0.5),
       ),
       child: Center(
-        child: SvgPicture.asset(iconData.assetPath, width: 24, height: 24),
+        child: SvgPicture.asset(
+          iconData.assetPath,
+          width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+          height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+        ),
       ),
     );
   }
 
   Widget _buildMessageText(NotificationItem notification) {
+    final List<TextSpan> children = [
+      TextSpan(
+        text: '${notification.message} ',
+        style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+          color: Color(0xff424242),
+          fontWeight: FontWeight.w300,
+        ),
+      ),
+      TextSpan(
+        text: notification.highlightText,
+        style: EcliniqTextStyles.responsiveTitleXBLarge(context).copyWith(
+          color: Color(0xff424242),
+        ),
+      ),
+      TextSpan(
+        text: notification.suffix,
+        style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+          color: Color(0xff424242),
+          fontWeight: FontWeight.w300,
+        ),
+      ),
+    ];
+
+    // For booking confirmed, add token and time in green
+    if (notification.type == NotificationType.bookingConfirmed) {
+      if (notification.tokenNumber != null && notification.estimatedTime != null) {
+        children.add(
+          TextSpan(
+            text: ' Token #${notification.tokenNumber}. ',
+            style: EcliniqTextStyles.responsiveTitleXBLarge(context).copyWith(
+              color: Color(0xFF3EAF3F),
+            ),
+          ),
+        );
+        children.add(
+          TextSpan(
+            text: '(Est.Time: ${notification.estimatedTime})',
+            style: EcliniqTextStyles.responsiveTitleXBLarge(context).copyWith(
+              color: Color(0xFF3EAF3F),
+            ),
+          ),
+        );
+      } else if (notification.tokenNumber != null) {
+        children.add(
+          TextSpan(
+            text: ' Token #${notification.tokenNumber}.',
+            style: EcliniqTextStyles.responsiveTitleXBLarge(context).copyWith(
+              color: Color(0xFF3EAF3F),
+            ),
+          ),
+        );
+      } else if (notification.estimatedTime != null) {
+        children.add(
+          TextSpan(
+            text: ' (Est.Time: ${notification.estimatedTime})',
+            style: EcliniqTextStyles.responsiveTitleXBLarge(context).copyWith(
+              color: Color(0xFF3EAF3F),
+            ),
+          ),
+        );
+      }
+    } else if (notification.tokenInfo != null) {
+      // For other notification types, use tokenInfo if available
+      children.add(
+        TextSpan(
+          text: notification.tokenInfo,
+          style: EcliniqTextStyles.responsiveTitleXBLarge(context).copyWith(
+            color: Color(0xFF3EAF3F),
+          ),
+        ),
+      );
+    }
+
     return RichText(
       text: TextSpan(
-        style: EcliniqTextStyles.bodyMedium.copyWith(
+        style: EcliniqTextStyles.responsiveBodyMedium(context).copyWith(
           color: const Color(0xff424242),
         ),
-        children: [
-          TextSpan(
-            text: notification.message,
-            style: const TextStyle(
-              fontSize: 16,
-              color: Color(0xff424242),
-              fontWeight: FontWeight.w300,
-            ),
-          ),
-          TextSpan(
-            text: notification.highlightText,
-            style: const TextStyle(
-              fontSize: 16,
-              color: Color(0xff424242),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          TextSpan(
-            text: notification.suffix,
-            style: const TextStyle(
-              fontSize: 16,
-              color: Color(0xff424242),
-              fontWeight: FontWeight.w300,
-            ),
-          ),
-          if (notification.tokenInfo != null)
-            TextSpan(
-              text: notification.tokenInfo,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Color(0xFF3EAF3F),
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-        ],
+        children: children,
       ),
     );
   }
@@ -531,7 +754,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
             const SizedBox(height: 16),
             Text(
               'No notifications yet',
-              style: EcliniqTextStyles.headlineMedium.copyWith(
+              style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                 color: const Color(0xff424242),
                 fontWeight: FontWeight.w500,
               ),
@@ -539,7 +762,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
             const SizedBox(height: 8),
             Text(
               'You\'ve got a blank slate (for now). We\'ll let you know when updates arrive.',
-              style: EcliniqTextStyles.bodyMedium.copyWith(
+              style: EcliniqTextStyles.responsiveBodyMedium(context).copyWith(
                 color: const Color(0xff8E8E8E),
               ),
               textAlign: TextAlign.center,
@@ -577,7 +800,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
               const SizedBox(height: 16),
               Text(
                 'Filter Notifications',
-                style: EcliniqTextStyles.headlineMedium.copyWith(
+                style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                   color: const Color(0xff424242),
                 ),
               ),
@@ -611,7 +834,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       contentPadding: EdgeInsets.zero,
       title: Text(
         label,
-        style: EcliniqTextStyles.bodyLarge.copyWith(
+        style: EcliniqTextStyles.responsiveBodyLarge(context).copyWith(
           color: const Color(0xff424242),
         ),
       ),
@@ -623,54 +846,157 @@ class _NotificationScreenState extends State<NotificationScreen> {
     );
   }
 
-  void _navigateToDetails(NotificationItem notification) {
-    // Navigate based on notification type
-    switch (notification.type) {
-      case NotificationType.consultationCompleted:
-        // Navigate to consultation details
-        break;
-      case NotificationType.bookingConfirmed:
-      case NotificationType.bookingRequestReceived:
-        // case NotificationType.bookingCancelled:
-        //   // Navigate to booking details
-        //   break;
-        // case NotificationType.paymentReceived:
-        //   // Navigate to payment details
-        //   break;
-        // case NotificationType.prescriptionReady:
-        //   // Navigate to prescription
-        //   break;
-        // case NotificationType.reminder:
-        //   // Navigate to appointment
-        //   break;
-        // case NotificationType.labReportReady:
-        // Navigate to lab reports
-        break;
+  void _navigateToDetails(
+    NotificationItem notification,
+    NotificationModel model,
+  ) {
+    // Navigate based on entityType and entityId
+    if (model.entityType == 'APPOINTMENT' && model.entityId.isNotEmpty) {
+      // Determine appointment status from notification
+      final appointmentId = model.entityId;
+
+      // Navigate to appropriate appointment detail screen
+      // For now, navigate to confirmed detail - you may want to check status from API
+      EcliniqRouter.push(BookingConfirmedDetail(appointmentId: appointmentId));
     }
+    // Add more entity types as needed
+  }
+
+  /// Build shimmer loading widget for notifications
+  Widget _buildShimmerLoading() {
+    return ListView(
+      padding: const EdgeInsets.only(top: 16),
+      children: [
+        // Section header shimmer
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          color: const Color(0xFFF7F6FA),
+          child: ShimmerLoading(
+            width: 60,
+            height: 16,
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
+        // Notification card shimmers
+        ...List.generate(5, (index) => _buildNotificationCardShimmer()),
+      ],
+    );
+  }
+
+  /// Build shimmer for a single notification card
+  Widget _buildNotificationCardShimmer() {
+    return Container(
+      margin: const EdgeInsets.only(left: 16, right: 16, bottom: 0, top: 16),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0x0D111111), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header Row shimmer
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: ShimmerLoading(
+                  height: 20,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              const SizedBox(width: 16),
+              ShimmerLoading(
+                width: 100,
+                height: 16,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Divider shimmer
+          ShimmerLoading(
+            height: 1,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          const SizedBox(height: 8),
+          // Content Row shimmer
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Icon shimmer
+              ShimmerLoading(
+                width: 48,
+                height: 48,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              const SizedBox(width: 12),
+              // Message shimmer
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ShimmerLoading(
+                      height: 16,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    const SizedBox(height: 4),
+                    ShimmerLoading(
+                      width: 200,
+                      height: 16,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Time shimmer
+          ShimmerLoading(
+            width: 80,
+            height: 14,
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ],
+      ),
+    );
   }
 }
 
-// Model class for notifications
+// Model class for notifications (UI representation)
 class NotificationItem {
+  final String id;
   final NotificationType type;
   final String title;
   final String message;
   final String highlightText;
   final String suffix;
   final String? tokenInfo;
+  final String? tokenNumber;
+  final String? estimatedTime;
   final String time;
   bool isRead;
   final bool isNew;
+  final String entityType;
+  final String entityId;
 
   NotificationItem({
+    required this.id,
     required this.type,
     required this.title,
     required this.message,
     required this.highlightText,
     required this.suffix,
     this.tokenInfo,
+    this.tokenNumber,
+    this.estimatedTime,
     required this.time,
     this.isRead = false,
     this.isNew = true,
+    required this.entityType,
+    required this.entityId,
   });
 }

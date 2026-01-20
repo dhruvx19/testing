@@ -1,4 +1,5 @@
 import 'package:ecliniq/ecliniq_icons/icons.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -36,10 +37,10 @@ class _AppointmentTimingWidgetState extends State<AppointmentTimingWidget> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                     Text(
                       'Appointment & OPD timing',
-                      style: TextStyle(
-                        fontSize: 20.0,
+                      style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
+         
                         fontWeight: FontWeight.w600,
                         color: Color(0xff424242),
                       ),
@@ -66,10 +67,9 @@ class _AppointmentTimingWidgetState extends State<AppointmentTimingWidget> {
                           height: 26,
                         ),
                         const SizedBox(width: 2),
-                        const Text(
+                        Text(
                           '10:30 AM - 4:00 PM',
-                          style: TextStyle(
-                            fontSize: 18,
+                          style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                             fontWeight: FontWeight.w500,
                             color: Color(0xff424242),
                           ),
@@ -79,8 +79,8 @@ class _AppointmentTimingWidgetState extends State<AppointmentTimingWidget> {
                     const SizedBox(height: 2),
                     Text(
                       'Monday to Saturday',
-                      style: TextStyle(
-                        fontSize: 14,
+                      style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
+                        
                         fontWeight: FontWeight.w400,
                         color: Color(0xff626060),
                       ),
@@ -107,10 +107,9 @@ class _AppointmentTimingWidgetState extends State<AppointmentTimingWidget> {
                   child: Row(
                     children: [
                       FittedBox(
-                        child: const Text(
+                        child: Text(
                           'Inquire Now',
-                          style: TextStyle(
-                            fontSize: 18,
+                          style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                             fontWeight: FontWeight.w500,
                             color: Color(0xff2372EC),
                           ),

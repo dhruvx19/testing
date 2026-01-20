@@ -143,6 +143,7 @@ class _PersonalDetailsWidgetState extends State<PersonalDetailsWidget> {
               ),
               child: _controllersInitialized
                   ? _buildTextField(
+                     context:   context,
                       label: 'First Name',
                       isRequired: true,
                       hint: 'Enter First Name',
@@ -176,6 +177,7 @@ class _PersonalDetailsWidgetState extends State<PersonalDetailsWidget> {
               ),
               child: _controllersInitialized
                   ? _buildTextField(
+                     context:   context,
                       label: 'Last Name',
                       isRequired: true,
                       hint: 'Enter Last Name',
@@ -209,6 +211,7 @@ class _PersonalDetailsWidgetState extends State<PersonalDetailsWidget> {
                 mobileLarge: 32.0,
               ),
               child: _buildSelectField(
+                 context:   context,
                 label: 'Gender',
                 isRequired: true,
                 hint: 'Select Gender',
@@ -262,6 +265,7 @@ class _PersonalDetailsWidgetState extends State<PersonalDetailsWidget> {
                 mobileLarge: 32.0,
               ),
               child: _buildSelectField(
+                 context:   context,
                 label: 'Date of Birth',
                 isRequired: true,
                 hint: 'Select Date',
@@ -293,6 +297,7 @@ class _PersonalDetailsWidgetState extends State<PersonalDetailsWidget> {
                 mobileLarge: 32.0,
               ),
               child: _buildSelectField(
+                 context:   context,
                 label: 'Relation',
                 isRequired: true,
                 hint: 'Select Relation',
@@ -341,6 +346,7 @@ class _PersonalDetailsWidgetState extends State<PersonalDetailsWidget> {
               ),
               child: _controllersInitialized
                   ? _buildTextField(
+                     context:   context,
                       label: 'Contact Number',
                       isRequired: true,
                       hint: 'Enter Phone Number',
@@ -379,6 +385,7 @@ class _PersonalDetailsWidgetState extends State<PersonalDetailsWidget> {
               ),
               child: _controllersInitialized
                   ? _buildTextField(
+                     context:   context,
                       label: 'Email',
                       isRequired: false,
                       hint: 'Enter Email',
@@ -412,6 +419,7 @@ class _PersonalDetailsWidgetState extends State<PersonalDetailsWidget> {
                 mobileLarge: 32.0,
               ),
               child: _buildSelectField(
+                 context:   context,
                 label: 'Blood Group',
                 isRequired: false,
                 hint: 'Select Blood Group',
@@ -442,6 +450,7 @@ Widget _buildTextField({
   TextInputType? keyboardType,
   required Function(String) onChanged,
   List<TextInputFormatter>? inputFormatters,
+  required BuildContext context,
 }) {
   return Row(
     children: [
@@ -451,12 +460,12 @@ Widget _buildTextField({
           children: [
             Text(
               label,
-              style: EcliniqTextStyles.headlineXMedium.copyWith(
+              style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                 color: Color(0xff626060),
               ),
             ),
             if (isRequired)
-              Text('•', style: TextStyle(color: Colors.red, fontSize: 20)),
+              Text('•', style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(color: Colors.red)),
           ],
         ),
       ),
@@ -471,14 +480,14 @@ Widget _buildTextField({
           inputFormatters: inputFormatters,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: EcliniqTextStyles.headlineXMedium.copyWith(
+            hintStyle: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
               color: Color(0xffB8B8B8),
             ),
             border: InputBorder.none,
             isDense: true,
             contentPadding: EdgeInsets.zero,
           ),
-          style: EcliniqTextStyles.headlineXMedium.copyWith(
+          style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
             color: Color(0xff424242)
           ),
         ),
@@ -493,6 +502,7 @@ Widget _buildSelectField({
   required String hint,
   required String? value,
   required VoidCallback onTap,
+  required BuildContext context,
 }) {
   return InkWell(
     onTap: onTap,
@@ -504,12 +514,12 @@ Widget _buildSelectField({
             children: [
               Text(
                 label,
-                style: EcliniqTextStyles.headlineXMedium.copyWith(
+                style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                   color: Color(0xff626060),
                 ),
               ),
               if (isRequired)
-                Text('•', style: TextStyle(color: Colors.red, fontSize: 20)),
+                Text('•', style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(color: Colors.red)),
             ],
           ),
         ),
@@ -520,7 +530,7 @@ Widget _buildSelectField({
             child: Text(
               value ?? hint,
               textAlign: TextAlign.right,
-              style: EcliniqTextStyles.headlineXMedium.copyWith(
+              style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                 color: value != null
                     ? Color(0xff424242)
                     : Color(0xffB8B8B8),

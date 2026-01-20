@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import '../models/health_file_model.dart';
+import '../../../../ecliniq_api/health_file_model.dart';
 import '../services/local_file_storage_service.dart';
 
 /// Provider for managing health files state
@@ -54,7 +54,12 @@ class HealthFilesProvider extends ChangeNotifier {
   }
 
   /// Get files by type (null means all types)
-  List<HealthFile> getFilesByType(HealthFileType? fileType, {String? recordFor}) {
+  /// Can filter by single recordFor (String) or multiple names (List<String>)
+  List<HealthFile> getFilesByType(
+    HealthFileType? fileType, {
+    String? recordFor,
+    List<String>? selectedNames,
+  }) {
     Iterable<HealthFile> files = _allFiles;
     
     // Filter by file type if provided
@@ -62,9 +67,19 @@ class HealthFilesProvider extends ChangeNotifier {
       files = files.where((file) => file.fileType == fileType);
     }
     
-    // Filter by recordFor if provided
+    // Filter by recordFor (single) if provided (for backward compatibility)
     if (recordFor != null && recordFor.isNotEmpty) {
       files = files.where((file) => file.recordFor == recordFor);
+    }
+    
+    // Filter by multiple selected names if provided
+    if (selectedNames != null && selectedNames.isNotEmpty) {
+      files = files.where((file) {
+        if (file.recordFor == null || file.recordFor!.isEmpty) {
+          return false;
+        }
+        return selectedNames.contains(file.recordFor);
+      });
     }
     
     final result = files.toList();

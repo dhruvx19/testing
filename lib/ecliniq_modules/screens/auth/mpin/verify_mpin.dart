@@ -3,7 +3,9 @@ import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/home_screen.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -17,7 +19,8 @@ class VerifyMPINPage extends StatefulWidget {
   State<VerifyMPINPage> createState() => _VerifyMPINPageState();
 }
 
-class _VerifyMPINPageState extends State<VerifyMPINPage> with WidgetsBindingObserver {
+class _VerifyMPINPageState extends State<VerifyMPINPage>
+    with WidgetsBindingObserver {
   final TextEditingController _mpinController = TextEditingController();
   bool _isLoading = false;
   bool _isBiometricAvailable = false;
@@ -65,17 +68,19 @@ class _VerifyMPINPageState extends State<VerifyMPINPage> with WidgetsBindingObse
       );
       return;
     }
-    
+
     if (_entered != v) {
       setState(() {
         _entered = v;
       });
     }
-    
+
     _mpinSubmitTimer?.cancel();
-    
+
+    // Auto-submit immediately when 4 digits entered
     if (v.length == 4) {
-      _mpinSubmitTimer = Timer(const Duration(milliseconds: 300), () {
+      // Use microtask to ensure UI updates first, then submit immediately
+      _mpinSubmitTimer = Timer(Duration.zero, () {
         if (mounted && !_isLoading) {
           _handleMPINLogin(v);
         }
@@ -87,14 +92,14 @@ class _VerifyMPINPageState extends State<VerifyMPINPage> with WidgetsBindingObse
     // Auto-trigger biometric if available and enabled (after a short delay)
     // Only trigger if user hasn't started typing MPIN
     await Future.delayed(const Duration(milliseconds: 800));
-    
+
     // Double-check all conditions before triggering
     if (!mounted) return;
     if (_isLoading) return;
     if (!_isBiometricAvailable) return;
     if (!_isBiometricEnabled) return;
     if (_entered.isNotEmpty) return; // User has started typing
-    
+
     try {
       // Don't set loading state here - let _handleBiometricLogin() handle it
       // This prevents race conditions
@@ -113,7 +118,7 @@ class _VerifyMPINPageState extends State<VerifyMPINPage> with WidgetsBindingObse
     try {
       final isAvailable = await BiometricService.isAvailable();
       final isEnabled = await SecureStorageService.isBiometricEnabled();
-      
+
       if (mounted) {
         setState(() {
           _isBiometricAvailable = isAvailable;
@@ -140,22 +145,26 @@ class _VerifyMPINPageState extends State<VerifyMPINPage> with WidgetsBindingObse
 
   Future<void> _handleMPINLogin(String mpin) async {
     if (_isLoading) return;
-    
+
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final success = await authProvider.loginWithMPIN(mpin);
-      
+
       if (mounted) {
         if (success) {
           // After successful MPIN login, ask for biometric permission if available and not enabled
+          // Run in background (non-blocking) so it doesn't delay navigation
           if (_isBiometricAvailable && !_isBiometricEnabled) {
-            await _requestBiometricPermission(mpin);
+            // Don't await - let it run in background while we navigate
+            _requestBiometricPermission(mpin).catchError((e) {
+              // Silently handle errors - don't block navigation
+            });
           }
-          
+
           EcliniqRouter.pushAndRemoveUntil(
             const HomeScreen(),
             (route) => false,
@@ -203,11 +212,10 @@ class _VerifyMPINPageState extends State<VerifyMPINPage> with WidgetsBindingObse
         return;
       }
 
-      
       // This will trigger the native biometric permission dialog automatically
       // The native dialog will appear just like location permission dialog
       final success = await SecureStorageService.storeMPINWithBiometric(mpin);
-      
+
       if (success) {
         // Update local state
         if (mounted) {
@@ -228,21 +236,23 @@ class _VerifyMPINPageState extends State<VerifyMPINPage> with WidgetsBindingObse
     if (_isLoading) {
       return;
     }
-    
+
     if (!mounted) return;
-    
+
     // Check if biometric is actually available before proceeding
     if (!_isBiometricAvailable) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Biometric authentication is not available on this device'),
+          content: Text(
+            'Biometric authentication is not available on this device',
+          ),
           backgroundColor: Colors.red,
           duration: Duration(seconds: 2),
         ),
       );
       return;
     }
-    
+
     if (!_isBiometricEnabled) {
       // Get MPIN from storage to enable biometric
       final mpin = await SecureStorageService.getMPIN();
@@ -270,61 +280,58 @@ class _VerifyMPINPageState extends State<VerifyMPINPage> with WidgetsBindingObse
         return;
       }
     }
-    
+
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      
+
       // Add timeout wrapper to ensure we don't hang forever
-      final success = await authProvider.loginWithBiometric()
-          .timeout(
-            const Duration(seconds: 35),
-            onTimeout: () {
-              if (mounted) {
-                setState(() {
-                  _isLoading = false;
-                });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Biometric authentication timed out. Please try again.'),
-                    backgroundColor: Colors.red,
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              }
-              return false;
-            },
-          );
-      
-      
+      final success = await authProvider.loginWithBiometric().timeout(
+        const Duration(seconds: 35),
+        onTimeout: () {
+          if (mounted) {
+            setState(() {
+              _isLoading = false;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Biometric authentication timed out. Please try again.',
+                ),
+                backgroundColor: Colors.red,
+                duration: Duration(seconds: 2),
+              ),
+            );
+          }
+          return false;
+        },
+      );
+
       // Always reset loading state first, before any navigation
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
       }
-      
+
       if (!mounted) {
         return;
       }
-      
+
       if (success) {
         // Navigate to home
-        EcliniqRouter.pushAndRemoveUntil(
-          const HomeScreen(),
-          (route) => false,
-        );
+        EcliniqRouter.pushAndRemoveUntil(const HomeScreen(), (route) => false);
       } else {
         final errorMsg = authProvider.errorMessage ?? '';
-        
 
-        final isUserCancellation = errorMsg.toLowerCase().contains('cancel') ||
+        final isUserCancellation =
+            errorMsg.toLowerCase().contains('cancel') ||
             errorMsg.toLowerCase().contains('cancelled') ||
             errorMsg.toLowerCase().contains('user');
-        
+
         if (errorMsg.isNotEmpty && !isUserCancellation) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -344,18 +351,19 @@ class _VerifyMPINPageState extends State<VerifyMPINPage> with WidgetsBindingObse
         }
       }
     } catch (e) {
-      
       // Always reset loading state on exception
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
-        
+
         // Check if it's a timeout exception
         if (e.toString().toLowerCase().contains('timeout')) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Biometric authentication timed out. Please try again.'),
+              content: Text(
+                'Biometric authentication timed out. Please try again.',
+              ),
               backgroundColor: Colors.red,
               duration: Duration(seconds: 2),
             ),
@@ -394,12 +402,12 @@ class _VerifyMPINPageState extends State<VerifyMPINPage> with WidgetsBindingObse
                       color: Colors.white,
                     ),
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Verify MPIN',
-                      style: TextStyle(
+                      style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
                         color: Colors.white,
-                        fontSize: 20,
+
                         fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,
@@ -423,10 +431,10 @@ class _VerifyMPINPageState extends State<VerifyMPINPage> with WidgetsBindingObse
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
+                       Text(
                         'Enter Your MPIN',
-                        style: TextStyle(
-                          fontSize: 24,
+                        style: EcliniqTextStyles.responsiveHeadlineXLarge(context).copyWith(
+                        
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
                         ),
@@ -446,7 +454,10 @@ class _VerifyMPINPageState extends State<VerifyMPINPage> with WidgetsBindingObse
                               Expanded(child: Divider()),
                               Padding(
                                 padding: EdgeInsets.symmetric(horizontal: 12.0),
-                                child: Text('OR', style: TextStyle(color: Colors.grey)),
+                                child: Text(
+                                  'OR',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
                               ),
                               Expanded(child: Divider()),
                             ],
@@ -454,49 +465,60 @@ class _VerifyMPINPageState extends State<VerifyMPINPage> with WidgetsBindingObse
                           const SizedBox(height: 24),
                           _isBiometricEnabled
                               ? OutlinedButton.icon(
-                                  onPressed: _isLoading ? null : _handleBiometricLogin,
+                                  onPressed: _isLoading
+                                      ? null
+                                      : _handleBiometricLogin,
                                   icon: ImageIcon(
-                                    const AssetImage('lib/ecliniq_icons/assets/Face Scan Square.png'),
+                                    const AssetImage(
+                                      'lib/ecliniq_icons/assets/Face Scan Square.png',
+                                    ),
                                     color: const Color(0xFF2372EC),
                                     size: 22,
                                   ),
                                   label: Text(
                                     'Use ${BiometricService.getBiometricTypeName()}',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      color: Color(0xFF2372EC),
-                                    ),
+                                    style: EcliniqTextStyles.responsiveTitleXLarge(context)
+                                        .copyWith(color: Color(0xFF2372EC)),
                                   ),
                                 )
                               : OutlinedButton.icon(
-                                  onPressed: _isLoading ? null : () async {
-                                    // Get MPIN and request biometric permission via native dialog
-                                    final mpin = await SecureStorageService.getMPIN();
-                                    if (mpin != null && mpin.isNotEmpty) {
-                                      await _requestBiometricPermission(mpin);
-                                      // Re-check availability after permission request
-                                      await _checkBiometricAvailability();
-                                    } else {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                                          content: Text('Please enter MPIN first'),
-                                          backgroundColor: Colors.red,
-                                          duration: Duration(seconds: 2),
-                                        ),
-                                      );
-                                    }
-                                  },
+                                  onPressed: _isLoading
+                                      ? null
+                                      : () async {
+                                          // Get MPIN and request biometric permission via native dialog
+                                          final mpin =
+                                              await SecureStorageService.getMPIN();
+                                          if (mpin != null && mpin.isNotEmpty) {
+                                            await _requestBiometricPermission(
+                                              mpin,
+                                            );
+                                            // Re-check availability after permission request
+                                            await _checkBiometricAvailability();
+                                          } else {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  'Please enter MPIN first',
+                                                ),
+                                                backgroundColor: Colors.red,
+                                                duration: Duration(seconds: 2),
+                                              ),
+                                            );
+                                          }
+                                        },
                                   icon: ImageIcon(
-                                    const AssetImage('lib/ecliniq_icons/assets/Face Scan Square.png'),
+                                    const AssetImage(
+                                      'lib/ecliniq_icons/assets/Face Scan Square.png',
+                                    ),
                                     color: const Color(0xFF2372EC),
                                     size: 22,
                                   ),
                                   label: Text(
                                     'Use ${BiometricService.getBiometricTypeName()}',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      color: Color(0xFF2372EC),
-                                    ),
+                                    style: EcliniqTextStyles.responsiveTitleXLarge(context)
+                                        .copyWith(color: Color(0xFF2372EC)),
                                   ),
                                 ),
                         ],
@@ -534,15 +556,16 @@ class _VerifyMPINPageState extends State<VerifyMPINPage> with WidgetsBindingObse
                     children: [
                       Text(
                         ch,
-                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w400),
+                        style:  EcliniqTextStyles.responsiveHeadlineXLarge(context).copyWith(
+                     
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Container(
                         height: 2,
                         width: 66,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade400,
-                        ),
+                        decoration: BoxDecoration(color: Colors.grey.shade400),
                       ),
                     ],
                   ),
@@ -560,9 +583,9 @@ class _VerifyMPINPageState extends State<VerifyMPINPage> with WidgetsBindingObse
                     LengthLimitingTextInputFormatter(4),
                   ],
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                     color: Colors.transparent,
-                    fontSize: 18,
+
                     letterSpacing: 70,
                   ),
                   decoration: const InputDecoration(
@@ -580,4 +603,3 @@ class _VerifyMPINPageState extends State<VerifyMPINPage> with WidgetsBindingObse
     );
   }
 }
-

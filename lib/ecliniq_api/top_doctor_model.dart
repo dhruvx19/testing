@@ -1,3 +1,5 @@
+import 'package:ecliniq/ecliniq_api/storage_service.dart';
+
 class Doctor {
   final String id;
   final String name;
@@ -154,6 +156,27 @@ class Doctor {
     }
 
     return locs;
+  }
+  Future<String?> getProfilePhotoUrl(StorageService storageService) async {
+    if (profilePhoto == null || profilePhoto!.isEmpty) {
+      return null;
+    }
+
+    // If already a full URL, return as-is
+    if (profilePhoto!.startsWith('http://') || profilePhoto!.startsWith('https://')) {
+      return profilePhoto;
+    }
+
+    // If starts with "public/", get public URL from API
+    if (profilePhoto!.startsWith('public/')) {
+      final publicUrl = await storageService.getPublicUrl(profilePhoto!);
+      if (publicUrl != null && publicUrl.isNotEmpty) {
+        return publicUrl;
+      }
+    }
+
+    // Return null if we couldn't get a valid URL
+    return null;
   }
 }
 

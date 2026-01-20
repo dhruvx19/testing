@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/health_file_model.dart';
+import '../../../../ecliniq_api/health_file_model.dart';
 
 /// Service for managing local file storage for health files
 class LocalFileStorageService {

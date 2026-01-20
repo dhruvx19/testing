@@ -533,25 +533,26 @@ class AuthProvider with ChangeNotifier {
           print('Warning: Failed to decode JWT payload: $e');
         }
 
-        // Store token and user info
+        // Store token and user info (optimized for speed)
         try {
-          await SessionService.storeTokens(authToken: _authToken!);
-          // Store user info with userId and phone number
+          // Store token and user info in parallel for faster execution
           final userIdToStore = extractedUserId ?? phoneNumber;
-          await SecureStorageService.storeUserInfo(
-            userIdToStore,
-            phoneNumber,
-          );
+          await Future.wait([
+            SessionService.storeTokens(authToken: _authToken!),
+            SecureStorageService.storeUserInfo(
+              userIdToStore,
+              phoneNumber,
+            ),
+          ]);
           
-          // Register device token after successful login
-          try {
-            await EcliniqPushNotifications.registerDeviceToken(
-              authToken: _authToken!,
-            );
-          } catch (e) {
+          // Register device token asynchronously (non-blocking) after successful login
+          // This doesn't block the login flow - it runs in the background
+          EcliniqPushNotifications.registerDeviceToken(
+            authToken: _authToken!,
+          ).catchError((e) {
             // Log error but don't fail login if device token registration fails
             print('Warning: Failed to register device token after login: $e');
-          }
+          });
         } catch (e) {
           // If token storage fails, login should fail
           _isLoading = false;

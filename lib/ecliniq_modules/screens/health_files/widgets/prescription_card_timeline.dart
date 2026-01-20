@@ -1,6 +1,8 @@
 import 'dart:io';
+
+import 'package:ecliniq/ecliniq_api/health_file_model.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
-import 'package:ecliniq/ecliniq_modules/screens/health_files/models/health_file_model.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
@@ -33,9 +35,9 @@ class PrescriptionCardTimeline extends StatelessWidget {
     return file.fileType.displayName;
   }
 
-  Widget _buildThumbnail() {
+  Widget _buildThumbnail(BuildContext context) {
     final fileExists = File(file.filePath).existsSync();
-    
+
     if (fileExists && file.isImage) {
       return Container(
         decoration: BoxDecoration(
@@ -50,17 +52,17 @@ class PrescriptionCardTimeline extends StatelessWidget {
             height: 60,
             fit: BoxFit.cover,
             errorBuilder: (context, error, stackTrace) {
-              return _buildPlaceholderThumbnail();
+              return _buildPlaceholderThumbnail(context);
             },
           ),
         ),
       );
     }
-    
-    return _buildPlaceholderThumbnail();
+
+    return _buildPlaceholderThumbnail(context);
   }
 
-  Widget _buildPlaceholderThumbnail() {
+  Widget _buildPlaceholderThumbnail(BuildContext context) {
     return Container(
       width: 50,
       height: 60,
@@ -75,18 +77,18 @@ class PrescriptionCardTimeline extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 4,
-                vertical: 2,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(4),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.abc, size: 10),
+                  Icon(
+                    Icons.abc,
+                    size: EcliniqTextStyles.getResponsiveIconSize(context, 10),
+                  ),
                   SizedBox(width: 2),
                 ],
               ),
@@ -141,25 +143,25 @@ class PrescriptionCardTimeline extends StatelessWidget {
               children: [
                 Text(
                   day,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                    color: isOlder ? Colors.grey[400] : const Color(0xff424242),
-                  ),
+                  style: EcliniqTextStyles.responsiveHeadlineMedium(context)
+                      .copyWith(
+                        color: isOlder
+                            ? Colors.grey[400]
+                            : const Color(0xff424242),
+                      ),
                 ),
                 Text(
                   month,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: isOlder ? Colors.grey[400] : Colors.grey[600],
-                       fontWeight: FontWeight.w500,
-                  ),
+                  style: EcliniqTextStyles.responsiveBodySmallProminent(context)
+                      .copyWith(
+                        color: isOlder ? Colors.grey[400] : Colors.grey[600],
+                      ),
                 ),
               ],
             ),
           ),
           const SizedBox(width: 2),
-          _buildThumbnail(),
+          _buildThumbnail(context),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -197,4 +199,3 @@ class PrescriptionCardTimeline extends StatelessWidget {
     );
   }
 }
-

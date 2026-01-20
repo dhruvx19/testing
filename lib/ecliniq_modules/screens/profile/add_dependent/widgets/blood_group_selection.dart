@@ -40,10 +40,9 @@ class BloodGroupSelectionSheet extends StatelessWidget {
               padding: const EdgeInsets.only(top: 22, left: 16),
               child: Text(
                 'Select Blood Group',
-                style: EcliniqTextStyles.headlineBMedium.copyWith(
+                style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                   color: Color(0xff424242),
                   fontWeight: FontWeight.w500,
-                  fontSize: 18,
                 ),
               ),
             ),
@@ -59,9 +58,9 @@ class BloodGroupSelectionSheet extends StatelessWidget {
 
                       return ListTile(
                         contentPadding: const EdgeInsets.symmetric(
-    horizontal: 16,
-    vertical: 0, 
-  ),
+                          horizontal: 16,
+                          vertical: 0,
+                        ),
                         leading: Container(
                           height: 20,
                           width: 20,
@@ -88,10 +87,9 @@ class BloodGroupSelectionSheet extends StatelessWidget {
                         ),
                         title: Text(
                           bloodGroup,
-                          style: EcliniqTextStyles.bodyMedium.copyWith(
+                          style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                             color: Color(0xff424242),
                             fontWeight: FontWeight.w400,
-                            fontSize: 18,
                           ),
                         ),
                         onTap: () {

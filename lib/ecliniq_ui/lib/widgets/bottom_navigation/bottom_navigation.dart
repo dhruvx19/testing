@@ -1,4 +1,5 @@
 import 'package:ecliniq/ecliniq_icons/icons.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -19,8 +20,12 @@ class EcliniqBottomNavigationBar extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: Container(
-          height: 70,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+          height: EcliniqTextStyles.getResponsiveHeight(context, 70.0),
+          padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+            context,
+            horizontal: 8.0,
+            vertical: 0,
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -29,6 +34,7 @@ class EcliniqBottomNavigationBar extends StatelessWidget {
                   onTap: () => onTap(0),
                   behavior: HitTestBehavior.opaque,
                   child: _buildNavItem(
+                     context:   context,
                     iconPath: EcliniqIcons.explore.assetPath,
                     selectedIconPath: EcliniqIcons.homeFilled.assetPath,
                     isSelected: currentIndex == 0,
@@ -41,6 +47,7 @@ class EcliniqBottomNavigationBar extends StatelessWidget {
                   onTap: () => onTap(1),
                   behavior: HitTestBehavior.opaque,
                   child: _buildNavItem(
+                     context:   context,
                     iconPath: EcliniqIcons.myVisits.assetPath,
                     selectedIconPath: EcliniqIcons.myVisitsFilled.assetPath,
                     isSelected: currentIndex == 1,
@@ -53,6 +60,7 @@ class EcliniqBottomNavigationBar extends StatelessWidget {
                   onTap: () => onTap(2),
                   behavior: HitTestBehavior.opaque,
                   child: _buildNavItem(
+                     context:   context,
                     iconPath: EcliniqIcons.healthfile.assetPath,
                     selectedIconPath: EcliniqIcons.filesFilled.assetPath,
                     isSelected: currentIndex == 2,
@@ -65,6 +73,7 @@ class EcliniqBottomNavigationBar extends StatelessWidget {
                   onTap: () => onTap(3),
                   behavior: HitTestBehavior.opaque,
                   child: _buildNavItem(
+                     context:   context,
                     iconPath: EcliniqIcons.profile.assetPath,
                     selectedIconPath: EcliniqIcons.userSelected.assetPath,
                     isSelected: currentIndex == 3,
@@ -84,6 +93,7 @@ class EcliniqBottomNavigationBar extends StatelessWidget {
     required String selectedIconPath,
     required bool isSelected,
     required String label,
+    required BuildContext context,
   }) {
     // Selected colors
 
@@ -93,35 +103,39 @@ class EcliniqBottomNavigationBar extends StatelessWidget {
     const unselectedTextColor = Colors.white;
 
     return Container(
-      width: 80,
+      width: EcliniqTextStyles.getResponsiveWidth(context, 80.0),
       decoration: BoxDecoration(
         color: isSelected ? const Color(0xFF0E4395) : Colors.transparent,
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(8),
-          bottomRight: Radius.circular(8),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0)),
+          bottomRight: Radius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0)),
         ),
       ),
       child: Column(
         children: [
           Container(
-            height: 3,
-            width: 90,
+            height: EcliniqTextStyles.getResponsiveSize(context, 3.0),
+            width: EcliniqTextStyles.getResponsiveWidth(context, 90.0),
             decoration: BoxDecoration(
               color: isSelected ? const Color(0xFf96BFFF) : Colors.transparent,
             ),
           ),
-          const SizedBox(height: 8),
-          SvgPicture.asset(
-            isSelected ? selectedIconPath : iconPath,
-            width: 32,
-            height: 32,
+          SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 8.0)),
+          SizedBox(
+            width: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
+            height: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
+            child: SvgPicture.asset(
+              isSelected ? selectedIconPath : iconPath,
+              width: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
+              height: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
+              fit: BoxFit.contain,
+            ),
           ),
-
           Text(
             label,
-            style: TextStyle(
+            style: EcliniqTextStyles.responsiveBodyXSmall(context).copyWith(
               color: isSelected ? selectedTextColor : unselectedTextColor,
-              fontSize: 12,
+
               fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
             ),
           ),

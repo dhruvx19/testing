@@ -1,4 +1,5 @@
 import 'package:ecliniq/ecliniq_icons/icons.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -49,8 +50,8 @@ class ProfileHelpPage extends StatelessWidget {
                           children: [
                             Text(
                               'Need help for Profile Details?',
-                              style: const TextStyle(
-                                fontSize: 24,
+                              style:  EcliniqTextStyles.responsiveHeadlineXLarge(context).copyWith(
+                            
                                 fontWeight: FontWeight.w500,
                                 color: Color(0xff424242),
                               ),
@@ -58,8 +59,8 @@ class ProfileHelpPage extends StatelessWidget {
                             const SizedBox(height: 5),
                             Text(
                               'Try the following',
-                              style: TextStyle(
-                                fontSize: 16,
+                              style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+                       
                                 fontWeight: FontWeight.w400,
                               ).copyWith(color: Color(0xff424242)),
                             ),
@@ -85,18 +86,18 @@ class ProfileHelpPage extends StatelessWidget {
                     children: [
                       Text(
                         'Trouble inputting Profile Info ? ',
-                        style: TextStyle(
+                        style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                           fontWeight: FontWeight.w500,
-                          fontSize: 18,
+                  
                           color: Color(0xff424242),
                           fontFamily: 'Inter',
                         ),
                       ),
                       Text(
                         'Go to our help centre to know step - by - step guide for Profile Details Process.',
-                        style: TextStyle(
+                        style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                           fontWeight: FontWeight.w400,
-                          fontSize: 14,
+                         
                           color: Color(0xff8E8E8E),
                           fontFamily: 'Inter',
                         ),
@@ -128,9 +129,9 @@ class ProfileHelpPage extends StatelessWidget {
                           children: [
                             Text(
                               'Go to Help Centre',
-                              style: TextStyle(
+                              style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                                 fontWeight: FontWeight.w500,
-                                fontSize: 14,
+                      
                                 color: Color(0xff2372EC),
                                 fontFamily: 'Inter',
                               ),
@@ -168,19 +169,19 @@ class ProfileHelpPage extends StatelessWidget {
                     children: [
                       Text(
                         'Can’t able to add profile details?',
-                        style: TextStyle(
+                        style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                           fontWeight: FontWeight.w500,
-                          fontSize: 18,
+                        
                           color: Color(0xff424242),
-                          fontFamily: 'Inter',
+                          
                         ),
                       ),
 
                       Text(
                         'Get instant answers to your queries from our support team',
-                        style: TextStyle(
+                        style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                           fontWeight: FontWeight.w400,
-                          fontSize: 14,
+                        
                           color: Color(0xff8E8E8E),
                           fontFamily: 'Inter',
                         ),
@@ -212,9 +213,8 @@ class ProfileHelpPage extends StatelessWidget {
                           children: [
                             Text(
                               'Contact Customer Support',
-                              style: TextStyle(
+                              style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                                 fontWeight: FontWeight.w500,
-                                fontSize: 14,
                                 color: Color(0xff2372EC),
                                 fontFamily: 'Inter',
                               ),

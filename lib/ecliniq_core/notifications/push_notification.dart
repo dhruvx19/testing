@@ -11,15 +11,78 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:ecliniq/ecliniq_api/device_token_service.dart';
+import 'package:ecliniq/ecliniq_core/notifications/appointment_lock_screen_notification.dart';
+import 'package:ecliniq/ecliniq_api/models/appointment.dart' as api_models;
+import 'package:ecliniq/ecliniq_api/appointment_service.dart';
+import 'package:ecliniq/ecliniq_core/auth/session_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ecliniq/ecliniq_core/notifications/local_notifications.dart';
 
 
-/// Background message handler - must be a top-level function
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   log('Handling background message: ${message.messageId}');
   log('Background message data: ${message.data}');
-  // Handle background message here if needed
+  
+  // Initialize notification services
+  try {
+    await LocalNotifications.init();
+    await AppointmentLockScreenNotification.init();
+    
+    final data = message.data;
+    
+    // Handle appointment token updates for lock screen
+    final type = data['type'] as String?;
+    if (type == 'appointment_token_update' || type == 'token_update') {
+      final appointmentId = data['appointmentId'] as String?;
+      final currentRunningToken = data['currentRunningToken'] != null
+          ? int.tryParse(data['currentRunningToken'].toString())
+          : null;
+      final userToken = data['userToken'] != null
+          ? int.tryParse(data['userToken'].toString())
+          : null;
+      final doctorName = data['doctorName'] as String? ?? 'Doctor';
+      final hospitalName = data['hospitalName'] as String? ?? 'Clinic';
+      final appointmentTimeStr = data['appointmentTime'] as String?;
+      
+      if (appointmentId != null && userToken != null) {
+        try {
+          final appointmentTime = appointmentTimeStr != null
+              ? DateTime.parse(appointmentTimeStr)
+              : DateTime.now();
+          
+          final appointmentData = api_models.AppointmentData(
+            id: appointmentId,
+            patientId: '',
+            bookedFor: 'SELF',
+            doctorId: '',
+            doctorSlotScheduleId: '',
+            tokenNo: userToken,
+            status: 'CONFIRMED',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          );
+          
+          await AppointmentLockScreenNotification.updateNotification(
+            appointment: appointmentData,
+            currentRunningToken: currentRunningToken,
+            doctorName: doctorName,
+            hospitalName: hospitalName,
+            appointmentTime: appointmentTime,
+          );
+        } catch (e) {
+          log('Error updating lock screen notification in background: $e');
+        }
+      }
+      return; // Don't process other notification types
+    }
+    
+    // Handle other appointment updates (non-token updates)
+    // These can be handled by regular FCM notifications or other services
+    // The lock screen notification service handles token-specific updates
+  } catch (e) {
+    log('Error handling background notification: $e');
+  }
 }
 
 /// Push notification service for handling Firebase Cloud Messaging
@@ -27,15 +90,11 @@ class EcliniqPushNotifications {
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   static RemoteMessage? _initialMessage;
 
-  /// Get FCM token for the device
-  /// @returns FCM token string or null if unavailable
+
   static Future<String?> getToken() async {
     try {
       final token = await _messaging.getToken();
       log('FCM Token: $token');
-      print('=============================================');
-      print('FCM TOKEN: $token');
-      print('=============================================');
       return token;
     } catch (e) {
       log('Error getting FCM token: $e');
@@ -126,9 +185,6 @@ class EcliniqPushNotifications {
       // Listen for token refresh
       _messaging.onTokenRefresh.listen((newToken) async {
         log('FCM Token refreshed: $newToken');
-        print('=============================================');
-        print('FCM TOKEN REFRESHED: $newToken');
-        print('=============================================');
         
         // Get current auth token from storage
         final prefs = await SharedPreferences.getInstance();
@@ -175,20 +231,13 @@ class EcliniqPushNotifications {
 
     // Handle foreground notifications
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('=== FOREGROUND NOTIFICATION RECEIVED ===');
-      print('ID: ${message.messageId}');
-      print('Title: ${message.notification?.title}');
-      print('Body: ${message.notification?.body}');
-      print('Data: ${message.data}');
-      print('========================================');
-
       log('Foreground notification received: ${message.messageId}');
       log('Notification title: ${message.notification?.title}');
       log('Notification body: ${message.notification?.body}');
       log('Notification data: ${message.data}');
       
-      // You can show a local notification here if needed
-      // or handle the notification UI in your app
+      // Handle appointment token updates for lock screen notification
+      _handleAppointmentTokenUpdate(message);
     });
   }
 
@@ -204,6 +253,12 @@ class EcliniqPushNotifications {
     final type = data['type'] as String?;
     final path = data['path'] as String?;
     final screen = data['screen'] as String?;
+
+    // Check if this is an appointment token update
+    if (type == 'appointment_token_update' || type == 'token_update') {
+      _handleAppointmentTokenUpdateFromData(data);
+      return;
+    }
 
     // Determine navigation based on notification data
     final navigationTarget = type ?? path ?? screen;
@@ -245,6 +300,98 @@ class EcliniqPushNotifications {
         log('Unknown notification type: $navigationTarget');
         // Default to home if unknown type
         _navigateToHome();
+    }
+  }
+
+  /// Handle appointment token update from FCM message
+  /// @description Processes FCM messages for token updates and shows/updates lock screen notification
+  /// @param message - FCM RemoteMessage with token update data
+  static Future<void> _handleAppointmentTokenUpdate(RemoteMessage message) async {
+    try {
+      final data = message.data;
+      if (data.isEmpty) return;
+
+      final type = data['type'] as String?;
+      if (type != 'appointment_token_update' && type != 'token_update') {
+        return; // Not a token update notification
+      }
+
+      await _handleAppointmentTokenUpdateFromData(data);
+    } catch (e) {
+      log('Error handling appointment token update: $e');
+    }
+  }
+
+  /// Handle appointment token update from notification data
+  /// @description Fetches appointment details and updates lock screen notification
+  /// @param data - Notification data payload with appointment and token info
+  static Future<void> _handleAppointmentTokenUpdateFromData(
+      Map<String, dynamic> data) async {
+    try {
+      final appointmentId = data['appointmentId'] as String?;
+      final currentRunningToken = data['currentRunningToken'] != null
+          ? int.tryParse(data['currentRunningToken'].toString())
+          : null;
+      final userToken = data['userToken'] != null
+          ? int.tryParse(data['userToken'].toString())
+          : null;
+
+      if (appointmentId == null) {
+        log('Appointment ID missing in token update notification');
+        return;
+      }
+
+      // Get auth token
+      final authToken = await SessionService.getAuthToken();
+      if (authToken == null) {
+        log('Auth token not available for fetching appointment details');
+        return;
+      }
+
+      // Fetch appointment details from backend
+      final appointmentService = AppointmentService();
+      final appointmentDetailResponse =
+          await appointmentService.getAppointmentDetail(
+        appointmentId: appointmentId,
+        authToken: authToken,
+      );
+
+      if (!appointmentDetailResponse.success ||
+          appointmentDetailResponse.data == null) {
+        log('Failed to fetch appointment details for lock screen notification');
+        return;
+      }
+
+      final appointmentDetail = appointmentDetailResponse.data!;
+      final doctor = appointmentDetail.doctor;
+      final location = appointmentDetail.location;
+      final schedule = appointmentDetail.schedule;
+
+      // Extract appointment data
+      final appointmentData = api_models.AppointmentData(
+        id: appointmentDetail.appointmentId,
+        patientId: appointmentDetail.patient.name,
+        bookedFor: appointmentDetail.bookedFor,
+        doctorId: doctor.userId,
+        doctorSlotScheduleId: schedule.date.toIso8601String(),
+        tokenNo: userToken ?? appointmentDetail.tokenNo ?? 0,
+        status: appointmentDetail.status,
+        createdAt: appointmentDetail.createdAt,
+        updatedAt: appointmentDetail.updatedAt,
+      );
+
+      // Show or update lock screen notification
+      await AppointmentLockScreenNotification.updateNotification(
+        appointment: appointmentData,
+        currentRunningToken: currentRunningToken,
+        doctorName: doctor.name,
+        hospitalName: location.name,
+        appointmentTime: schedule.startTime,
+      );
+
+      log('Lock screen notification updated for appointment: $appointmentId');
+    } catch (e) {
+      log('Error processing appointment token update: $e');
     }
   }
 
@@ -336,5 +483,6 @@ class EcliniqPushNotifications {
       log('Error deleting FCM token: $e');
     }
   }
+
 }
 

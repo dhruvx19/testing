@@ -248,7 +248,7 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
                       children: [
                         Text(
                           'Save & Continue',
-                          style: EcliniqTextStyles.headlineMedium.copyWith(
+                          style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                             color: isButtonEnabled
                                 ? Colors.white
                                 : const Color(0xffD6D6D6),
@@ -285,7 +285,7 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
             backgroundColor: EcliniqScaffold.primaryBlue,
             title: Text(
               'Profile Details',
-              style: EcliniqTextStyles.headlineMedium.copyWith(
+              style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                 color: Colors.white,
               ),
             ),
@@ -302,11 +302,11 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
                       height: 24,
                     ),
                     const SizedBox(width: 4),
-                    const Text(
+                    Text(
                       'Help',
-                      style: TextStyle(
+                      style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                         color: Colors.white,
-                        fontSize: 18,
+
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -497,15 +497,15 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
         RichText(
           text: TextSpan(
             text: label,
-            style: EcliniqTextStyles.headlineXMedium.copyWith(
+            style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
               color: Color(0xff626060),
             ),
             children: isRequired
                 ? [
-                    const TextSpan(
+                     TextSpan(
                       text: '•',
 
-                      style: TextStyle(fontSize: 20, color: Color(0xffD92D20)),
+                      style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith( color: Color(0xffD92D20)),
                     ),
                   ]
                 : null,
@@ -520,9 +520,9 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
           },
           decoration: InputDecoration(
             hintText: hintText,
-            hintStyle: TextStyle(
+            hintStyle: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
               color: Color(0xffD6D6D6),
-              fontSize: 18,
+
               fontWeight: FontWeight.w400,
             ),
             border: OutlineInputBorder(
@@ -556,13 +556,13 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
         RichText(
           text: TextSpan(
             text: 'Date Of Birth',
-            style: EcliniqTextStyles.headlineXMedium.copyWith(
+            style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
               color: Color(0xff626060),
             ),
-            children: const [
+            children:  [
               TextSpan(
                 text: '•',
-                style: TextStyle(fontSize: 20, color: Color(0xffD92D20)),
+                style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith( color: Color(0xffD92D20)),
               ),
             ],
           ),
@@ -580,9 +580,9 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
           },
           decoration: InputDecoration(
             hintText: 'DD/MM/YYYY',
-            hintStyle: TextStyle(
+            hintStyle: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
               color: Color(0xffD6D6D6),
-              fontSize: 18,
+
               fontWeight: FontWeight.w400,
             ),
 
@@ -629,15 +629,15 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
         RichText(
           text: TextSpan(
             text: 'Gender',
-            style: EcliniqTextStyles.headlineXMedium.copyWith(
+            style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
               color: Colors.black87,
-              fontSize: 16,
+          
             ),
-            children: const [
+            children:  [
               TextSpan(
                 text: '•',
 
-                style: TextStyle(fontSize: 20, color: Color(0xffD92D20)),
+                style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith( color: Color(0xffD92D20)),
               ),
             ],
           ),
@@ -678,20 +678,25 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             SvgPicture.asset(
               icon.assetPath,
-              width: 24,
-              height: 24,
+              width: 20,
+              height: 20,
               colorFilter: isSelected
                   ? ColorFilter.mode(Color(0xff2372EC), BlendMode.srcIn)
                   : null,
             ),
-            const SizedBox(width: 2),
-            EcliniqText(
-              gender,
-              style: EcliniqTextStyles.headlineMedium.copyWith(
-                color: isSelected ? Color(0xff2372EC) : Color(0xff424242),
+            const SizedBox(width: 4),
+            Flexible(
+              child: EcliniqText(
+                gender,
+                style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
+                  color: isSelected ? Color(0xff2372EC) : Color(0xff424242),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],

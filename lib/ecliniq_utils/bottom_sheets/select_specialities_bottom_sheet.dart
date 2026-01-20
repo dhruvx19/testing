@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:ecliniq/ecliniq_icons/icons.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -84,26 +85,40 @@ class _SelectSpecialitiesBottomSheetState
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.65,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-          bottomLeft: Radius.circular(16),
-          bottomRight: Radius.circular(16),
+          topLeft: Radius.circular(
+            EcliniqTextStyles.getResponsiveBorderRadius(context, 16),
+          ),
+          topRight: Radius.circular(
+            EcliniqTextStyles.getResponsiveBorderRadius(context, 16),
+          ),
+          bottomLeft: Radius.circular(
+            EcliniqTextStyles.getResponsiveBorderRadius(context, 16),
+          ),
+          bottomRight: Radius.circular(
+            EcliniqTextStyles.getResponsiveBorderRadius(context, 16),
+          ),
         ),
       ),
       child: Column(
         children: [
           // Title
-          const Padding(
-            padding: EdgeInsets.only(left: 16, right: 16, top: 22),
+           Padding(
+            padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+              context,
+              left: 16,
+              right: 16,
+              top: 22,
+              bottom: 0,
+            ),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 'Select Specialities',
-                style: TextStyle(
-                  fontSize: 18,
+                style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+       
                   fontWeight: FontWeight.w500,
                   color: Color(0xff424242),
                 ),
@@ -111,7 +126,9 @@ class _SelectSpecialitiesBottomSheetState
             ),
           ),
 
-          const SizedBox(height: 6),
+          SizedBox(
+            height: EcliniqTextStyles.getResponsiveSpacing(context, 6),
+          ),
 
           // Search bar
           SearchBarWidget(onSearch: _filterSpecialities, hintText: 'Search'),
@@ -119,7 +136,13 @@ class _SelectSpecialitiesBottomSheetState
           // List of specialities
           Expanded(
             child: ListView.builder(
-              padding: EdgeInsets.only(left: 16, right: 16),
+              padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+                context,
+                left: 16,
+                right: 16,
+                top: 0,
+                bottom: 0,
+              ),
               itemCount: filteredSpecialities.length,
               itemBuilder: (context, index) {
                 final speciality = filteredSpecialities[index];
@@ -161,15 +184,19 @@ class _SelectSpecialitiesBottomSheetState
                 color: isSelected ? Color(0xff2372EC) : Colors.transparent,
               ),
               child: isSelected
-                  ? const Icon(Icons.check, size: 16, color: Colors.white)
+                  ? Icon(
+                      Icons.check,
+                      size: EcliniqTextStyles.getResponsiveIconSize(context, 16),
+                      color: Colors.white,
+                    )
                   : null,
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 speciality,
-                style: const TextStyle(
-                  fontSize: 16,
+                style:  EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+              
                   color: Color(0xff424242),
                   fontWeight: FontWeight.w400,
                 ),

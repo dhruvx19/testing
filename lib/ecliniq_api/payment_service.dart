@@ -6,16 +6,13 @@ import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:http/http.dart' as http;
 
 class PaymentService {
-  /// Check payment status for a given merchant transaction ID
   Future<PaymentStatusResponse> checkPaymentStatus(
     String merchantTransactionId,
   ) async {
     try {
       final url = Uri.parse(Endpoints.paymentStatus(merchantTransactionId));
 
-      final headers = <String, String>{
-        'Content-Type': 'application/json',
-      };
+      final headers = <String, String>{'Content-Type': 'application/json'};
 
       final response = await http.get(url, headers: headers);
 
@@ -91,9 +88,6 @@ class PaymentService {
     }
   }
 
-  /// Poll payment status until it reaches a terminal state
-  /// Returns the final payment status
-  /// Polls every 3 seconds for max 20 attempts (60 seconds total)
   Future<PaymentStatusData?> pollPaymentUntilComplete(
     String merchantTransactionId, {
     int maxAttempts = 20,

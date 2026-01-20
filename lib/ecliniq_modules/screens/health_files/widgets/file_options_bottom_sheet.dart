@@ -1,4 +1,4 @@
-import 'package:ecliniq/ecliniq_modules/screens/health_files/models/health_file_model.dart';
+import 'package:ecliniq/ecliniq_api/health_file_model.dart';
 import 'package:flutter/material.dart';
 
 class FileOptionsBottomSheet extends StatelessWidget {

@@ -10,6 +10,8 @@ import 'package:ecliniq/ecliniq_icons/assets/home/home_screen.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/button/button.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/error_snackbar.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/action_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -233,9 +235,10 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
     // Cancel previous timer
     _mpinSubmitTimer?.cancel();
 
-    // Auto-submit when 4 digits entered (with small delay for better UX)
+    // Auto-submit immediately when 4 digits entered
     if (v.length == 4) {
-      _mpinSubmitTimer = Timer(const Duration(milliseconds: 300), () {
+      // Use microtask to ensure UI updates first, then submit immediately
+      _mpinSubmitTimer = Timer(Duration.zero, () {
         if (mounted && !_isLoading) {
           _handleMPINLogin(v);
         }
@@ -276,11 +279,11 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
     final phone = _phoneController.text.trim();
 
     if (phone.isEmpty || phone.length != 10) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid 10-digit phone number'),
-          backgroundColor: Colors.red,
-        ),
+      CustomErrorSnackBar.show(
+        context: context,
+        title: 'Validation Error',
+        subtitle: 'Please enter a valid 10-digit phone number',
+        duration: const Duration(seconds: 3),
       );
       return;
     }
@@ -467,11 +470,11 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
 
     // Ensure we have phone number
     if (_phoneNumber.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Phone number is required'),
-          backgroundColor: Colors.red,
-        ),
+      CustomErrorSnackBar.show(
+        context: context,
+        title: 'Validation Error',
+        subtitle: 'Phone number is required',
+        duration: const Duration(seconds: 3),
       );
       return;
     }
@@ -502,23 +505,22 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
           print('✅ Step 1: Loading state reset, mounted: $mounted');
 
           // After successful MPIN login, ask for biometric permission if available and not enabled
-          // Wrap in try-catch to ensure navigation happens even if biometric setup fails
+          // Run in background (non-blocking) so it doesn't delay navigation
           if (_isBiometricAvailable && !_isBiometricEnabled) {
-            print('📱 Requesting biometric permission...');
-            try {
-              await _requestBiometricPermission(mpin).timeout(
-                const Duration(seconds: 2),
-                onTimeout: () {
-                  print(
-                    '⏱️ Biometric permission request timed out, continuing...',
-                  );
-                },
-              );
-              print('✅ Biometric permission request completed');
-            } catch (e) {
-              // Log error but don't block navigation
-              print('⚠️ Biometric permission request failed: $e');
-            }
+            print('📱 Requesting biometric permission (non-blocking)...');
+            // Don't await - let it run in background while we navigate
+            _requestBiometricPermission(mpin)
+                .timeout(
+                  const Duration(seconds: 1),
+                  onTimeout: () {
+                    print(
+                      '⏱️ Biometric permission request timed out, continuing...',
+                    );
+                  },
+                )
+                .catchError((e) {
+                  print('⚠️ Biometric permission request failed: $e');
+                });
           } else {
             print(
               'ℹ️ Skipping biometric permission (available: $_isBiometricAvailable, enabled: $_isBiometricEnabled)',
@@ -647,14 +649,11 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
 
                 // Last resort: Show error
                 if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Login successful but navigation failed. Please restart the app.',
-                      ),
-                      backgroundColor: Colors.orange,
-                      duration: Duration(seconds: 5),
-                    ),
+                  CustomActionSnackBar.show(
+                    context: context,
+                    title: 'Navigation Error',
+                    subtitle: 'Login successful but navigation failed. Please restart the app.',
+                    duration: const Duration(seconds: 5),
                   );
                 }
               }
@@ -670,11 +669,11 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
               _textController.clear();
               _showMPINScreen = false;
             });
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Session expired. Please login again.'),
-                backgroundColor: Colors.orange,
-              ),
+            CustomActionSnackBar.show(
+              context: context,
+              title: 'Session Expired',
+              subtitle: 'Please login again',
+              duration: const Duration(seconds: 4),
             );
           } else {
             setState(() {
@@ -682,11 +681,11 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
               _entered = '';
               _textController.clear();
             });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(authProvider.errorMessage ?? 'Invalid MPIN'),
-                backgroundColor: Colors.red,
-              ),
+            CustomErrorSnackBar.show(
+              context: context,
+              title: 'Authentication Failed',
+              subtitle: authProvider.errorMessage ?? 'Invalid MPIN',
+              duration: const Duration(seconds: 3),
             );
           }
         }
@@ -696,11 +695,11 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
         setState(() {
           _isLoading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Login failed: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
+        CustomErrorSnackBar.show(
+          context: context,
+          title: 'Login Failed',
+          subtitle: 'Login failed: ${e.toString()}',
+          duration: const Duration(seconds: 4),
         );
       }
     }
@@ -716,14 +715,11 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
 
     // Check if biometric is actually available before proceeding
     if (!_isBiometricAvailable) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Biometric authentication is not available on this device',
-          ),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 2),
-        ),
+      CustomErrorSnackBar.show(
+        context: context,
+        title: 'Biometric Unavailable',
+        subtitle: 'Biometric authentication is not available on this device',
+        duration: const Duration(seconds: 3),
       );
       return;
     }
@@ -756,12 +752,11 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
           setState(() {
             _isLoading = false;
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('MPIN not found. Please login with MPIN first.'),
-              backgroundColor: Colors.red,
-              duration: Duration(seconds: 2),
-            ),
+          CustomErrorSnackBar.show(
+            context: context,
+            title: 'MPIN Required',
+            subtitle: 'MPIN not found. Please login with MPIN first.',
+            duration: const Duration(seconds: 3),
           );
         }
         return;
@@ -785,14 +780,11 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
             setState(() {
               _isLoading = false;
             });
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Biometric authentication timed out. Please try again.',
-                ),
-                backgroundColor: Colors.red,
-                duration: Duration(seconds: 2),
-              ),
+            CustomActionSnackBar.show(
+              context: context,
+              title: 'Timeout',
+              subtitle: 'Biometric authentication timed out. Please try again.',
+              duration: const Duration(seconds: 3),
             );
           }
           return false;
@@ -837,12 +829,11 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
 
           if (errorMsg.isNotEmpty && !isUserCancellation) {
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(errorMsg),
-                  backgroundColor: Colors.red,
-                  duration: const Duration(seconds: 2),
-                ),
+              CustomErrorSnackBar.show(
+                context: context,
+                title: 'Error',
+                subtitle: errorMsg,
+                duration: const Duration(seconds: 3),
               );
             }
           } else if (errorMsg.toLowerCase().contains('not enabled')) {
@@ -865,23 +856,22 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
 
         // Check if it's a timeout exception
         if (e.toString().toLowerCase().contains('timeout')) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Biometric authentication timed out. Please try again.',
-              ),
-              backgroundColor: Colors.red,
-              duration: Duration(seconds: 2),
-            ),
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      
+CustomErrorSnackBar.show(
+              context: context,
+              title: 'Timeout',
+              subtitle: 'Biometric authentication timed out. Please try again.',
+              duration: const Duration(seconds: 3),
+        
           );
         } else {
           // Only show error for unexpected exceptions
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Biometric login failed: ${e.toString()}'),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 2),
-            ),
+          CustomErrorSnackBar.show(
+            context: context,
+            title: 'Biometric Login Failed',
+            subtitle: 'Biometric login failed: ${e.toString()}',
+            duration: const Duration(seconds: 3),
           );
         }
       }
@@ -895,10 +885,9 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: 35),
-        const Text(
+        Text(
           'Enter Your Mobile Number to Login',
-          style: TextStyle(
-            fontSize: 18,
+          style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
             fontFamily: 'Inter',
             fontWeight: FontWeight.w500,
             color: Colors.black87,
@@ -908,6 +897,11 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
         const SizedBox(height: 24),
         // Phone input field
         Container(
+        width: double.infinity,
+          height: EcliniqTextStyles.getResponsiveButtonHeight(
+            context,
+            baseHeight: 56.0,
+          ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: Color(0xff626060), width: 0.5),
@@ -915,7 +909,8 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(
+                padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                  context,
                   horizontal: 16,
                   vertical: 6,
                 ),
@@ -926,10 +921,9 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                 ),
                 child: Row(
                   children: [
-                    const Text(
+                    Text(
                       '+91',
-                      style: TextStyle(
-                        fontSize: 18,
+                      style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                         fontWeight: FontWeight.w400,
                         color: Color(0xff424242),
                       ),
@@ -949,14 +943,19 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                   keyboardType: TextInputType.phone,
                   autofocus: true,
                   maxLength: 10,
-                  decoration: const InputDecoration(
+                  decoration:  InputDecoration(
                     hintText: 'Mobile Number',
+                    hintStyle: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
+                      color: Color(0xffD6D6D6),
+                      fontWeight: FontWeight.w400
+                    ),
                     border: InputBorder.none,
                     counterText: '',
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 16,
-                    ),
+                    contentPadding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                  context,
+                  horizontal: 14,
+                  vertical: 2,
+                ),
                   ),
                 ),
               ),
@@ -967,7 +966,10 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
         // Next button
         SizedBox(
           width: double.infinity,
-          height: 52,
+          height: EcliniqTextStyles.getResponsiveButtonHeight(
+            context,
+            baseHeight: 54.0,
+          ),
           child: GestureDetector(
             onTapDown: isButtonEnabled
                 ? (_) {
@@ -998,14 +1000,16 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                     : EcliniqButtonType.brandPrimary.disabledBackgroundColor(
                         context,
                       ),
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(
+                  EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
+                ),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     'Using M-Pin',
-                    style: EcliniqTextStyles.headlineMedium.copyWith(
+                    style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                       color: _isButtonPressed
                           ? Colors.white
                           : isButtonEnabled
@@ -1025,11 +1029,39 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
   }
 
   /// Build MPIN screen
-  Widget _buildMPINScreen(
-    double slotWidth,
-    double totalOverlayWidth,
-    double screenW,
-  ) {
+  Widget _buildMPINScreen() {
+    // Calculate responsive dimensions based on available screen width
+    final screenW = MediaQuery.of(context).size.width;
+    final availableWidth = screenW - 36.0; // Account for horizontal padding (18 * 2)
+    final responsiveSlotWidth = EcliniqTextStyles.getResponsiveSize(
+      context,
+      66.0,
+      minSize: 50.0, // Minimum slot width to maintain readability
+      maxSize: 66.0,
+    );
+    final responsiveMargin = EcliniqTextStyles.getResponsiveSize(
+      context,
+      7.0,
+      minSize: 4.0,
+      maxSize: 7.0,
+    );
+    
+    // Calculate total width needed: (slotWidth + margin*2) * 4
+    final totalWidthNeeded = (responsiveSlotWidth + (responsiveMargin * 2)) * 4;
+    
+    // If total width exceeds available space, scale down proportionally
+    double finalSlotWidth = responsiveSlotWidth;
+    double finalMargin = responsiveMargin;
+    
+    if (totalWidthNeeded > availableWidth) {
+      final scaleFactor = availableWidth / totalWidthNeeded;
+      finalSlotWidth = (responsiveSlotWidth * scaleFactor).clamp(45.0, 66.0);
+      finalMargin = (responsiveMargin * scaleFactor).clamp(3.0, 7.0);
+    }
+    
+    final finalTotalWidth = (finalSlotWidth + (finalMargin * 2)) * 4;
+    final responsiveLetterSpacing = finalSlotWidth + 4;
+
     return SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1039,10 +1071,9 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
 
           // Back button to go back to phone input
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Enter Your MPIN to Sign In',
-            style: TextStyle(
-              fontSize: 18,
+            style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
               fontFamily: 'Inter',
               fontWeight: FontWeight.w500,
               color: Color(0xff424242),
@@ -1069,15 +1100,13 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                           ? (_showPin ? _entered[i] : '*')
                           : '-';
                       return Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 7),
+                        margin: EdgeInsets.symmetric(horizontal: finalMargin),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
                               ch,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontFamily: 'Inter',
+                              style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                                 fontWeight: FontWeight.w400,
                                 color: i < _entered.length
                                     ? Colors.black
@@ -1087,7 +1116,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                             const SizedBox(height: 8),
                             Container(
                               height: 2,
-                              width: slotWidth,
+                              width: finalSlotWidth,
                               decoration: BoxDecoration(
                                 color: Colors.grey.shade400,
                                 borderRadius: BorderRadius.circular(0),
@@ -1100,7 +1129,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                   ),
                   Center(
                     child: SizedBox(
-                      width: totalOverlayWidth.clamp(200.0, screenW - 48.0),
+                      width: finalTotalWidth.clamp(180.0, availableWidth),
                       child: TextField(
                         controller: _textController,
                         focusNode: _focusNode,
@@ -1110,10 +1139,9 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                           LengthLimitingTextInputFormatter(4),
                         ],
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                           color: Colors.transparent,
-                          fontSize: 18,
-                          letterSpacing: slotWidth + 4,
+                          letterSpacing: responsiveLetterSpacing,
                           fontFamily: 'Inter',
                         ),
                         decoration: const InputDecoration(
@@ -1142,11 +1170,11 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                         : () {
                             _navigateToForgotPin();
                           },
-                    child: const Text(
+                    child:  Text(
                       'Forgot PIN?',
-                      style: TextStyle(
+                      style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                         color: Color(0xff424242),
-                        fontSize: 14,
+                 
                         fontWeight: FontWeight.w400,
                         fontFamily: 'Inter',
                       ),
@@ -1166,8 +1194,8 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                   children: [
                     Text(
                       'Show PIN',
-                      style: TextStyle(
-                        fontSize: 14,
+                      style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
+                   
                         fontWeight: FontWeight.w400,
                         color: _entered.isEmpty
                             ? Color(0xffB8B8B8)
@@ -1235,8 +1263,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                         _isLoading
                             ? 'Authenticating...'
                             : 'Use ${BiometricService.getBiometricTypeName()}',
-                        style: const TextStyle(
-                          fontSize: 18,
+                        style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                           fontFamily: 'Inter',
                           fontWeight: FontWeight.w500,
                           color: Color(0xFF2372EC),
@@ -1265,12 +1292,11 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                 await _requestBiometricPermission(mpin);
                                 await _checkBiometricAvailability();
                               } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Please enter MPIN first'),
-                                    backgroundColor: Colors.red,
-                                    duration: Duration(seconds: 2),
-                                  ),
+                                CustomErrorSnackBar.show(
+                                  context: context,
+                                  title: 'MPIN Required',
+                                  subtitle: 'Please enter MPIN first',
+                                  duration: const Duration(seconds: 3),
                                 );
                               }
                             },
@@ -1281,9 +1307,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                       ),
                       label: Text(
                         'Use ${BiometricService.getBiometricTypeName()}',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontFamily: 'Inter',
+                        style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                           fontWeight: FontWeight.w500,
                           color: Color(0xFF2372EC),
                         ),
@@ -1314,9 +1338,6 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
     final screenH = MediaQuery.of(context).size.height;
     final screenW = MediaQuery.of(context).size.width;
     final headerHeight = (screenH * 0.38).clamp(260.0, 420.0).toDouble();
-
-    final slotWidth = 66.0;
-    final totalOverlayWidth = (slotWidth + 16) * 4;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -1366,22 +1387,22 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                             width: 198,
                           ),
                           const SizedBox(height: 10),
-                          const Text(
-                            'Welcome back, Ketan!',
-                            style: TextStyle(
+                           Text(
+                            'Welcome back!',
+                            style: EcliniqTextStyles.responsiveHeadlineXLarge(context).copyWith(
                               color: Colors.white,
                               fontFamily: 'Rubik',
-                              fontSize: 24,
+                        
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                           const SizedBox(height: 4),
-                          const Text(
+                           Text(
                             'Your Healthcare Platform',
-                            style: TextStyle(
+                            style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                               color: Color(0xE5FFFFFF),
-                              fontFamily: 'Rubik',
-                              fontSize: 16,
+                            
+                              
                               fontWeight: FontWeight.w400,
                             ),
                           ),
@@ -1436,11 +1457,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                       0.0,
                                     ),
                                     child: _showMPINScreen
-                                        ? _buildMPINScreen(
-                                            slotWidth,
-                                            totalOverlayWidth,
-                                            screenW,
-                                          )
+                                        ? _buildMPINScreen()
                                         : _buildPhoneInputScreen(),
                                   ),
                                 ),

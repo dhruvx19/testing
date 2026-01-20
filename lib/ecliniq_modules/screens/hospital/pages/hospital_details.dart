@@ -1,3 +1,4 @@
+import 'package:ecliniq/ecliniq_api/storage_service.dart';
 import 'package:ecliniq/ecliniq_core/auth/session_service.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/widgets/easy_to_book.dart';
@@ -12,8 +13,8 @@ import 'package:ecliniq/ecliniq_modules/screens/hospital/widgets/appointment_tim
 import 'package:ecliniq/ecliniq_modules/screens/hospital/widgets/specialities.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/widgets/basic_info.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
+import 'package:ecliniq/ecliniq_utils/horizontal_divider.dart';
 import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
-import 'package:ecliniq/widgets/horizontal_divider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
@@ -33,6 +34,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen>
   late final HospitalDetailProvider _provider;
   late TabController _tabController;
   int _currentTabIndex = 0;
+  final StorageService _storageService = StorageService();
 
   @override
   void initState() {
@@ -58,18 +60,25 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen>
     super.dispose();
   }
 
-  String _getImageUrl(String? imageKey) {
-    if (imageKey == null || imageKey.isEmpty) {
-      return 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&q=80';
-    }
-    return 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&q=80';
+  /// Get image URL from storage key
+  /// @description Gets the public URL for a storage key if it starts with "public/",
+  /// otherwise returns a fallback URL
+  /// @param imageKey - Image key or URL
+  /// @returns Future<String> - Public URL or fallback URL
+  Future<String> _getImageUrl(String? imageKey) async {
+    return await _storageService.getImageUrl(
+      imageKey,
+      fallbackUrl:
+          'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&q=80',
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: ChangeNotifierProvider.value(
+      body: ChangeNotifierProvider<HospitalDetailProvider>.value(
+        key: ValueKey('hospital_detail_provider_${widget.hospitalId}'),
         value: _provider,
         child: Consumer<HospitalDetailProvider>(
           builder: (context, provider, child) {
@@ -119,7 +128,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen>
           Positioned(
             left: 0,
             right: 0,
-            bottom: 120,
+            bottom: 80,
             child: _buildFloatingTabSection(),
           ),
         // Bottom Section (only show for Details tab)
@@ -146,88 +155,178 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildHeaderImage(hospital),
-                const SizedBox(height: 16),
+                SizedBox(
+                  height: EcliniqTextStyles.getResponsiveSpacing(context, 16),
+                ),
                 _buildHospitalInfo(hospital),
-                const SizedBox(height: 8),
+                SizedBox(
+                  height: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+                ),
                 _buildStatsCards(hospital),
-                const SizedBox(height: 8),
+                SizedBox(
+                  height: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+                ),
                 HorizontalDivider(),
-                const SizedBox(height: 30),
+                SizedBox(
+                  height: EcliniqTextStyles.getResponsiveSpacing(context, 30),
+                ),
                 const AppointmentTimingWidget(),
-                const SizedBox(height: 30),
+                SizedBox(
+                  height: EcliniqTextStyles.getResponsiveSpacing(context, 30),
+                ),
                 AddressWidget(hospital: hospital),
-                const SizedBox(height: 30),
+                SizedBox(
+                  height: EcliniqTextStyles.getResponsiveSpacing(context, 30),
+                ),
                 AboutHospital(hospital: hospital),
-                const SizedBox(height: 30),
+                SizedBox(
+                  height: EcliniqTextStyles.getResponsiveSpacing(context, 30),
+                ),
                 if (hospital.specialties.isNotEmpty)
                   MedicalSpecialtiesWidget(specialties: hospital.specialties),
-                if (hospital.specialties.isNotEmpty) const SizedBox(height: 30),
+                if (hospital.specialties.isNotEmpty)
+                  SizedBox(
+                    height: EcliniqTextStyles.getResponsiveSpacing(context, 30),
+                  ),
                 if (hospital.hospitalServices.isNotEmpty)
                   HospitalServicesWidget(services: hospital.hospitalServices),
                 if (hospital.hospitalServices.isNotEmpty)
-                  const SizedBox(height: 30),
+                  SizedBox(
+                    height: EcliniqTextStyles.getResponsiveSpacing(context, 30),
+                  ),
                 if (hospital.accreditation.isNotEmpty)
                   CertificatesWidget(accreditation: hospital.accreditation),
                 if (hospital.accreditation.isNotEmpty)
-                  const SizedBox(height: 30),
+                  SizedBox(
+                    height: EcliniqTextStyles.getResponsiveSpacing(context, 30),
+                  ),
 
                 const ContactDetailsWidget(),
-                const SizedBox(height: 30),
+                SizedBox(
+                  height: EcliniqTextStyles.getResponsiveSpacing(context, 30),
+                ),
                 const EasyWayToBookWidget(),
-                const SizedBox(height: 200),
+                SizedBox(
+                  height: EcliniqTextStyles.getResponsiveSpacing(context, 200),
+                ),
               ],
             ),
-            Positioned(
-              top: 230,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Color(0xff2372EC), width: 2),
-                  ),
-                  child: Stack(
-                    children: [
-                      Center(
-                        child: hospital.logo.isNotEmpty
-                            ? ClipOval(
-                                child: Image.network(
-                                  _getImageUrl(hospital.logo),
-                                  width: 94,
-                                  height: 94,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Icon(
-                                      Icons.local_hospital,
-                                      size: 60,
-                                      color: Colors.orange[700],
-                                    );
-                                  },
-                                ),
-                              )
-                            : Icon(
-                                Icons.local_hospital,
-                                size: 60,
-                                color: Colors.orange[700],
-                              ),
-                      ),
-                      Positioned(
-                        top: 0,
-                        right: 0,
-                        child: SvgPicture.asset(
-                          EcliniqIcons.verified.assetPath,
-                          width: 24,
-                          height: 24,
+            Builder(
+              builder: (context) {
+                final headerHeight = EcliniqTextStyles.getResponsiveHeight(
+                  context,
+                  210.0,
+                );
+                final circleSize = EcliniqTextStyles.getResponsiveSize(
+                  context,
+                  80.0,
+                );
+                final circleRadius = circleSize / 2;
+                // Position circle so it's half on background and half below
+                final topPosition = headerHeight - circleRadius;
+
+                return Positioned(
+                  top: topPosition,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      width: circleSize,
+                      height: circleSize,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Color(0xff2372EC),
+                          width: EcliniqTextStyles.getResponsiveSize(
+                            context,
+                            2.0,
+                          ),
                         ),
                       ),
-                    ],
+                      child: Stack(
+                        children: [
+                          Center(
+                            child: hospital.logo.isNotEmpty
+                                ? FutureBuilder<String>(
+                                    future: _getImageUrl(hospital.logo),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState ==
+                                          ConnectionState.waiting) {
+                                        final logoSize =
+                                            EcliniqTextStyles.getResponsiveSize(
+                                              context,
+                                              94.0,
+                                            );
+                                        return SizedBox(
+                                          width: logoSize,
+                                          height: logoSize,
+                                          child: const Center(
+                                            child: EcliniqLoader(),
+                                          ),
+                                        );
+                                      }
+                                      final imageUrl =
+                                          snapshot.data ??
+                                          'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&q=80';
+                                      final logoSize =
+                                          EcliniqTextStyles.getResponsiveSize(
+                                            context,
+                                            94.0,
+                                          );
+                                      return ClipOval(
+                                        child: Image.network(
+                                          imageUrl,
+                                          width: logoSize,
+                                          height: logoSize,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                                return Icon(
+                                                  Icons.local_hospital,
+                                                  size:
+                                                      EcliniqTextStyles.getResponsiveIconSize(
+                                                        context,
+                                                        60.0,
+                                                      ),
+                                                  color: Colors.orange[700],
+                                                );
+                                              },
+                                        ),
+                                      );
+                                    },
+                                  )
+                                : Icon(
+                                    Icons.local_hospital,
+                                    size:
+                                        EcliniqTextStyles.getResponsiveIconSize(
+                                          context,
+                                          60.0,
+                                        ),
+                                    color: Colors.orange[700],
+                                  ),
+                          ),
+                          Positioned(
+                            top: 0,
+                            right: 0,
+                            child: SvgPicture.asset(
+                              EcliniqIcons.verified.assetPath,
+                              width: EcliniqTextStyles.getResponsiveIconSize(
+                                context,
+                                24.0,
+                              ),
+                              height: EcliniqTextStyles.getResponsiveIconSize(
+                                context,
+                                24.0,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
           ],
         ),
@@ -250,20 +349,28 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
-                const SizedBox(height: 16),
-                const Text(
-                  'Authentication required',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xff424242),
-                  ),
+                Icon(
+                  Icons.error_outline,
+                  size: EcliniqTextStyles.getResponsiveIconSize(context, 64),
+                  color: Colors.red[300],
                 ),
-                const SizedBox(height: 8),
-                const Text(
+                const SizedBox(height: 16),
+                Text(
+                  'Authentication required',
+                  style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                      .copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xff424242),
+                      ),
+                ),
+                SizedBox(
+                  height: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+                ),
+                Text(
                   'Please log in to view doctors',
-                  style: TextStyle(fontSize: 14, color: Color(0xff626060)),
+                  style: EcliniqTextStyles.responsiveBodySmall(
+                    context,
+                  ).copyWith(color: Color(0xff626060)),
                 ),
               ],
             ),
@@ -281,53 +388,73 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen>
   }
 
   Widget _buildHeaderImage(hospital) {
-    return Container(
-      height: 280,
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: NetworkImage(_getImageUrl(hospital.image)),
-          fit: BoxFit.cover,
-          onError: (exception, stackTrace) {},
-        ),
-        color: Colors.grey[200],
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            top: 50,
-            left: 16,
-            right: 16,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildCircleButton(
-                  EcliniqIcons.arrowLeft,
-                  () => EcliniqRouter.pop(),
-                ),
-                Row(
-                  children: [_buildCircleButton(EcliniqIcons.share, () => {})],
-                ),
-              ],
+    return FutureBuilder<String>(
+      future: _getImageUrl(hospital.image),
+      builder: (context, snapshot) {
+        final imageUrl =
+            snapshot.data ??
+            'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&q=80';
+        final headerHeight = EcliniqTextStyles.getResponsiveHeight(
+          context,
+          210.0,
+        );
+        return Container(
+          height: headerHeight,
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: NetworkImage(imageUrl),
+              fit: BoxFit.cover,
+              onError: (exception, stackTrace) {},
             ),
+            color: Colors.grey[200],
           ),
-        ],
-      ),
+          child: Stack(
+            children: [
+              Positioned(
+                top: EcliniqTextStyles.getResponsiveSize(context, 44.0),
+                left: EcliniqTextStyles.getResponsiveSpacing(context, 16.0),
+                right: EcliniqTextStyles.getResponsiveSpacing(context, 16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildCircleButton(
+                      EcliniqIcons.arrowLeft,
+                      () => EcliniqRouter.pop(),
+                    ),
+                    Row(
+                      children: [
+                        _buildCircleButton(EcliniqIcons.share, () => {}),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
   Widget _buildCircleButton(EcliniqIcons icon, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(
+        EcliniqTextStyles.getResponsiveBorderRadius(context, 20.0),
+      ),
       child: Container(
-        width: 48,
-        height: 48,
+        width: EcliniqTextStyles.getResponsiveSize(context, 40.0),
+        height: EcliniqTextStyles.getResponsiveSize(context, 40.0),
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.5),
           shape: BoxShape.circle,
         ),
         child: Center(
-          child: SvgPicture.asset(icon.assetPath, width: 32, height: 32),
+          child: SvgPicture.asset(
+            icon.assetPath,
+            width: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
+            height: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
+          ),
         ),
       ),
     );
@@ -336,55 +463,60 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen>
   Widget _buildHospitalInfo(hospital) {
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.only(top: 50, left: 16, right: 16),
+      padding: EdgeInsets.only(
+        top: EcliniqTextStyles.getResponsiveSize(context, 40.0),
+        left: EcliniqTextStyles.getResponsiveSpacing(context, 16.0),
+        right: EcliniqTextStyles.getResponsiveSpacing(context, 16.0),
+      ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             hospital.name,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w600,
-              color: Color(0xff424242),
-            ),
+            style: EcliniqTextStyles.responsiveHeadlineXLarge(
+              context,
+            ).copyWith(fontWeight: FontWeight.w600, color: Color(0xff424242)),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 6),
+          SizedBox(
+            height: EcliniqTextStyles.getResponsiveSpacing(context, 6.0),
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 hospital.type,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Color(0xff424242),
-                  fontWeight: FontWeight.w400,
-                ),
+                style: EcliniqTextStyles.responsiveTitleXLarge(context)
+                    .copyWith(
+                      color: Color(0xff424242),
+                      fontWeight: FontWeight.w400,
+                    ),
               ),
               const SizedBox(width: 6),
               Container(width: 0.5, height: 20, color: Color(0xffD6D6D6)),
               const SizedBox(width: 6),
               Text(
                 '${hospital.numberOfDoctors}+ Doctors',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Color(0xff424242),
-                  fontWeight: FontWeight.w400,
-                ),
+                style: EcliniqTextStyles.responsiveTitleXLarge(context)
+                    .copyWith(
+                      color: Color(0xff424242),
+                      fontWeight: FontWeight.w400,
+                    ),
               ),
             ],
           ),
           const SizedBox(height: 6),
           Text(
             'Established in ${hospital.establishmentYear} (${DateTime.now().year - (int.tryParse(hospital.establishmentYear) ?? 0)} Years of Experience)',
-            style: TextStyle(
-              fontSize: 16,
-              color: Color(0xff424242),
-              fontWeight: FontWeight.w400,
-            ),
+            style: EcliniqTextStyles.responsiveTitleXLarge(
+              context,
+            ).copyWith(color: Color(0xff424242), fontWeight: FontWeight.w400),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 6),
           Row(
-            // mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SvgPicture.asset(
                 EcliniqIcons.mapPointBlue.assetPath,
@@ -392,12 +524,16 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen>
                 height: 24,
               ),
               const SizedBox(width: 6),
-              Text(
-                '${hospital.city}, ${hospital.state}',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  color: Color(0xff424242),
+              Flexible(
+                child: Text(
+                  '${hospital.city}, ${hospital.state}',
+                  style: EcliniqTextStyles.responsiveTitleXLarge(context)
+                      .copyWith(
+                        fontWeight: FontWeight.w400,
+                        color: Color(0xff424242),
+                      ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ),
               const SizedBox(width: 6),
@@ -409,15 +545,17 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen>
                   border: Border.all(color: Color(0xffB8B8B8), width: 0.5),
                 ),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     SizedBox(width: 4),
                     Center(
                       child: Text(
                         '4KM ',
-                        style: EcliniqTextStyles.bodySmall.copyWith(
-                          color: Color(0xff424242),
-                          fontSize: 16,
-                        ),
+                        style: EcliniqTextStyles.responsiveTitleXLarge(context)
+                            .copyWith(
+                              color: Color(0xff424242),
+                              fontWeight: FontWeight.w400,
+                            ),
                       ),
                     ),
                     SizedBox(width: 2),
@@ -428,26 +566,6 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen>
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(width: 8),
-              Container(width: 0.5, height: 20, color: Color(0xffD6D6D6)),
-              const SizedBox(width: 6),
-              GestureDetector(
-                onTap: () {},
-                child: const Text(
-                  'Change',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF2372EC),
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 4),
-              SvgPicture.asset(
-                EcliniqIcons.shuffle.assetPath,
-                width: 16,
-                height: 16,
               ),
             ],
           ),
@@ -495,25 +613,25 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen>
       width: 140,
       child: Column(
         children: [
-          SvgPicture.asset(icon.assetPath, width: 24, height: 24),
+          SvgPicture.asset(
+            icon.assetPath,
+            width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+            height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+          ),
           const SizedBox(height: 4),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-              color: Color(0xff626060),
-            ),
+            style: EcliniqTextStyles.responsiveTitleXLarge(
+              context,
+            ).copyWith(fontWeight: FontWeight.w400, color: Color(0xff626060)),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w600,
-              color: Color(0xff2372EC),
-            ),
+            style: EcliniqTextStyles.responsiveHeadlineXLarge(
+              context,
+            ).copyWith(fontWeight: FontWeight.w600, color: Color(0xff2372EC)),
           ),
         ],
       ),
@@ -522,39 +640,53 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen>
 
   Widget _buildFloatingTabSection() {
     return Padding(
-      padding: const EdgeInsets.all(12.0),
+      padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16.0),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+          context,
+          vertical: 8.0,
+          horizontal: 12.0,
+        ),
         decoration: BoxDecoration(
           color: const Color(0x80000000),
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(
+            EcliniqTextStyles.getResponsiveBorderRadius(context, 30.0),
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            GestureDetector(
-              onTap: () {
-                _tabController.animateTo(0);
-              },
-              child: _buildTab('Details', _currentTabIndex == 0),
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  _tabController.animateTo(0);
+                },
+                child: _buildTab('Details', _currentTabIndex == 0),
+              ),
             ),
-            GestureDetector(
-              onTap: () {
-                _tabController.animateTo(1);
-              },
-              child: _buildTab('Doctors', _currentTabIndex == 1),
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  _tabController.animateTo(1);
+                },
+                child: _buildTab('Doctors', _currentTabIndex == 1),
+              ),
             ),
-            GestureDetector(
-              onTap: () {
-                _tabController.animateTo(2);
-              },
-              child: _buildTab('Surgeries', _currentTabIndex == 2),
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  _tabController.animateTo(2);
+                },
+                child: _buildTab('Surgeries', _currentTabIndex == 2),
+              ),
             ),
-            GestureDetector(
-              onTap: () {
-                _tabController.animateTo(3);
-              },
-              child: _buildTab('Branches', _currentTabIndex == 3),
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  _tabController.animateTo(3);
+                },
+                child: _buildTab('Branches', _currentTabIndex == 3),
+              ),
             ),
           ],
         ),
@@ -564,21 +696,31 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen>
 
   Widget _buildTab(String text, bool isActive) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+        context,
+        horizontal: 2.0,
+        vertical: 2.0,
+      ),
       decoration: BoxDecoration(
         color: isActive ? Colors.white : Colors.transparent,
-        borderRadius: BorderRadius.circular(23),
+        borderRadius: BorderRadius.circular(
+          EcliniqTextStyles.getResponsiveBorderRadius(context, 23.0),
+        ),
         border: Border.all(
           color: isActive ? Color(0xFF96BFFF) : Colors.transparent,
-          width:1,
+          width: EcliniqTextStyles.getResponsiveSize(context, 1.0),
         ),
       ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: isActive ? Color(0xff2372EC) : Colors.white,
-          fontWeight: FontWeight.w400,
-          fontSize: 16,
+      child: Center(
+        child: Text(
+          text,
+          style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+            color: isActive ? Color(0xff2372EC) : Colors.white,
+            fontWeight: FontWeight.w400,
+          ),
+          // overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+          //  textAlign: TextAlign.center,
         ),
       ),
     );
@@ -602,7 +744,11 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen>
                 ),
               ],
             ),
-            height: 52,
+            height: EcliniqTextStyles.getResponsiveButtonHeight(
+              context,
+              baseHeight: 52.0,
+            ),
+
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {},
@@ -611,12 +757,16 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen>
                 foregroundColor: Colors.white,
 
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(
+                    EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
+                  ),
                 ),
               ),
-              child: const Text(
+              child: Text(
                 'Book Appointment',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                style: EcliniqTextStyles.responsiveHeadlineBMedium(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w500),
               ),
             ),
           ),
@@ -772,21 +922,27 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+              Icon(
+                Icons.error_outline,
+                size: EcliniqTextStyles.getResponsiveIconSize(context, 64),
+                color: Colors.red[300],
+              ),
               const SizedBox(height: 16),
               Text(
                 'Error Loading Hospital Details',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[800],
-                ),
+                style: EcliniqTextStyles.responsiveHeadlineLarge(context)
+                    .copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[800],
+                    ),
               ),
               const SizedBox(height: 8),
               Text(
                 errorMessage,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                style: EcliniqTextStyles.responsiveBodySmall(
+                  context,
+                ).copyWith(color: Colors.grey[600]),
               ),
               const SizedBox(height: 24),
               ElevatedButton(

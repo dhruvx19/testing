@@ -202,24 +202,48 @@ class EcliniqButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get responsive button height (default 46px for standard buttons)
+    final responsiveHeight = size?.height ?? 
+        EcliniqTextStyles.getResponsiveButtonHeight(context, baseHeight: 46.0);
+    
+    // Get responsive border radius
+    final responsiveBorderRadius = EcliniqTextStyles.getResponsiveBorderRadius(context, 8);
+    
+    // Get responsive padding
+    final responsiveVerticalPadding = EcliniqTextStyles.getResponsivePadding(context, 10);
+    final responsiveLoadingPadding = EcliniqTextStyles.getResponsivePadding(context, 16);
+    
+    // Get responsive spacing for leading icon
+    final responsiveIconSpacing = EcliniqTextStyles.getResponsiveSpacing(context, 10);
+    
+    // Get responsive icon size for loading indicator
+    final responsiveLoadingIconSize = EcliniqTextStyles.getResponsiveIconSize(context, 20);
+
     if (isLoading) {
       return ElevatedButton(
         onPressed: null,
         style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          padding: EdgeInsets.symmetric(vertical: responsiveLoadingPadding),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(responsiveBorderRadius),
+          ),
           elevation: 0,
-          fixedSize: size ?? Size(MediaQuery.sizeOf(context).width, 46),
+          fixedSize: size ?? Size(
+            MediaQuery.sizeOf(context).width,
+            responsiveHeight,
+          ),
           shadowColor: Colors.transparent,
           overlayColor: overlayColor,
         ),
-        child: const SizedBox(
-          height: 20,
-          width: 20,
+        child: SizedBox(
+          height: responsiveLoadingIconSize,
+          width: responsiveLoadingIconSize,
           child: ShimmerLoading(
-            width: 20,
-            height: 20,
-            borderRadius: BorderRadius.all(Radius.circular(10)),
+            width: responsiveLoadingIconSize,
+            height: responsiveLoadingIconSize,
+            borderRadius: BorderRadius.all(
+              Radius.circular(responsiveLoadingIconSize / 2),
+            ),
           ),
         ),
       );
@@ -227,8 +251,10 @@ class EcliniqButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        padding: EdgeInsets.symmetric(vertical: responsiveVerticalPadding),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(responsiveBorderRadius),
+        ),
         side: onPressed == null
             ? null
             : BorderSide(
@@ -237,7 +263,10 @@ class EcliniqButton extends StatelessWidget {
               ),
         elevation: 0,
         backgroundColor: backgroundColor ?? type.backgroundColor(context),
-        fixedSize: size ?? Size(MediaQuery.sizeOf(context).width, 46),
+        fixedSize: size ?? Size(
+          MediaQuery.sizeOf(context).width,
+          responsiveHeight,
+        ),
         disabledBackgroundColor:
             disabledBackgroundColor ?? type.disabledBackgroundColor(context),
         shadowColor: Colors.transparent,
@@ -248,10 +277,10 @@ class EcliniqButton extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (leading != null) leading!,
-              if (leading != null) const SizedBox(width: 10),
+              if (leading != null) SizedBox(width: responsiveIconSpacing),
               Text(
                 label,
-                style: EcliniqTextStyles.buttonXLargeProminent.copyWith(
+                style: EcliniqTextStyles.responsiveButtonXLargeProminent(context).copyWith(
                   color: onPressed == null
                       ? context.colors.textDisabled
                       : textColor ?? type.textColor(context),

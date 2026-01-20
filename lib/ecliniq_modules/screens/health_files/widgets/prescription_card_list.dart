@@ -1,7 +1,8 @@
 import 'dart:io';
 
+import 'package:ecliniq/ecliniq_api/health_file_model.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
-import 'package:ecliniq/ecliniq_modules/screens/health_files/models/health_file_model.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
@@ -40,9 +41,6 @@ class PrescriptionCardList extends StatelessWidget {
     return DateFormat('MMM').format(date);
   }
 
-  String _getFileTypeDisplayName() {
-    return file.fileType.displayName;
-  }
 
   String _getRecordForDisplay() {
     // Show "Uploaded for: [Name]" if recordFor exists, otherwise show file type
@@ -52,7 +50,7 @@ class PrescriptionCardList extends StatelessWidget {
     return file.fileType.displayName;
   }
 
-  Widget _buildThumbnail() {
+  Widget _buildThumbnail(BuildContext context) {
     final fileExists = File(file.filePath).existsSync();
 
     if (fileExists && file.isImage) {
@@ -69,17 +67,17 @@ class PrescriptionCardList extends StatelessWidget {
             height: 60,
             fit: BoxFit.cover,
             errorBuilder: (context, error, stackTrace) {
-              return _buildPlaceholderThumbnail();
+              return _buildPlaceholderThumbnail(context);
             },
           ),
         ),
       );
     }
 
-    return _buildPlaceholderThumbnail();
+    return _buildPlaceholderThumbnail(context);
   }
 
-  Widget _buildPlaceholderThumbnail() {
+  Widget _buildPlaceholderThumbnail(BuildContext context) {
     return Container(
       width: 50,
       height: 60,
@@ -99,9 +97,17 @@ class PrescriptionCardList extends StatelessWidget {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(4),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: [Icon(Icons.abc, size: 10), SizedBox(width: 2)],
+                children: [
+                  Icon(
+                    Icons.abc,
+                    size: EcliniqTextStyles.getResponsiveIconSize(context, 10),
+                  ),
+                  SizedBox(
+                    width: EcliniqTextStyles.getResponsiveSpacing(context, 2),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 4),
@@ -122,7 +128,7 @@ class PrescriptionCardList extends StatelessWidget {
     );
   }
 
-  Widget _buildDateColumn(String day, String month) {
+  Widget _buildDateColumn(String day, String month, BuildContext context) {
     return SizedBox(
       width: 40,
       child: Column(
@@ -130,43 +136,21 @@ class PrescriptionCardList extends StatelessWidget {
         children: [
           Text(
             day,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: Color(0xff424242),
-            ),
+            style: EcliniqTextStyles.responsiveHeadlineMedium(
+              context,
+            ).copyWith(color: Color(0xff424242)),
           ),
           Text(
             month,
-            style: TextStyle(
-              fontSize: 14,
-              color: isOlder ? Colors.grey[400] : Colors.grey[600],
-            ),
+            style: EcliniqTextStyles.responsiveBodySmall(
+              context,
+            ).copyWith(color: isOlder ? Colors.grey[400] : Colors.grey[600]),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSelectionCheckbox() {
-    return Container(
-      width: 40,
-      height: 60,
-      alignment: Alignment.center,
-      child: Container(
-        width: 28,
-        height: 28,
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF2372EC) : Colors.white,
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: Color(0xffD6D6D6), width: 0.5),
-        ),
-        child: isSelected
-            ? const Icon(Icons.check, size: 18, color: Colors.white)
-            : null,
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -214,10 +198,10 @@ class PrescriptionCardList extends StatelessWidget {
                 ),
               )
             else
-              _buildDateColumn(day, month),
+              _buildDateColumn(day, month, context),
 
             const SizedBox(width: 12),
-            _buildThumbnail(),
+            _buildThumbnail(context),
             const SizedBox(width: 12),
 
             Expanded(
@@ -226,22 +210,20 @@ class PrescriptionCardList extends StatelessWidget {
                 children: [
                   Text(
                     file.fileName,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xff424242),
-                    ),
+                    style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                        .copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xff424242),
+                        ),
                     maxLines: 1,
                     //overflow: TextOverflow.ellipsis,
                   ),
 
                   Text(
                     _getRecordForDisplay(),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xff8E8E8E),
-                    ),
+                    style: EcliniqTextStyles.responsiveBodySmall(
+                      context,
+                    ).copyWith(color: Color(0xff8E8E8E)),
                   ),
                 ],
               ),

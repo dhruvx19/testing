@@ -21,10 +21,12 @@ import 'package:ecliniq/ecliniq_modules/screens/profile/widgets/notification_car
 import 'package:ecliniq/ecliniq_modules/screens/profile/widgets/physical_card.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/widgets/user_info.dart'
     hide BasicInfoCards, ProfileHeader;
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_navigation/bottom_navigation.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
+import 'package:ecliniq/ecliniq_core/notifications/test_notification_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
@@ -231,7 +233,8 @@ class _ProfilePageState extends State<ProfilePage>
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => SecuritySettingsOptions(patientData: _patientData),
+        builder: (context) =>
+            SecuritySettingsOptions(patientData: _patientData),
       ),
     );
   }
@@ -556,11 +559,15 @@ extension _ProfilePageContent on _ProfilePageState {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            Icon(
+              Icons.error_outline,
+              size: EcliniqTextStyles.getResponsiveIconSize(context, 64),
+              color: Colors.red,
+            ),
             const SizedBox(height: 16),
             Text(
               _errorMessage ?? 'Failed to load patient details',
-              style: const TextStyle(fontSize: 16, color: Colors.red),
+              style:  EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(color: Colors.red),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -625,7 +632,7 @@ extension _ProfilePageContent on _ProfilePageState {
             onAddDependent: _handleAddDependent,
             onDependentTap: _handleDependentTap,
           ),
-        Divider(color: Color(0xffD6D6D6), thickness: 0.5, height: 40),
+          Divider(color: Color(0xffD6D6D6), thickness: 0.5, height: 40),
           const SizedBox(height: 14),
           AppUpdateBanner(
             currentVersion: currentVersion,
@@ -686,33 +693,11 @@ extension _ProfilePageContent on _ProfilePageState {
                 ),
               );
             },
-            onDeleteAccountPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Delete Account'),
-                  content: const Text(
-                    'Are you sure you want to delete your account? This action cannot be undone.',
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancel'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: const Text(
-                        'Delete',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
           ),
+          const SizedBox(height: 24),
+          // Test widget for lock screen notifications (development/testing)
+          // const TestNotificationWidget(),
+          // const SizedBox(height: 24),
         ],
       ),
     );

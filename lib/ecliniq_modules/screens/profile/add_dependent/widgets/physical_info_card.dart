@@ -107,6 +107,7 @@ class _PhysicalInfoCardState extends State<PhysicalInfoCard> {
                 mobileLarge: 32.0,
               ),
               child: _buildTextField(
+                 context:   context,
                 label: 'Height (cm)',
                 hint: 'Enter Height',
                 controller: _heightController,
@@ -139,6 +140,7 @@ class _PhysicalInfoCardState extends State<PhysicalInfoCard> {
                 mobileLarge: 32.0,
               ),
               child: _buildTextField(
+                 context:   context,
                 label: 'Weight (kg)',
                 hint: 'Enter Weight',
                 controller: _weightController,
@@ -161,14 +163,14 @@ class _PhysicalInfoCardState extends State<PhysicalInfoCard> {
                   children: [
                     Text(
                       'BMI',
-                      style: EcliniqTextStyles.headlineXMedium.copyWith(
+                      style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                         color: EcliniqColors.light.textSecondary,
                       ),
                     ),
                     Spacer(),
                     Text(
                       _calculateBMI(provider.height, provider.weight),
-                      style: EcliniqTextStyles.headlineXMedium.copyWith(
+                      style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                         color: EcliniqColors.light.textSecondary,
                       ),
                     ),
@@ -190,6 +192,7 @@ Widget _buildTextField({
   TextInputType? keyboardType,
   required Function(String) onChanged,
   List<TextInputFormatter>? inputFormatters,
+  required BuildContext context,  
 }) {
   return Row(
     children: [
@@ -199,7 +202,7 @@ Widget _buildTextField({
           children: [
             Text(
               label,
-              style: EcliniqTextStyles.headlineXMedium.copyWith(
+              style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                 color: Color(0xff626060),
               ),
             ),
@@ -217,14 +220,14 @@ Widget _buildTextField({
           inputFormatters: inputFormatters,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: EcliniqTextStyles.headlineXMedium.copyWith(
+            hintStyle: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
               color: Color(0xffB8B8B8),
             ),
             border: InputBorder.none,
             isDense: true,
             contentPadding: EdgeInsets.zero,
           ),
-          style: EcliniqTextStyles.headlineXMedium.copyWith(
+          style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
             color: Color(0xff424242),
           ),
         ),

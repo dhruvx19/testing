@@ -1,3 +1,4 @@
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
 import 'package:flutter/material.dart';
 
@@ -27,10 +28,10 @@ class _CancellationPolicyBottomSheetState
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const EcliniqText(
+           EcliniqText(
             'Cancellation & Rescheduling Policy',
-            style: TextStyle(
-              fontSize: 18,
+            style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+       
               fontWeight: FontWeight.w500,
               color: Color(0xFF424242),
             ),
@@ -70,8 +71,8 @@ class _CancellationPolicyBottomSheetState
         Expanded(
           child: EcliniqText(
             text,
-            style: const TextStyle(
-              fontSize: 16,
+            style:  EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+            
               fontWeight: FontWeight.w400,
               color: Color(0xFF626060),
               height: 1.5,

@@ -117,7 +117,7 @@ class _TimeSlotCardState extends State<TimeSlotCard> {
                       children: [
                         Text(
                           '${widget.title} (${widget.time})',
-                          style: EcliniqTextStyles.headlineXMedium.copyWith(
+                          style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                             color: textColor,
                           ),
                         ),
@@ -145,7 +145,7 @@ class _TimeSlotCardState extends State<TimeSlotCard> {
                             widget.available == 0
                                 ? 'No tokens available'
                                 : '${widget.available} Tokens Available',
-                            style: EcliniqTextStyles.titleXLarge.copyWith(
+                            style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                               color: _getAvailabilityColor(),
                             ),
                           ),

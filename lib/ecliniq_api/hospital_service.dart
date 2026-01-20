@@ -24,7 +24,6 @@ class HospitalService {
   /// Get stored auth token
   String? get authToken => _authToken;
 
-
   Future<TopHospitalsResponse> getTopHospitals({
     required double latitude,
     required double longitude,
@@ -32,16 +31,15 @@ class HospitalService {
     try {
       final url = Uri.parse(Endpoints.topHospitals);
 
+      // Hardcoded latitude and longitude
       final requestBody = TopHospitalsRequest(
-        latitude: latitude,
-        longitude: longitude,
+        latitude: 12.9173,
+        longitude: 77.6377,
       );
 
       final response = await http.post(
         url,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody.toJson()),
       );
 
@@ -113,16 +111,11 @@ class HospitalService {
     try {
       final url = Uri.parse(Endpoints.getAllHospitals);
 
-      final requestBody = {
-        "latitude": latitude,
-        "longitude": longitude,
-      };
+      final requestBody = {"latitude": latitude, "longitude": longitude};
 
       final response = await http.post(
         url,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody),
       );
 
@@ -151,7 +144,6 @@ class HospitalService {
     }
   }
 
-  
   Future<HospitalDetailsResponse> getHospitalDetails({
     required String hospitalId,
   }) async {
@@ -172,9 +164,7 @@ class HospitalService {
 
       final response = await http.get(
         url,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
       );
 
       if (response.statusCode == 200) {
@@ -269,8 +259,6 @@ class HospitalService {
     try {
       final url = Uri.parse(Endpoints.getAllDoctorHospital(hospitalId));
 
-      // Prepare headers with authentication
-      // Using both Authorization Bearer and x-access-token for compatibility
       final headers = <String, String>{
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $authToken',
@@ -360,7 +348,6 @@ class HospitalService {
     }
   }
 
-
   Future<TopHospitalsResponse> searchHospitals({
     required String query,
     double? latitude,
@@ -378,29 +365,10 @@ class HospitalService {
     }
 
     try {
-      // Use provided coordinates or get from stored location
-      double finalLatitude = latitude ?? 28.6139;
-      double finalLongitude = longitude ?? 77.209;
-      
-      if (latitude == null || longitude == null) {
-        try {
-          final storage = await SharedPreferences.getInstance();
-          final storedLat = storage.getDouble('user_latitude');
-          final storedLng = storage.getDouble('user_longitude');
-          if (storedLat != null && storedLng != null) {
-            finalLatitude = storedLat;
-            finalLongitude = storedLng;
-          }
-        } catch (e) {
-          // Use defaults if location not available
-        }
-      }
-      
-      // Implement search endpoint when available
-      // For now, fetch all hospitals and filter locally
+      // Hardcoded latitude and longitude
       final response = await getTopHospitals(
-        latitude: finalLatitude,
-        longitude: finalLongitude,
+        latitude: 12.9173,
+        longitude: 77.6377,
       );
 
       if (response.success) {
@@ -413,7 +381,10 @@ class HospitalService {
           message: 'Hospitals filtered successfully',
           data: filteredHospitals,
           errors: null,
-          meta: {'searchQuery': query, 'resultsCount': filteredHospitals.length},
+          meta: {
+            'searchQuery': query,
+            'resultsCount': filteredHospitals.length,
+          },
           timestamp: DateTime.now().toIso8601String(),
         );
       }
@@ -430,7 +401,6 @@ class HospitalService {
       );
     }
   }
-
 
   Future<TopDoctorsResponse> getDoctorsBySpecialization({
     required String hospitalId,
@@ -476,7 +446,6 @@ class HospitalService {
     }
   }
 
-
   Future<TopDoctorsResponse> getAvailableDoctors({
     required String hospitalId,
     required String authToken,
@@ -514,5 +483,263 @@ class HospitalService {
         timestamp: DateTime.now().toIso8601String(),
       );
     }
+  }
+
+  /// Get filtered hospitals by patient with typed response
+  /// @description Fetches hospitals based on various filters and returns typed response
+  /// @param latitude - Latitude for location-based filtering
+  /// @param longitude - Longitude for location-based filtering
+  /// @param searchQuery - Optional search query string
+  /// @param city - Optional city filter
+  /// @param state - Optional state filter
+  /// @param distance - Optional distance filter in km
+  /// @param speciality - Optional list of specialities
+  /// @param availability - Optional availability filter
+  /// @param date - Optional date filter (ISO format)
+  /// @param gender - Optional gender filter
+  /// @param workExperience - Optional work experience filter
+  /// @param languages - Optional list of languages
+  /// @param practiceArea - Optional list of practice areas
+  /// @param page - Page number for pagination
+  /// @param limit - Number of results per page
+  /// @param authToken - Optional authentication token
+  /// @returns Future<FilteredHospitalsResponse> - Typed response containing filtered hospitals with pagination
+  Future<FilteredHospitalsResponse> getFilteredHospitalsTyped({
+    required double latitude,
+    required double longitude,
+    String? searchQuery,
+    String? city,
+    String? state,
+    double? distance,
+    List<String>? speciality,
+    String? availability,
+    String? date,
+    String? gender,
+    String? workExperience,
+    List<String>? languages,
+    List<String>? practiceArea,
+    int page = 1,
+    int limit = 50,
+    String? authToken,
+  }) async {
+    try {
+      final url = Uri.parse(Endpoints.getFilteredHospitals);
+
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+      };
+
+      if (authToken != null) {
+        headers['Authorization'] = 'Bearer $authToken';
+        headers['x-access-token'] = authToken;
+      }
+
+      // Build request payload
+      final requestBody = <String, dynamic>{
+        'latitude': latitude,
+        'longitude': longitude,
+        'page': page,
+        'limit': limit,
+      };
+
+      // Add optional parameters only if they are not null
+      if (searchQuery != null && searchQuery.isNotEmpty) {
+        requestBody['searchQuery'] = searchQuery;
+      }
+      if (city != null && city.isNotEmpty) {
+        requestBody['city'] = city;
+      }
+      if (state != null && state.isNotEmpty) {
+        requestBody['state'] = state;
+      }
+      if (distance != null) {
+        requestBody['distance'] = distance;
+      }
+      if (workExperience != null && workExperience.isNotEmpty) {
+        requestBody['workExperience'] = workExperience;
+      }
+      if (practiceArea != null && practiceArea.isNotEmpty) {
+        requestBody['practiceArea'] = practiceArea;
+      }
+      if (speciality != null && speciality.isNotEmpty) {
+        requestBody['speciality'] = speciality;
+      }
+      if (availability != null && availability.isNotEmpty) {
+        requestBody['availability'] = availability;
+      }
+      if (date != null && date.isNotEmpty) {
+        requestBody['date'] = date;
+      }
+      if (gender != null && gender.isNotEmpty) {
+        requestBody['gender'] = gender;
+      }
+      if (languages != null && languages.isNotEmpty) {
+        requestBody['languages'] = languages;
+      }
+
+      final response = await http.post(
+        url,
+        headers: headers,
+        body: jsonEncode(requestBody),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        return FilteredHospitalsResponse.fromJson(responseData);
+      } else {
+        final responseData = jsonDecode(response.body);
+        return FilteredHospitalsResponse(
+          success: false,
+          message: responseData['message'] ?? 'Failed to fetch filtered hospitals',
+          data: null,
+          errors: responseData['errors'] ?? response.body,
+          meta: {'statusCode': response.statusCode},
+          timestamp: DateTime.now().toIso8601String(),
+        );
+      }
+    } catch (e) {
+      return FilteredHospitalsResponse(
+        success: false,
+        message: 'Network error: $e',
+        data: null,
+        errors: e.toString(),
+        meta: null,
+        timestamp: DateTime.now().toIso8601String(),
+      );
+    }
+  }
+
+  /// Get filtered hospitals by patient
+  /// @description Fetches hospitals based on various filters using the same structure as FilterDoctorsRequest
+  /// @param request - FilterDoctorsRequest-like object with filter parameters (latitude, longitude, city, distance, speciality, availability, date, gender, workExperience, languages, practiceArea, page, limit)
+  /// @param searchQuery - Optional search query string
+  /// @param authToken - Optional authentication token
+  /// @returns Future<Map<String, dynamic>> - Response containing filtered hospitals with pagination
+  Future<Map<String, dynamic>> getFilteredHospitals({
+    required double latitude,
+    required double longitude,
+    String? city,
+    double? distance,
+    String? workExperience,
+    List<String>? practiceArea,
+    List<String>? speciality,
+    String? availability,
+    String? date,
+    String? gender,
+    List<String>? languages,
+    String? searchQuery,
+    int page = 1,
+    int limit = 50,
+    String? authToken,
+  }) async {
+    try {
+      final url = Uri.parse(Endpoints.getFilteredHospitals);
+
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+      };
+
+      if (authToken != null) {
+        headers['Authorization'] = 'Bearer $authToken';
+        headers['x-access-token'] = authToken;
+      }
+
+      // Build request payload matching FilterDoctorsRequest structure
+      final requestBody = <String, dynamic>{
+        'latitude': latitude,
+        'longitude': longitude,
+        'page': page,
+        'limit': limit,
+      };
+
+      // Add optional parameters only if they are not null
+      if (searchQuery != null && searchQuery.isNotEmpty) {
+        requestBody['searchQuery'] = searchQuery;
+      }
+      if (city != null && city.isNotEmpty) {
+        requestBody['city'] = city;
+      }
+      if (distance != null) {
+        requestBody['distance'] = distance;
+      }
+      if (workExperience != null && workExperience.isNotEmpty) {
+        requestBody['workExperience'] = workExperience;
+      }
+      if (practiceArea != null && practiceArea.isNotEmpty) {
+        requestBody['practiceArea'] = practiceArea;
+      }
+      if (speciality != null && speciality.isNotEmpty) {
+        requestBody['speciality'] = speciality;
+      }
+      if (availability != null && availability.isNotEmpty) {
+        requestBody['availability'] = availability;
+      }
+      if (date != null && date.isNotEmpty) {
+        requestBody['date'] = date;
+      }
+      if (gender != null && gender.isNotEmpty) {
+        requestBody['gender'] = gender;
+      }
+      if (languages != null && languages.isNotEmpty) {
+        requestBody['languages'] = languages;
+      }
+
+      final response = await http.post(
+        url,
+        headers: headers,
+        body: jsonEncode(requestBody),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        final responseData = jsonDecode(response.body);
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 'Failed to fetch filtered hospitals',
+          'data': null,
+          'errors': responseData['errors'] ?? response.body,
+          'meta': null,
+          'timestamp': DateTime.now().toIso8601String(),
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Network error: $e',
+        'data': null,
+        'errors': e.toString(),
+        'meta': null,
+        'timestamp': DateTime.now().toIso8601String(),
+      };
+    }
+  }
+
+  /// Get filtered hospitals using FilterDoctorsRequest-like structure
+  /// @description Convenience method that accepts a map with the same structure as FilterDoctorsRequest
+  /// @param filters - Map containing filter parameters matching FilterDoctorsRequest structure
+  /// @param authToken - Optional authentication token
+  /// @returns Future<Map<String, dynamic>> - Response containing filtered hospitals with pagination
+  Future<Map<String, dynamic>> getFilteredHospitalsFromMap({
+    required Map<String, dynamic> filters,
+    String? authToken,
+  }) async {
+    return getFilteredHospitals(
+      latitude: filters['latitude'] as double? ?? 12.9173,
+      longitude: filters['longitude'] as double? ?? 77.6377,
+      city: filters['city'] as String?,
+      distance: filters['distance'] as double?,
+      workExperience: filters['workExperience'] as String?,
+      practiceArea: filters['practiceArea'] as List<String>?,
+      speciality: filters['speciality'] as List<String>?,
+      availability: filters['availability'] as String?,
+      date: filters['date'] as String?,
+      gender: filters['gender'] as String?,
+      languages: filters['languages'] as List<String>?,
+      searchQuery: filters['searchQuery'] as String?,
+      page: filters['page'] as int? ?? 1,
+      limit: filters['limit'] as int? ?? 50,
+      authToken: authToken,
+    );
   }
 }

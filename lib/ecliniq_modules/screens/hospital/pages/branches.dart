@@ -2,7 +2,9 @@ import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/hospital/pages/hospital_details.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/widgets/basic_info.dart';
-import 'package:ecliniq/widgets/horizontal_divider.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
+import 'package:ecliniq/ecliniq_utils/horizontal_divider.dart';
+import 'package:ecliniq/ecliniq_utils/phone_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shimmer/shimmer.dart';
@@ -122,7 +124,9 @@ class _BranchesPageState extends State<BranchesPage> {
           // Branches List
           _buildBranchesList(),
 
-          const SizedBox(height: 100),
+          SizedBox(
+            height: EcliniqTextStyles.getResponsiveSpacing(context, 100),
+          ),
         ],
       ),
     );
@@ -222,42 +226,56 @@ class _BranchesPageState extends State<BranchesPage> {
 
         // Hospital Info
         Container(
-          margin: const EdgeInsets.only(top: 260),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          margin: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+            context,
+            top: 260,
+            bottom: 0,
+            left: 0,
+            right: 0,
+          ),
+          padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+            context,
+            horizontal: 16,
+            vertical: 0,
+          ),
           child: Column(
             children: [
               Text(
                 'Manipal Hospital',
-                style: const TextStyle(
-                  fontSize: 24,
+                style:  EcliniqTextStyles.responsiveHeadlineXLarge(context).copyWith(
+           
                   fontWeight: FontWeight.w600,
                   color: Color(0xff424242),
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 8),
+              SizedBox(
+            height: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+          ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     widget.hospitalType ?? 'Multi-Specialty',
-                    style: const TextStyle(
-                      fontSize: 16,
+                    style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                       color: Color(0xff424242),
                       fontWeight: FontWeight.w400,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+                  ),
                   Container(
                     width: 0.5,
                     height: 20,
                     color: const Color(0xffD6D6D6),
                   ),
-                  const SizedBox(width: 8),
-                  const Text(
+                  SizedBox(
+                    width: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+                  ),
+                  Text(
                     'All Branches Near You',
-                    style: TextStyle(
-                      fontSize: 16,
+                    style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                       color: Color(0xff424242),
                       fontWeight: FontWeight.w400,
                     ),
@@ -283,29 +301,41 @@ class _BranchesPageState extends State<BranchesPage> {
           shape: BoxShape.circle,
         ),
         child: Center(
-          child: SvgPicture.asset(icon.assetPath, width: 24, height: 24),
+          child: SvgPicture.asset(
+            icon.assetPath,
+            width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+            height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+          ),
         ),
       ),
     );
   }
 
   Widget _buildStatsCards() {
-      final totalDoctors = widget.totalDoctors ?? 90;
-  final totalBeds = widget.totalBeds ?? 1800;
-  final patientsServed = widget.patientsServed ?? (totalDoctors * 1000);
+    final totalDoctors = widget.totalDoctors ?? 90;
+    final totalBeds = widget.totalBeds ?? 1800;
+    final patientsServed = widget.patientsServed ?? (totalDoctors * 1000);
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+        context,
+        horizontal: 0,
+        vertical: 8,
+      ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+          context,
+          horizontal: 16,
+          vertical: 0,
+        ),
         child: Row(
           children: [
             _buildStatCard(
               EcliniqIcons.usersGroupRounded,
               'Patients Served',
-             
-                 _formatNumber(patientsServed),
+
+              _formatNumber(patientsServed),
             ),
             DashedVerticalDivider(height: 110),
             _buildStatCard(
@@ -317,7 +347,7 @@ class _BranchesPageState extends State<BranchesPage> {
             _buildStatCard(
               EcliniqIcons.bed,
               'Total Beds',
-            _formatNumber(totalBeds),
+              _formatNumber(totalBeds),
             ),
           ],
         ),
@@ -330,22 +360,27 @@ class _BranchesPageState extends State<BranchesPage> {
       width: 140,
       child: Column(
         children: [
-          SvgPicture.asset(icon.assetPath, width: 24, height: 24),
+          SvgPicture.asset(
+            icon.assetPath,
+            width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+            height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+          ),
           const SizedBox(height: 4),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 16,
+            style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
               fontWeight: FontWeight.w400,
               color: Color(0xff626060),
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
+          SizedBox(
+            height: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+          ),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 24,
+            style: EcliniqTextStyles.responsiveHeadlineXLarge(context).copyWith(
+             
               fontWeight: FontWeight.w600,
               color: Color(0xff2372EC),
             ),
@@ -355,7 +390,6 @@ class _BranchesPageState extends State<BranchesPage> {
     );
   }
 
-
   String _formatNumber(int number) {
     if (number >= 1000000) {
       return '${(number / 1000000).toStringAsFixed(1)}M';
@@ -364,8 +398,6 @@ class _BranchesPageState extends State<BranchesPage> {
     }
     return number.toString();
   }
-
-  
 
   Widget _buildBranchesList() {
     if (_branches.isEmpty) {
@@ -377,7 +409,9 @@ class _BranchesPageState extends State<BranchesPage> {
       physics: const NeverScrollableScrollPhysics(),
       itemCount: _branches.length,
       padding: EdgeInsets.zero,
-      separatorBuilder: (context, index) => const SizedBox(height: 0),
+      separatorBuilder: (context, index) => SizedBox(
+        height: EcliniqTextStyles.getResponsiveSpacing(context, 0),
+      ),
       itemBuilder: (context, index) {
         return _buildBranchCard(_branches[index]);
       },
@@ -397,8 +431,8 @@ class _BranchesPageState extends State<BranchesPage> {
                 children: [
                   Text(
                     branch.name,
-                    style: const TextStyle(
-                      fontSize: 20,
+                    style:  EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
+                    
                       fontWeight: FontWeight.w600,
                       color: Color(0xff424242),
                     ),
@@ -416,13 +450,14 @@ class _BranchesPageState extends State<BranchesPage> {
               // Type | Doctors | Beds
               Text(
                 '${branch.type} | ${branch.doctorCount}+ Doctors | ${branch.bedCount} Beds',
-                style: const TextStyle(
-                  fontSize: 16,
+                style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                   color: Color(0xff424242),
                   fontWeight: FontWeight.w400,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(
+            height: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+          ),
 
               // Location and Rating Row
               Row(
@@ -435,13 +470,14 @@ class _BranchesPageState extends State<BranchesPage> {
                   const SizedBox(width: 4),
                   Text(
                     branch.location,
-                    style: const TextStyle(
-                      fontSize: 16,
+                    style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                       color: Color(0xff424242),
                       fontWeight: FontWeight.w400,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+                  ),
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 6,
@@ -460,8 +496,8 @@ class _BranchesPageState extends State<BranchesPage> {
                       children: [
                         Text(
                           '${branch.distance.toStringAsFixed(0)} KM',
-                          style: const TextStyle(
-                            fontSize: 14,
+                          style:  EcliniqTextStyles.responsiveBodySmall(context).copyWith(
+                      
                             color: Color(0xff424242),
                             fontWeight: FontWeight.w400,
                           ),
@@ -495,8 +531,7 @@ class _BranchesPageState extends State<BranchesPage> {
                         const SizedBox(width: 4),
                         Text(
                           branch.rating.toString(),
-                          style: const TextStyle(
-                            fontSize: 16,
+                          style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                             color: Color(0xffBE8B00),
                             fontWeight: FontWeight.w400,
                           ),
@@ -506,7 +541,9 @@ class _BranchesPageState extends State<BranchesPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              SizedBox(
+            height: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+          ),
 
               // OPD Timing
               Row(
@@ -521,8 +558,7 @@ class _BranchesPageState extends State<BranchesPage> {
                   Expanded(
                     child: Text(
                       'OPD Timing: ${branch.opdTiming}',
-                      style: const TextStyle(
-                        fontSize: 16,
+                      style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                         color: Color(0xff424242),
                         fontWeight: FontWeight.w400,
                       ),
@@ -565,10 +601,9 @@ class _BranchesPageState extends State<BranchesPage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text(
+                            Text(
                               'View All Doctors',
-                              style: TextStyle(
-                                fontSize: 18,
+                              style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -586,9 +621,7 @@ class _BranchesPageState extends State<BranchesPage> {
                   ),
                   const SizedBox(width: 16),
                   IconButton(
-                    onPressed: () {
-                      // TODO: Handle phone call
-                    },
+                    onPressed: () => PhoneLauncher.launchPhoneCall(null),
                     icon: SvgPicture.asset(
                       EcliniqIcons.phone.assetPath,
                       width: 32,
@@ -708,7 +741,9 @@ class _BranchesPageState extends State<BranchesPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(
+            height: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+          ),
             Shimmer.fromColors(
               baseColor: Colors.grey.shade300,
               highlightColor: Colors.grey.shade100,
@@ -781,17 +816,18 @@ class _BranchesPageState extends State<BranchesPage> {
             const SizedBox(height: 16),
             Text(
               'No Branches Found',
-              style: TextStyle(
-                fontSize: 18,
+              style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                 fontWeight: FontWeight.w600,
                 color: Colors.grey.shade700,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(
+            height: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+          ),
             Text(
               'No branches available for this hospital',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+              style: EcliniqTextStyles.responsiveBodySmall(context).copyWith( color: Colors.grey.shade600),
             ),
           ],
         ),

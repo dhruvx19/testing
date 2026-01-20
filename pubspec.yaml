@@ -46,6 +46,7 @@ dependencies:
   phonepe_payment_sdk: ^3.0.2
   package_info_plus: ^9.0.0
   speech_to_text: ^7.3.0
+  mime: ^2.0.0
 
 
 dev_dependencies:

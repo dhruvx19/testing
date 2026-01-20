@@ -73,8 +73,16 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
   @override
   void initState() {
     super.initState();
-    _selectedMethod = widget.currentSelectedMethod;
-    _selectedMethodPackage = widget.currentSelectedPackage;
+    // Use passed selection if available, otherwise default to Google Pay
+    if (widget.currentSelectedMethod != null &&
+        widget.currentSelectedPackage != null) {
+      _selectedMethod = widget.currentSelectedMethod;
+      _selectedMethodPackage = widget.currentSelectedPackage;
+    } else {
+      // Default to Google Pay
+      _selectedMethod = 'Gpay';
+      _selectedMethodPackage = 'com.google.android.apps.nbu.paisa.user';
+    }
     _useWallet = widget.useWallet;
   }
 
@@ -97,6 +105,12 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
     setState(() {
       _selectedMethodPackage = packageName;
       _selectedMethod = name;
+    });
+    // Auto-close bottom sheet when payment method is selected
+    Navigator.pop(context, {
+      'name': name,
+      'packageName': packageName,
+      'useWallet': _useWallet,
     });
   }
 
@@ -144,8 +158,8 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
                       Expanded(
                         child: Text(
                           'Upchar-Q Coin Balance : ₹${widget.walletBalance.toStringAsFixed(2)}',
-                          style: EcliniqTextStyles.headlineXMedium.copyWith(
-                            fontSize: 14,
+                          style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
+                        
                             color: Color(0xff424242),
                           ),
                         ),
@@ -175,7 +189,7 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
                           child: _useWallet
                               ? const Icon(
                                   Icons.check,
-                                  size: 18,
+                                  size: 20,
                                   color: Colors.white,
                                 )
                               : null,
@@ -189,9 +203,9 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
                   // Recommended Method section
                   Text(
                     'Recommended Method',
-                    style: EcliniqTextStyles.headlineMedium.copyWith(
+                    style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
                       color: const Color(0xff424242),
-                      fontSize: 20,
+                    
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -210,9 +224,9 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
                   // Cards section
                   Text(
                     'Cards',
-                    style: EcliniqTextStyles.headlineMedium.copyWith(
+                    style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
                       color: const Color(0xff424242),
-                      fontSize: 20,
+                 
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -228,52 +242,51 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
                   ),
 
                   // Add card button
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: const Color(0xFFE0E0E0),
-                        width: 1,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: ListTile(
-                      leading: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE3F2FD),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Icon(
-                          Icons.credit_card,
-                          color: Color(0xFF2372EC),
-                          size: 20,
-                        ),
-                      ),
-                      title: Text(
-                        'Add credit or debit cards',
-                        style: EcliniqTextStyles.headlineXMedium.copyWith(
-                          color: const Color(0xFF2372EC),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      trailing: const Icon(
-                        Icons.add,
-                        color: Color(0xFF2372EC),
-                        size: 24,
-                      ),
-                      onTap: () {
-                        // Handle add card
-                      },
-                    ),
-                  ),
-
+                  // Container(
+                  //   margin: const EdgeInsets.only(bottom: 12),
+                  //   decoration: BoxDecoration(
+                  //     border: Border.all(
+                  //       color: const Color(0xFFE0E0E0),
+                  //       width: 1,
+                  //     ),
+                  //     borderRadius: BorderRadius.circular(8),
+                  //   ),
+                  //   child: ListTile(
+                  //     leading: Container(
+                  //       padding: const EdgeInsets.all(6),
+                  //       decoration: BoxDecoration(
+                  //         color: const Color(0xFFE3F2FD),
+                  //         borderRadius: BorderRadius.circular(4),
+                  //       ),
+                  //       child: const Icon(
+                  //         Icons.credit_card,
+                  //         color: Color(0xFF2372EC),
+                  //         size: 20,
+                  //       ),
+                  //     ),
+                  //     title: Text(
+                  //       'Add credit or debit cards',
+                  //       style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
+                  //         color: const Color(0xFF2372EC),
+                  //         fontWeight: FontWeight.w500,
+                  //       ),
+                  //     ),
+                  //     trailing: const Icon(
+                  //       Icons.add,
+                  //       color: Color(0xFF2372EC),
+                  //       size: 24,
+                  //     ),
+                  //     onTap: () {
+                  //       // Handle add card
+                  //     },
+                  //   ),
+                  // ),
                   const SizedBox(height: 24),
 
                   // Pay by any UPI App section
                   // Text(
                   //   'Pay by any UPI App',
-                  //   style: EcliniqTextStyles.headlineMedium.copyWith(
+                  //   style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                   //     color: const Color(0xff424242),
                   //     fontWeight: FontWeight.w600,
                   //   ),
@@ -310,7 +323,7 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
                   //             contentPadding: EdgeInsets.zero,
                   //             isDense: true,
                   //           ),
-                  //           style: EcliniqTextStyles.headlineXMedium.copyWith(
+                  //           style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                   //             color: const Color(0xff424242),
                   //           ),
                   //         ),
@@ -372,16 +385,20 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
                                     width: 20,
                                     height: 20,
                                   ),
-                                const SizedBox(width: 2),
-                                const Text(
-                                  'Pay using',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
-                                    color: Color(0xff424242),
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child:  Text(
+                                    'Pay using',
+                                    style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
+                                     
+                                      fontWeight: FontWeight.w400,
+                                      color: Color(0xff424242),
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
                                   ),
                                 ),
-                     
+                                const SizedBox(width: 4),
                                 SvgPicture.asset(
                                   EcliniqIcons.arrowUp.assetPath,
                                   width: 16,
@@ -398,15 +415,11 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
                             Text(
                               _selectedMethod ??
                                   widget.selectedPaymentMethod ??
-                                  'Select payment method',
-                              style: TextStyle(
-                                fontSize: 15,
+                                  'Gpay',
+                              style: EcliniqTextStyles.responsiveButtonXLargeProminent(context).copyWith(
+                         
                                 fontWeight: FontWeight.w300,
-                                color:
-                                    _selectedMethod != null ||
-                                        widget.selectedPaymentMethod != null
-                                    ? const Color(0xff424242)
-                                    : const Color(0xff8E8E8E),
+                                color: const Color(0xff424242),
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -419,16 +432,14 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
 
                     // Right side - Pay & Confirm button
                     GestureDetector(
-                      onTap:
-                          (widget.isBooking || _selectedMethodPackage == null)
-                          ? null
-                          : _handleConfirm,
+                      onTap: widget.isBooking ? null : _handleConfirm,
                       child: Container(
-                        height: 52,
+                        height: EcliniqTextStyles.getResponsiveButtonHeight(
+                          context,
+                          baseHeight: 52.0,
+                        ),
                         decoration: BoxDecoration(
-                          boxShadow:
-                              (widget.isBooking ||
-                                  _selectedMethodPackage == null)
+                          boxShadow: widget.isBooking
                               ? null
                               : [
                                   const BoxShadow(
@@ -438,12 +449,12 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
                                     spreadRadius: 0,
                                   ),
                                 ],
-                          color:
-                              (widget.isBooking ||
-                                  _selectedMethodPackage == null)
+                          color: widget.isBooking
                               ? const Color(0xFFE0E0E0)
                               : const Color(0xFF2372EC),
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(
+                            EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
+                          ),
                         ),
                         child: widget.isBooking
                             ? const Center(
@@ -455,7 +466,8 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
                                 ),
                               )
                             : Padding(
-                                padding: const EdgeInsets.only(
+                                padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+                                  context,
                                   left: 12,
                                   top: 6,
                                   bottom: 6,
@@ -475,24 +487,23 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
                                         children: [
                                           Text(
                                             '₹${widget.serviceFee.toStringAsFixed(0)}',
-                                            style: TextStyle(
-                                              fontSize: 16,
+                                            style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+                                            
                                               fontWeight: FontWeight.w500,
-                                              color:
-                                                  (widget.isBooking ||
-                                                      _selectedMethodPackage ==
-                                                          null)
+                                              color: widget.isBooking
                                                   ? const Color(0xff8E8E8E)
                                                   : Colors.white,
                                               height: 1.0,
                                             ),
                                             overflow: TextOverflow.ellipsis,
                                           ),
-                                          const SizedBox(height: 2),
-                                          const Text(
+                                          SizedBox(
+                                            height: EcliniqTextStyles.getResponsiveSpacing(context, 2),
+                                          ),
+                                           Text(
                                             'Total',
-                                            style: TextStyle(
-                                              fontSize: 13,
+                                            style: EcliniqTextStyles.responsiveLabelSmall(context).copyWith(
+                                            
                                               fontWeight: FontWeight.w300,
                                               color: Colors.white,
                                               height: 1.0,
@@ -501,18 +512,17 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
                                         ],
                                       ),
                                     ),
-                                    const SizedBox(width: 34),
+                                    SizedBox(
+                                      width: EcliniqTextStyles.getResponsiveSpacing(context, 34),
+                                    ),
                                     // Pay & Confirm text
                                     Expanded(
                                       child: Text(
                                         'Pay & Confirm',
-                                        style: TextStyle(
-                                          fontSize: 16,
+                                        style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+                             
                                           fontWeight: FontWeight.w500,
-                                          color:
-                                              (widget.isBooking ||
-                                                  _selectedMethodPackage ==
-                                                      null)
+                                          color: widget.isBooking
                                               ? const Color(0xff8E8E8E)
                                               : Colors.white,
                                         ),
@@ -526,9 +536,7 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
                                         width: 24,
                                         height: 24,
                                         colorFilter: ColorFilter.mode(
-                                          (widget.isBooking ||
-                                                  _selectedMethodPackage ==
-                                                      null)
+                                          widget.isBooking
                                               ? const Color(0xff8E8E8E)
                                               : Colors.white,
                                           BlendMode.srcIn,
@@ -598,7 +606,7 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
             Expanded(
               child: Text(
                 name,
-                style: EcliniqTextStyles.headlineXMedium.copyWith(
+                style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                   color: const Color(0xff424242),
                   fontWeight: FontWeight.w400,
                 ),
@@ -648,50 +656,37 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         decoration: BoxDecoration(
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFF2372EC)
-                : const Color(0xFFE0E0E0),
-            width: isSelected ? 2 : 1,
-          ),
+          border: Border.all(color: const Color(0xFFD6D6D6), width: 0.5),
           borderRadius: BorderRadius.circular(8),
-          color: isSelected
-              ? const Color(0xFFE3F2FD).withOpacity(0.3)
-              : Colors.white,
+          color: const Color(0xFFffffff),
         ),
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1434CB),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                cardType,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
-              ),
-            ),
+            Image.asset(EcliniqIcons.visa.assetPath, width: 40, height: 40),
             const SizedBox(width: 12),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
                   Text(
                     bankName,
-                    style: EcliniqTextStyles.headlineXMedium.copyWith(
+                    style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                       color: const Color(0xff424242),
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w400,
                     ),
                   ),
                   Text(
+                    ' | ',
+                    style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
+                      color: const Color(0xff424242),
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+
+                  Text(
                     cardNumber,
-                    style: EcliniqTextStyles.buttonSmall.copyWith(
-                      color: const Color(0xff626060),
+                    style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
+                      color: const Color(0xff424242),
+                      fontWeight: FontWeight.w400,
                     ),
                   ),
                 ],

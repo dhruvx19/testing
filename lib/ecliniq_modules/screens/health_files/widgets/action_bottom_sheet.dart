@@ -1,7 +1,10 @@
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/health_files/edit_doc_details.dart';
-import 'package:ecliniq/ecliniq_modules/screens/health_files/models/health_file_model.dart';
+import 'package:ecliniq/ecliniq_api/health_file_model.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
+import 'package:ecliniq/ecliniq_utils/bottom_sheets/health_files/delete_file_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -10,6 +13,7 @@ class ActionBottomSheet extends StatefulWidget {
   final VoidCallback? onEditDocument;
   final VoidCallback? onDownloadDocument;
   final VoidCallback? onDeleteDocument;
+  final BuildContext? parentContext;
 
   const ActionBottomSheet({
     super.key,
@@ -17,6 +21,7 @@ class ActionBottomSheet extends StatefulWidget {
     this.onEditDocument,
     this.onDownloadDocument,
     this.onDeleteDocument,
+    this.parentContext,
   });
 
   @override
@@ -37,10 +42,10 @@ class _ActionBottomSheetState extends State<ActionBottomSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+           Text(
             'Choose Action',
-            style: TextStyle(
-              fontSize: 18,
+            style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+          
               fontWeight: FontWeight.w500,
               color: Color(0xFF424242),
             ),
@@ -85,9 +90,31 @@ class _ActionBottomSheetState extends State<ActionBottomSheet> {
             title: 'Delete Document',
             isDestructive: true,
             onTap: () async {
+              // Get parent context before closing this bottom sheet
+              final parentCtx = widget.parentContext ?? context;
               Navigator.pop(context);
               await Future.delayed(const Duration(milliseconds: 200));
-              widget.onDeleteDocument?.call();
+              
+              // Show delete confirmation bottom sheet using parent context
+              if (parentCtx.mounted) {
+                final confirmed = await EcliniqBottomSheet.show<bool>(
+                  context: parentCtx,
+                  child: const DeleteFileBottomSheet(),
+                );
+                
+                debugPrint('Delete confirmation result: $confirmed');
+                
+                // If user confirmed deletion, call the delete callback
+                if (confirmed == true && parentCtx.mounted) {
+                  debugPrint('Calling delete callback...');
+                  widget.onDeleteDocument?.call();
+                  debugPrint('Delete callback called');
+                } else {
+                  debugPrint('Delete not confirmed or context not mounted. confirmed: $confirmed, mounted: ${parentCtx.mounted}');
+                }
+              } else {
+                debugPrint('Parent context not mounted');
+              }
             },
           ),
 
@@ -130,14 +157,18 @@ class _ActionOption extends StatelessWidget {
           ),
           child: Row(
             children: [
-              SvgPicture.asset(icon.assetPath, width: 26, height: 26),
+              SvgPicture.asset(
+                icon.assetPath,
+                width: EcliniqTextStyles.getResponsiveIconSize(context, 26),
+                height: EcliniqTextStyles.getResponsiveIconSize(context, 26),
+              ),
               const SizedBox(width: 16),
 
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyle(
-                    fontSize: 18,
+                  style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+                  
                     fontWeight: FontWeight.w400,
                     color: isDestructive
                         ? const Color(0xFFF04248)

@@ -2,6 +2,8 @@ import 'package:ecliniq/ecliniq_api/models/doctor.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
+import 'package:ecliniq/ecliniq_utils/phone_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -38,13 +40,13 @@ class ClinicalDetailsWidget extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
+              Text(
                 'Clinical Details',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xff424242),
-                ),
+                style: EcliniqTextStyles.responsiveHeadlineLarge(context)
+                    .copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xff424242),
+                    ),
               ),
             ],
           ),
@@ -54,6 +56,7 @@ class ClinicalDetailsWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildDetailItem(
+                  context:   context,
                   label: 'Clinic Name:',
                   value: clinicDetails.name,
                 ),
@@ -62,11 +65,13 @@ class ClinicalDetailsWidget extends StatelessWidget {
 
                 if (clinicDetails.contactEmail != null)
                   _buildDetailItem(
+                    context:   context,
                     label: 'Clinic Contact Email:',
                     value: clinicDetails.contactEmail!,
                   ),
 
                 _buildDetailItem(
+                  context:   context,
                   label: 'Clinic Contact Number:',
                   value: clinicDetails.contactNumber!,
                 ),
@@ -78,27 +83,23 @@ class ClinicalDetailsWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailItem({required String label, required String value}) {
+  Widget _buildDetailItem({required String label, required String value, required BuildContext context}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
-            color: Color(0xff8E8E8E),
-          ),
+          style: EcliniqTextStyles.responsiveTitleXLarge(
+            context,
+          ).copyWith(fontWeight: FontWeight.w400, color: Color(0xff8E8E8E)),
         ),
         const SizedBox(height: 4),
         Text(
           value,
           maxLines: 3,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-            color: Color(0xff424242),
-          ),
+          style: EcliniqTextStyles.responsiveHeadlineBMedium(
+            context,
+          ).copyWith(fontWeight: FontWeight.w500, color: Color(0xff424242)),
         ),
         Divider(color: Color(0xffD6D6D6), thickness: 0.5),
       ],
@@ -135,13 +136,13 @@ class ProfessionalInformationWidget extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
+              Text(
                 'Professional Information',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xff424242),
-                ),
+                style: EcliniqTextStyles.responsiveHeadlineLarge(context)
+                    .copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xff424242),
+                    ),
               ),
             ],
           ),
@@ -155,11 +156,13 @@ class ProfessionalInformationWidget extends StatelessWidget {
                     label: 'Registration Number:',
                     value: professionalInfo.registrationNumber!,
                     hasVerification: true,
+                    context: context,
                   ),
                 if (professionalInfo.registrationNumber != null)
                   const SizedBox(height: 12),
                 if (professionalInfo.registrationCouncil != null)
                   _buildDetailItem(
+                    context: context,
                     label: 'Registration Council:',
                     value: professionalInfo.registrationCouncil!,
                   ),
@@ -167,6 +170,7 @@ class ProfessionalInformationWidget extends StatelessWidget {
                   const SizedBox(height: 12),
                 if (professionalInfo.registrationYear != null)
                   _buildDetailItem(
+                    context: context,
                     label: 'Registration Year:',
                     value: professionalInfo.registrationYear!,
                   ),
@@ -175,6 +179,7 @@ class ProfessionalInformationWidget extends StatelessWidget {
                 if (professionalInfo.specializations != null &&
                     professionalInfo.specializations!.isNotEmpty)
                   _buildDetailItem(
+                    context: context,
                     label: 'Specializations:',
                     value: professionalInfo.specializations!
                         .map((s) => '${s.name} (Exp: ${s.expYears}years)')
@@ -188,17 +193,19 @@ class ProfessionalInformationWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailItem({required String label, required String value}) {
+  Widget _buildDetailItem({
+    required String label,
+    required String value,
+    required BuildContext context,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
-            color: Color(0xff8E8E8E),
-          ),
+          style: EcliniqTextStyles.responsiveTitleXLarge(
+            context,
+          ).copyWith(fontWeight: FontWeight.w400, color: Color(0xff8E8E8E)),
         ),
         const SizedBox(height: 4),
 
@@ -208,11 +215,11 @@ class ProfessionalInformationWidget extends StatelessWidget {
               child: Text(
                 value,
                 maxLines: 20,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xff424242),
-                ),
+                style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                    .copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xff424242),
+                    ),
               ),
             ),
           ],
@@ -227,17 +234,16 @@ Widget _buildDetailItemRegis({
   required String label,
   required String value,
   bool hasVerification = false,
+  required BuildContext context,
 }) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Text(
         label,
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w400,
-          color: Color(0xff8E8E8E),
-        ),
+        style: EcliniqTextStyles.responsiveTitleXLarge(
+          context,
+        ).copyWith(fontWeight: FontWeight.w400, color: Color(0xff8E8E8E)),
       ),
       const SizedBox(height: 4),
 
@@ -246,11 +252,9 @@ Widget _buildDetailItemRegis({
           Text(
             value,
             maxLines: 20,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: Color(0xff424242),
-            ),
+            style: EcliniqTextStyles.responsiveHeadlineBMedium(
+              context,
+            ).copyWith(fontWeight: FontWeight.w500, color: Color(0xff424242)),
           ),
           if (hasVerification) ...[
             SvgPicture.asset(
@@ -292,13 +296,11 @@ class DoctorContactDetailsWidget extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
+              Text(
                 'Contact Details',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
+                style: EcliniqTextStyles.responsiveHeadlineLarge(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w600, color: Colors.black87),
               ),
             ],
           ),
@@ -313,6 +315,7 @@ class DoctorContactDetailsWidget extends StatelessWidget {
                     title: contactDetails.email!,
                     subtitle: 'Doctor Contact Email',
                     onTap: () {},
+                    context: context,
                   ),
                 if (contactDetails.email != null) const SizedBox(height: 16),
                 if (contactDetails.phone != null)
@@ -323,6 +326,7 @@ class DoctorContactDetailsWidget extends StatelessWidget {
                     subtitle: 'Doctor Contact Number',
                     showCallButton: true,
                     onTap: () {},
+                    context: context,
                   ),
                 if (contactDetails.phone != null) const SizedBox(height: 16),
                 if (contactDetails.languages != null &&
@@ -333,6 +337,7 @@ class DoctorContactDetailsWidget extends StatelessWidget {
                     title: contactDetails.languages!.join(', '),
                     subtitle: 'Speaks',
                     onTap: () {},
+                    context: context,
                   ),
               ],
             ),
@@ -344,7 +349,7 @@ class DoctorContactDetailsWidget extends StatelessWidget {
 
   Widget _buildContactItem({
     required EcliniqIcons icon,
-
+    required BuildContext context,
     required String title,
     required String subtitle,
     bool showCallButton = false,
@@ -354,7 +359,11 @@ class DoctorContactDetailsWidget extends StatelessWidget {
       children: [
         Row(
           children: [
-            SvgPicture.asset(icon.assetPath, width: 32, height: 32),
+            SvgPicture.asset(
+              icon.assetPath,
+              width: EcliniqTextStyles.getResponsiveIconSize(context, 32),
+              height: EcliniqTextStyles.getResponsiveIconSize(context, 32),
+            ),
 
             const SizedBox(width: 12),
             Expanded(
@@ -363,27 +372,27 @@ class DoctorContactDetailsWidget extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black87,
-                    ),
+                    style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                        .copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                        ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.grey[600],
-                    ),
+                    style: EcliniqTextStyles.responsiveTitleXLarge(context)
+                        .copyWith(
+                          fontWeight: FontWeight.w400,
+                          color: Colors.grey[600],
+                        ),
                   ),
                 ],
               ),
             ),
             if (showCallButton)
               IconButton(
-                onPressed: EcliniqRouter.pop,
+                onPressed: () => PhoneLauncher.launchPhoneCall(title),
                 icon: SvgPicture.asset(
                   EcliniqIcons.phone.assetPath,
                   width: 32,
@@ -424,13 +433,11 @@ class EducationalInformationWidget extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
+              Text(
                 'Educational Information',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
+                style: EcliniqTextStyles.responsiveHeadlineLarge(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w600, color: Colors.black87),
               ),
             ],
           ),
@@ -451,6 +458,7 @@ class EducationalInformationWidget extends StatelessWidget {
                       year: education.completionYear > 0
                           ? 'Completed in ${education.completionYear}'
                           : 'Year not specified',
+                      context: context,
                     ),
                     if (index < educationList.length - 1)
                       const SizedBox(height: 16),
@@ -469,6 +477,7 @@ class EducationalInformationWidget extends StatelessWidget {
     required String institution,
     required String type,
     required String year,
+    required BuildContext context,
   }) {
     return Column(
       children: [
@@ -486,29 +495,29 @@ class EducationalInformationWidget extends StatelessWidget {
                 children: [
                   Text(
                     degree,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black87,
-                    ),
+                    style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                        .copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                        ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     institution,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.grey[600],
-                    ),
+                    style: EcliniqTextStyles.responsiveTitleXLarge(context)
+                        .copyWith(
+                          fontWeight: FontWeight.w400,
+                          color: Colors.grey[600],
+                        ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     '$type - $year',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.grey[600],
-                    ),
+                    style: EcliniqTextStyles.responsiveTitleXLarge(context)
+                        .copyWith(
+                          fontWeight: FontWeight.w400,
+                          color: Colors.grey[600],
+                        ),
                   ),
                 ],
               ),
@@ -547,13 +556,11 @@ class DoctorCertificatesWidget extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
+              Text(
                 'Certificates & Accreditations',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
+                style: EcliniqTextStyles.responsiveHeadlineLarge(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w600, color: Colors.black87),
               ),
             ],
           ),
@@ -574,11 +581,11 @@ class DoctorCertificatesWidget extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text(
                       cert.name,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.black87,
-                      ),
+                      style: EcliniqTextStyles.responsiveBodySmall(context)
+                          .copyWith(
+                            fontWeight: FontWeight.w400,
+                            color: Colors.black87,
+                          ),
                     ),
                   ],
                 );
@@ -617,13 +624,11 @@ class ClinicPhotosWidget extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
+              Text(
                 'Clinic Photos',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
+                style: EcliniqTextStyles.responsiveHeadlineLarge(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w600, color: Colors.black87),
               ),
             ],
           ),

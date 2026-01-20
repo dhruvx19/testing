@@ -1,4 +1,5 @@
 import 'package:ecliniq/ecliniq_icons/icons.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
 import 'package:flutter/material.dart';
 
@@ -18,16 +19,20 @@ class TermsAndConditionsPage extends StatelessWidget {
               children: [
                 IconButton(
                   onPressed: () => Navigator.of(context).maybePop(),
-                  icon: const Icon(Icons.close, color: Colors.white, size: 32),
+                  icon: Icon(
+                    Icons.close,
+                    color: Colors.white,
+                    size: EcliniqTextStyles.getResponsiveIconSize(context, 32),
+                  ),
                 ),
 
                 Expanded(
                   child: Center(
                     child: Text(
                       'Terms & Condition',
-                      style: const TextStyle(
+                      style:  EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                         color: Colors.white,
-                        fontSize: 18,
+               
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -56,8 +61,8 @@ class TermsAndConditionsPage extends StatelessWidget {
                               children: [
                                 Text(
                                   'Upchaar-Q Terms and conditions',
-                                  style: TextStyle(
-                                    fontSize: 24,
+                                  style: EcliniqTextStyles.responsiveHeadlineXLarge(context).copyWith(
+                            
                                     fontWeight: FontWeight.w500,
                                     color: Color(0xff424242),
                                   ),
@@ -65,8 +70,8 @@ class TermsAndConditionsPage extends StatelessWidget {
                                 const SizedBox(height: 6),
                                 Text(
                                   'Read Carefully',
-                                  style: TextStyle(
-                                    fontSize: 16,
+                                  style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+                          
                                     fontWeight: FontWeight.w400,
                                   ).copyWith(color: Color(0xff424242)),
                                 ),
@@ -103,8 +108,8 @@ class TermsAndConditionsPage extends StatelessWidget {
                                   Expanded(
                                     child: Text(
                                       '1. General',
-                                      style: TextStyle(
-                                        fontSize: 16,
+                                      style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+                                        
                                         fontWeight: FontWeight.w500,
                                         fontFamily: 'Rubik',
                                         color: Color(0xff424242),
@@ -317,8 +322,8 @@ The use of Software and the product purchase contracts through BFHL Platforms sh
 17.6 Even after termination, certain obligations as mentioned herein above or evident from their very nature to have been intended to survive will continue and survive termination.
 17.7 Even after termination, the Agreement shall continue to be applicable for any cause of action that has arisen directly or indirectly on account of your usage of the Software or the Services provided by the Company.
 Last Updated: 13-12-2023''',
-                                style: TextStyle(
-                                  fontSize: 16,
+                                style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+                           
                                   fontWeight: FontWeight.w400,
                                   fontFamily: 'Rubik',
                                   color: Color((0xff424242)),

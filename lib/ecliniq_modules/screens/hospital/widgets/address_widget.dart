@@ -125,10 +125,10 @@ class _AddressWidgetState extends State<AddressWidget> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                     Text(
                       'Address',
-                      style: TextStyle(
-                        fontSize: 20.0,
+                      style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
+                   
                         fontWeight: FontWeight.w600,
                         color: Color(0xff424242),
                       ),
@@ -146,8 +146,8 @@ class _AddressWidgetState extends State<AddressWidget> {
                 Text(
                   address,
                   maxLines: 8,
-                  style: const TextStyle(
-                    fontSize: 18,
+                  style:  EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+         
                     fontWeight: FontWeight.w400,
                     color: Color(0xff626060),
                   ),
@@ -193,8 +193,8 @@ class _AddressWidgetState extends State<AddressWidget> {
                                             children: [
                                               Text(
                                                 widget.hospital!.name,
-                                                style: TextStyle(
-                                                  fontSize: 12,
+                                                style: EcliniqTextStyles.responsiveBodyXSmall(context).copyWith(
+                                                
                                                   color: Colors.grey[700],
                                                   fontWeight: FontWeight.w500,
                                                 ),
@@ -231,7 +231,7 @@ class _AddressWidgetState extends State<AddressWidget> {
                               
                                 Text(
                                   'Tap to get the clinic directions',
-                                  style: EcliniqTextStyles.bodySmall.copyWith(
+                                  style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                                     color: widget.hospital != null
                                         ? Color(0xff2372EC)
                                         : Colors.grey,

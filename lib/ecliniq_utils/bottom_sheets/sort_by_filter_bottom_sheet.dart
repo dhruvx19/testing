@@ -1,16 +1,28 @@
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 
 class SortByBottomSheet extends StatefulWidget {
   final ValueChanged<String> onChanged;
+  final String? initialSortOption;
 
-  const SortByBottomSheet({super.key, required this.onChanged});
+  const SortByBottomSheet({
+    super.key,
+    required this.onChanged,
+    this.initialSortOption,
+  });
 
   @override
   State<SortByBottomSheet> createState() => _SortByBottomSheetState();
 }
 
 class _SortByBottomSheetState extends State<SortByBottomSheet> {
-  String? selectedSortOption;
+  late String? selectedSortOption;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedSortOption = widget.initialSortOption;
+  }
 
   final List<String> sortOptions = [
     'Relevance',
@@ -28,39 +40,75 @@ class _SortByBottomSheetState extends State<SortByBottomSheet> {
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.55,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-          bottomLeft: Radius.circular(16),
-          bottomRight: Radius.circular(16),
+          topLeft: Radius.circular(
+            EcliniqTextStyles.getResponsiveBorderRadius(context, 16),
+          ),
+          topRight: Radius.circular(
+            EcliniqTextStyles.getResponsiveBorderRadius(context, 16),
+          ),
+          bottomLeft: Radius.circular(
+            EcliniqTextStyles.getResponsiveBorderRadius(context, 16),
+          ),
+          bottomRight: Radius.circular(
+            EcliniqTextStyles.getResponsiveBorderRadius(context, 16),
+          ),
         ),
       ),
       child: Column(
         children: [
           // Title
-          const Padding(
-            padding: EdgeInsets.only(left: 16, right: 16, top: 22),
+          Padding(
+            padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+              context,
+              left: 16,
+              right: 16,
+              top: 22,
+              bottom: 0,
+            ),
             child: Align(
               alignment: Alignment.centerLeft,
-              child: Text(
-                'Sort By',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xff424242),
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Sort By',
+                    style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                        .copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xff424242),
+                        ),
+                  ),
+                  GestureDetector(
+                    onTap: _resetSort,
+                    child: Text(
+                      'Clear',
+                      style:
+                          EcliniqTextStyles.responsiveHeadlineBMedium(
+                            context,
+                          ).copyWith(
+                            fontWeight: FontWeight.w400,
+                            color: Color(0xff2372EC),
+                          ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
 
-       
-
           // List of sort options
           Expanded(
             child: ListView.builder(
-              padding: EdgeInsets.only(left: 16, right: 16),
+              padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+                context,
+                left: 16,
+                right: 16,
+                top: 0,
+                bottom: 0,
+              ),
               itemCount: sortOptions.length,
               itemBuilder: (context, index) {
                 final option = sortOptions[index];
@@ -76,6 +124,14 @@ class _SortByBottomSheetState extends State<SortByBottomSheet> {
     );
   }
 
+  void _resetSort() {
+    setState(() {
+      selectedSortOption = null;
+    });
+    // Emit empty string to clear sort in parent
+    widget.onChanged('');
+  }
+
   Widget _buildSortOption(String option, bool isSelected) {
     return InkWell(
       onTap: () {
@@ -85,12 +141,15 @@ class _SortByBottomSheetState extends State<SortByBottomSheet> {
         widget.onChanged(option);
       },
       child: Padding(
-        padding: EdgeInsets.only(top: 16, bottom: 8),
+        padding: EdgeInsets.only(
+          top: EcliniqTextStyles.getResponsiveSpacing(context, 16),
+          bottom: EcliniqTextStyles.getResponsiveSpacing(context, 2),
+        ),
         child: Row(
           children: [
             Container(
-              height: 24,
-              width: 24,
+              height: EcliniqTextStyles.getResponsiveSpacing(context, 24),
+              width: EcliniqTextStyles.getResponsiveSpacing(context, 24),
               decoration: BoxDecoration(
                 border: Border.all(
                   color: isSelected
@@ -103,7 +162,9 @@ class _SortByBottomSheetState extends State<SortByBottomSheet> {
               ),
               child: isSelected
                   ? Container(
-                      margin: const EdgeInsets.all(5),
+                      margin: EdgeInsets.all(
+                        EcliniqTextStyles.getResponsiveSpacing(context, 5),
+                      ),
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white,
@@ -111,15 +172,17 @@ class _SortByBottomSheetState extends State<SortByBottomSheet> {
                     )
                   : null,
             ),
-            const SizedBox(width: 10),
+            SizedBox(
+              width: EcliniqTextStyles.getResponsiveSpacing(context, 10),
+            ),
             Expanded(
               child: Text(
                 option,
-                style: const TextStyle(
-                  fontSize: 18,
-                  color: Color(0xff424242),
-                  fontWeight: FontWeight.w400,
-                ),
+                style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                    .copyWith(
+                      color: Color(0xff424242),
+                      fontWeight: FontWeight.w400,
+                    ),
               ),
             ),
           ],

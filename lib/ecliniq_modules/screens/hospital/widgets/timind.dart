@@ -1,3 +1,4 @@
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 
 class AppointmentTimingWidget extends StatelessWidget {
@@ -19,9 +20,9 @@ class AppointmentTimingWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+           Text(
             'Appointment & OPD timing',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith( fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
           Row(
@@ -36,14 +37,14 @@ class AppointmentTimingWidget extends StatelessWidget {
                     children: [
                       Text(
                         time,
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style:  EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+                        
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       Text(
                         days,
-                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                        style: EcliniqTextStyles.responsiveBodySmall(context).copyWith( color: Colors.grey[600]),
                       ),
                     ],
                   ),

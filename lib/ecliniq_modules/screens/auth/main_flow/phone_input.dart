@@ -9,7 +9,9 @@ import 'package:ecliniq/ecliniq_modules/screens/login/terms_and_conditions.dart'
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/button/button.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/error_snackbar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 
@@ -163,6 +165,11 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
 
   Widget _buildPhoneInputField() {
     return Container(
+        width: double.infinity,
+                    height: EcliniqTextStyles.getResponsiveButtonHeight(
+                      context,
+                      baseHeight: 52.0,
+                    ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Color(0xff626060), width: 0.5),
@@ -170,7 +177,11 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+              context,
+              horizontal: 12,
+              vertical: 6,
+            ),
             decoration: BoxDecoration(
               border: Border(
                 right: BorderSide(color: Color(0xffD6D6D6), width: 0.5),
@@ -178,19 +189,20 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
             ),
             child: Row(
               children: [
-                const Text(
+                Text(
                   '+91',
-                  style: TextStyle(
-                    fontSize: 18,
+                  style: EcliniqTextStyles.responsiveHeadlineXLMedium(context).copyWith(
                     fontWeight: FontWeight.w400,
                     color: Color(0xff424242),
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(
+                  width: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+                ),
                 SvgPicture.asset(
                   EcliniqIcons.arrowDown.assetPath,
-                  width: 20,
-                  height: 20,
+                  width: EcliniqTextStyles.getResponsiveIconSize(context, 20),
+                  height: EcliniqTextStyles.getResponsiveIconSize(context, 20),
                 ),
               ],
             ),
@@ -201,25 +213,52 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
               keyboardType: TextInputType.phone,
               autofocus: true,
               maxLength: 10,
-              style: const TextStyle(
-                fontSize: 18,
+              style: EcliniqTextStyles.responsiveHeadlineXLMedium(context).copyWith(
                 fontWeight: FontWeight.w400,
                 color: Color(0xff424242),
               ),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Mobile Number',
-                hintStyle: TextStyle(
-                  fontSize: 18,
+                hintStyle: EcliniqTextStyles.responsiveHeadlineXLMedium(context).copyWith(
                   fontWeight: FontWeight.w400,
                   color: Color(0xffD6D6D6),
                 ),
+
                 border: InputBorder.none,
                 counterText: '',
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 16,
-                ),
+                contentPadding:  EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                                  context,
+                                  horizontal: 12,
+                                  vertical: 12,
+                                ),
               ),
+              onChanged: (value) {
+                // Check for special characters
+                final hasSpecialChars = RegExp(r'[^0-9]').hasMatch(value);
+                if (hasSpecialChars) {
+                  // Remove special characters
+                  final cleanedValue = value.replaceAll(RegExp(r'[^0-9]'), '');
+                  if (cleanedValue != value) {
+                    widget.phoneController.value = TextEditingValue(
+                      text: cleanedValue,
+                      selection: TextSelection.collapsed(
+                        offset: cleanedValue.length,
+                      ),
+                    );
+                    // Show validation error snackbar
+                    if (mounted) {
+                
+                        CustomErrorSnackBar.show(
+                          title: 'Validation Failed',
+                          subtitle:
+                              'Mobile number can only contain digits. Special characters are not allowed.',
+                          context: context,
+                
+                      );
+                    }
+                  }
+                }
+              },
             ),
           ),
         ],
@@ -233,7 +272,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
       children: [
         Text(
           'By Continuing, you agree to our',
-          style: EcliniqTextStyles.bodySmall.copyWith(color: Color(0xff8E8E8E)),
+          style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(color: Color(0xff8E8E8E)),
         ),
         Row(
           children: [
@@ -243,7 +282,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
               },
               child: Text(
                 'Terms & Conditions',
-                style: EcliniqTextStyles.headlineXMedium.copyWith(
+                style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                   color: Color(0xff424242),
                 ),
               ),
@@ -251,7 +290,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
             SizedBox(width: 4),
             Text(
               'and',
-              style: EcliniqTextStyles.headlineLarge.copyWith(
+              style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
                 fontWeight: FontWeight.w400,
                 color: Color(0xff8E8E8E),
               ),
@@ -263,7 +302,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
               },
               child: Text(
                 'Privacy Policy',
-                style: EcliniqTextStyles.headlineXMedium.copyWith(
+                style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                   color: Color(0xff424242),
                 ),
               ),
@@ -281,7 +320,10 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
 
         return SizedBox(
           width: double.infinity,
-          height: 52,
+          height: EcliniqTextStyles.getResponsiveButtonHeight(
+            context,
+            baseHeight: 52.0,
+          ),
           child: GestureDetector(
             onTap: isButtonEnabled ? _submitPhoneNumber : null,
             child: Container(
@@ -293,14 +335,16 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
                     : EcliniqButtonType.brandPrimary.disabledBackgroundColor(
                         context,
                       ),
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(
+                  EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
+                ),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     'Continue',
-                    style: EcliniqTextStyles.headlineMedium.copyWith(
+                    style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                       color: _isButtonPressed
                           ? Colors.white
                           : isButtonEnabled
@@ -308,11 +352,13 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
                           : Color(0xffD6D6D6),
                     ),
                   ),
-                  const SizedBox(width: 4),
+                  SizedBox(
+                    width: EcliniqTextStyles.getResponsiveSpacing(context, 4),
+                  ),
                   SvgPicture.asset(
                     EcliniqIcons.arrowRightWhite.assetPath,
-                    width: 24,
-                    height: 24,
+                    width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+                    height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
                     color: _isButtonPressed
                         ? Colors.white
                         : isButtonEnabled
@@ -336,7 +382,9 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
       body: SizedBox.expand(
         child: Column(
           children: [
-            const SizedBox(height: 52),
+            SizedBox(
+              height: EcliniqTextStyles.getResponsiveSpacing(context, 20),
+            ),
 
             Row(
               children: [
@@ -344,8 +392,8 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
                   onPressed: widget.onClose,
                   icon: SvgPicture.asset(
                     EcliniqIcons.reply.assetPath,
-                    width: 32,
-                    height: 32,
+                    width: EcliniqTextStyles.getResponsiveIconSize(context, 32),
+                    height: EcliniqTextStyles.getResponsiveIconSize(context, 32),
                   ),
                 ),
                 const Spacer(),
@@ -357,15 +405,15 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
                       children: [
                         SvgPicture.asset(
                           EcliniqIcons.questionCircleWhite.assetPath,
-                          width: 24,
-                          height: 24,
+                           width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+                    height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
                         ),
                         const SizedBox(width: 4),
-                        const Text(
+                         Text(
                           'Help',
-                          style: TextStyle(
+                          style: EcliniqTextStyles.responsiveHeadlineXLMedium(context).copyWith(
                             color: Colors.white,
-                            fontSize: 18,
+                           
                             fontWeight: FontWeight.w400,
                           ),
                         ),
@@ -386,10 +434,12 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
                     children: [
                       Expanded(
                         child: SingleChildScrollView(
-                          padding: const EdgeInsets.only(
+                          padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+                            context,
                             top: 24,
                             left: 18,
                             right: 18,
+                            bottom: 0,
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -398,12 +448,16 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
                                 widget.isForgotPinFlow
                                     ? 'Enter Your Mobile Number to Reset PIN'
                                     : 'Enter Your Mobile Number',
-                                style: EcliniqTextStyles.headlineXMedium
+                                style: EcliniqTextStyles.responsiveHeadlineXMedium(context)
                                     .copyWith(color: const Color(0xff626060)),
                               ),
-                              const SizedBox(height: 4),
+                              SizedBox(
+                                height: EcliniqTextStyles.getResponsiveSpacing(context, 4),
+                              ),
                               _buildPhoneInputField(),
-                              const SizedBox(height: 24),
+                              SizedBox(
+                                height: EcliniqTextStyles.getResponsiveSpacing(context, 24),
+                              ),
                               _buildTermsAndConditions(),
                             ],
                           ),
@@ -411,7 +465,11 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
                       ),
 
                       Container(
-                        padding: const EdgeInsets.only(right: 18, left: 18, bottom: 24),
+                        padding: const EdgeInsets.only(
+                          right: 18,
+                          left: 18,
+                          bottom: 24,
+                        ),
                         child: _buildContinueButton(),
                       ),
                     ],

@@ -1,5 +1,6 @@
 import 'package:ecliniq/ecliniq_icons/icons.dart';
-import 'package:ecliniq/ecliniq_modules/screens/doctor_details/top_doctor/model/top_doctor_model.dart';
+import 'package:ecliniq/ecliniq_api/top_doctor_model.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -41,10 +42,10 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Title
-              const Text(
+               Text(
                 'Select Location',
-                style: TextStyle(
-                  fontSize: 18,
+                style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+                
                   fontWeight: FontWeight.w500,
                   color: Color(0xFF424242),
                 ),
@@ -54,8 +55,8 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
               // Description
               Text(
                 _buildDescription(),
-                style: const TextStyle(
-                  fontSize: 15,
+                style:  EcliniqTextStyles.responsiveButtonXLargeProminent(context).copyWith(
+               
                   fontWeight: FontWeight.w400,
                   color: Color(0xFF626060),
                 ),
@@ -202,8 +203,8 @@ class _LocationDetails extends StatelessWidget {
       children: [
         Text(
           location.name,
-          style: const TextStyle(
-            fontSize: 16,
+          style:  EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+        
             fontWeight: FontWeight.w500,
             color: Color(0xFF424242),
           ),
@@ -216,32 +217,29 @@ class _LocationDetails extends StatelessWidget {
         const SizedBox(height: 4),
         Row(
           children: [
-            Flexible(
+            Expanded(
               child: _IconTextRow(
                 icon: EcliniqIcons.mapPointBlack.assetPath,
                 text: location.area,
               ),
             ),
             const SizedBox(width: 4),
-
-            Flexible(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF9F9F9),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(
-                    color: const Color(0xFFB8B8B8),
-                    width: 0.5,
-                  ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9F9F9),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(
+                  color: const Color(0xFFB8B8B8),
+                  width: 0.5,
                 ),
-                child: Text(
-                  location.distance,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    color: Color(0xFF424242),
-                  ),
+              ),
+              child: Text(
+                location.distance,
+                style:  EcliniqTextStyles.responsiveBodySmall(context).copyWith(
+             
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xFF424242),
                 ),
               ),
             ),
@@ -262,16 +260,21 @@ class _IconTextRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        SvgPicture.asset(icon, width: 20, height: 20),
+        SvgPicture.asset(
+          icon,
+          width: EcliniqTextStyles.getResponsiveIconSize(context, 20),
+          height: EcliniqTextStyles.getResponsiveIconSize(context, 20),
+        ),
         const SizedBox(width: 2),
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(
-              fontSize: 14,
+            maxLines: 1,
+            style:  EcliniqTextStyles.responsiveBodySmall(context).copyWith(
+           
               fontWeight: FontWeight.w400,
               color: Color(0xFF626060),
-              overflow: TextOverflow.ellipsis,
+           
             ),
           ),
         ),
@@ -285,12 +288,12 @@ class _EmptyLocationState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return  Center(
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 20),
         child: Text(
           'No locations available',
-          style: TextStyle(fontSize: 14, color: Color(0xFF9E9E9E)),
+          style: EcliniqTextStyles.responsiveBodySmall(context).copyWith( color: Color(0xFF9E9E9E)),
         ),
       ),
     );

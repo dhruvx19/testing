@@ -31,8 +31,8 @@ class UserInfoSection extends StatelessWidget {
       children: [
         Text(
           name,
-          style: EcliniqTextStyles.headlineLarge.copyWith(
-            fontSize: 24,
+          style: EcliniqTextStyles.responsiveHeadlineXLarge(context).copyWith(
+         
             fontWeight: FontWeight.w600,
             color: Color(0xff424242),
           ),
@@ -43,8 +43,8 @@ class UserInfoSection extends StatelessWidget {
           children: [
             Text(
               phone,
-              style: EcliniqTextStyles.bodyMedium.copyWith(
-                fontSize: 16,
+              style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+                
                 fontWeight: FontWeight.w400,
                 color: Color(0xff626060),
               ),
@@ -70,8 +70,8 @@ class UserInfoSection extends StatelessWidget {
           SizedBox(height: 4),
           Text(
             email,
-            style: EcliniqTextStyles.bodyMedium.copyWith(
-              fontSize: 16,
+            style:EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+    
               fontWeight: FontWeight.w400,
               color: Color(0xff626060),
             ),
@@ -204,7 +204,7 @@ class _InfoCard extends StatelessWidget {
         SizedBox(height: spacing),
         Text(
           label,
-          style: EcliniqTextStyles.bodySmall.copyWith(
+          style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
             color: colors.textSecondary,
             fontSize: 62,
           ),
@@ -212,7 +212,7 @@ class _InfoCard extends StatelessWidget {
         SizedBox(height: spacing / 2),
         Text(
           value,
-          style: EcliniqTextStyles.headlineMedium.copyWith(
+          style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
             color: colors.textPrimary,
             fontWeight: FontWeight.w600,
             fontSize: screenSize.getResponsiveValue(

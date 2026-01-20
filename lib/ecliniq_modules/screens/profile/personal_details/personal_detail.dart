@@ -11,6 +11,9 @@ import 'package:ecliniq/ecliniq_modules/screens/profile/personal_details/provide
 import 'package:ecliniq/ecliniq_ui/lib/tokens/colors.g.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/error_snackbar.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/success_snackbar.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/action_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:http/http.dart' as http;
@@ -87,32 +90,32 @@ class _PersonalDetailsState extends State<PersonalDetails> {
             children: [
               Text(
                 label,
-                style: EcliniqTextStyles.headlineXMedium.copyWith(
+                style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                   color: Color(0xff626060),
                 ),
               ),
               if (isRequired)
-                Text('•', style: TextStyle(color: Colors.red, fontSize: 20)),
+                Text('•', style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(color: Colors.red, ),),
             ],
           ),
         ),
         Expanded(
           flex: 1,
           child: TextField(
-            controller: controller,
+            controller: controller, 
             keyboardType: keyboardType,
             onChanged: onChanged,
             textAlign: TextAlign.right,
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: EcliniqTextStyles.headlineXMedium.copyWith(
+              hintStyle: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                 color: Color(0xffB8B8B8),
               ),
               border: InputBorder.none,
               isDense: true,
               contentPadding: EdgeInsets.zero,
             ),
-            style: EcliniqTextStyles.headlineXMedium.copyWith(
+            style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
               color: Color(0xff424242),
             ),
           ),
@@ -138,12 +141,12 @@ class _PersonalDetailsState extends State<PersonalDetails> {
               children: [
                 Text(
                   label,
-                  style: EcliniqTextStyles.headlineXMedium.copyWith(
+                  style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                     color: Color(0xff626060),
                   ),
                 ),
                 if (isRequired)
-                  Text('•', style: TextStyle(color: Colors.red, fontSize: 20)),
+                  Text('•', style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(color: Colors.red)),
               ],
             ),
           ),
@@ -154,7 +157,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
               child: Text(
                 value ?? hint,
                 textAlign: TextAlign.right,
-                style: EcliniqTextStyles.headlineXMedium.copyWith(
+                style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                   color: value != null ? Color(0xff626060) : Color(0xffB8B8B8),
                   fontWeight: value != null ? FontWeight.w400 : FontWeight.w500,
                 ),
@@ -356,9 +359,12 @@ class _PersonalDetailsState extends State<PersonalDetails> {
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
+          CustomErrorSnackBar.show(
+            context: context,
+            title: 'Error',
+            subtitle: 'Error picking image: $e',
+            duration: const Duration(seconds: 3),
+          );
         }
       }
     }
@@ -368,9 +374,12 @@ class _PersonalDetailsState extends State<PersonalDetails> {
     final auth = Provider.of<AuthProvider>(context, listen: false);
     final token = auth.authToken;
     if (token == null || token.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Authentication required')));
+      CustomErrorSnackBar.show(
+        context: context,
+        title: 'Authentication Required',
+        subtitle: 'Authentication required',
+        duration: const Duration(seconds: 3),
+      );
       return;
     }
 
@@ -404,9 +413,12 @@ class _PersonalDetailsState extends State<PersonalDetails> {
 
       if (success) {
         if (!mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Profile updated')));
+        CustomSuccessSnackBar.show(
+          context: context,
+          title: 'Success',
+          subtitle: 'Profile updated',
+          duration: const Duration(seconds: 3),
+        );
         _selectedProfilePhoto = null;
         await _fetchPatientDetails();
       } else {
@@ -415,9 +427,12 @@ class _PersonalDetailsState extends State<PersonalDetails> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        CustomErrorSnackBar.show(
+          context: context,
+          title: 'Error',
+          subtitle: 'Error: $e',
+          duration: const Duration(seconds: 3),
+        );
         setState(() {
           _isLoading = false;
         });
@@ -443,8 +458,8 @@ class _PersonalDetailsState extends State<PersonalDetails> {
               leading: IconButton(
                 icon: SvgPicture.asset(
                   EcliniqIcons.arrowLeft.assetPath,
-                  width: 32,
-                  height: 32,
+                  width: EcliniqTextStyles.getResponsiveIconSize(context, 32),
+                  height: EcliniqTextStyles.getResponsiveIconSize(context, 32),
                 ),
                 onPressed: () => Navigator.pop(context),
               ),
@@ -452,7 +467,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'Edit Profile Details',
-                  style: EcliniqTextStyles.headlineMedium.copyWith(
+                  style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                     color: Color(0xff424242),
                   ),
                 ),
@@ -466,24 +481,32 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                   children: [
                     SvgPicture.asset(
                       EcliniqIcons.questionCircleFilled.assetPath,
-                      width: 24,
-                      height: 24,
+                      width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+                      height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
                     ),
                     Text(
                       ' Help',
-                      style: EcliniqTextStyles.titleXBLarge.copyWith(
+                      style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                         color: EcliniqColors.light.textPrimary,
-                        fontSize: 18,
+                   
                         fontWeight: FontWeight.w400,
                       ),
                     ),
-                    SizedBox(width: 20),
+                    SizedBox(
+                      width: EcliniqTextStyles.getResponsiveSpacing(context, 20),
+                    ),
                   ],
                 ),
               ],
             ),
             body: Padding(
-              padding: EdgeInsets.only(left: 16, right: 16, bottom: 24),
+              padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+                context,
+                left: 16,
+                right: 16,
+                bottom: 24,
+                top: 0,
+              ),
               child: SizedBox(
                 height: double.infinity,
                 width: double.infinity,
@@ -494,17 +517,19 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                         mainAxisSize: MainAxisSize.max,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const SizedBox(height: 26),
+                          SizedBox(
+                            height: EcliniqTextStyles.getResponsiveSpacing(context, 26),
+                          ),
 
                           Stack(
                             children: [
                               Container(
-                                height: 150,
-                                width: 150,
-                                padding: EdgeInsets.all(16),
+                                height: EcliniqTextStyles.getResponsiveHeight(context, 150),
+                                width: EcliniqTextStyles.getResponsiveWidth(context, 150),
+                                padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16),
                                 child: Container(
-                                  width: 50,
-                                  height: 50,
+                                  width: EcliniqTextStyles.getResponsiveWidth(context, 50),
+                                  height: EcliniqTextStyles.getResponsiveHeight(context, 50),
                                   decoration: BoxDecoration(
                                     color: Color(0xffF2F7FF),
                                     shape: BoxShape.circle,
@@ -583,10 +608,10 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                               children: [
                                 Text(
                                   'Personal Details',
-                                  style: EcliniqTextStyles.headlineMedium
+                                  style: EcliniqTextStyles.responsiveHeadlineMedium(context)
                                       .copyWith(color: Color(0xff424242)),
                                 ),
-                                Text('•', style: TextStyle(color: Color(0xffD92D20), fontSize: 20))
+                                Text('•', style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(color: Color(0xffD92D20)))
                               ],
                             ),
                           ),
@@ -646,7 +671,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                             alignment: Alignment.centerLeft,
                             child: Text(
                               'Health Info',
-                              style: EcliniqTextStyles.headlineMedium.copyWith(
+                              style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                                 color: Color(0xff424242),
                               ),
                             ),
@@ -707,13 +732,13 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                       left: 0,
                       right: 0,
                       child: Container(
-                        height: 84,
+                        height: 52,
                         color: Colors.white,
                         alignment: Alignment.bottomCenter,
                         child: Consumer<AddDependentProvider>(
                           builder: (context, provider, child) {
                             return Container(
-                              margin: EdgeInsets.all(6),
+                        
                               width: double.infinity,
                               decoration: BoxDecoration(color: Colors.white),
                               child: SizedBox(
@@ -722,10 +747,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                                 child: ElevatedButton(
                                   onPressed: _isLoading ? null : _save,
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: EcliniqColors
-                                        .light
-                                        .bgContainerInteractiveBrand,
-
+                                    backgroundColor: Color(0xff2372EC),
                                     disabledBackgroundColor: EcliniqColors
                                         .light
                                         .strokeNeutralSubtle
@@ -736,12 +758,12 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                                   ),
                                   child: Text(
                                     'Save',
-                                    style: EcliniqTextStyles.titleXBLarge
+                                    style: EcliniqTextStyles.responsiveHeadlineMedium(context)
                                         .copyWith(
                                           color: EcliniqColors
                                               .light
                                               .textFixedLight,
-                                          fontWeight: FontWeight.w600,
+                                          fontWeight: FontWeight.w500,
                                         ),
                                   ),
                                 ),

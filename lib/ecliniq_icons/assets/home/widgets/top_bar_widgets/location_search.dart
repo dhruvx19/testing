@@ -32,7 +32,8 @@ class LocationSelectorWidget extends StatelessWidget {
         return GestureDetector(
           onTap: onLocationTap ?? () => _showLocationBottomSheet(context),
           child: Container(
-            padding: const EdgeInsets.symmetric(
+            padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+              context,
               horizontal: 10.0,
               vertical: 6.0,
             ),
@@ -40,26 +41,30 @@ class LocationSelectorWidget extends StatelessWidget {
               children: [
                 SvgPicture.asset(
                   EcliniqIcons.mapPoint.assetPath,
-                  width: 24,
-                  height: 24,
+                  width: EcliniqTextStyles.getResponsiveIconSize(context,  24.0),
+                  height: EcliniqTextStyles.getResponsiveIconSize(context,  24.0),
                 ),
-                const SizedBox(width: 8.0),
-                Text(
+                SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context,  8.0)),
+                EcliniqText(
                   displayLocation,
-                  style: const TextStyle(
+                  style: EcliniqTextStyles.responsiveHeadlineZMedium(context).copyWith(
                     color: Colors.white,
-                    fontSize: 18.0,
+
                     fontWeight: FontWeight.w400,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(width: 10),
-                Container(height: 20, width: 0.5, color: Color(0xff96BFFF)),
-                const SizedBox(width: 8.0),
+                SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 10.0)),
+                Container(
+                  height: EcliniqTextStyles.getResponsiveSize(context, 20.0),
+                  width: 0.5,
+                  color: Color(0xff96BFFF),
+                ),
+                SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context,  8.0)),
                 SvgPicture.asset(
                   EcliniqIcons.arrowDown.assetPath,
-                  width: 20,
-                  height: 20,
+                  width: EcliniqTextStyles.getResponsiveIconSize(context,  20.0),
+                  height: EcliniqTextStyles.getResponsiveIconSize(context,20.0),
                   color: Colors.white,
                 ),
               ],
@@ -96,39 +101,39 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(
-          top: Radius.circular(16),
-          bottom: Radius.circular(16),
+          top: Radius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context,  16.0)),
+          bottom: Radius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context,  16.0)),
         ),
       ),
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context,  16.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SvgPicture.asset(EcliniqIcons.locationSheet.assetPath),
-          const SizedBox(height: 4),
+          SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context,  4.0)),
           EcliniqText(
             'Please share your location',
-            style: EcliniqTextStyles.headlineMedium.copyWith(
+            style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
               color: Color(0xFF424242),
             ),
           ),
 
           EcliniqText(
             'Enable your location for better services',
-            style: EcliniqTextStyles.titleXLarge.copyWith(
+            style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
               color: Color(0xff626060),
             ),
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context,  18.0)),
 
           SizedBox(
             width: double.infinity,
-            height: 52,
+            height: EcliniqTextStyles.getResponsiveButtonHeight(context, baseHeight: 52.0),
             child: GestureDetector(
               onTap: () {
                 setState(() {
@@ -141,44 +146,51 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
                   color: _isButtonPressed
                       ? const Color(0xFF0E4395)
                       : const Color(0xFF2372EC),
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context,  4.0)),
                 ),
                 alignment: Alignment.center,
-                child: const Text(
+                child: EcliniqText(
                   'Enable Device Location',
-                  style: TextStyle(
+                  style: EcliniqTextStyles.responsiveHeadlineZMedium(context).copyWith(
                     color: Colors.white,
-                    fontSize: 18,
+
                     fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context,  12.0)),
 
-          GestureDetector(
-            onTap: () {},
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-              decoration: BoxDecoration(
-                border: Border.all(color: Color(0xff8E8E8E)),
-                borderRadius: BorderRadius.circular(4),
-                color: Colors.white,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Enter Location Manually',
-                    style: EcliniqTextStyles.titleMedium.copyWith(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xff424242),
+          SizedBox(
+             width: double.infinity,
+            height: EcliniqTextStyles.getResponsiveButtonHeight(context, baseHeight: 52.0),
+            child: GestureDetector(
+              onTap: () {},
+              child: Container(
+                width: double.infinity,
+                padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                  context,
+                  vertical: 12.0,
+                  horizontal: 12.0,
+                ),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Color(0xff8E8E8E)),
+                  borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context,  4.0)),
+                  color: Colors.white,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    EcliniqText(
+                      'Enter Location Manually',
+                      style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xff424242),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -280,54 +292,55 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
       locationName: locationName,
     );
 
-    // 3. Get providers before popping context
+    // 3. Get providers before popping context - store references, not context-dependent
     final hospitalProvider = Provider.of<HospitalProvider>(
       context,
       listen: false,
     );
     final doctorProvider = Provider.of<DoctorProvider>(context, listen: false);
 
-    // 4. Update providers first before closing bottom sheet
-    hospitalProvider.setLocation(
-      latitude: position.latitude,
-      longitude: position.longitude,
-      locationName: locationName,
-    );
+    // Store values we need
+    final lat = position.latitude;
+    final lng = position.longitude;
+    final locName = locationName;
 
-    doctorProvider.setLocation(
-      latitude: position.latitude,
-      longitude: position.longitude,
-      locationName: locationName,
-    );
-
-    // 4. Ensure UI is ready before closing bottom sheet
-    await Future.delayed(const Duration(milliseconds: 100));
-
-    // 5. Close bottom sheet safely
+    // 4. Close bottom sheet first
     if (mounted && Navigator.of(context).canPop()) {
       Navigator.of(context).pop();
     }
 
-    // 6. Fetch data in background (UI will show loading state via providers)
-    // Use a small delay to ensure bottom sheet is fully closed
-    await Future.delayed(const Duration(milliseconds: 200));
+    // 5. Update providers immediately (providers are singletons, safe to use)
+    // Use a small delay to ensure bottom sheet animation completes
+    Future.delayed(const Duration(milliseconds: 300), () {
+      // Update providers after bottom sheet closes
+      hospitalProvider.setLocation(
+        latitude: lat,
+        longitude: lng,
+        locationName: locName,
+      );
 
-    try {
-      await Future.wait([
+      doctorProvider.setLocation(
+        latitude: lat,
+        longitude: lng,
+        locationName: locName,
+      );
+
+      // Fetch data in background (UI will show loading state via providers)
+      Future.wait([
         hospitalProvider.fetchTopHospitals(
-          latitude: position.latitude,
-          longitude: position.longitude,
+          latitude: lat,
+          longitude: lng,
           isRefresh: true,
         ),
         doctorProvider.fetchTopDoctors(
-          latitude: position.latitude,
-          longitude: position.longitude,
+          latitude: lat,
+          longitude: lng,
           isRefresh: true,
         ),
-      ]);
-    } catch (e) {
-      debugPrint('Error fetching data: $e');
-    }
+      ]).catchError((e) {
+        debugPrint('Error fetching data: $e');
+      });
+    });
   }
 
   void _showErrorDialog(String message) {
@@ -338,12 +351,12 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Error'),
-        content: Text(message),
+        title: const EcliniqText('Error'),
+        content: EcliniqText(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
+            child: const EcliniqText('OK'),
           ),
         ],
       ),
@@ -358,21 +371,21 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Location Permission Required'),
-        content: const Text(
+        title: const EcliniqText('Location Permission Required'),
+        content: const EcliniqText(
           'Location permission has been permanently denied. Please enable it in app settings to continue.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: const EcliniqText('Cancel'),
           ),
           TextButton(
             onPressed: () {
               _locationService.openAppSettings();
               Navigator.of(context).pop();
             },
-            child: const Text('Open Settings'),
+            child: const EcliniqText('Open Settings'),
           ),
         ],
       ),

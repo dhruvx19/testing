@@ -26,12 +26,13 @@ class AccountSettingsMenu extends StatelessWidget {
             padding: const EdgeInsets.all(10.0),
             child: Text(
               'Account',
-              style: EcliniqTextStyles.headlineLarge.copyWith(
+              style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
                 color: Color(0xff8E8E8E),
               ),
             ),
           ),
           _buildMenuItem(
+             context:   context,
             iconPath: 'lib/ecliniq_icons/assets/user_circle.svg',
             iconColor: Colors.blue,
             title: 'Personal Details',
@@ -39,6 +40,7 @@ class AccountSettingsMenu extends StatelessWidget {
           ),
           _buildDivider(),
           _buildMenuItem(
+             context:   context,
             iconPath: 'lib/ecliniq_icons/assets/Stethoscope.svg',
             iconColor: Colors.blue,
             title: 'My Doctors',
@@ -46,6 +48,7 @@ class AccountSettingsMenu extends StatelessWidget {
           ),
           _buildDivider(),
           _buildMenuItem(
+             context:   context,
             iconPath: 'lib/ecliniq_icons/assets/lock_key_hole_minimalistic.svg',
             iconColor: Colors.blue,
             title: 'Security Settings',
@@ -61,6 +64,7 @@ class AccountSettingsMenu extends StatelessWidget {
     required Color iconColor,
     required String title,
     VoidCallback? onTap,
+    required BuildContext context,
   }) {
     return InkWell(
       onTap: onTap,
@@ -71,14 +75,18 @@ class AccountSettingsMenu extends StatelessWidget {
             SizedBox(
               width: 24,
               height: 24,
-              child: SvgPicture.asset(iconPath, height: 24, width: 24),
+              child: SvgPicture.asset(
+                iconPath,
+                height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+                width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+              ),
             ),
 
             const SizedBox(width: 16),
             Expanded(
               child: Text(
                 title,
-                style: EcliniqTextStyles.headlineXMedium.copyWith(
+                style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                   color: Colors.black87,
                 ),
               ),

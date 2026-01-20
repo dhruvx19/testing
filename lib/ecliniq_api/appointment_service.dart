@@ -365,4 +365,51 @@ class AppointmentService {
       };
     }
   }
+
+  Future<Map<String, dynamic>> getBannersForHome({
+    required String authToken,
+  }) async {
+    try {
+      final url = Uri.parse(Endpoints.bannersForHome);
+
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $authToken',
+        'x-access-token': authToken,
+      };
+
+      final response = await http.get(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        return {
+          'success': responseData['success'] ?? true,
+          'message': responseData['message']?.toString() ?? 'Banners fetched successfully',
+          'data': responseData['data'],
+          'errors': responseData['errors'],
+          'meta': responseData['meta'],
+          'timestamp': responseData['timestamp'] ?? DateTime.now().toIso8601String(),
+        };
+      } else {
+        final responseData = jsonDecode(response.body);
+        return {
+          'success': false,
+          'message': responseData['message']?.toString() ?? 'Failed to fetch banners: ${response.statusCode}',
+          'data': null,
+          'errors': response.body,
+          'meta': null,
+          'timestamp': DateTime.now().toIso8601String(),
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Network error: $e',
+        'data': null,
+        'errors': e.toString(),
+        'meta': null,
+        'timestamp': DateTime.now().toIso8601String(),
+      };
+    }
+  }
 }

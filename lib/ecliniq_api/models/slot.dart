@@ -33,7 +33,7 @@ class Slot {
 
   factory Slot.fromJson(Map<String, dynamic> json) {
     // Parse times as UTC to ensure correct timezone handling
-    final parseTime = (dynamic timeValue) {
+    parseTime(dynamic timeValue) {
       if (timeValue == null) {
         return DateTime.utc(1970, 1, 1);
       }
@@ -55,23 +55,23 @@ class Slot {
       } catch (e) {
         return DateTime.utc(1970, 1, 1);
       }
-    };
+    }
     
     // Helper to safely convert to string
-    final toString = (dynamic value, String defaultValue) {
+    toString(dynamic value, String defaultValue) {
       if (value == null) return defaultValue;
       if (value is String) return value;
       return value.toString();
-    };
+    }
     
     // Helper to safely convert to int
-    final toInt = (dynamic value, int defaultValue) {
+    toInt(dynamic value, int defaultValue) {
       if (value == null) return defaultValue;
       if (value is int) return value;
       if (value is String) return int.tryParse(value) ?? defaultValue;
       if (value is double) return value.toInt();
       return defaultValue;
-    };
+    }
     
     return Slot(
       id: toString(json['id'], ''),
@@ -218,19 +218,19 @@ class HoldTokenSlotInfo {
   });
 
   factory HoldTokenSlotInfo.fromJson(Map<String, dynamic> json) {
-    final toInt = (dynamic value, int defaultValue) {
+    toInt(dynamic value, int defaultValue) {
       if (value == null) return defaultValue;
       if (value is int) return value;
       if (value is String) return int.tryParse(value) ?? defaultValue;
       if (value is double) return value.toInt();
       return defaultValue;
-    };
+    }
 
-    final toString = (dynamic value, String defaultValue) {
+    toString(dynamic value, String defaultValue) {
       if (value == null) return defaultValue;
       if (value is String) return value;
       return value.toString();
-    };
+    }
 
     return HoldTokenSlotInfo(
       id: toString(json['id'], ''),
@@ -266,7 +266,7 @@ class HoldTokenData {
   });
 
   factory HoldTokenData.fromJson(Map<String, dynamic> json) {
-    final parseTime = (dynamic timeValue) {
+    parseTime(dynamic timeValue) {
       if (timeValue == null) {
         return DateTime.utc(1970, 1, 1);
       }
@@ -286,7 +286,7 @@ class HoldTokenData {
       } catch (e) {
         return DateTime.utc(1970, 1, 1);
       }
-    };
+    }
 
     return HoldTokenData(
       success: json['success'] ?? false,
@@ -356,7 +356,7 @@ class WeeklySlotData {
   });
 
   factory WeeklySlotData.fromJson(Map<String, dynamic> json) {
-    final parseTime = (dynamic timeValue) {
+    parseTime(dynamic timeValue) {
       if (timeValue == null) {
         return DateTime.utc(1970, 1, 1);
       }
@@ -376,15 +376,15 @@ class WeeklySlotData {
       } catch (e) {
         return DateTime.utc(1970, 1, 1);
       }
-    };
+    }
 
-    final toInt = (dynamic value, int defaultValue) {
+    toInt(dynamic value, int defaultValue) {
       if (value == null) return defaultValue;
       if (value is int) return value;
       if (value is String) return int.tryParse(value) ?? defaultValue;
       if (value is double) return value.toInt();
       return defaultValue;
-    };
+    }
 
     return WeeklySlotData(
       date: parseTime(json['date']),

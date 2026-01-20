@@ -584,7 +584,7 @@ class StatusHeader extends StatelessWidget {
               topRight: Radius.circular(12),
             ),
           ),
-          child: _buildContent(config),
+          child: _buildContent(config, context),
         ),
         if (currentTokenNumber != null) ...[
           Container(
@@ -599,9 +599,7 @@ class StatusHeader extends StatelessWidget {
               children: [
                 Text(
                   'Token Number Currently Running',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
+                  style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                     color: Color(0xff626060),
                   ),
                 ),
@@ -614,9 +612,7 @@ class StatusHeader extends StatelessWidget {
                 SizedBox(width: 4),
                 Text(
                   currentTokenNumber!,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
+                  style: EcliniqTextStyles.responsiveHeadlineLargeBold(context).copyWith(
                     color: Color(0xFF3EAF3F),
                   ),
                 ),
@@ -629,13 +625,13 @@ class StatusHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildContent(_StatusConfig config) {
+  Widget _buildContent(_StatusConfig config, BuildContext context) {
     if (status == 'confirmed') {
       return Column(
         children: [
           Text(
             config.title,
-            style: EcliniqTextStyles.headlineBMedium.copyWith(
+            style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
               color: config.textColor,
             ),
           ),
@@ -643,18 +639,14 @@ class StatusHeader extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               'Your Token Number',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w300,
+              style: EcliniqTextStyles.responsiveHeadlineXLMedium(context).copyWith(
                 color: Color(0xff424242),
               ),
             ),
             const SizedBox(height: 8),
             Text(
               tokenNumber!,
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.w700,
+              style: EcliniqTextStyles.responsiveHeadlineXXLarge(context).copyWith(
                 color: config.textColor,
               ),
             ),
@@ -674,9 +666,7 @@ class StatusHeader extends StatelessWidget {
                     children: [
                       Text(
                         'Expected Time - $expectedTime',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
+                        style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                           color: Color(0xff424242),
                         ),
                       ),
@@ -699,9 +689,7 @@ class StatusHeader extends StatelessWidget {
         children: [
           Text(
             config.title,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
+            style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
               color: config.textColor,
             ),
           ),
@@ -711,11 +699,9 @@ class StatusHeader extends StatelessWidget {
       return Center(
         child: Text(
           config.title,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-            color: config.textColor,
-          ),
+            style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
+              color: config.textColor,
+            ),
         ),
       );
     }
@@ -800,19 +786,19 @@ class DoctorInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isSimplified) {
-      return _buildSimplifiedCard();
+      return _buildSimplifiedCard(context);
     }
-    return _buildFullCard();
+    return _buildFullCard(  context);
   }
 
-  Widget _buildSimplifiedCard() {
+  Widget _buildSimplifiedCard(BuildContext context) {
     return Row(
       children: [
         Stack(
           children: [
             Container(
-              width: 80,
-              height: 80,
+              width: EcliniqTextStyles.getResponsiveWidth(context, 80),
+              height: EcliniqTextStyles.getResponsiveHeight(context, 80),
               decoration: BoxDecoration(
                 color: const Color(0xFFE3F2FD),
                 shape: BoxShape.circle,
@@ -823,16 +809,14 @@ class DoctorInfoCard extends StatelessWidget {
                   ? ClipOval(
                       child: Image.network(
                         doctor.profileImage!,
-                        width: 80,
-                        height: 80,
+                        width: EcliniqTextStyles.getResponsiveWidth(context, 80),
+                        height: EcliniqTextStyles.getResponsiveHeight(context, 80),
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Center(
                             child: Text(
                               doctor.initials,
-                              style: const TextStyle(
-                                fontSize: 32,
-                                fontWeight: FontWeight.w600,
+                              style: EcliniqTextStyles.responsiveHeadlineXXLargeBold(context).copyWith(
                                 color: Color(0xFF1565C0),
                               ),
                             ),
@@ -856,20 +840,22 @@ class DoctorInfoCard extends StatelessWidget {
               top: 0,
               child: SvgPicture.asset(
                 EcliniqIcons.verified.assetPath,
-                width: 24,
-                height: 24,
+                width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+                height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
               ),
             ),
           ],
         ),
-        const SizedBox(width: 16),
+        SizedBox(
+          width: EcliniqTextStyles.getResponsiveSpacing(context, 16),
+        ),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 doctor.name,
-                style: EcliniqTextStyles.headlineLarge.copyWith(
+                style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
                   color: Color(0xff424242),
                 ),
               ),
@@ -878,14 +864,14 @@ class DoctorInfoCard extends StatelessWidget {
                 doctor.specialization.isEmpty
                     ? 'General Physician'
                     : doctor.specialization,
-                style: EcliniqTextStyles.titleXLarge.copyWith(
+                style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                   color: Color(0xff424242),
                 ),
               ),
               const SizedBox(height: 2),
               Text(
                 doctor.qualification,
-                style: EcliniqTextStyles.titleXLarge.copyWith(
+                style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                   color: Color(0xff424242),
                 ),
               ),
@@ -896,7 +882,7 @@ class DoctorInfoCard extends StatelessWidget {
     );
   }
 
-  Widget _buildFullCard() {
+  Widget _buildFullCard(BuildContext context) {
     return Column(
       children: [
         Column(
@@ -942,21 +928,21 @@ class DoctorInfoCard extends StatelessWidget {
                     children: [
                       Text(
                         doctor.name,
-                        style: EcliniqTextStyles.headlineLarge.copyWith(
+                        style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
                           color: Color(0xff424242),
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         doctor.specialization,
-                        style: EcliniqTextStyles.titleXLarge.copyWith(
+                        style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                           color: Color(0xff424242),
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         doctor.qualification,
-                        style: EcliniqTextStyles.titleXLarge.copyWith(
+                        style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                           color: Color(0xff424242),
                         ),
                       ),
@@ -976,7 +962,7 @@ class DoctorInfoCard extends StatelessWidget {
                 const SizedBox(width: 4),
                 Text(
                   _getExperienceText(doctor.yearsOfExperience),
-                  style: EcliniqTextStyles.titleXLarge.copyWith(
+                  style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                     color: Color(0xff626060),
                   ),
                 ),
@@ -1010,10 +996,8 @@ class DoctorInfoCard extends StatelessWidget {
                       const SizedBox(width: 2),
                       Text(
                         doctor.rating.toStringAsFixed(1),
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: EcliniqTextStyles.responsiveTitleXBLarge(context).copyWith(
                           color: Color(0xffBE8B00),
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -1031,7 +1015,7 @@ class DoctorInfoCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   '₹500',
-                  style: EcliniqTextStyles.titleXLarge.copyWith(
+                  style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                     color: Color(0xff626060),
                   ),
                 ),
@@ -1049,7 +1033,7 @@ class DoctorInfoCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     clinic.name,
-                    style: EcliniqTextStyles.titleXLarge.copyWith(
+                    style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                       color: Color(0xff626060),
                     ),
                   ),
@@ -1069,12 +1053,12 @@ class DoctorInfoCard extends StatelessWidget {
                 Flexible(
                   child: Text(
                     clinic.address,
-                    style: EcliniqTextStyles.titleXLarge.copyWith(
+                    style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                       color: Color(0xff626060),
                     ),
                   ),
                 ),
-                
+
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 5,
@@ -1087,10 +1071,8 @@ class DoctorInfoCard extends StatelessWidget {
                   ),
                   child: Text(
                     '${clinic.distanceKm.toStringAsFixed(1)} Km',
-                    style: TextStyle(
-                      fontSize: 16,
+                    style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                       color: Color(0xff424242),
-                      fontWeight: FontWeight.w400,
                     ),
                   ),
                 ),
@@ -1106,11 +1088,13 @@ class DoctorInfoCard extends StatelessWidget {
 class AppointmentDetailsSection extends StatelessWidget {
   final PatientInfo patient;
   final AppointmentTimeInfo timeInfo;
+  final VoidCallback? onEditPatient;
 
   const AppointmentDetailsSection({
     super.key,
     required this.patient,
     required this.timeInfo,
+    this.onEditPatient,
   });
 
   @override
@@ -1118,16 +1102,15 @@ class AppointmentDetailsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+         Text(
           'Appointment Details',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
+          style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
             color: Color(0xFF333333),
           ),
         ),
         const SizedBox(height: 16),
         _buildDetailRow(
+           context:   context,
           showDivider: true,
           icon: SvgPicture.asset(
             EcliniqIcons.userBlue.assetPath,
@@ -1137,9 +1120,20 @@ class AppointmentDetailsSection extends StatelessWidget {
           text: patient.displayName,
           subtitle:
               '${patient.gender}, ${patient.dateOfBirth} (${patient.age}Y)',
+          trailing: onEditPatient != null
+              ? GestureDetector(
+                  onTap: onEditPatient,
+                  child: SvgPicture.asset(
+                    EcliniqIcons.penBlack.assetPath,
+                    width: 32,
+                    height: 32,
+                  ),
+                )
+              : null,
         ),
         const SizedBox(height: 12),
         _buildDetailRow(
+           context:   context,
           showDivider: true,
           icon: SvgPicture.asset(
             EcliniqIcons.calendar.assetPath,
@@ -1151,6 +1145,7 @@ class AppointmentDetailsSection extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         _buildDetailRow(
+           context:   context,
           showDivider: false,
           icon: SvgPicture.asset(
             EcliniqIcons.hospitalBuilding1.assetPath,
@@ -1169,12 +1164,13 @@ class AppointmentDetailsSection extends StatelessWidget {
     required String text,
     String? subtitle,
     required bool showDivider,
+    required BuildContext context,
+    Widget? trailing,
   }) {
     return Column(
       children: [
         Row(
-          crossAxisAlignment:
-              CrossAxisAlignment.center, // Center align vertically
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             icon,
             const SizedBox(width: 8),
@@ -1182,21 +1178,24 @@ class AppointmentDetailsSection extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    text,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF424242),
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          text,
+                          style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
+                            color: Color(0xFF424242),
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
                   if (subtitle != null) ...[
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
+                      style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                         color: Color(0xFF8E8E8E),
                       ),
                     ),
@@ -1204,6 +1203,8 @@ class AppointmentDetailsSection extends StatelessWidget {
                 ],
               ),
             ),
+            if (trailing != null) ...[const SizedBox(width: 8), trailing],
+            const SizedBox(width: 16),
           ],
         ),
         if (showDivider) ...[
@@ -1256,7 +1257,7 @@ class ClinicLocationCard extends StatelessWidget {
               Center(
                 child: Text(
                   'Tap to get the clinic direction',
-                  style: EcliniqTextStyles.bodySmall.copyWith(
+                  style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                     color: Color(0xff2372EC),
                   ),
                 ),
@@ -1280,29 +1281,26 @@ class PaymentDetailsCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Payment Details',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
+          style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
             color: Color(0xFF424242),
           ),
         ),
         const SizedBox(height: 16),
         _buildPaymentRow(
+           context:   context,
           'Consultation Fee',
           payment.serviceFee > 0 ? 0.0 : payment.consultationFee,
           subtitle: payment.serviceFee > 0 ? 'Pay at Clinic' : null,
         ),
         if (payment.serviceFee > 0) ...[
           const SizedBox(height: 8),
-          _buildPaymentRow(
-            'Service Fee & Tax',
-            payment.serviceFee,
-          ),
+          _buildPaymentRow('Service Fee & Tax', payment.serviceFee,  context:   context,),
         ] else ...[
           const SizedBox(height: 8),
           _buildPaymentRow(
+             context:   context,
             'Service Fee & Tax',
             payment.serviceFee,
             originalAmount: payment.isServiceFeeWaived ? 40 : null,
@@ -1320,9 +1318,7 @@ class PaymentDetailsCard extends StatelessWidget {
               children: [
                 Text(
                   'Total Payable',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
+                  style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
                     color: const Color(0xFF424242),
                   ),
                 ),
@@ -1334,9 +1330,7 @@ class PaymentDetailsCard extends StatelessWidget {
                   payment.serviceFee > 0
                       ? '₹${payment.serviceFee.toStringAsFixed(0)}'
                       : '₹${payment.totalPayable.toStringAsFixed(0)}',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
+                  style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
                     color: const Color(0xFF424242),
                   ),
                 ),
@@ -1355,6 +1349,7 @@ class PaymentDetailsCard extends StatelessWidget {
     bool isFree = false,
     String? subtitle,
     bool isBold = false,
+    required BuildContext context,  
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1366,9 +1361,7 @@ class PaymentDetailsCard extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w400,
+                  style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                     color: const Color(0xFF626060),
                   ),
                 ),
@@ -1388,10 +1381,8 @@ class PaymentDetailsCard extends StatelessWidget {
                 if (originalAmount != null)
                   Text(
                     '₹${originalAmount.toInt()}',
-                    style: const TextStyle(
-                      fontSize: 18,
+                    style: EcliniqTextStyles.responsiveHeadlineXLMedium(context).copyWith(
                       color: Color(0xFF8E8E8E),
-                      fontWeight: FontWeight.w300,
                       decoration: TextDecoration.lineThrough,
                     ),
                   ),
@@ -1400,19 +1391,17 @@ class PaymentDetailsCard extends StatelessWidget {
                   subtitle == 'Pay at Clinic'
                       ? 'Pay at Clinic'
                       : isFree
-                          ? 'Free'
-                          : '₹${amount.toInt()}',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: isFree || subtitle == 'Pay at Clinic'
-                        ? FontWeight.w500
-                        : FontWeight.w400,
-                    color: isFree
-                        ? const Color(0xFF54B955)
-                        : subtitle == 'Pay at Clinic'
-                            ? const Color(0xFF424242)
-                            : const Color(0xFF424242),
-                  ),
+                      ? 'Free'
+                      : '₹${amount.toInt()}',
+                  style: (isFree || subtitle == 'Pay at Clinic')
+                      ? EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
+                          color: isFree
+                              ? const Color(0xFF54B955)
+                              : const Color(0xFF424242),
+                        )
+                      : EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
+                          color: const Color(0xFF424242),
+                        ),
                 ),
               ],
             ),
@@ -1422,10 +1411,8 @@ class PaymentDetailsCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             subtitle,
-            style: const TextStyle(
-              fontSize: 12,
+            style: EcliniqTextStyles.responsiveBodyXSmall(context).copyWith(
               color: Color(0xFF54B955),
-              fontWeight: FontWeight.w400,
             ),
           ),
         ],
@@ -1514,9 +1501,7 @@ class _RatingSectionState extends State<RatingSection> {
           children: [
             Text(
               hasRating ? 'Your Rating :' : 'Rate your Experience :',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w400,
+              style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                 color: hasRating ? Color(0xFF424242) : Color(0xFF2372EC),
               ),
             ),
@@ -1808,7 +1793,7 @@ class _BookingActionButtonState extends State<BookingActionButton> {
               ],
               Text(
                 widget.label,
-                style: EcliniqTextStyles.headlineMedium.copyWith(
+                style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                   color: _getTextColor(),
                 ),
               ),

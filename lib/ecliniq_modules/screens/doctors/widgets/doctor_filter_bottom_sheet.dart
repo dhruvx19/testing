@@ -77,11 +77,30 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
             children: [
               Text(
                 'Filter Doctors',
-                style: EcliniqTextStyles.headlineMedium,
+                style: EcliniqTextStyles.responsiveHeadlineMedium(context),
               ),
-              IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.close),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    onTap: _resetFilters,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'Reset',
+                        style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                            .copyWith(
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xff2372EC),
+                            ),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
               ),
             ],
           ),
@@ -215,12 +234,40 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: const TextStyle(
-        fontSize: 16,
+      style:  EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+     
         fontWeight: FontWeight.w600,
         color: Color(0xFF424242),
       ),
     );
+  }
+
+  void _resetFilters() {
+    setState(() {
+      _cityController.clear();
+      _distanceController.clear();
+      _experienceController.clear();
+      _specialityController.clear();
+      _languageController.clear();
+      _selectedGender = null;
+      _selectedAvailability = null;
+      _selectedDate = null;
+    });
+    // Emit empty filter state to clear active filters in parent
+    final emptyFilter = FilterDoctorsRequest(
+      latitude: widget.currentFilter.latitude,
+      longitude: widget.currentFilter.longitude,
+      city: null,
+      distance: null,
+      workExperience: null,
+      speciality: null,
+      languages: null,
+      gender: null,
+      availability: null,
+      date: null,
+      page: 1,
+    );
+    widget.onChanged(emptyFilter);
   }
 
   void _applyAndEmit() {

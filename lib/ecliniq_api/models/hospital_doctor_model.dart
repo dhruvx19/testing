@@ -1,3 +1,5 @@
+import 'package:ecliniq/ecliniq_api/storage_service.dart';
+
 // Updated Doctor Model to match the API response
 class Doctor {
   final String id;
@@ -57,6 +59,17 @@ class Doctor {
 
   // Year of experience
   int? get yearOfExperience => experience;
+
+  /// Get profile photo URL using StorageService
+  /// @description Fetches the public URL for the doctor's profile photo if available
+  /// @param storageService - StorageService instance to fetch the public URL
+  /// @returns Future<String?> - Public URL if successful, null otherwise
+  Future<String?> getProfilePhotoUrl(StorageService storageService) async {
+    if (profilePhoto == null || profilePhoto!.isEmpty) {
+      return null;
+    }
+    return await storageService.getImageUrl(profilePhoto, fallbackUrl: null);
+  }
 
   factory Doctor.fromJson(Map<String, dynamic> json) {
     return Doctor(

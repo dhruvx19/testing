@@ -1,16 +1,12 @@
 import 'package:ecliniq/ecliniq_core/auth/secure_storage.dart';
 import 'package:ecliniq/ecliniq_core/auth/session_service.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
-import 'package:ecliniq/ecliniq_icons/assets/home/home_screen.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/details/user_details.dart';
 import 'package:ecliniq/ecliniq_modules/screens/login/login.dart';
 import 'package:ecliniq/ecliniq_modules/screens/login/login_trouble.dart';
-import 'package:ecliniq/ecliniq_modules/screens/login/profile_help.dart';
-import 'package:ecliniq/ecliniq_modules/screens/profile/security_settings/security_settings.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
-import 'package:ecliniq/ecliniq_ui/lib/widgets/button/button.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/success_snackbar.dart';
 import 'package:ecliniq/ecliniq_ui/scripts/ecliniq_ui.dart';
@@ -153,12 +149,12 @@ class _MPINSetState extends State<MPINSet> with TickerProviderStateMixin {
   }
 
   void _showSuccessSnackBar() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      CustomSuccessSnackBar(
+
+      CustomSuccessSnackBar.show(
         title: 'M-PIN Created Successfully',
         subtitle: 'Your changes have been saved successfully',
         context: context,
-      ),
+
     );
   }
 
@@ -295,7 +291,7 @@ class _MPINSetState extends State<MPINSet> with TickerProviderStateMixin {
         toolbarHeight: 50,
         title: Text(
           widget.isResetMode ? 'Reset M-PIN' : 'Create Your M-PIN',
-          style: EcliniqTextStyles.headlineMedium.copyWith(color: Colors.white),
+          style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(color: Colors.white),
         ),
         actions: [
           GestureDetector(
@@ -310,11 +306,11 @@ class _MPINSetState extends State<MPINSet> with TickerProviderStateMixin {
                   height: 24,
                 ),
                 const SizedBox(width: 4),
-                const Text(
+                Text(
                   'Help',
-                  style: TextStyle(
+                  style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                     color: Colors.white,
-                    fontSize: 18,
+
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -428,69 +424,70 @@ class _MPINSetState extends State<MPINSet> with TickerProviderStateMixin {
   }
 
   Widget _buildPinInputDescription() {
-  return Container(
-    decoration: BoxDecoration(
-      color: Color(0xFFF9F9F9),
-      borderRadius: BorderRadius.circular(8),
-    ),
-    padding: const EdgeInsets.all(16),
-    child: Row(
+    return Container(
+      decoration: BoxDecoration(
+        color: Color(0xFFF9F9F9),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SvgPicture.asset(
+            EcliniqIcons.shieldBlue.assetPath,
+            width: 32,
+            height: 32,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Your M-PIN will be used for:',
+                  style: EcliniqTextStyles.responsiveTitleXBLarge(context).copyWith(
+                    color: Color(0xff424242),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _buildBulletPoint('Quick login to your account'),
+                const SizedBox(height: 4),
+                _buildBulletPoint('Secure access to your medical records'),
+                const SizedBox(height: 4),
+                _buildBulletPoint('Authorizing important actions'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBulletPoint(String text) {
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SvgPicture.asset(
-          EcliniqIcons.shieldBlue.assetPath,
-          width: 32,
-          height: 32,
+        Container(
+          width: 5,
+          height: 5,
+          margin: const EdgeInsets.only(right: 8, top: 8),
+          decoration: BoxDecoration(
+            color: Color(0xff626060),
+            shape: BoxShape.circle,
+          ),
         ),
-        const SizedBox(width: 12),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Your M-PIN will be used for:',
-                style: EcliniqTextStyles.titleXBLarge.copyWith(
-                  color: Color(0xff424242),
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildBulletPoint('Quick login to your account'),
-              const SizedBox(height: 4),
-              _buildBulletPoint('Secure access to your medical records'),
-              const SizedBox(height: 4),
-              _buildBulletPoint('Authorizing important actions'),
-            ],
+          child: Text(
+            text,
+            style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+              color: Color(0xff626060),
+            ),
           ),
         ),
       ],
-    ),
-  );
-}
+    );
+  }
 
-Widget _buildBulletPoint(String text) {
-  return Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Container(
-        width: 5,
-        height: 5,
-        margin: const EdgeInsets.only(right: 8, top: 8),
-        decoration: BoxDecoration(
-          color: Color(0xff626060),
-          shape: BoxShape.circle,
-        ),
-      ),
-      Expanded(
-        child: Text(
-          text,
-          style: EcliniqTextStyles.titleXLarge.copyWith(
-            color: Color(0xff626060),
-          ),
-        ),
-      ),
-    ],
-  );
-}
   Widget _buildPinField({
     required String title,
     required TextEditingController controller,
@@ -500,13 +497,13 @@ Widget _buildBulletPoint(String text) {
       children: [
         Text(
           title,
-          style: EcliniqTextStyles.headlineMedium.copyWith(
+          style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
             color: Color(0xff424242),
           ),
         ),
         const SizedBox(height: 12),
         PinCodeTextField(
-          textStyle: EcliniqTextStyles.headlineXMedium.copyWith(
+          textStyle: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
             color: const Color(0xff424242),
           ),
           appContext: context,
@@ -530,11 +527,25 @@ Widget _buildBulletPoint(String text) {
   }
 
   PinTheme _getPinTheme() {
+    // Calculate responsive field width and padding to fit all 4 fields on screen
+    final screenWidth = MediaQuery.of(context).size.width;
+    final horizontalPadding =
+        36.0; // Total horizontal padding (18px on each side from parent)
+    final availableWidth = screenWidth - horizontalPadding;
+
+    // For 4 fields with padding on each side: 4 * (fieldWidth + 2*padding) = availableWidth
+    // 4w + 8p = availableWidth
+    // Increase spacing and reduce field size
+    const padding = 8.0; // Increased padding (16px total between fields)
+    final calculatedWidth = (availableWidth - (8 * padding)) / 4;
+    // Ensure we don't exceed available width by using floor to be safe
+    final fieldWidth = (calculatedWidth.floor()).toDouble().clamp(40.0, 70.0);
+
     return PinTheme(
       shape: PinCodeFieldShape.box,
       borderRadius: BorderRadius.circular(12),
-      fieldHeight: 52,
-      fieldWidth: 80,
+      fieldHeight: 48, // Reduced height
+      fieldWidth: fieldWidth,
       activeFillColor: Color(0xffffffff),
       selectedFillColor: Color(0xffffffff),
       inactiveFillColor: Color(0xffffffff),
@@ -545,7 +556,7 @@ Widget _buildBulletPoint(String text) {
       activeBorderWidth: 0.5,
       selectedBorderWidth: 1,
       inactiveBorderWidth: 0.5,
-      fieldOuterPadding: const EdgeInsets.symmetric(horizontal: 2),
+      fieldOuterPadding: EdgeInsets.symmetric(horizontal: padding),
     );
   }
 
@@ -635,7 +646,7 @@ class _MPINButtonState extends State<_MPINButton> {
                     const SizedBox(width: 12),
                     Text(
                       'Setting M-PIN',
-                      style: EcliniqTextStyles.headlineMedium.copyWith(
+                      style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                         color: Colors.white,
                       ),
                     ),
@@ -646,7 +657,7 @@ class _MPINButtonState extends State<_MPINButton> {
                   children: [
                     Text(
                       'Create M-PIN',
-                      style: EcliniqTextStyles.headlineMedium.copyWith(
+                      style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                         color: widget.isEnabled
                             ? Colors.white
                             : const Color(0xffD6D6D6),
@@ -679,7 +690,7 @@ class _InstructionsText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       'Enter a 4-digit PIN that you can remember easily',
-      style: EcliniqTextStyles.headlineXMedium.copyWith(
+      style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
         color: Color(0xff424242),
       ),
       textAlign: TextAlign.center,
@@ -706,9 +717,9 @@ class _SuccessMessage extends StatelessWidget {
         Text(
           textAlign: TextAlign.center,
           message,
-          style: TextStyle(
+          style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
             color: Color(0xff3EAF3F),
-            fontSize: 18,
+            
             fontWeight: FontWeight.w400,
           ),
         ),
@@ -733,12 +744,16 @@ class _ErrorMessage extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.error_outline, color: Colors.red.shade600, size: 20),
+          Icon(
+            Icons.error_outline,
+            color: Colors.red.shade600,
+            size: EcliniqTextStyles.getResponsiveIconSize(context, 20),
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               message,
-              style: TextStyle(color: Colors.red.shade600, fontSize: 14),
+              style: EcliniqTextStyles.responsiveButtonXLarge(context).copyWith(color: Colors.red.shade600,),
             ),
           ),
         ],

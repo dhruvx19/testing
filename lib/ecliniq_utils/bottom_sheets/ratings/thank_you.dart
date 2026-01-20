@@ -1,4 +1,5 @@
 import 'package:ecliniq/ecliniq_icons/icons.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 
 class ThankYou extends StatefulWidget {
@@ -16,17 +17,17 @@ class _ThankYouState extends State<ThankYou> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.fromLTRB(
-        16,
-        16,
-        16,
-        MediaQuery.of(context).viewInsets.bottom + 24,
+        EcliniqTextStyles.getResponsivePadding(context, 16),
+        EcliniqTextStyles.getResponsivePadding(context, 16),
+        EcliniqTextStyles.getResponsivePadding(context, 16),
+        MediaQuery.of(context).viewInsets.bottom + EcliniqTextStyles.getResponsivePadding(context, 24),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
-            width: 142,
-            height: 110,
+            width: EcliniqTextStyles.getResponsiveWidth(context, 142),
+            height: EcliniqTextStyles.getResponsiveHeight(context, 110),
             child: Image.asset(
               EcliniqIcons.thankYou.assetPath,
               fit: BoxFit.contain,
@@ -35,17 +36,21 @@ class _ThankYouState extends State<ThankYou> {
 
           Text(
             'Thank you for your Valuable Feedback!',
-            style: const TextStyle(
-              fontSize: 18,
+            style:  EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+           
               fontWeight: FontWeight.w500,
               color: Color(0xFF424242),
             ),
           ),
 
-          const SizedBox(height: 22),
+          SizedBox(
+            height: EcliniqTextStyles.getResponsiveSpacing(context, 22),
+          ),
 
           _buildSubmitButton(),
-          const SizedBox(height: 8),
+          SizedBox(
+            height: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+          ),
         ],
       ),
     );
@@ -54,7 +59,10 @@ class _ThankYouState extends State<ThankYou> {
   Widget _buildSubmitButton() {
     return SizedBox(
       width: double.infinity,
-      height: 52,
+      height: EcliniqTextStyles.getResponsiveButtonHeight(
+        context,
+        baseHeight: 52.0,
+      ),
       child: GestureDetector(
         onTapUp: (_) {
           Navigator.of(context).pop(_tempRating);
@@ -64,14 +72,16 @@ class _ThankYouState extends State<ThankYou> {
           duration: const Duration(milliseconds: 100),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(
+              EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
+            ),
             border: Border.all(color: const Color(0xff8E8E8E), width: 0.5),
           ),
-          child: const Center(
+          child:  Center(
             child: Text(
               'Ok',
-              style: TextStyle(
-                fontSize: 18,
+              style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+              
                 fontWeight: FontWeight.w500,
                 color: Color(0xff424242),
               ),

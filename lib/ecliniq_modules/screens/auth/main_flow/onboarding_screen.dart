@@ -80,8 +80,11 @@ class _EcliniqWelcomeScreenState extends State<EcliniqWelcomeScreen>
                 flex: 3,
                 child: SafeArea(
                   bottom: false,
-                  child: Column(
-                    children: [_buildHeader(), _buildWelcomeText()],
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [_buildHeader(), _buildWelcomeText()],
+                    ),
                   ),
                 ),
               ),
@@ -124,49 +127,55 @@ class _EcliniqWelcomeScreenState extends State<EcliniqWelcomeScreen>
       padding: const EdgeInsets.all(16),
       child: SvgPicture.asset(
         EcliniqIcons.nameLogo.assetPath,
-        // width: 187,
-        height: 44,
+        height: EcliniqTextStyles.getResponsiveIconSize(context, 44.0),
       ),
     );
   }
 
   Widget _buildWelcomeText() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+        context,
+        horizontal: 24,
+        vertical: 16,
+      ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Optimize: Use cacheWidth/cacheHeight for better performance
-          SvgPicture.asset(
-            EcliniqIcons.homeLogo.assetPath,
-            width: 280,
-            height: 270,
+          // Make image responsive to prevent overflow
+          LayoutBuilder(
+            builder: (context, constraints) {
+              return SvgPicture.asset(
+                EcliniqIcons.homeLogo.assetPath,
+                width: EcliniqTextStyles.getResponsiveIconSize(context, 250.0),
+                height: EcliniqTextStyles.getResponsiveIconSize(context, 240.0),
+              );
+            },
           ),
-          SizedBox(height: 32),
-          const Text(
+          const SizedBox(height: 32),
+          Text(
             'Welcome To Upchar-Q',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.w500,
-            ),
+            style: EcliniqTextStyles.responsiveHeadlineXLarge(
+              context,
+            ).copyWith(color: Colors.white, fontWeight: FontWeight.w500),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Your Turn, Your Time',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-            ),
+            style: EcliniqTextStyles.responsiveTitleXBLarge(
+              context,
+            ).copyWith(color: Colors.white, fontWeight: FontWeight.w400),
+            textAlign: TextAlign.center,
           ),
 
-          const Text(
+          Text(
             'Track Appointments in Real-Time!',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-            ),
+            style: EcliniqTextStyles.responsiveTitleXBLarge(
+              context,
+            ).copyWith(color: Colors.white, fontWeight: FontWeight.w400),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
 
@@ -215,15 +224,20 @@ class _EcliniqWelcomeScreenState extends State<EcliniqWelcomeScreen>
               children: [
                 EcliniqText(
                   'Enter Your Mobile Number',
-                  style: EcliniqTextStyles.headlineXMedium.copyWith(
-                    color: Color(0xff626060),
-                  ),
+                  style: EcliniqTextStyles.responsiveHeadlineXMedium(
+                    context,
+                  ).copyWith(color: Color(0xff626060)),
                 ),
                 const SizedBox(height: 4),
 
                 GestureDetector(
                   onTap: _openFullScreenInput,
                   child: Container(
+                    width: double.infinity,
+                    height: EcliniqTextStyles.getResponsiveButtonHeight(
+                      context,
+                      baseHeight: 52.0,
+                    ),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Color(0xff626060), width: 0.5),
@@ -231,10 +245,12 @@ class _EcliniqWelcomeScreenState extends State<EcliniqWelcomeScreen>
                     child: Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
+                          padding:
+                              EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                                context,
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
                           decoration: BoxDecoration(
                             border: Border(
                               right: BorderSide(
@@ -245,19 +261,27 @@ class _EcliniqWelcomeScreenState extends State<EcliniqWelcomeScreen>
                           ),
                           child: Row(
                             children: [
-                              const Text(
+                              Text(
                                 '+91',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w400,
-                                  color: Color(0xff424242),
-                                ),
+                                style:
+                                    EcliniqTextStyles.responsiveHeadlineXMedium(
+                                      context,
+                                    ).copyWith(
+                                      fontWeight: FontWeight.w400,
+                                      color: Color(0xff424242),
+                                    ),
                               ),
                               const SizedBox(width: 8),
                               SvgPicture.asset(
                                 EcliniqIcons.arrowDown.assetPath,
-                                width: 20,
-                                height: 20,
+                                width: EcliniqTextStyles.getResponsiveIconSize(
+                                  context,
+                                  20.0,
+                                ),
+                                height: EcliniqTextStyles.getResponsiveIconSize(
+                                  context,
+                                  20.0,
+                                ),
                               ),
                             ],
                           ),
@@ -265,21 +289,27 @@ class _EcliniqWelcomeScreenState extends State<EcliniqWelcomeScreen>
 
                         Expanded(
                           child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 16,
-                            ),
+                            padding:
+                                EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                                  context,
+                                  horizontal: 14,
+                                  vertical: 2,
+                                ),
+
                             child: Text(
                               _phoneController.text.isEmpty
                                   ? 'Mobile Number'
                                   : _phoneController.text,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w400,
-                                color: _phoneController.text.isEmpty
-                                    ? Color(0xffD6D6D6)
-                                    : Colors.black,
-                              ),
+
+                              style:
+                                  EcliniqTextStyles.responsiveHeadlineXMedium(
+                                    context,
+                                  ).copyWith(
+                                    fontWeight: FontWeight.w400,
+                                    color: _phoneController.text.isEmpty
+                                        ? Color(0xffD6D6D6)
+                                        : Colors.black,
+                                  ),
                             ),
                           ),
                         ),
@@ -287,7 +317,9 @@ class _EcliniqWelcomeScreenState extends State<EcliniqWelcomeScreen>
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(
+                  height: EcliniqTextStyles.getResponsiveSpacing(context, 20),
+                ),
                 TextButton(
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero, // Remove default padding
@@ -300,9 +332,9 @@ class _EcliniqWelcomeScreenState extends State<EcliniqWelcomeScreen>
                   },
                   child: EcliniqText(
                     'Trouble signing in ?',
-                    style: EcliniqTextStyles.headlineXMedium.copyWith(
-                      color: Color(0xff424242),
-                    ),
+                    style: EcliniqTextStyles.responsiveHeadlineXMedium(
+                      context,
+                    ).copyWith(color: Color(0xff424242)),
                   ),
                 ),
               ],

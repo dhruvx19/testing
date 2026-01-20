@@ -309,7 +309,8 @@ class AddDependentResponse {
 class GetDependentsResponse {
   final bool success;
   final String message;
-  final List<DependentData> data;
+  final DependentData? self;
+  final List<DependentData> dependents;
   final dynamic errors;
   final dynamic meta;
   final String timestamp;
@@ -317,19 +318,42 @@ class GetDependentsResponse {
   GetDependentsResponse({
     required this.success,
     required this.message,
-    required this.data,
+    this.self,
+    required this.dependents,
     this.errors,
     this.meta,
     required this.timestamp,
   });
 
+  // Legacy getter for backward compatibility
+  List<DependentData> get data => dependents;
+
   factory GetDependentsResponse.fromJson(Map<String, dynamic> json) {
     // The API returns data as an object with 'self' and 'dependents' properties
-    // Extract the 'dependents' array from the nested structure
+    DependentData? selfData;
     List<DependentData> dependentsList = [];
     
     if (json['data'] != null && json['data'] is Map<String, dynamic>) {
       final dataMap = json['data'] as Map<String, dynamic>;
+      
+      // Extract self data
+      if (dataMap['self'] != null && dataMap['self'] is Map<String, dynamic>) {
+        final selfJson = dataMap['self'] as Map<String, dynamic>;
+        // Add relation as "SELF" if not present
+        if (!selfJson.containsKey('relation') || selfJson['relation'] == null) {
+          selfJson['relation'] = 'SELF';
+        }
+        // Add createdAt and updatedAt if not present
+        if (!selfJson.containsKey('createdAt')) {
+          selfJson['createdAt'] = DateTime.now().toIso8601String();
+        }
+        if (!selfJson.containsKey('updatedAt')) {
+          selfJson['updatedAt'] = DateTime.now().toIso8601String();
+        }
+        selfData = DependentData.fromJson(selfJson);
+      }
+      
+      // Extract dependents array
       if (dataMap['dependents'] != null && dataMap['dependents'] is List) {
         dependentsList = (dataMap['dependents'] as List)
             .map((item) => DependentData.fromJson(item as Map<String, dynamic>))
@@ -340,7 +364,8 @@ class GetDependentsResponse {
     return GetDependentsResponse(
       success: json['success'] ?? false,
       message: json['message'] ?? '',
-      data: dependentsList,
+      self: selfData,
+      dependents: dependentsList,
       errors: json['errors'],
       meta: json['meta'],
       timestamp: json['timestamp'] ?? DateTime.now().toIso8601String(),
@@ -437,5 +462,17 @@ class DependentData {
     }
     return '${years}y ${months}m';
   }
+
+  /// Format relation string to proper case (e.g., "BROTHER" -> "Brother")
+  String get formattedRelation {
+    if (relation.isEmpty) return relation;
+    final upperRelation = relation.toUpperCase();
+    if (upperRelation == 'SELF') return 'Self';
+    // Convert to title case: first letter uppercase, rest lowercase
+    return relation[0].toUpperCase() + relation.substring(1).toLowerCase();
+  }
+
+  /// Check if this is the self/current user
+  bool get isSelf => relation.toUpperCase() == 'SELF';
 }
 

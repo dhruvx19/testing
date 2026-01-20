@@ -1,3 +1,4 @@
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 
 class EcliniqBottomSheet with WidgetsBindingObserver {
@@ -9,15 +10,25 @@ class EcliniqBottomSheet with WidgetsBindingObserver {
   static Future<T?> show<T>({
     required BuildContext context,
     required Widget child,
-    double? horizontalPadding = 8,
-    double? bottomPadding = 22,
+    double? horizontalPadding,
+    double? bottomPadding,
     Color? barrierColor,
     Color? backgroundColor,
     VoidCallback? onClosing,
     bool? closeWhenAppPaused,
     bool? isDismissible = true,
-    double borderRadius = 16,
+    double? borderRadius,
   }) {
+    // Use responsive defaults if not provided
+    final responsiveHorizontalPadding = horizontalPadding != null
+        ? horizontalPadding
+        : EcliniqTextStyles.getResponsiveSpacing(context, 12.0);
+    final responsiveBottomPadding = bottomPadding != null
+        ? bottomPadding
+        : EcliniqTextStyles.getResponsiveSpacing(context, 16.0);
+    final responsiveBorderRadius = borderRadius != null
+        ? borderRadius
+        : EcliniqTextStyles.getResponsiveBorderRadius(context, 16.0);
     const bottomSheet = EcliniqBottomSheet();
     if (closeWhenAppPaused != null) {
       EcliniqBottomSheet.closeWhenAppPaused = closeWhenAppPaused;
@@ -44,10 +55,10 @@ class EcliniqBottomSheet with WidgetsBindingObserver {
           canPop: isDismissible ?? true,
           child: Padding(
             padding: EdgeInsets.only(
-              top: 16,
-              left: horizontalPadding ?? 12,
-              right: horizontalPadding ?? 12,
-              bottom: bottomPadding ?? 16,
+              top: EcliniqTextStyles.getResponsiveSpacing(context, 16.0),
+              left: responsiveHorizontalPadding,
+              right: responsiveHorizontalPadding,
+              bottom: responsiveBottomPadding,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -55,21 +66,33 @@ class EcliniqBottomSheet with WidgetsBindingObserver {
                 Container(
                   decoration: BoxDecoration(
                     color: backgroundColor ?? Colors.white,
-                    borderRadius: BorderRadius.circular(borderRadius),
+                    borderRadius: BorderRadius.circular(responsiveBorderRadius),
                   ),
+                  clipBehavior: responsiveBorderRadius > 0
+                      ? Clip.antiAlias
+                      : Clip.none,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       // Drag handle
                       if (isDismissible ?? true)
                         Container(
-                          height: 4,
-                          width: 40,
+                          height: EcliniqTextStyles.getResponsiveSize(context, 4.0),
+                          width: EcliniqTextStyles.getResponsiveSize(context, 40.0),
                           decoration: BoxDecoration(
                             color: const Color(0xFF8E8E8E),
-                            borderRadius: BorderRadius.circular(100),
+                            borderRadius: BorderRadius.circular(
+                              EcliniqTextStyles.getResponsiveBorderRadius(
+                                context,
+                                100.0,
+                              ),
+                            ),
                           ),
-                          margin: const EdgeInsets.only(top: 12, bottom: 8),
+                          margin: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+                            context,
+                            top: 12.0,
+                            bottom: 8.0,
+                          ),
                         ),
                       Flexible(child: child),
                     ],

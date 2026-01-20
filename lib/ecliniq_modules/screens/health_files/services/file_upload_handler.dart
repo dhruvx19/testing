@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart' as file_picker;
 import 'package:image_picker/image_picker.dart';
-import '../models/health_file_model.dart';
+import '../../../../ecliniq_api/health_file_model.dart';
 import 'local_file_storage_service.dart';
 
 /// Service for handling file uploads from camera, gallery, or file picker

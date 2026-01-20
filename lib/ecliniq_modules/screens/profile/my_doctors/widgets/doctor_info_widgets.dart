@@ -36,8 +36,8 @@ class _DoctorInfoWidgetState extends State<DoctorInfoWidget> {
                   Stack(
                     children: [
                       Container(
-                        width: 64,
-                        height: 64,
+                        width: EcliniqTextStyles.getResponsiveWidth(context, 64),
+                        height: EcliniqTextStyles.getResponsiveHeight(context, 64),
                         decoration: BoxDecoration(
                           border: Border.all(
                             color: Color(0xff96BFFF),
@@ -49,9 +49,8 @@ class _DoctorInfoWidgetState extends State<DoctorInfoWidget> {
                         child: Center(
                           child: EcliniqText(
                             widget.doctor.profileInitial,
-                            style: EcliniqTextStyles.bodyMedium.copyWith(
+                            style: EcliniqTextStyles.responsiveHeadlineXXXLarge(context).copyWith(
                               color: Colors.blue,
-                              fontSize: 30,
                             ),
                           ),
                         ),
@@ -61,13 +60,15 @@ class _DoctorInfoWidgetState extends State<DoctorInfoWidget> {
                         right: 0,
                         child: SvgPicture.asset(
                           EcliniqIcons.verified.assetPath,
-                          width: 24,
-                          height: 24,
+                          width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+                          height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(width: 16),
+                  SizedBox(
+                    width: EcliniqTextStyles.getResponsiveSpacing(context, 16),
+                  ),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,8 +76,8 @@ class _DoctorInfoWidgetState extends State<DoctorInfoWidget> {
                         FittedBox(
                           child: EcliniqText(
                             widget.doctor.name,
-                            style: EcliniqTextStyles.bodyMedium.copyWith(
-                              fontSize: 20,
+                            style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
+                            
                               fontWeight: FontWeight.w600,
                               color: Color(0xff424242),
                             ),
@@ -84,16 +85,14 @@ class _DoctorInfoWidgetState extends State<DoctorInfoWidget> {
                         ),
                         EcliniqText(
                           widget.doctor.specialization,
-                          style: EcliniqTextStyles.bodyMedium.copyWith(
-                            fontSize: 16,
+                          style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                             fontWeight: FontWeight.w400,
                             color: Color(0xff424242),
                           ),
                         ),
                         EcliniqText(
                           widget.doctor.qualification,
-                          style: EcliniqTextStyles.bodyMedium.copyWith(
-                            fontSize: 16,
+                          style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                             fontWeight: FontWeight.w400,
                             color: Color(0xff424242),
                           ),
@@ -132,13 +131,17 @@ class _DoctorInfoWidgetState extends State<DoctorInfoWidget> {
                       ),
                       EcliniqText(
                         '${widget.doctor.experienceYears} years of exp',
-                        style: EcliniqTextStyles.bodyMedium.copyWith(
-                          fontSize: 16,
+                        style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+                      
                           fontWeight: FontWeight.w400,
                           color: Color(0xff626060),
                         ),
                       ),
-                      Icon(Icons.circle, size: 6, color: Color(0xff8E8E8E)),
+                      Icon(
+                        Icons.circle,
+                        size: EcliniqTextStyles.getResponsiveIconSize(context, 6),
+                        color: Color(0xff8E8E8E),
+                      ),
                       Container(
                         height: 24,
                         padding: EdgeInsets.symmetric(horizontal: 8),
@@ -157,8 +160,7 @@ class _DoctorInfoWidgetState extends State<DoctorInfoWidget> {
                             ),
                             EcliniqText(
                               '${widget.doctor.rating}',
-                              style: EcliniqTextStyles.bodyMedium.copyWith(
-                                fontSize: 16,
+                              style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                                 fontWeight: FontWeight.w400,
                                 color: Color(0xffBE8B00),
                               ),
@@ -166,11 +168,14 @@ class _DoctorInfoWidgetState extends State<DoctorInfoWidget> {
                           ],
                         ),
                       ),
-                      Icon(Icons.circle, size: 6, color: Color(0xff8E8E8E)),
+                      Icon(
+                        Icons.circle,
+                        size: EcliniqTextStyles.getResponsiveIconSize(context, 6),
+                        color: Color(0xff8E8E8E),
+                      ),
                       EcliniqText(
                         '₹${widget.doctor.fee}',
-                        style: EcliniqTextStyles.bodyMedium.copyWith(
-                          fontSize: 16,
+                        style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                           fontWeight: FontWeight.w400,
                           color: Color(0xff626060),
                         ),
@@ -191,16 +196,15 @@ class _DoctorInfoWidgetState extends State<DoctorInfoWidget> {
                       ),
                       EcliniqText(
                         widget.doctor.availableTime,
-                        style: EcliniqTextStyles.bodyMedium.copyWith(
-                          fontSize: 16,
+                        style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                           fontWeight: FontWeight.w400,
                           color: Color(0xff626060),
                         ),
                       ),
                       EcliniqText(
                         '(${widget.doctor.availableDays})',
-                        style: EcliniqTextStyles.bodyMedium.copyWith(
-                          fontSize: 16,
+                        style:EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+                          
                           fontWeight: FontWeight.w400,
                           color: Color(0xff626060),
                         ),
@@ -222,8 +226,8 @@ class _DoctorInfoWidgetState extends State<DoctorInfoWidget> {
                       Flexible(
                         child: EcliniqText(
                           widget.doctor.location,
-                          style: EcliniqTextStyles.bodyMedium.copyWith(
-                            fontSize: 16,
+                          style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+                          
                             fontWeight: FontWeight.w400,
                             color: Color(0xff626060),
                           ),
@@ -245,8 +249,8 @@ class _DoctorInfoWidgetState extends State<DoctorInfoWidget> {
                         child: Center(
                           child: EcliniqText(
                             '${widget.doctor.distanceKm} km',
-                            style: EcliniqTextStyles.bodyMedium.copyWith(
-                              fontSize: 16,
+                            style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+                             
                               fontWeight: FontWeight.w400,
                               color: Color(0xff424242),
                             ),
@@ -267,7 +271,7 @@ class _DoctorInfoWidgetState extends State<DoctorInfoWidget> {
 
                 child: Text(
                   '${widget.doctor.availableTokens} Token Available',
-                  style: EcliniqTextStyles.titleXLarge.copyWith(
+                  style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                     color: Color(0xff3EAF3F),
                   ),
                 ),
@@ -284,15 +288,15 @@ class _DoctorInfoWidgetState extends State<DoctorInfoWidget> {
                         vertical: 12,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.green[50],
+                        color: Color(0xffF2FFF3),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Center(
                         child: Text(
                           'Queue Not Started',
-                          style: EcliniqTextStyles.titleXLarge.copyWith(
-                            color: Color(0xff626060),
-                            fontSize: 16,
+                          style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+                            color: Color(0xff3EAF3F),
+                    
                           ),
                         ),
                       ),
@@ -337,9 +341,9 @@ class _DoctorInfoWidgetState extends State<DoctorInfoWidget> {
                         ),
                         child: Text(
                           'Book Appointment',
-                          style: EcliniqTextStyles.headlineMedium.copyWith(
+                          style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                             color: Colors.white,
-                            fontSize: 18,
+
                             fontWeight: FontWeight.w500,
                           ),
                         ),

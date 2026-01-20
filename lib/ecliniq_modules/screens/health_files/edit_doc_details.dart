@@ -1,8 +1,9 @@
 import 'dart:io';
 
+import 'package:ecliniq/ecliniq_api/health_file_model.dart';
+import 'package:ecliniq/ecliniq_api/models/patient.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/details/widgets/date_picker_sheet.dart';
-import 'package:ecliniq/ecliniq_modules/screens/health_files/models/health_file_model.dart';
 import 'package:ecliniq/ecliniq_modules/screens/health_files/providers/health_files_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/health_files/services/local_file_storage_service.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/colors.g.dart';
@@ -105,71 +106,79 @@ class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        leadingWidth: 58,
+        leadingWidth: EcliniqTextStyles.getResponsiveSize(context, 58.0),
         titleSpacing: 0,
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: SvgPicture.asset(
             EcliniqIcons.arrowLeft.assetPath,
-            width: 32,
-            height: 32,
+            width: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
+            height: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
           ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Align(
           alignment: Alignment.centerLeft,
-          child: const Text(
+          child: Text(
             'Edit Document Details',
-            style: TextStyle(
-              color: Color(0xff424242),
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-            ),
+            style: EcliniqTextStyles.responsiveHeadlineMedium(
+              context,
+            ).copyWith(color: Color(0xff424242)),
           ),
         ),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.2),
-          child: Container(color: const Color(0xFFB8B8B8), height: 1.0),
+          preferredSize: Size.fromHeight(
+            EcliniqTextStyles.getResponsiveSize(context, 0.2),
+          ),
+          child: Container(
+            color: const Color(0xFFB8B8B8),
+            height: EcliniqTextStyles.getResponsiveSize(context, 1.0),
+          ),
         ),
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(18.0),
+          padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 18.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 2,
+                padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                  context,
+                  horizontal: 10.0,
+                  vertical: 2.0,
                 ),
                 decoration: BoxDecoration(
                   color: const Color(0xffF9F9F9),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(
+                    EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0),
+                  ),
                 ),
                 child: Column(
                   children: [
                     Row(
                       children: [
                         SizedBox(
-                          width: 120,
+                          width: EcliniqTextStyles.getResponsiveWidth(
+                            context,
+                            120.0,
+                          ),
                           child: Row(
                             children: [
-                              const Text(
+                              Text(
                                 'File Name',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: Color(0xff626060),
-                                  fontWeight: FontWeight.w400,
-                                ),
+                                style:
+                                    EcliniqTextStyles.responsiveHeadlineXMedium(
+                                      context,
+                                    ).copyWith(color: Color(0xff626060)),
                               ),
-                              const Text(
+                              Text(
                                 ' •',
-                                style: TextStyle(
-                                  color: Color(0xffD92D20),
-                                  fontSize: 20,
-                                ),
+                                style:
+                                    EcliniqTextStyles.responsiveHeadlineLarge(
+                                      context,
+                                    ).copyWith(color: Color(0xffD92D20)),
                               ),
                             ],
                           ),
@@ -181,46 +190,55 @@ class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
                             decoration: InputDecoration(
                               hintText: 'Enter file name',
                               border: InputBorder.none,
-                              hintStyle: TextStyle(
-                                color: Colors.grey.shade400,
-                                fontSize: 16,
-                              ),
+                              hintStyle:
+                                  EcliniqTextStyles.responsiveTitleXLarge(
+                                    context,
+                                  ).copyWith(color: Colors.grey.shade400),
                             ),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: Colors.black87,
-                            ),
+                            style: EcliniqTextStyles.responsiveTitleXLarge(
+                              context,
+                            ).copyWith(color: Colors.black87),
                           ),
                         ),
                       ],
                     ),
-                    const Divider(
-                      height: 1,
+                    Divider(
+                      height: EcliniqTextStyles.getResponsiveSize(context, 1.0),
                       color: Color(0xffD6D6D6),
-                      thickness: 0.5,
+                      thickness: EcliniqTextStyles.getResponsiveSize(
+                        context,
+                        0.5,
+                      ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      padding:
+                          EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                            horizontal: 0,
+                            context,
+                            vertical: 2.0,
+                          ),
                       child: Row(
                         children: [
                           SizedBox(
-                            width: 120,
+                            width: EcliniqTextStyles.getResponsiveWidth(
+                              context,
+                              120.0,
+                            ),
                             child: Row(
                               children: [
-                                const Text(
+                                Text(
                                   'File Type',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    color: Color(0xff626060),
-                                    fontWeight: FontWeight.w400,
-                                  ),
+                                  style:
+                                      EcliniqTextStyles.responsiveHeadlineXMedium(
+                                        context,
+                                      ).copyWith(color: Color(0xff626060)),
                                 ),
-                                const Text(
+                                Text(
                                   ' •',
-                                  style: TextStyle(
-                                    color: Color(0xffD92D20),
-                                    fontSize: 20,
-                                  ),
+                                  style:
+                                      EcliniqTextStyles.responsiveHeadlineLarge(
+                                        context,
+                                      ).copyWith(color: Color(0xffD92D20)),
                                 ),
                               ],
                             ),
@@ -236,10 +254,10 @@ class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
                                     child: Text(
                                       _getFileTypeString(_selectedFileType),
                                       textAlign: TextAlign.right,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        color: Colors.black87,
-                                      ),
+                                      style:
+                                          EcliniqTextStyles.responsiveTitleXLarge(
+                                            context,
+                                          ).copyWith(color: Colors.black87),
                                     ),
                                   ),
                                   SizedBox(width: 8),
@@ -261,33 +279,43 @@ class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
                         ],
                       ),
                     ),
-                    const Divider(
-                      height: 1,
+                    Divider(
+                      height: EcliniqTextStyles.getResponsiveSize(context, 1.0),
                       color: Color(0xffD6D6D6),
-                      thickness: 0.5,
+                      thickness: EcliniqTextStyles.getResponsiveSize(
+                        context,
+                        0.5,
+                      ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      padding:
+                          EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                            horizontal: 0,
+                            context,
+                            vertical: 4.0,
+                          ),
                       child: Row(
                         children: [
                           SizedBox(
-                            width: 120,
+                            width: EcliniqTextStyles.getResponsiveWidth(
+                              context,
+                              120.0,
+                            ),
                             child: Row(
                               children: [
-                                const Text(
+                                Text(
                                   'Record For',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    color: Color(0xff626060),
-                                    fontWeight: FontWeight.w400,
-                                  ),
+                                  style:
+                                      EcliniqTextStyles.responsiveHeadlineXMedium(
+                                        context,
+                                      ).copyWith(color: Color(0xff626060)),
                                 ),
-                                const Text(
+                                Text(
                                   ' •',
-                                  style: TextStyle(
-                                    color: Color(0xffD92D20),
-                                    fontSize: 20,
-                                  ),
+                                  style:
+                                      EcliniqTextStyles.responsiveHeadlineLarge(
+                                        context,
+                                      ).copyWith(color: Color(0xffD92D20)),
                                 ),
                               ],
                             ),
@@ -303,23 +331,49 @@ class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
                                     child: Text(
                                       _selectedRecordFor,
                                       textAlign: TextAlign.right,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        color: Colors.black87,
-                                      ),
+                                      style:
+                                          EcliniqTextStyles.responsiveTitleXLarge(
+                                            context,
+                                          ).copyWith(color: Colors.black87),
                                     ),
                                   ),
-                                  SizedBox(width: 8),
+                                  SizedBox(
+                                    width:
+                                        EcliniqTextStyles.getResponsiveSpacing(
+                                          context,
+                                          8.0,
+                                        ),
+                                  ),
                                   Container(
-                                    width: 0.5,
-                                    height: 22,
+                                    width: EcliniqTextStyles.getResponsiveSize(
+                                      context,
+                                      0.5,
+                                    ),
+                                    height: EcliniqTextStyles.getResponsiveSize(
+                                      context,
+                                      22.0,
+                                    ),
                                     color: const Color(0xFFD6D6D6),
                                   ),
-                                  SizedBox(width: 8),
+                                  SizedBox(
+                                    width:
+                                        EcliniqTextStyles.getResponsiveSpacing(
+                                          context,
+                                          8.0,
+                                        ),
+                                  ),
                                   SvgPicture.asset(
                                     EcliniqIcons.arrowDown.assetPath,
-                                    width: 20,
-                                    height: 20,
+                                    width:
+                                        EcliniqTextStyles.getResponsiveIconSize(
+                                          context,
+                                          20.0,
+                                        ),
+                                    height:
+                                        EcliniqTextStyles.getResponsiveIconSize(
+                                          context,
+                                          20.0,
+                                        ),
                                   ),
                                 ],
                               ),
@@ -328,27 +382,42 @@ class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
                         ],
                       ),
                     ),
-                    const Divider(
-                      height: 1,
+                    Divider(
+                      height: EcliniqTextStyles.getResponsiveSize(context, 1.0),
                       color: Color(0xffD6D6D6),
-                      thickness: 0.5,
+                      thickness: EcliniqTextStyles.getResponsiveSize(
+                        context,
+                        0.5,
+                      ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(
+                      height: EcliniqTextStyles.getResponsiveSpacing(
+                        context,
+                        4.0,
+                      ),
+                    ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      padding:
+                          EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                            context,
+                            vertical: 6.0,
+                            horizontal: 0,
+                          ),
                       child: Row(
                         children: [
                           SizedBox(
-                            width: 120,
+                            width: EcliniqTextStyles.getResponsiveWidth(
+                              context,
+                              120.0,
+                            ),
                             child: Row(
                               children: [
-                                const Text(
+                                Text(
                                   'File Date',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    color: Color(0xff626060),
-                                    fontWeight: FontWeight.w400,
-                                  ),
+                                  style:
+                                      EcliniqTextStyles.responsiveHeadlineXMedium(
+                                        context,
+                                      ).copyWith(color: Color(0xff626060)),
                                 ),
                               ],
                             ),
@@ -366,12 +435,14 @@ class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
                                           ? '${_selectedDate!.month}/${_selectedDate!.day}/${_selectedDate!.year}'
                                           : 'Select Date',
                                       textAlign: TextAlign.right,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: _selectedDate != null
-                                            ? Colors.black87
-                                            : Colors.grey.shade400,
-                                      ),
+                                      style:
+                                          EcliniqTextStyles.responsiveTitleXLarge(
+                                            context,
+                                          ).copyWith(
+                                            color: _selectedDate != null
+                                                ? Colors.black87
+                                                : Colors.grey.shade400,
+                                          ),
                                     ),
                                   ),
                                 ],
@@ -384,19 +455,25 @@ class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(
+                height: EcliniqTextStyles.getResponsiveSpacing(context, 24.0),
+              ),
 
               // File Preview
               Container(
                 width: double.infinity,
-                height: 480,
+                height: EcliniqTextStyles.getResponsiveHeight(context, 480.0),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF5F5F5),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(
+                    EcliniqTextStyles.getResponsiveBorderRadius(context, 12.0),
+                  ),
                   border: Border.all(color: Colors.grey.shade300),
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(
+                    EcliniqTextStyles.getResponsiveBorderRadius(context, 12.0),
+                  ),
                   child: Stack(
                     children: [
                       if (fileExists && _isImageFile(filePath))
@@ -412,8 +489,14 @@ class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
                       else
                         _buildPlaceholderPreview(),
                       Positioned(
-                        bottom: 12,
-                        right: 8,
+                        bottom: EcliniqTextStyles.getResponsiveSpacing(
+                          context,
+                          12.0,
+                        ),
+                        right: EcliniqTextStyles.getResponsiveSpacing(
+                          context,
+                          8.0,
+                        ),
                         child: GestureDetector(
                           onTap: () {
                             if (filePath != null) {
@@ -430,13 +513,20 @@ class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
                             }
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 10,
-                            ),
+                            padding:
+                                EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                                  context,
+                                  horizontal: 10.0,
+                                  vertical: 10.0,
+                                ),
                             decoration: BoxDecoration(
                               color: const Color(0x99FFFFFF),
-                              borderRadius: BorderRadius.circular(45),
+                              borderRadius: BorderRadius.circular(
+                                EcliniqTextStyles.getResponsiveBorderRadius(
+                                  context,
+                                  45.0,
+                                ),
+                              ),
                               boxShadow: [
                                 BoxShadow(
                                   offset: const Offset(0, 4),
@@ -451,17 +541,29 @@ class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
                               children: [
                                 SvgPicture.asset(
                                   EcliniqIcons.eyeOpen.assetPath,
-                                  width: 24,
-                                  height: 24,
+                                  width:
+                                      EcliniqTextStyles.getResponsiveIconSize(
+                                        context,
+                                        24.0,
+                                      ),
+                                  height:
+                                      EcliniqTextStyles.getResponsiveIconSize(
+                                        context,
+                                        24.0,
+                                      ),
                                 ),
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'Preview',
-                                  style: TextStyle(
-                                    color: Color(0xff424242),
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w400,
+                                SizedBox(
+                                  width: EcliniqTextStyles.getResponsiveSpacing(
+                                    context,
+                                    8.0,
                                   ),
+                                ),
+                                Text(
+                                  'Preview',
+                                  style:
+                                      EcliniqTextStyles.responsiveHeadlineXMedium(
+                                        context,
+                                      ).copyWith(color: Color(0xff424242)),
                                 ),
                               ],
                             ),
@@ -472,11 +574,16 @@ class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(
+                height: EcliniqTextStyles.getResponsiveSpacing(context, 24.0),
+              ),
 
               SizedBox(
                 width: double.infinity,
-                height: 52,
+                height: EcliniqTextStyles.getResponsiveButtonHeight(
+                  context,
+                  baseHeight: 52.0,
+                ),
                 child: GestureDetector(
                   onTapDown: isButtonEnabled
                       ? (_) => setState(() => _isButtonPressed = true)
@@ -500,31 +607,46 @@ class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
                               0xFF0E4395,
                             ) // Pressed color (darker blue)
                           : const Color(0xFF2372EC), // Normal color
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(
+                        EcliniqTextStyles.getResponsiveBorderRadius(
+                          context,
+                          4.0,
+                        ),
+                      ),
                     ),
                     child: Center(
                       child: _isSaving
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
+                          ? SizedBox(
+                              width: EcliniqTextStyles.getResponsiveIconSize(
+                                context,
+                                24.0,
+                              ),
+                              height: EcliniqTextStyles.getResponsiveIconSize(
+                                context,
+                                24.0,
+                              ),
                               child: CircularProgressIndicator(
                                 color: Colors.white,
-                                strokeWidth: 2.5,
+                                strokeWidth:
+                                    EcliniqTextStyles.getResponsiveSize(
+                                      context,
+                                      2.5,
+                                    ),
                               ),
                             )
-                          : const Text(
+                          : Text(
                               'Save Details',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white,
-                              ),
+                              style: EcliniqTextStyles.responsiveHeadlineMedium(
+                                context,
+                              ).copyWith(color: Colors.white),
                             ),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(
+                height: EcliniqTextStyles.getResponsiveSpacing(context, 24.0),
+              ),
             ],
           ),
         ),
@@ -533,17 +655,26 @@ class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
   }
 
   Widget _buildPlaceholderPreview() {
+    final fileName = widget.healthFile?.fileName ?? widget.fileName ?? 'File';
     return Container(
       color: Colors.grey.shade200,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.description, size: 64, color: Colors.grey.shade400),
-            const SizedBox(height: 16),
+            Icon(
+              Icons.description,
+              size: EcliniqTextStyles.getResponsiveIconSize(context, 64),
+              color: Colors.grey.shade400,
+            ),
+            SizedBox(
+              height: EcliniqTextStyles.getResponsiveSpacing(context, 16.0),
+            ),
             Text(
-              widget.healthFile!.fileName,
-              style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+              fileName,
+              style: EcliniqTextStyles.responsiveTitleXLarge(
+                context,
+              ).copyWith(color: Colors.grey.shade600),
             ),
           ],
         ),
@@ -582,14 +713,23 @@ class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
   }
 
   Future<void> _showRecordForBottomSheet(BuildContext context) async {
-    final String? selected = await EcliniqBottomSheet.show<String>(
-      context: context,
-      child: SelectMemberBottomSheet(),
-    );
-    if (selected != null && selected != _selectedRecordFor) {
-      setState(() {
-        _selectedRecordFor = selected;
-      });
+    final DependentData? selected =
+        await EcliniqBottomSheet.show<DependentData>(
+          context: context,
+          child: const SelectMemberBottomSheet(),
+        );
+    if (selected != null && mounted) {
+      final selectedName = selected.fullName;
+      if (selectedName != _selectedRecordFor) {
+        // Use post-frame callback to avoid state updates during navigation
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            setState(() {
+              _selectedRecordFor = selectedName;
+            });
+          }
+        });
+      }
     }
   }
 
@@ -671,14 +811,12 @@ class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          CustomSuccessSnackBar(
-            title: 'Details saved successfully',
-            subtitle: widget.healthFile != null
-                ? 'Your changes have been saved successfully'
-                : 'File uploaded and saved successfully',
-            context: context,
-          ),
+        // Instead of ScaffoldMessenger.of(context).showSnackBar(...)
+        CustomSuccessSnackBar.show(
+          context: context,
+          title: 'Success!',
+          subtitle: 'Your action was completed',
+          duration: const Duration(seconds: 5),
         );
 
         // Navigate back with saved file
@@ -717,33 +855,31 @@ class _FullScreenPreview extends StatelessWidget {
         automaticallyImplyLeading: false,
         leading: IconButton(
           icon: SvgPicture.asset(
-              EcliniqIcons.arrowLeft.assetPath,
-              width: 32,
-              height: 32,
-              colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
-            ),
+            EcliniqIcons.arrowLeft.assetPath,
+            width: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
+            height: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
+            colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           filePath.split('/').last,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-          ),
+          style: EcliniqTextStyles.responsiveHeadlineMedium(
+            context,
+          ).copyWith(color: Colors.white),
         ),
         backgroundColor: Colors.black,
         actions: [
           IconButton(
-            icon:  SvgPicture.asset(
+            icon: SvgPicture.asset(
               EcliniqIcons.downloadfiles.assetPath,
-              width: 32,
-              height: 32,
+              width: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
+              height: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
               colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
             ),
             onPressed: () async {},
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 8.0)),
         ],
       ),
       backgroundColor: Colors.black,
@@ -777,21 +913,27 @@ class FileTypeBottomSheet extends StatelessWidget {
     return Container(
       height: MediaQuery.of(context).size.height * 0.45,
       decoration: BoxDecoration(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(
+            EcliniqTextStyles.getResponsiveBorderRadius(context, 20.0),
+          ),
+        ),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(top: 15, left: 15),
+            padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+              context,
+              top: 15.0,
+              left: 15.0,
+            ),
             child: Text(
               'Select File Type',
-              style: EcliniqTextStyles.headlineBMedium.copyWith(
-                color: Color(0xff424242),
-                fontWeight: FontWeight.w500,
-                fontSize: 18,
-              ),
+              style: EcliniqTextStyles.responsiveHeadlineMedium(
+                context,
+              ).copyWith(color: Color(0xff424242)),
             ),
           ),
           Expanded(
@@ -802,8 +944,8 @@ class FileTypeBottomSheet extends StatelessWidget {
                 final isSelected = selectedFileType == fileType;
                 return ListTile(
                   leading: Container(
-                    height: 20,
-                    width: 20,
+                    height: EcliniqTextStyles.getResponsiveSize(context, 20.0),
+                    width: EcliniqTextStyles.getResponsiveSize(context, 20.0),
                     decoration: BoxDecoration(
                       border: Border.all(
                         color: isSelected
@@ -816,7 +958,10 @@ class FileTypeBottomSheet extends StatelessWidget {
                           : EcliniqColors.light.bgBaseOverlay,
                     ),
                     child: Container(
-                      margin: const EdgeInsets.all(4),
+                      margin: EcliniqTextStyles.getResponsiveEdgeInsetsAll(
+                        context,
+                        4.0,
+                      ),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: EcliniqColors.light.bgBaseOverlay,
@@ -825,11 +970,9 @@ class FileTypeBottomSheet extends StatelessWidget {
                   ),
                   title: Text(
                     fileType,
-                    style: EcliniqTextStyles.bodyMedium.copyWith(
-                      color: Color(0xff424242),
-                      fontWeight: FontWeight.w400,
-                      fontSize: 18,
-                    ),
+                    style: EcliniqTextStyles.responsiveHeadlineXMedium(
+                      context,
+                    ).copyWith(color: Color(0xff424242)),
                   ),
                   onTap: () {
                     Future.delayed(
@@ -841,7 +984,9 @@ class FileTypeBottomSheet extends StatelessWidget {
               },
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(
+            height: EcliniqTextStyles.getResponsiveSpacing(context, 10.0),
+          ),
         ],
       ),
     );
@@ -862,20 +1007,20 @@ class RecordForBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 20.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Select Family Member',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2D2D2D),
-            ),
+            style: EcliniqTextStyles.responsiveHeadlineXLarge(
+              context,
+            ).copyWith(color: Color(0xFF2D2D2D)),
           ),
-          const SizedBox(height: 24),
+          SizedBox(
+            height: EcliniqTextStyles.getResponsiveSpacing(context, 24.0),
+          ),
           Flexible(
             child: ListView.builder(
               shrinkWrap: true,
@@ -937,11 +1082,13 @@ class _RecordForOption extends StatelessWidget {
               Expanded(
                 child: Text(
                   recordFor,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                    color: const Color(0xFF2D2D2D),
-                  ),
+                  style: isSelected
+                      ? EcliniqTextStyles.responsiveHeadlineBMedium(
+                          context,
+                        ).copyWith(color: const Color(0xFF2D2D2D))
+                      : EcliniqTextStyles.responsiveHeadlineXMedium(
+                          context,
+                        ).copyWith(color: const Color(0xFF2D2D2D)),
                 ),
               ),
               if (isSelected)

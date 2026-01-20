@@ -30,7 +30,11 @@ class AppointmentDetailItem extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16,),
       child: Row(
         children: [
-          SvgPicture.asset(iconAssetPath, width: 32, height: 32),
+          SvgPicture.asset(
+            iconAssetPath,
+            width: EcliniqTextStyles.getResponsiveIconSize(context, 32),
+            height: EcliniqTextStyles.getResponsiveIconSize(context, 32),
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -40,7 +44,7 @@ class AppointmentDetailItem extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: EcliniqTextStyles.headlineMedium.copyWith(
+                      style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                         color: Color(0xff424242),
                       ),
                     ),
@@ -57,7 +61,7 @@ class AppointmentDetailItem extends StatelessWidget {
                         ),
                         child: Text(
                           badge!,
-                          style: EcliniqTextStyles.titleXLarge.copyWith(
+                          style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                             color: Color(0xff2372EC),
                           ),
                         ),
@@ -68,7 +72,7 @@ class AppointmentDetailItem extends StatelessWidget {
 
                 Text(
                   subtitle,
-                  style: EcliniqTextStyles.titleXLarge.copyWith(
+                  style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                     color: Color(0xff8E8E8E),
                   ),
                 ),

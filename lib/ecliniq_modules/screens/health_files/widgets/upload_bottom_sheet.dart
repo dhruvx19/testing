@@ -4,8 +4,9 @@ import 'package:ecliniq/ecliniq_core/media/media_permission_manager.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/health_files/edit_doc_details.dart';
-import 'package:ecliniq/ecliniq_modules/screens/health_files/models/health_file_model.dart';
+import 'package:ecliniq/ecliniq_api/health_file_model.dart';
 import 'package:ecliniq/ecliniq_modules/screens/health_files/services/file_upload_handler.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -324,8 +325,8 @@ class _UploadBottomSheetState extends State<UploadBottomSheet> with WidgetsBindi
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           title,
-          style: const TextStyle(
-            fontSize: 20,
+          style:  EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
+  
             fontWeight: FontWeight.bold,
             color: Color(0xFF424242),
           ),
@@ -338,8 +339,8 @@ class _UploadBottomSheetState extends State<UploadBottomSheet> with WidgetsBindi
               : Platform.isIOS
                   ? '$message\n\nPlease enable this permission in Settings > Ecliniq to continue.'
                   : '$message\n\nPermission is permanently denied. Please enable it in app settings to continue.',
-          style: const TextStyle(
-            fontSize: 16,
+          style:  EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+           
             color: Color(0xFF8E8E8E),
             height: 1.5,
           ),
@@ -350,10 +351,10 @@ class _UploadBottomSheetState extends State<UploadBottomSheet> with WidgetsBindi
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
-            child: const Text(
+            child:  Text(
               'Cancel',
-              style: TextStyle(
-                fontSize: 16,
+              style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+             
                 fontWeight: FontWeight.w500,
                 color: Color(0xFF424242),
               ),
@@ -378,9 +379,9 @@ class _UploadBottomSheetState extends State<UploadBottomSheet> with WidgetsBindi
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text(
+            child:  Text(
               'Open Settings',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith( fontWeight: FontWeight.w500),
             ),
           ),
         ],
@@ -459,10 +460,10 @@ class _UploadBottomSheetState extends State<UploadBottomSheet> with WidgetsBindi
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+           Text(
             'Upload From',
-            style: TextStyle(
-              fontSize: 18,
+            style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+        
               fontWeight: FontWeight.w500,
               color: Color(0xFF424242),
             ),
@@ -533,13 +534,17 @@ class _ActionOption extends StatelessWidget {
             ),
             child: Row(
               children: [
-                SvgPicture.asset(icon.assetPath, width: 24, height: 24),
+                SvgPicture.asset(
+                  icon.assetPath,
+                  width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+                  height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+                ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
                     title,
-                    style: const TextStyle(
-                      fontSize: 18,
+                    style:  EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+                 
                       fontWeight: FontWeight.w400,
                       color: Color(0xFF424242),
                     ),

@@ -31,10 +31,10 @@ class GenderSelectionSheet extends StatelessWidget {
             padding: const EdgeInsets.only(top: 16, left: 12),
             child: Text(
               'Select Gender',
-              style: EcliniqTextStyles.headlineBMedium.copyWith(
+              style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                 color: Color(0xff424242),
                 fontWeight: FontWeight.w500,
-                fontSize: 18,
+              
               ),
             ),
           ),
@@ -69,10 +69,10 @@ class GenderSelectionSheet extends StatelessWidget {
                     ),
                     title: Text(
                       gender,
-                      style: EcliniqTextStyles.bodyMedium.copyWith(
+                      style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                         color: Color(0xff424242),
                         fontWeight: FontWeight.w400,
-                        fontSize: 18,
+                      
                       ),
                     ),
                     onTap: () {

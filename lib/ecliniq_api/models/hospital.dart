@@ -1,3 +1,5 @@
+import 'package:ecliniq/ecliniq_api/storage_service.dart';
+
 class Hospital {
   final String id;
   final String name;
@@ -72,6 +74,56 @@ class Hospital {
       'numberOfDoctors': numberOfDoctors,
     };
   }
+
+  /// Get public URL for logo
+  /// @description Gets the public URL for the logo using StorageService.
+  /// Returns null if logo is null or empty, or if it's not a public key.
+  /// @param storageService - StorageService instance to fetch public URLs
+  /// @returns Future<String?> - Public URL if available, null otherwise
+  /// @example
+  /// ```dart
+  /// final storageService = StorageService();
+  /// final logoUrl = await hospital.getLogoUrl(storageService);
+  /// ```
+  Future<String?> getLogoUrl(StorageService storageService) async {
+    if (logo.isEmpty) {
+      return null;
+    }
+    // If already a full URL, return as-is
+    if (logo.startsWith('http://') || logo.startsWith('https://')) {
+      return logo;
+    }
+    // Get public URL if it starts with "public/"
+    if (logo.startsWith('public/')) {
+      return await storageService.getPublicUrl(logo);
+    }
+    return null;
+  }
+
+  /// Get public URL for image (background)
+  /// @description Gets the public URL for the background image using StorageService.
+  /// Returns null if image is null or empty, or if it's not a public key.
+  /// @param storageService - StorageService instance to fetch public URLs
+  /// @returns Future<String?> - Public URL if available, null otherwise
+  /// @example
+  /// ```dart
+  /// final storageService = StorageService();
+  /// final imageUrl = await hospital.getImageUrl(storageService);
+  /// ```
+  Future<String?> getImageUrl(StorageService storageService) async {
+    if (image.isEmpty) {
+      return null;
+    }
+    // If already a full URL, return as-is
+    if (image.startsWith('http://') || image.startsWith('https://')) {
+      return image;
+    }
+    // Get public URL if it starts with "public/"
+    if (image.startsWith('public/')) {
+      return await storageService.getPublicUrl(image);
+    }
+    return null;
+  }
 }
 
 class TopHospitalsResponse {
@@ -129,6 +181,87 @@ class TopHospitalsRequest {
     return {
       'latitude': latitude,
       'longitude': longitude,
+    };
+  }
+}
+
+class FilteredHospitalsData {
+  final List<Hospital> hospitals;
+  final int total;
+  final int page;
+  final int limit;
+  final int pages;
+
+  FilteredHospitalsData({
+    required this.hospitals,
+    required this.total,
+    required this.page,
+    required this.limit,
+    required this.pages,
+  });
+
+  factory FilteredHospitalsData.fromJson(Map<String, dynamic> json) {
+    return FilteredHospitalsData(
+      hospitals: (json['hospitals'] as List<dynamic>?)
+              ?.map((item) => Hospital.fromJson(item))
+              .toList() ??
+          [],
+      total: json['total'] ?? 0,
+      page: json['page'] ?? 1,
+      limit: json['limit'] ?? 50,
+      pages: json['pages'] ?? 1,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'hospitals': hospitals.map((hospital) => hospital.toJson()).toList(),
+      'total': total,
+      'page': page,
+      'limit': limit,
+      'pages': pages,
+    };
+  }
+}
+
+class FilteredHospitalsResponse {
+  final bool success;
+  final String message;
+  final FilteredHospitalsData? data;
+  final dynamic errors;
+  final dynamic meta;
+  final String timestamp;
+
+  FilteredHospitalsResponse({
+    required this.success,
+    required this.message,
+    this.data,
+    required this.errors,
+    required this.meta,
+    required this.timestamp,
+  });
+
+  factory FilteredHospitalsResponse.fromJson(Map<String, dynamic> json) {
+    return FilteredHospitalsResponse(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      data: json['data'] != null
+          ? FilteredHospitalsData.fromJson(json['data'])
+          : null,
+      errors: json['errors'],
+      meta: json['meta'],
+      timestamp: json['timestamp'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'success': success,
+      'message': message,
+      'data': data?.toJson(),
+      'errors': errors,
+      'meta': meta,
+      'timestamp': timestamp,
     };
   }
 }
@@ -293,6 +426,56 @@ class HospitalDetail {
       'hospitalServices': hospitalServices,
       'specialties': specialties.map((e) => e.toJson()).toList(),
     };
+  }
+
+  /// Get public URL for logo
+  /// @description Gets the public URL for the logo using StorageService.
+  /// Returns null if logo is null or empty, or if it's not a public key.
+  /// @param storageService - StorageService instance to fetch public URLs
+  /// @returns Future<String?> - Public URL if available, null otherwise
+  /// @example
+  /// ```dart
+  /// final storageService = StorageService();
+  /// final logoUrl = await hospitalDetail.getLogoUrl(storageService);
+  /// ```
+  Future<String?> getLogoUrl(StorageService storageService) async {
+    if (logo.isEmpty) {
+      return null;
+    }
+    // If already a full URL, return as-is
+    if (logo.startsWith('http://') || logo.startsWith('https://')) {
+      return logo;
+    }
+    // Get public URL if it starts with "public/"
+    if (logo.startsWith('public/')) {
+      return await storageService.getPublicUrl(logo);
+    }
+    return null;
+  }
+
+  /// Get public URL for image (background)
+  /// @description Gets the public URL for the background image using StorageService.
+  /// Returns null if image is null or empty, or if it's not a public key.
+  /// @param storageService - StorageService instance to fetch public URLs
+  /// @returns Future<String?> - Public URL if available, null otherwise
+  /// @example
+  /// ```dart
+  /// final storageService = StorageService();
+  /// final imageUrl = await hospitalDetail.getImageUrl(storageService);
+  /// ```
+  Future<String?> getImageUrl(StorageService storageService) async {
+    if (image.isEmpty) {
+      return null;
+    }
+    // If already a full URL, return as-is
+    if (image.startsWith('http://') || image.startsWith('https://')) {
+      return image;
+    }
+    // Get public URL if it starts with "public/"
+    if (image.startsWith('public/')) {
+      return await storageService.getPublicUrl(image);
+    }
+    return null;
   }
 }
 

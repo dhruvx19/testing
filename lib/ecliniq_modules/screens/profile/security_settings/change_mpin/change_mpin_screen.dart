@@ -93,6 +93,7 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
   }
 
   Future<void> _loadPhoneNumberAndSendOTP() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -102,7 +103,9 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
       if (_phoneNumber == null) {
         final phone = await SecureStorageService.getPhoneNumber();
 
+        if (!mounted) return;
         if (phone == null || phone.isEmpty) {
+          if (!mounted) return;
           setState(() {
             _errorMessage = 'Phone number not found. Please try again.';
             _isLoading = false;
@@ -112,7 +115,9 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
 
         String phoneNumber = phone.replaceAll(RegExp(r'^\+?91'), '').trim();
 
+        if (!mounted) return;
         if (phoneNumber.length != 10) {
+          if (!mounted) return;
           setState(() {
             _errorMessage = 'Invalid phone number format.';
             _isLoading = false;
@@ -125,6 +130,7 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
       }
 
       // Phone number loaded, now send OTP
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -140,13 +146,17 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
   }
 
   Future<void> _sendOTP() async {
+    if (!mounted) return;
+
     if (_phoneNumber == null) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = 'Phone number is required';
       });
       return;
     }
 
+    if (!mounted) return;
     setState(() {
       _isSendingOTP = true;
       _errorMessage = null;
@@ -160,23 +170,26 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
       if (!mounted) return;
 
       if (success) {
+        if (!mounted) return;
         setState(() {
           _isSendingOTP = false;
         });
-        _startTimer();
+        if (mounted) {
+          _startTimer();
+        }
       } else {
+        if (!mounted) return;
         setState(() {
           _isSendingOTP = false;
         });
 
         // Show error snackbar instead of inline error
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            CustomErrorSnackBar(
+        if (mounted && context.mounted) {
+    CustomErrorSnackBar.show(
               title: 'Failed to send OTP',
               subtitle: authProvider.errorMessage ?? 'Failed to send OTP',
               context: context,
-            ),
+            
           );
         }
       }
@@ -187,13 +200,13 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
       });
 
       // Show error snackbar for exceptions
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          CustomErrorSnackBar(
+      if (mounted && context.mounted) {
+
+  CustomErrorSnackBar.show(
             title: 'Error',
             subtitle: 'An error occurred: ${e.toString()}',
             context: context,
-          ),
+          
         );
       }
     }
@@ -205,27 +218,43 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
   }
 
   Future<void> _verifyAndProceed() async {
+    if (!mounted) return;
+
     // Check if OTP is valid
-    if (_otpController.text.length != 6) {
-      setState(() {
-        _errorMessage = 'Please enter a valid 6-digit OTP';
-      });
+    try {
+      if (_otpController.text.length != 6) {
+        if (!mounted) return;
+        setState(() {
+          _errorMessage = 'Please enter a valid 6-digit OTP';
+        });
+        return;
+      }
+    } catch (e) {
+      // Controller might be disposed
       return;
     }
 
     // Check if already verifying
     if (_isVerifying) return;
 
+    if (!mounted) return;
     setState(() {
       _isVerifying = true;
       _errorMessage = null;
     });
 
     try {
+      String otpText;
+      try {
+        otpText = _otpController.text;
+      } catch (e) {
+        // Controller might be disposed
+        return;
+      }
+
+      if (!mounted) return;
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final success = await authProvider.forgetMpinVerifyOtp(
-        _otpController.text,
-      );
+      final success = await authProvider.forgetMpinVerifyOtp(otpText);
 
       if (!mounted) return;
 
@@ -261,19 +290,26 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
           }
         }
       } else {
+        if (!mounted) return;
         setState(() {
           _isVerifying = false;
         });
-        _otpController.clear(); // Clear OTP on error
+        if (mounted) {
+          try {
+            _otpController.clear(); // Clear OTP on error
+          } catch (e) {
+            // Controller might be disposed, ignore
+          }
+        }
 
         // Show error snackbar instead of inline error
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            CustomErrorSnackBar(
+        if (mounted && context.mounted) {
+         CustomErrorSnackBar.show(
+        
               title: 'Failed to verify OTP',
               subtitle: authProvider.errorMessage ?? 'Failed to verify OTP',
               context: context,
-            ),
+        
           );
         }
       }
@@ -282,16 +318,22 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
       setState(() {
         _isVerifying = false;
       });
-      _otpController.clear(); // Clear OTP on error
+      if (mounted) {
+        try {
+          _otpController.clear(); // Clear OTP on error
+        } catch (e) {
+          // Controller might be disposed, ignore
+        }
+      }
 
       // Show error snackbar for exceptions
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          CustomErrorSnackBar(
+      if (mounted && context.mounted) {
+ 
+CustomErrorSnackBar.show(
             title: 'Error',
             subtitle: 'An error occurred: $e',
             context: context,
-          ),
+       
         );
       }
     }
@@ -303,7 +345,13 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
     return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
   }
 
-  bool get _isOtpValid => _otpController.text.length == 6;
+  bool get _isOtpValid {
+    try {
+      return _otpController.text.length == 6;
+    } catch (e) {
+      return false;
+    }
+  }
 
   Widget _buildVerifyButton() {
     final isButtonEnabled = _isOtpValid && !_isVerifying;
@@ -348,7 +396,7 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
                     children: [
                       Text(
                         'Verify & Next',
-                        style: EcliniqTextStyles.headlineMedium.copyWith(
+                        style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                           color: _isOtpValid
                               ? Colors.white
                               : const Color(0xffD6D6D6),
@@ -391,7 +439,7 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
         ),
         title: Text(
           'Change M-PIN',
-          style: EcliniqTextStyles.headlineMedium.copyWith(
+          style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
             color: const Color(0xff424242),
           ),
         ),
@@ -409,7 +457,7 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
           children: [
             Text(
               'For your security, please verify your existing account information.',
-              style: EcliniqTextStyles.headlineXMedium.copyWith(
+              style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                 color: const Color(0xff424242),
               ),
             ),
@@ -439,17 +487,17 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
                 children: [
                   Text(
                     'OTP sent to ',
-                    style: EcliniqTextStyles.headlineMedium.copyWith(
+                    style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                       fontWeight: FontWeight.w400,
-                      fontSize: 18,
+
                       color: const Color(0xff424242),
                     ),
                   ),
                   Text(
                     '+91 $_phoneNumber',
-                    style: EcliniqTextStyles.headlineMedium.copyWith(
+                    style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                       fontWeight: FontWeight.w500,
-                      fontSize: 18,
+
                       color: const Color(0xff424242),
                     ),
                   ),
@@ -460,7 +508,7 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
                     _errorMessage!,
-                    style: EcliniqTextStyles.bodyMedium.copyWith(
+                    style: EcliniqTextStyles.responsiveBodyMedium(context).copyWith(
                       color: Colors.red,
                     ),
                   ),
@@ -470,7 +518,7 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
                 appContext: context,
                 length: 6,
                 controller: _otpController,
-                textStyle: EcliniqTextStyles.headlineXMedium.copyWith(
+                textStyle: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                   color: const Color(0xff424242),
                 ),
                 autoFocus: true,
@@ -496,13 +544,18 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
                 enableActiveFill: true,
                 errorTextSpace: 12,
                 onChanged: (value) {
-                  if (mounted) {
-                    setState(() {
-                      // Clear error message when user starts typing
-                      if (_errorMessage != null) {
-                        _errorMessage = null;
-                      }
-                    });
+                  if (!mounted) return;
+                  try {
+                    if (_otpController.text.isNotEmpty) {
+                      setState(() {
+                        // Clear error message when user starts typing
+                        if (_errorMessage != null) {
+                          _errorMessage = null;
+                        }
+                      });
+                    }
+                  } catch (e) {
+                    // Controller might be disposed, ignore
                   }
                 },
                 onCompleted: (value) {
@@ -515,7 +568,7 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
                 children: [
                   Text(
                     'Didn\'t receive the OTP',
-                    style: EcliniqTextStyles.bodySmall.copyWith(
+                    style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                       color: const Color(0xff8E8E8E),
                     ),
                   ),
@@ -530,7 +583,7 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
                       const SizedBox(width: 4),
                       Text(
                         _formatTimer(_resendTimer),
-                        style: EcliniqTextStyles.bodySmall.copyWith(
+                        style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                           color: Color(0xff424242),
                         ),
                       ),
@@ -543,7 +596,7 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
                 onTap: _canResend ? _resendOTP : null,
                 child: Text(
                   'Resend',
-                  style: EcliniqTextStyles.headlineXMedium.copyWith(
+                  style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                     color: const Color(0xff2372EC),
                   ),
                 ),
@@ -572,7 +625,7 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
                       Expanded(
                         child: Text(
                           _errorMessage!,
-                          style: EcliniqTextStyles.bodyMedium.copyWith(
+                          style: EcliniqTextStyles.responsiveBodyMedium(context).copyWith(
                             color: Colors.red.shade600,
                           ),
                         ),
@@ -595,7 +648,7 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
                   ),
                   child: Text(
                     'Retry',
-                    style: EcliniqTextStyles.titleXLarge.copyWith(
+                    style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                       color: Colors.white,
                     ),
                   ),

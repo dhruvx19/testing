@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
-
 class AddProfilePhoto extends StatelessWidget {
   const AddProfilePhoto({super.key});
 
@@ -24,14 +23,17 @@ class AddProfilePhoto extends StatelessWidget {
           maxHeight: 1024,
         );
         if (pickedFile != null) {
-          final provider = Provider.of<AddDependentProvider>(context, listen: false);
+          final provider = Provider.of<AddDependentProvider>(
+            context,
+            listen: false,
+          );
           provider.setSelectedProfilePhoto(File(pickedFile.path));
         }
       } catch (e) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error picking image: $e')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
         }
       }
     }
@@ -47,17 +49,21 @@ class AddProfilePhoto extends StatelessWidget {
           maxHeight: 1024,
         );
         if (pickedFile != null) {
-          final provider = Provider.of<AddDependentProvider>(context, listen: false);
+          final provider = Provider.of<AddDependentProvider>(
+            context,
+            listen: false,
+          );
           provider.setSelectedProfilePhoto(File(pickedFile.path));
         }
       } catch (e) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error taking photo: $e')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error taking photo: $e')));
         }
       }
     }
+
     return Container(
       decoration: BoxDecoration(
         color: EcliniqColors.light.bgBaseOverlay,
@@ -82,10 +88,9 @@ class AddProfilePhoto extends StatelessWidget {
             padding: const EdgeInsets.only(top: 15, left: 15),
             child: Text(
               'Add Profile Photo',
-              style: EcliniqTextStyles.headlineBMedium.copyWith(
+              style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                 color: EcliniqColors.light.textPrimary,
                 fontWeight: FontWeight.w500,
-                fontSize: 18,
               ),
             ),
           ),
@@ -97,7 +102,7 @@ class AddProfilePhoto extends StatelessWidget {
               border: Border.all(
                 color: EcliniqColors.light.strokeNeutralSubtle,
                 width: 1,
-              )
+              ),
             ),
             child: TextButton(
               onPressed: takePhoto,
@@ -111,10 +116,9 @@ class AddProfilePhoto extends StatelessWidget {
               ),
               child: Text(
                 'Take photo',
-                style: EcliniqTextStyles.bodyMedium.copyWith(
+                style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                   color: EcliniqColors.light.textPrimary,
                   fontWeight: FontWeight.w400,
-                  fontSize: 18,
                 ),
               ),
             ),
@@ -123,11 +127,11 @@ class AddProfilePhoto extends StatelessWidget {
             width: double.infinity,
             margin: const EdgeInsets.only(top: 15, left: 15, right: 15),
             decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(
-                  color: EcliniqColors.light.strokeNeutralSubtle,
-                  width: 1,
-                )
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(
+                color: EcliniqColors.light.strokeNeutralSubtle,
+                width: 1,
+              ),
             ),
             child: TextButton(
               onPressed: chooseFromGallery,
@@ -141,18 +145,14 @@ class AddProfilePhoto extends StatelessWidget {
               ),
               child: Text(
                 'Upload Photo',
-                style: EcliniqTextStyles.bodyMedium.copyWith(
+                style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                   color: EcliniqColors.light.textPrimary,
                   fontWeight: FontWeight.w400,
-                  fontSize: 18,
                 ),
               ),
             ),
           ),
-          SizedBox(
-            height: 20,
-          )
-
+          SizedBox(height: 20),
         ],
       ),
     );

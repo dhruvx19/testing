@@ -1,4 +1,5 @@
 import 'package:ecliniq/ecliniq_icons/icons.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -24,12 +25,8 @@ class LoginTroublePage extends StatelessWidget {
                     height: 32,
                   ),
                 ),
-
-         
               ],
             ),
-
-           
 
             Expanded(
               child: Container(
@@ -48,19 +45,18 @@ class LoginTroublePage extends StatelessWidget {
                               children: [
                                 Text(
                                   'Need help logging in?',
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xff424242),
-                                  ),
+                                  style: EcliniqTextStyles.responsiveHeadlineXLarge(context)
+                                      .copyWith(
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xff424242),
+                                      ),
                                 ),
                                 const SizedBox(height: 5),
                                 Text(
                                   'Try the following',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w400,
-                                  ).copyWith(color: Color(0xff424242)),
+                                  style: EcliniqTextStyles.responsiveTitleXLarge(context)
+                                      .copyWith(fontWeight: FontWeight.w400)
+                                      .copyWith(color: Color(0xff424242)),
                                 ),
                               ],
                             ),
@@ -75,7 +71,7 @@ class LoginTroublePage extends StatelessWidget {
                             EcliniqIcons.questionCircle.assetPath,
                             width: 32,
                             height: 32,
-                          )
+                          ),
                         ],
                       ),
                       const SizedBox(height: 6),
@@ -84,19 +80,18 @@ class LoginTroublePage extends StatelessWidget {
                         children: [
                           Text(
                             'Trouble in Sign?',
-                            style: TextStyle(
+                            style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                               fontWeight: FontWeight.w500,
-                              fontSize: 18,
+
                               color: Color(0xff424242),
-                              fontFamily: 'Inter',
                             ),
                           ),
                           const SizedBox(height: 5),
                           Text(
                             'Go to our help centre to know step - by - step guide for sign in or sign-up process',
-                            style: TextStyle(
+                            style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                               fontWeight: FontWeight.w400,
-                              fontSize: 14,
+
                               color: Color(0xff8E8E8E),
                               fontFamily: 'Inter',
                             ),
@@ -125,12 +120,12 @@ class LoginTroublePage extends StatelessWidget {
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
-                              children: const [
+                              children: [
                                 Text(
                                   'Go to Help Centre',
-                                  style: TextStyle(
+                                  style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                                     fontWeight: FontWeight.w500,
-                                    fontSize: 14,
+
                                     color: Color(0xff2372EC),
                                     fontFamily: 'Inter',
                                   ),
@@ -152,11 +147,11 @@ class LoginTroublePage extends StatelessWidget {
                       const SizedBox(height: 26),
                       Row(
                         children: [
-                           SvgPicture.asset(
+                          SvgPicture.asset(
                             EcliniqIcons.chatMessage.assetPath,
                             width: 32,
                             height: 32,
-                          )
+                          ),
                         ],
                       ),
                       const SizedBox(height: 6),
@@ -165,9 +160,9 @@ class LoginTroublePage extends StatelessWidget {
                         children: [
                           Text(
                             'Can’t sign in?',
-                            style: TextStyle(
+                            style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                               fontWeight: FontWeight.w500,
-                              fontSize: 18,
+
                               color: Color(0xff424242),
                               fontFamily: 'Inter',
                             ),
@@ -175,11 +170,10 @@ class LoginTroublePage extends StatelessWidget {
                           const SizedBox(height: 5),
                           Text(
                             'Get instant answers to your queries from our support team',
-                            style: TextStyle(
+                            style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                               fontWeight: FontWeight.w400,
-                              fontSize: 14,
+
                               color: Color(0xff8E8E8E),
-                              fontFamily: 'Inter',
                             ),
                           ),
                         ],
@@ -206,12 +200,12 @@ class LoginTroublePage extends StatelessWidget {
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
-                              children: const [
+                              children: [
                                 Text(
                                   'Contact Customer Support',
-                                  style: TextStyle(
+                                  style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                                     fontWeight: FontWeight.w500,
-                                    fontSize: 14,
+
                                     color: Color(0xff2372EC),
                                     fontFamily: 'Inter',
                                   ),
@@ -228,89 +222,6 @@ class LoginTroublePage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 18),
-                      //   const Divider(thickness: 1),
-                      //   const SizedBox(height: 26),
-                      //   Row(
-                      //     children: [
-                      //       Container(
-                      //         width: 32,
-                      //         height: 32,
-                      //         decoration: BoxDecoration(
-                      //           color: Colors.blue.shade50,
-                      //           shape: BoxShape.circle,
-                      //         ),
-                      //         child: Image.asset(
-                      //           "lib/ecliniq_icons/assets/Vector_msg.png",
-                      //         ),
-                      //       ),
-                      //     ],
-                      //   ),
-                      //   const SizedBox(height: 6),
-                      //   Column(
-                      //     crossAxisAlignment: CrossAxisAlignment.start,
-                      //     children: [
-                      //       Text(
-                      //         'Already have an account?',
-                      //         style: TextStyle(
-                      //           fontWeight: FontWeight.w500,
-                      //           fontSize: 18,
-                      //           color: Colors.grey.shade900,
-                      //           fontFamily: 'Inter',
-                      //         ),
-                      //       ),
-                      //       const SizedBox(height: 5),
-                      //       Text(
-                      //         'You can sign in with your registered email id and password',
-                      //         style: TextStyle(
-                      //           fontWeight: FontWeight.w400,
-                      //           fontSize: 14,
-                      //           color: Colors.grey.shade600,
-                      //           fontFamily: 'Inter',
-                      //         ),
-                      //       ),
-                      //     ],
-                      //   ),
-                      //   const SizedBox(height: 10),
-                      //   Align(
-                      //     alignment: Alignment.centerLeft,
-                      //     child: ElevatedButton.icon(
-                      //       onPressed: () {},
-                      //       icon: const SizedBox.shrink(),
-                      //       label: Row(
-                      //         mainAxisSize: MainAxisSize.min,
-                      //         children: const [
-                      //           Text(
-                      //             'Sign in with email',
-                      //             style: TextStyle(
-                      //               fontWeight: FontWeight.w500,
-                      //               fontSize: 14,
-                      //               color: Colors.blue,
-                      //               fontFamily: 'Inter',
-                      //             ),
-                      //           ),
-                      //           SizedBox(width: 8),
-                      //           Icon(
-                      //             Icons.arrow_forward,
-                      //             size: 18,
-                      //             color: Colors.blue,
-                      //           ),
-                      //         ],
-                      //       ),
-                      //       style: ElevatedButton.styleFrom(
-                      //         backgroundColor: Colors.blue.shade50,
-                      //         foregroundColor: Colors.blue.shade100,
-                      //         padding: const EdgeInsets.symmetric(
-                      //           horizontal: 16,
-                      //           vertical: 12,
-                      //         ),
-                      //         shape: RoundedRectangleBorder(
-                      //           borderRadius: BorderRadius.circular(8),
-                      //           side: BorderSide(color: Colors.blue, width: 0.5),
-                      //         ),
-                      //       ),
-                      //     ),
-                      //   ),
-                      // ],
                     ],
                   ),
                 ),

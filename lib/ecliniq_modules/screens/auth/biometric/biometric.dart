@@ -1,6 +1,7 @@
 import 'package:ecliniq/ecliniq_core/auth/secure_storage.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_modules/screens/details/user_details.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -127,11 +128,15 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.verified_user, color: Colors.green, size: 64),
+            Icon(
+              Icons.verified_user,
+              color: Colors.green,
+              size: EcliniqTextStyles.getResponsiveIconSize(context, 64),
+            ),
             const SizedBox(height: 16),
             Text(
               '${BiometricService.getBiometricTypeName()} Enabled!',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style:  EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith( fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             const Text(
@@ -190,7 +195,7 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
   }
 
   Widget _buildLoadingScreen() {
-    return const Center(
+    return  Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -198,7 +203,7 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
           SizedBox(height: 16),
           Text(
             'Checking biometric availability...',
-            style: TextStyle(color: Colors.white, fontSize: 16),
+            style: EcliniqTextStyles.responsiveTitleXBLarge(context).copyWith(color: Colors.white),
           ),
         ],
       ),
@@ -243,12 +248,12 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
             onPressed: () => Navigator.of(context).pop(),
             icon: const Icon(Icons.arrow_back, color: Colors.white),
           ),
-          const Expanded(
+          Expanded(
             child: Text(
               'Biometric Setup',
-              style: TextStyle(
+              style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
                 color: Colors.white,
-                fontSize: 20,
+
                 fontWeight: FontWeight.bold,
               ),
               textAlign: TextAlign.center,
@@ -276,14 +281,17 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
               color: Colors.blue.shade50,
               shape: BoxShape.circle,
             ),
-            child: Icon(biometricIcon, size: 64, color: Colors.blue),
+            child: Icon(
+              biometricIcon,
+              size: EcliniqTextStyles.getResponsiveIconSize(context, 64),
+              color: Colors.blue,
+            ),
           ),
         ),
         const SizedBox(height: 32),
         Text(
           'Enable $biometricName',
-          style: const TextStyle(
-            fontSize: 24,
+          style: EcliniqTextStyles.responsiveHeadlineXLarge(context).copyWith(
             fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),
@@ -292,8 +300,7 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
         const SizedBox(height: 16),
         Text(
           'Use your ${biometricName.toLowerCase()} to quickly and securely access your account without entering your M-PIN every time.',
-          style: TextStyle(
-            fontSize: 16,
+          style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
             color: Colors.grey.shade600,
             height: 1.5,
           ),
@@ -321,8 +328,7 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
                   )
                 : Text(
                     'Enable $biometricName',
-                    style: const TextStyle(
-                      fontSize: 16,
+                    style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -339,9 +345,9 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text(
+            child: Text(
               'Skip for now',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
+              style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(color: Colors.grey),
             ),
           ),
         ),
@@ -360,13 +366,16 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
             color: Colors.grey.shade100,
             shape: BoxShape.circle,
           ),
-          child: Icon(Icons.security, size: 64, color: Colors.grey.shade400),
+          child: Icon(
+            Icons.security,
+            size: EcliniqTextStyles.getResponsiveIconSize(context, 64),
+            color: Colors.grey.shade400,
+          ),
         ),
         const SizedBox(height: 32),
-        const Text(
+        Text(
           'Biometric Not Available',
-          style: TextStyle(
-            fontSize: 24,
+          style: EcliniqTextStyles.responsiveHeadlineXLarge(context).copyWith(
             fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),
@@ -375,8 +384,7 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
         const SizedBox(height: 16),
         Text(
           'Your device doesn\'t support biometric authentication or it hasn\'t been set up yet. You can enable it later in your device settings.',
-          style: TextStyle(
-            fontSize: 16,
+          style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
             color: Colors.grey.shade600,
             height: 1.5,
           ),
@@ -396,9 +404,11 @@ class _BiometricSetupPageState extends State<BiometricSetupPage>
               ),
               elevation: 2,
             ),
-            child: const Text(
+            child: Text(
               'Continue',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ),

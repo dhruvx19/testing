@@ -34,10 +34,12 @@ class _VerifyNewMobileNumberState extends State<VerifyNewMobileNumber> {
   Timer? _timer;
   int _resendTimer = 150;
   bool _canResend = false;
+  String _currentChallengeId = '';
 
   @override
   void initState() {
     super.initState();
+    _currentChallengeId = widget.newChallengeId;
     _startTimer();
   }
 
@@ -73,6 +75,54 @@ class _VerifyNewMobileNumberState extends State<VerifyNewMobileNumber> {
     return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
   }
 
+  Future<void> _resendOTP() async {
+    if (!_canResend || !mounted) return;
+
+    setState(() {
+      _errorMessage = null;
+    });
+
+    try {
+      final authToken = await SessionService.getAuthToken();
+      // Resend OTP using the same API that was used initially
+      final result = await _authService.sendNewContactOtp(
+        type: 'mobile',
+        newContact: widget.newMobileNumber,
+        authToken: authToken,
+      );
+
+      if (!mounted) return;
+
+      if (result['success'] == true) {
+        setState(() {
+          _currentChallengeId = result['challengeId'];
+          _canResend = false;
+          _resendTimer = 150;
+          _otpController.clear();
+        });
+        _startTimer();
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('OTP has been resent'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        setState(() {
+          _errorMessage = result['message'] ?? 'Failed to resend OTP';
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = 'An error occurred: $e';
+      });
+    }
+  }
+
   Future<void> _verifyAndComplete() async {
     if (_otpController.text.length != 6) {
       setState(() {
@@ -90,7 +140,7 @@ class _VerifyNewMobileNumberState extends State<VerifyNewMobileNumber> {
       final authToken = await SessionService.getAuthToken();
       // Step 4: Verify new contact OTP (type is stored in Redis from step 3)
       final result = await _authService.verifyNewContact(
-        challengeId: widget.newChallengeId,
+        challengeId: _currentChallengeId,
         otp: _otpController.text,
         authToken: authToken,
       );
@@ -169,7 +219,7 @@ class _VerifyNewMobileNumberState extends State<VerifyNewMobileNumber> {
                     children: [
                       Text(
                         'Verify & Update',
-                        style: EcliniqTextStyles.headlineMedium.copyWith(
+                        style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                           color: _isOtpValid
                               ? Colors.white
                               : const Color(0xffD6D6D6),
@@ -212,7 +262,7 @@ class _VerifyNewMobileNumberState extends State<VerifyNewMobileNumber> {
         ),
         title: Text(
           'Verify Existing Account',
-          style: EcliniqTextStyles.headlineMedium.copyWith(
+          style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
             color: Color(0xff424242),
           ),
         ),
@@ -230,7 +280,7 @@ class _VerifyNewMobileNumberState extends State<VerifyNewMobileNumber> {
           children: [
             Text(
               'Please Verify your new  account information.',
-              style: EcliniqTextStyles.headlineXMedium.copyWith(
+              style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                 color: Color(0xff424242),
               ),
             ),
@@ -238,17 +288,17 @@ class _VerifyNewMobileNumberState extends State<VerifyNewMobileNumber> {
               children: [
                 Text(
                   'OTP sent to ',
-                  style: EcliniqTextStyles.headlineMedium.copyWith(
+                  style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                     fontWeight: FontWeight.w400,
-                    fontSize: 18,
+                  
                     color: Color(0xff424242),
                   ),
                 ),
                 Text(
                   '+91 ${widget.newMobileNumber}',
-                  style: EcliniqTextStyles.headlineMedium.copyWith(
+                  style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                     fontWeight: FontWeight.w500,
-                    fontSize: 18,
+                  
                     color: Color(0xff424242),
                   ),
                 ),
@@ -259,7 +309,7 @@ class _VerifyNewMobileNumberState extends State<VerifyNewMobileNumber> {
                 padding: const EdgeInsets.only(top: 8.0),
                 child: Text(
                   _errorMessage!,
-                  style: EcliniqTextStyles.bodyMedium.copyWith(
+                  style: EcliniqTextStyles.responsiveBodyMedium(context).copyWith(
                     color: Colors.red,
                   ),
                 ),
@@ -272,7 +322,7 @@ class _VerifyNewMobileNumberState extends State<VerifyNewMobileNumber> {
               autoFocus: true,
               keyboardType: TextInputType.number,
               animationType: AnimationType.fade,
-              textStyle: EcliniqTextStyles.headlineXMedium.copyWith(
+              textStyle: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                 color: const Color(0xff424242),
               ),
               pinTheme: PinTheme(
@@ -310,7 +360,7 @@ class _VerifyNewMobileNumberState extends State<VerifyNewMobileNumber> {
               children: [
                 Text(
                   'Didn\'t receive the OTP',
-                  style: EcliniqTextStyles.bodySmall.copyWith(
+                  style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                     color: const Color(0xff8E8E8E),
                   ),
                 ),
@@ -325,7 +375,7 @@ class _VerifyNewMobileNumberState extends State<VerifyNewMobileNumber> {
                     SizedBox(width: 4),
                     Text(
                       _formatTimer(_resendTimer),
-                      style: EcliniqTextStyles.bodySmall.copyWith(
+                      style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                         color: Color(0xff424242),
                       ),
                     ),
@@ -335,20 +385,11 @@ class _VerifyNewMobileNumberState extends State<VerifyNewMobileNumber> {
             ),
 
             GestureDetector(
-              onTap: _canResend
-                  ? () {
-                      // Resend functionality can be added here if needed
-                      setState(() {
-                        _canResend = false;
-                        _resendTimer = 150;
-                      });
-                      _startTimer();
-                    }
-                  : null,
+              onTap: _canResend ? _resendOTP : null,
               child: Text(
                 'Resend',
-                style: EcliniqTextStyles.headlineXMedium.copyWith(
-                  color: const Color(0xff2372EC),
+                style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
+                  color: _canResend ? const Color(0xff2372EC) : Colors.grey,
                 ),
               ),
             ),

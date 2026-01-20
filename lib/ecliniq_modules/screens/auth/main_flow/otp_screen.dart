@@ -139,14 +139,14 @@ class _OtpInputScreenState extends State<OtpInputScreen>
 
       if (mounted) {
         if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            CustomSuccessSnackBar(
+   
+            CustomSuccessSnackBar.show(
               title: 'OTP verified successfully!',
               subtitle: widget.isForgotPinFlow
                   ? 'You can now reset your MPIN'
                   : 'Your account has been verified successfully',
               context: context,
-            ),
+         
           );
 
           // Route based on flow type
@@ -284,7 +284,10 @@ class _OtpInputScreenState extends State<OtpInputScreen>
 
         return SizedBox(
           width: double.infinity,
-          height: 52,
+          height: EcliniqTextStyles.getResponsiveButtonHeight(
+            context,
+            baseHeight: 52.0,
+          ),
           child: GestureDetector(
             onTap: isButtonEnabled ? _verifyOTP : null,
             child: Container(
@@ -296,14 +299,16 @@ class _OtpInputScreenState extends State<OtpInputScreen>
                     : EcliniqButtonType.brandPrimary.disabledBackgroundColor(
                         context,
                       ),
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(
+                  EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
+                ),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     'Verify & Next',
-                    style: EcliniqTextStyles.headlineMedium.copyWith(
+                    style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                       color: _isButtonPressed
                           ? Colors.white
                           : isButtonEnabled
@@ -311,11 +316,13 @@ class _OtpInputScreenState extends State<OtpInputScreen>
                           : Color(0xffD6D6D6),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+                  ),
                   SvgPicture.asset(
                     EcliniqIcons.arrowRightWhite.assetPath,
-                    width: 24,
-                    height: 24,
+                    width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+                    height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
                     color: _isButtonPressed
                         ? Colors.white
                         : isButtonEnabled
@@ -347,15 +354,17 @@ class _OtpInputScreenState extends State<OtpInputScreen>
           body: SizedBox.expand(
             child: Column(
               children: [
-                SizedBox(height: 52),
+                SizedBox(
+                  height: EcliniqTextStyles.getResponsiveSpacing(context, 52),
+                ),
                 Row(
                   children: [
                     IconButton(
                       onPressed: () => Navigator.of(context).pop(),
                       icon: SvgPicture.asset(
                         EcliniqIcons.reply.assetPath,
-                        width: 32,
-                        height: 32,
+                        width: EcliniqTextStyles.getResponsiveIconSize(context, 32),
+                        height: EcliniqTextStyles.getResponsiveIconSize(context, 32),
                       ),
                     ),
                     const Spacer(),
@@ -371,13 +380,14 @@ class _OtpInputScreenState extends State<OtpInputScreen>
                               height: 24,
                             ),
                             const SizedBox(width: 4),
-                            const Text(
+                            Text(
                               'Help',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w400,
-                              ),
+                              style: EcliniqTextStyles.responsiveHeadlineXLMedium(context)
+                                  .copyWith(
+                                    color: Colors.white,
+
+                                    fontWeight: FontWeight.w400,
+                                  ),
                             ),
                             const SizedBox(width: 10),
                           ],
@@ -394,46 +404,51 @@ class _OtpInputScreenState extends State<OtpInputScreen>
                       children: [
                         Expanded(
                           child: SingleChildScrollView(
-                            padding: const EdgeInsets.only(
+                            padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+                              context,
                               top: 24,
                               left: 18,
                               right: 18,
+                              bottom: 0,
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   'Enter the 6-digit OTP sent to',
-                                  style: EcliniqTextStyles.headlineMedium
+                                  style: EcliniqTextStyles.responsiveHeadlineMedium(context)
                                       .copyWith(
                                         color: Color(0xff424242),
                                         fontWeight: FontWeight.w400,
                                       ),
                                 ),
-                                SizedBox(height: 2),
+                                SizedBox(
+                                  height: EcliniqTextStyles.getResponsiveSpacing(context, 2),
+                                ),
                                 Row(
                                   children: [
                                     Text(
                                       '+91 ${authProvider.phoneNumber ?? 'your phone'}',
-                                      style: EcliniqTextStyles.headlineMedium
+                                      style: EcliniqTextStyles.responsiveHeadlineMedium(context)
                                           .copyWith(color: Color(0xff424242)),
                                     ),
-                                    SizedBox(width: 4),
+                                    SizedBox(
+                                      width: EcliniqTextStyles.getResponsiveSpacing(context, 4),
+                                    ),
                                     GestureDetector(
                                       onTap: () => Navigator.of(context).pop(),
                                       child: Text(
                                         'Change Number',
-                                        style: EcliniqTextStyles.headlineMedium
-                                            .copyWith(
-                                              color: Color(0xff2372EC),
-                                              fontSize: 14,
-                                            ),
+                                        style: EcliniqTextStyles.responsiveBodySmall(context)
+                                            .copyWith(color: Color(0xff2372EC)),
                                       ),
                                     ),
                                   ],
                                 ),
 
-                                const SizedBox(height: 24),
+                                SizedBox(
+                                  height: EcliniqTextStyles.getResponsiveSpacing(context, 24),
+                                ),
                                 PinCodeTextField(
                                   appContext: context,
                                   length: 6,
@@ -441,17 +456,22 @@ class _OtpInputScreenState extends State<OtpInputScreen>
                                   autoFocus: true,
                                   keyboardType: TextInputType.number,
                                   animationType: AnimationType.fade,
-                                  textStyle: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w400,
-                                    color: Color(0xff424242),
-                                  ),
+                                  textStyle: EcliniqTextStyles.responsiveHeadlineZMedium(context)
+                                      .copyWith(
+                                        fontWeight: FontWeight.w400,
+                                        color: Color(0xff424242),
+                                      ),
 
                                   pinTheme: PinTheme(
                                     shape: PinCodeFieldShape.box,
-                                    borderRadius: BorderRadius.circular(8),
-                                    fieldHeight: 52,
-                                    fieldWidth: 45,
+                                    borderRadius: BorderRadius.circular(
+                                      EcliniqTextStyles.getResponsiveBorderRadius(context, 8),
+                                    ),
+                                    fieldHeight: EcliniqTextStyles.getResponsiveButtonHeight(
+                                      context,
+                                      baseHeight: 52.0,
+                                    ),
+                                    fieldWidth: EcliniqTextStyles.getResponsiveWidth(context, 45),
                                     activeFillColor: Colors.white,
                                     selectedFillColor: Colors.white,
                                     inactiveFillColor: Colors.white,
@@ -480,7 +500,7 @@ class _OtpInputScreenState extends State<OtpInputScreen>
                                   children: [
                                     Text(
                                       'Didn\'t receive the OTP?',
-                                      style: EcliniqTextStyles.bodySmall
+                                      style: EcliniqTextStyles.responsiveBodySmall(context)
                                           .copyWith(
                                             color: const Color(0xff8E8E8E),
                                           ),
@@ -497,7 +517,7 @@ class _OtpInputScreenState extends State<OtpInputScreen>
                                           const SizedBox(width: 4),
                                           Text(
                                             _formatTimer(_resendTimer),
-                                            style: EcliniqTextStyles.bodySmall
+                                            style: EcliniqTextStyles.responsiveBodySmall(context)
                                                 .copyWith(
                                                   color: const Color(
                                                     0xff424242,
@@ -513,7 +533,7 @@ class _OtpInputScreenState extends State<OtpInputScreen>
                                   onTap: _canResend ? _resendOTP : null,
                                   child: Text(
                                     'Resend',
-                                    style: EcliniqTextStyles.headlineXMedium
+                                    style: EcliniqTextStyles.responsiveHeadlineXMedium(context)
                                         .copyWith(
                                           color: const Color(0xff2372EC),
                                         ),

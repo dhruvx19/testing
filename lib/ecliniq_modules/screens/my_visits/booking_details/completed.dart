@@ -2,6 +2,7 @@ import 'package:ecliniq/ecliniq_api/appointment_service.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/widgets/common.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -107,11 +108,11 @@ class _BookingCompletedDetailState extends State<BookingCompletedDetail> {
         ),
         title: Align(
           alignment: Alignment.centerLeft,
-          child: const Text(
+          child: Text(
             'Booking Detail',
-            style: TextStyle(
+            style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
               color: Colors.black,
-              fontSize: 18,
+
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -210,11 +211,15 @@ class _BookingCompletedDetailState extends State<BookingCompletedDetail> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+            Icon(
+              Icons.error_outline,
+              size: EcliniqTextStyles.getResponsiveIconSize(context, 64),
+              color: Colors.red[300],
+            ),
             const SizedBox(height: 16),
             Text(
               _errorMessage ?? 'Failed to load appointment details',
-              style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+              style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(color: Colors.grey[700]),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -300,10 +305,10 @@ class _BookingCompletedDetailState extends State<BookingCompletedDetail> {
         Row(
           children: [
             Expanded(
-              child: const Text(
+              child:  Text(
                 'Easy Way to book',
-                style: TextStyle(
-                  fontSize: 20.0,
+                style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
+           
                   fontWeight: FontWeight.w600,
                   color: Color(0xff424242),
                 ),
@@ -327,10 +332,9 @@ class _BookingCompletedDetailState extends State<BookingCompletedDetail> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Request a Callback',
-                        style: TextStyle(
-                          fontSize: 18,
+                        style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                           fontWeight: FontWeight.w500,
                           color: Color(0xff424242),
                         ),
@@ -338,8 +342,8 @@ class _BookingCompletedDetailState extends State<BookingCompletedDetail> {
                       const SizedBox(height: 2),
                       Text(
                         'Assisted booking with expert',
-                        style: TextStyle(
-                          fontSize: 14,
+                        style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
+                        
                           color: Color(0xff8E8E8E),
                           fontWeight: FontWeight.w400,
                         ),
@@ -364,11 +368,11 @@ class _BookingCompletedDetailState extends State<BookingCompletedDetail> {
                     ),
                     backgroundColor: Color(0xFFF2F7FF),
                   ),
-                  child: const Text(
+                  child:  Text(
                     'Call Us',
-                    style: TextStyle(
+                    style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                       color: Color(0xFF2372EC),
-                      fontSize: 14,
+                     
                       fontWeight: FontWeight.w500,
                     ),
                   ),

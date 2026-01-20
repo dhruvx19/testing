@@ -45,10 +45,10 @@ class RelationSelectionSheet extends StatelessWidget {
             padding: const EdgeInsets.only(top: 15, left: 15),
             child: Text(
               'Select Relation',
-              style: EcliniqTextStyles.headlineBMedium.copyWith(
+              style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                 color: Color(0xff424242),
                 fontWeight: FontWeight.w500,
-                fontSize: 18,
+           
               ),
             ),
           ),
@@ -83,10 +83,10 @@ class RelationSelectionSheet extends StatelessWidget {
                   ),
                   title: Text(
                     relation,
-                    style: EcliniqTextStyles.bodyMedium.copyWith(
+                    style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                       color: Color(0xff424242),
                       fontWeight: FontWeight.w400,
-                      fontSize: 18,
+                  
                     ),
                   ),
                   onTap: () {

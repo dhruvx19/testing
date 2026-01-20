@@ -1,4 +1,6 @@
 import 'package:ecliniq/ecliniq_icons/icons.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -37,11 +39,9 @@ class _EasyWayToBookWidgetState extends State<EasyWayToBookWidget> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  EcliniqText(
                     'Easy Way to book',
-                    style: TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.w600,
+                    style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
                       color: Color(0xff424242),
                     ),
                   ),
@@ -70,21 +70,18 @@ class _EasyWayToBookWidgetState extends State<EasyWayToBookWidget> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        const EcliniqText(
                           'Request a Callback',
                           style: TextStyle(
-                            fontSize: 18,
                             fontWeight: FontWeight.w500,
                             color: Color(0xff424242),
                           ),
                         ),
                         const SizedBox(height: 2),
-                        Text(
+                        EcliniqText(
                           'Assisted booking with expert',
-                          style: TextStyle(
-                            fontSize: 14,
+                          style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                             color: Color(0xff8E8E8E),
-                            fontWeight: FontWeight.w400,
                           ),
                         ),
                       ],
@@ -107,12 +104,10 @@ class _EasyWayToBookWidgetState extends State<EasyWayToBookWidget> {
                       ),
                       backgroundColor: Color(0xFFF2F7FF),
                     ),
-                    child: const Text(
+                    child:  EcliniqText(
                       'Call Us',
-                      style: TextStyle(
+                      style: EcliniqTextStyles.responsiveBodySmallProminent(context).copyWith(
                         color: Color(0xFF2372EC),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
@@ -159,12 +154,10 @@ class _EasyWayToBookWidgetState extends State<EasyWayToBookWidget> {
                     child: GestureDetector(
                       onTap: () => _toggleWhatsAppUpdates(!_isWhatsAppEnabled),
                       behavior: HitTestBehavior.opaque,
-                      child: Text(
+                      child: EcliniqText(
                         'Get updates/information on WhatsApp/SMS',
-                        style: TextStyle(
-                          fontSize: 14,
+                        style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                           color: Color(0xff626060),
-                          fontWeight: FontWeight.w400,
                         ),
                       ),
                     ),

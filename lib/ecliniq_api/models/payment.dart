@@ -1,7 +1,3 @@
-/// Payment models for PhonePe integration
-/// Supports wallet, gateway, and hybrid payment methods
-
-/// Payment data returned from booking API
 class BookingPaymentData {
   final String appointmentId;
   final String status;
@@ -11,10 +7,10 @@ class BookingPaymentData {
   final double totalAmount;
   final double walletAmount;
   final double gatewayAmount;
-  final String provider; // WALLET, GATEWAY, HYBRID
-  final String? token; // PhonePe SDK token (used to construct base64 payload)
-  final String? orderId; // PhonePe order ID (used to construct base64 payload)
-  final String? requestPayload; // Base64-encoded payment payload from backend (ready to use)
+  final String provider;
+  final String? token;
+  final String? orderId;
+  final String? requestPayload;
   final DateTime? expiresAt;
 
   BookingPaymentData({
@@ -34,27 +30,11 @@ class BookingPaymentData {
   });
 
   factory BookingPaymentData.fromJson(Map<String, dynamic> json) {
-    // Backend response structure:
-    // {
-    //   "appointmentId": "...",
-    //   "status": "CREATED",
-    //   "paymentRequired": true,
-    //   "payment": {
-    //     "paymentId": "...",
-    //     "merchantTransactionId": "...",
-    //     "totalAmount": "100",
-    //     ...
-    //   }
-    // }
-    
     final payment = json['payment'] as Map<String, dynamic>? ?? {};
-    
-    // Backend now returns 'requestPayload' which is the base64-encoded payload ready to use
-    // This is the preferred method as per PhonePe documentation
-    // Fallback to token/orderId if requestPayload is not available
+
     final paymentToken = payment['token'] as String?;
     final requestPayload = payment['requestPayload'] as String?;
-    
+
     return BookingPaymentData(
       appointmentId: json['appointmentId'] as String? ?? '',
       status: json['status'] as String? ?? 'CREATED',
@@ -102,16 +82,14 @@ class BookingPaymentData {
     };
   }
 
-  /// Whether gateway payment is required (not fully paid by wallet)
   bool get requiresGateway => paymentRequired && gatewayAmount > 0;
 
-  /// Whether payment is wallet-only
-  bool get isWalletOnly => paymentRequired && gatewayAmount == 0 && walletAmount > 0;
+  bool get isWalletOnly =>
+      paymentRequired && gatewayAmount == 0 && walletAmount > 0;
 
-  /// Whether payment is gateway-only
-  bool get isGatewayOnly => paymentRequired && walletAmount == 0 && gatewayAmount > 0;
+  bool get isGatewayOnly =>
+      paymentRequired && walletAmount == 0 && gatewayAmount > 0;
 
-  /// Whether payment is hybrid (wallet + gateway)
   bool get isHybrid => paymentRequired && walletAmount > 0 && gatewayAmount > 0;
 }
 
@@ -119,7 +97,7 @@ class BookingPaymentData {
 class PaymentStatusData {
   final String? paymentId;
   final String merchantTransactionId;
-  final String status; // PENDING, PROCESSING, SUCCEEDED, COMPLETED, FAILED, EXPIRED, CANCELLED
+  final String status;
   final String? appointmentId;
   final double amount;
   final String checkedAt;
@@ -134,13 +112,13 @@ class PaymentStatusData {
   });
 
   factory PaymentStatusData.fromJson(Map<String, dynamic> json) {
-    final toDouble = (dynamic value) {
+    toDouble(dynamic value) {
       if (value == null) return 0.0;
       if (value is double) return value;
       if (value is int) return value.toDouble();
       if (value is String) return double.tryParse(value) ?? 0.0;
       return 0.0;
-    };
+    }
 
     return PaymentStatusData(
       paymentId: json['paymentId']?.toString(),
@@ -148,7 +126,8 @@ class PaymentStatusData {
       status: json['status']?.toString() ?? 'PENDING',
       appointmentId: json['appointmentId']?.toString(),
       amount: toDouble(json['amount']),
-      checkedAt: json['checkedAt']?.toString() ?? DateTime.now().toIso8601String(),
+      checkedAt:
+          json['checkedAt']?.toString() ?? DateTime.now().toIso8601String(),
     );
   }
 
@@ -165,8 +144,13 @@ class PaymentStatusData {
 
   /// Check if payment is in a terminal state
   bool get isTerminal {
-    return ['SUCCEEDED', 'COMPLETED', 'FAILED', 'EXPIRED', 'CANCELLED']
-        .contains(status);
+    return [
+      'SUCCEEDED',
+      'COMPLETED',
+      'FAILED',
+      'EXPIRED',
+      'CANCELLED',
+    ].contains(status);
   }
 
   /// Check if payment was successful
@@ -202,7 +186,8 @@ class PaymentStatusResponse {
           : null,
       errors: json['errors'],
       meta: json['meta'],
-      timestamp: json['timestamp']?.toString() ?? DateTime.now().toIso8601String(),
+      timestamp:
+          json['timestamp']?.toString() ?? DateTime.now().toIso8601String(),
     );
   }
 
@@ -249,13 +234,13 @@ class PaymentDetailData {
   });
 
   factory PaymentDetailData.fromJson(Map<String, dynamic> json) {
-    final toDouble = (dynamic value) {
+    toDouble(dynamic value) {
       if (value == null) return 0.0;
       if (value is double) return value;
       if (value is int) return value.toDouble();
       if (value is String) return double.tryParse(value) ?? 0.0;
       return 0.0;
-    };
+    }
 
     return PaymentDetailData(
       id: json['id']?.toString() ?? '',
@@ -284,7 +269,8 @@ class PaymentDetailData {
       'status': status,
       if (gatewayName != null) 'gatewayName': gatewayName,
       if (gatewayOrderId != null) 'gatewayOrderId': gatewayOrderId,
-      if (gatewayTransactionId != null) 'gatewayTransactionId': gatewayTransactionId,
+      if (gatewayTransactionId != null)
+        'gatewayTransactionId': gatewayTransactionId,
       if (processedAt != null) 'processedAt': processedAt,
       if (expiresAt != null) 'expiresAt': expiresAt,
     };
@@ -318,7 +304,8 @@ class PaymentDetailResponse {
           : null,
       errors: json['errors'],
       meta: json['meta'],
-      timestamp: json['timestamp']?.toString() ?? DateTime.now().toIso8601String(),
+      timestamp:
+          json['timestamp']?.toString() ?? DateTime.now().toIso8601String(),
     );
   }
 

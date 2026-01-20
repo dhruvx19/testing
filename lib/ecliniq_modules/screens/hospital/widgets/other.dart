@@ -1,5 +1,6 @@
-
-import 'package:ecliniq/ecliniq_modules/screens/hospital/model/model.dart';
+import 'package:ecliniq/ecliniq_api/model.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
+import 'package:ecliniq/ecliniq_utils/phone_launcher.dart';
 import 'package:flutter/material.dart';
 
 class TabNavigationWidget extends StatelessWidget {
@@ -30,7 +31,9 @@ class TabNavigationWidget extends StatelessWidget {
               onTap: () => onTabChanged(index),
               child: Container(
                 decoration: BoxDecoration(
-                  color: selectedIndex == index ? Colors.white : Colors.transparent,
+                  color: selectedIndex == index
+                      ? Colors.white
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(25),
                 ),
                 alignment: Alignment.center,
@@ -50,15 +53,10 @@ class TabNavigationWidget extends StatelessWidget {
   }
 }
 
-
-
 class AboutSectionWidget extends StatelessWidget {
   final String about;
 
-  const AboutSectionWidget({
-    super.key,
-    required this.about,
-  });
+  const AboutSectionWidget({super.key, required this.about});
 
   @override
   Widget build(BuildContext context) {
@@ -67,18 +65,17 @@ class AboutSectionWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'About',
-            style: TextStyle(
-              fontSize: 18,
+            style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             about,
-            style: TextStyle(
-              fontSize: 14,
+            style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
+             
               color: Colors.grey[700],
               height: 1.5,
             ),
@@ -89,14 +86,10 @@ class AboutSectionWidget extends StatelessWidget {
   }
 }
 
-
 class SpecialtiesWidget extends StatelessWidget {
   final List<String> specialties;
 
-  const SpecialtiesWidget({
-    super.key,
-    required this.specialties,
-  });
+  const SpecialtiesWidget({super.key, required this.specialties});
 
   @override
   Widget build(BuildContext context) {
@@ -105,10 +98,9 @@ class SpecialtiesWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Medical Specialties',
-            style: TextStyle(
-              fontSize: 18,
+            style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -129,14 +121,10 @@ class SpecialtiesWidget extends StatelessWidget {
   }
 }
 
-
 class ServicesWidget extends StatelessWidget {
   final List<String> services;
 
-  const ServicesWidget({
-    super.key,
-    required this.services,
-  });
+  const ServicesWidget({super.key, required this.services});
 
   @override
   Widget build(BuildContext context) {
@@ -145,10 +133,9 @@ class ServicesWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Hospital Services & Facilities',
-            style: TextStyle(
-              fontSize: 18,
+            style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -169,14 +156,10 @@ class ServicesWidget extends StatelessWidget {
   }
 }
 
-
 class CertificatesWidget extends StatelessWidget {
   final List<String> certificates;
 
-  const CertificatesWidget({
-    super.key,
-    required this.certificates,
-  });
+  const CertificatesWidget({super.key, required this.certificates});
 
   @override
   Widget build(BuildContext context) {
@@ -185,10 +168,9 @@ class CertificatesWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Certificates & Accreditations',
-            style: TextStyle(
-              fontSize: 18,
+            style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -198,7 +180,11 @@ class CertificatesWidget extends StatelessWidget {
             runSpacing: 8,
             children: certificates.map((cert) {
               return Chip(
-                avatar: const Icon(Icons.verified, size: 18, color: Color(0xFF0E4395)),
+                avatar: const Icon(
+                  Icons.verified,
+                  size: 18,
+                  color: Color(0xFF0E4395),
+                ),
                 label: Text(cert),
                 backgroundColor: Colors.blue[50],
               );
@@ -209,8 +195,6 @@ class CertificatesWidget extends StatelessWidget {
     );
   }
 }
-
-
 
 class ContactDetailsWidget extends StatelessWidget {
   final String email;
@@ -231,15 +215,15 @@ class ContactDetailsWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Contact Details',
-            style: TextStyle(
-              fontSize: 18,
+            style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 16),
           _buildContactItem(
+            context:   context,
             icon: Icons.email,
             title: email,
             subtitle: emailLabel,
@@ -250,6 +234,7 @@ class ContactDetailsWidget extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(bottom: 16.0),
               child: _buildContactItem(
+                 context:   context,
                 icon: _getIconData(contact.icon),
                 title: contact.number,
                 subtitle: contact.label,
@@ -268,6 +253,7 @@ class ContactDetailsWidget extends StatelessWidget {
     required String title,
     required String subtitle,
     required Color iconColor,
+    required BuildContext context,
     bool showCallButton = false,
   }) {
     return Row(
@@ -278,7 +264,11 @@ class ContactDetailsWidget extends StatelessWidget {
             color: iconColor.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, color: iconColor, size: 24),
+          child: Icon(
+            icon,
+            color: iconColor,
+            size: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+          ),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -287,15 +277,13 @@ class ContactDetailsWidget extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 16,
+                style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                   fontWeight: FontWeight.w500,
                 ),
               ),
               Text(
                 subtitle,
-                style: TextStyle(
-                  fontSize: 12,
+                style: EcliniqTextStyles.responsiveBodyXSmall(context).copyWith(
                   color: Colors.grey[600],
                 ),
               ),
@@ -305,7 +293,7 @@ class ContactDetailsWidget extends StatelessWidget {
         if (showCallButton)
           IconButton(
             icon: const Icon(Icons.phone, color: Color(0xFF0E4395)),
-            onPressed: () {},
+            onPressed: () => PhoneLauncher.launchPhoneCall(title),
           ),
       ],
     );
@@ -327,8 +315,6 @@ class ContactDetailsWidget extends StatelessWidget {
   }
 }
 
-
-
 class EasyBookingWidget extends StatelessWidget {
   final VoidCallback? onRequestCallback;
   final VoidCallback? onGetUpdates;
@@ -346,10 +332,9 @@ class EasyBookingWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Easy Way to book',
-            style: TextStyle(
-              fontSize: 18,
+            style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -376,15 +361,10 @@ class EasyBookingWidget extends StatelessWidget {
   }
 }
 
-
-
 class BookAppointmentButton extends StatelessWidget {
   final VoidCallback? onPressed;
 
-  const BookAppointmentButton({
-    super.key,
-    this.onPressed,
-  });
+  const BookAppointmentButton({super.key, this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -406,14 +386,11 @@ class BookAppointmentButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF0E4395),
           padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        child: const Text(
+        child: Text(
           'Book Appointment',
-          style: TextStyle(
-            fontSize: 18,
+          style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),

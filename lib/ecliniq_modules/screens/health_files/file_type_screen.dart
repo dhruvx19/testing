@@ -1,10 +1,11 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:ecliniq/ecliniq_core/notifications/local_notifications.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/health_files/edit_doc_details.dart';
-import 'package:ecliniq/ecliniq_modules/screens/health_files/models/health_file_model.dart';
+import 'package:ecliniq/ecliniq_api/health_file_model.dart';
 import 'package:ecliniq/ecliniq_modules/screens/health_files/providers/health_files_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/health_files/widgets/action_bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_modules/screens/health_files/widgets/permission_request_dialog.dart';
@@ -19,12 +20,17 @@ import 'package:ecliniq/ecliniq_utils/bottom_sheets/health_files/delete_file_bot
 import 'package:ecliniq/ecliniq_utils/bottom_sheets/health_files/health_files_filter.dart';
 import 'package:ecliniq/ecliniq_utils/snackbar_helper.dart';
 import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:speech_to_text/speech_to_text.dart';
+
+import '../../../ecliniq_icons/assets/home/widgets/top_bar_widgets/search_bar.dart';
 
 class FileTypeScreen extends StatefulWidget {
   final HealthFileType? fileType;
@@ -36,7 +42,8 @@ class FileTypeScreen extends StatefulWidget {
 }
 
 class _FileTypeScreenState extends State<FileTypeScreen> {
-  String? _selectedRecordFor;
+  String? _selectedRecordFor; // For backward compatibility
+  final Set<String> _selectedNames = {}; // For multiple name filtering
   final List<String> _recordForOptions = ['All'];
   HealthFileType? _selectedFileType;
 
@@ -47,22 +54,260 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
   // ScrollController for syncing tab indicator
   final ScrollController _tabScrollController = ScrollController();
 
+  // Search functionality
+  final TextEditingController _searchController = TextEditingController();
+  final SpeechToText _speechToText = SpeechToText();
+  bool _speechEnabled = false;
+  bool _isListening = false;
+  String _searchQuery = '';
+  bool _isSearchMode = false;
+
   @override
   void initState() {
     super.initState();
     _selectedFileType = widget.fileType;
+    _searchController.addListener(_onSearchChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = context.read<HealthFilesProvider>();
       provider.loadFiles().then((_) {
         _updateRecordForOptions();
       });
     });
+    _initSpeech();
   }
 
   @override
   void dispose() {
     _tabScrollController.dispose();
+    _searchController.dispose();
+    _speechToText.cancel();
     super.dispose();
+  }
+
+  Future<void> _initSpeech() async {
+    try {
+      _speechEnabled = await _speechToText.initialize(
+        onError: (error) {
+          if (mounted) {
+            setState(() => _isListening = false);
+          }
+          final errorMsg = error.errorMsg.toLowerCase();
+          if (!errorMsg.contains('no_match') &&
+              !errorMsg.contains('listen_failed')) {
+            debugPrint(
+              'Speech recognition initialization error: ${error.errorMsg}',
+            );
+          }
+        },
+        onStatus: (status) {
+          debugPrint('Speech recognition status: $status');
+          if (mounted) {
+            if (status == 'notListening' ||
+                status == 'done' ||
+                status == 'doneNoResult') {
+              setState(() => _isListening = false);
+            } else if (status == 'listening') {
+              setState(() => _isListening = true);
+            }
+          }
+        },
+      );
+      if (mounted) {
+        setState(() {});
+      }
+      debugPrint('Speech recognition initialized: $_speechEnabled');
+    } catch (e) {
+      debugPrint('Error initializing speech recognition: $e');
+      _speechEnabled = false;
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
+
+  void _startListening() async {
+    if (_isListening) {
+      return;
+    }
+
+    if (!_speechEnabled) {
+      await _initSpeech();
+      if (!_speechEnabled) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Speech recognition is not available. Please check your permissions.',
+              ),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      }
+    }
+
+    final isAvailable = await _speechToText.initialize(
+      onError: (error) {
+        debugPrint('Speech recognition error: ${error.errorMsg}');
+        final errorMsg = error.errorMsg.toLowerCase();
+        if (errorMsg.contains('no_match') ||
+            errorMsg.contains('listen_failed') ||
+            errorMsg.contains('error_network_error')) {
+          debugPrint('Expected speech recognition error: ${error.errorMsg}');
+          if (mounted) {
+            setState(() => _isListening = false);
+          }
+          return;
+        }
+
+        if (mounted) {
+          setState(() => _isListening = false);
+          if (errorMsg.contains('error_permission') ||
+              errorMsg.contains('permission')) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Microphone permission is required for voice search.',
+                ),
+                duration: Duration(seconds: 2),
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Speech recognition error: ${error.errorMsg}'),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+        }
+      },
+      onStatus: (status) {
+        debugPrint('Speech recognition status: $status');
+        if (mounted) {
+          if (status == 'notListening' ||
+              status == 'done' ||
+              status == 'doneNoResult') {
+            setState(() => _isListening = false);
+          } else if (status == 'listening') {
+            setState(() => _isListening = true);
+          }
+        }
+      },
+    );
+
+    if (!isAvailable) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Speech recognition is not available. Please check your permissions.',
+            ),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+      return;
+    }
+
+    try {
+      await _speechToText.listen(
+        onResult: _onSpeechResult,
+        listenFor: const Duration(seconds: 30),
+        pauseFor: const Duration(seconds: 3),
+        partialResults: true,
+        localeId: 'en_US',
+        cancelOnError: false,
+        listenMode: ListenMode.confirmation,
+      );
+
+      if (mounted) {
+        setState(() {
+          _isListening = true;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error starting speech recognition: $e');
+      if (mounted) {
+        setState(() => _isListening = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error starting voice search: ${e.toString()}'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  void _stopListening() async {
+    try {
+      await _speechToText.stop();
+      if (mounted) {
+        setState(() {
+          _isListening = false;
+        });
+      }
+      debugPrint('Speech recognition stopped');
+    } catch (e) {
+      debugPrint('Error stopping speech recognition: $e');
+      if (mounted) {
+        setState(() {
+          _isListening = false;
+        });
+      }
+    }
+  }
+
+  void _onSpeechResult(SpeechRecognitionResult result) {
+    debugPrint(
+      'Speech result: ${result.recognizedWords}, final: ${result.finalResult}',
+    );
+
+    // Update the search controller with recognized words
+    _searchController.text = result.recognizedWords;
+    _searchController.selection = TextSelection.fromPosition(
+      TextPosition(offset: result.recognizedWords.length),
+    );
+
+    setState(() {
+      _searchQuery = result.recognizedWords;
+    });
+
+    _onSearchChanged();
+
+    if (result.finalResult) {
+      _stopListening();
+    }
+  }
+
+  void _onSearchChanged() {
+    setState(() {
+      _searchQuery = _searchController.text.trim();
+      _isSearchMode = _searchQuery.isNotEmpty;
+    });
+    context.read<HealthFilesProvider>().searchFiles(_searchQuery);
+  }
+
+  void _clearSearch() {
+    setState(() {
+      _searchQuery = '';
+      _searchController.clear();
+      _isSearchMode = false;
+    });
+    context.read<HealthFilesProvider>().searchFiles('');
+    if (_isListening) {
+      _stopListening();
+    }
+  }
+
+  void _toggleVoiceSearch() {
+    if (_isListening) {
+      _stopListening();
+    } else {
+      _startListening();
+    }
   }
 
   void _updateRecordForOptions() {
@@ -79,6 +324,7 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
     setState(() {
       _selectedFileType = fileType;
       _selectedRecordFor = null;
+      _selectedNames.clear();
     });
     _updateRecordForOptions();
   }
@@ -255,13 +501,11 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
           message += ' ($notFoundCount already removed)';
         }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          CustomSuccessSnackBar(
-            context: context,
-            title: 'Success',
-            subtitle: message,
-            duration: const Duration(seconds: 3),
-          ),
+        CustomSuccessSnackBar.show(
+          context: context,
+          title: 'Success',
+          subtitle: message,
+          duration: const Duration(seconds: 3),
         );
       } else if (notFoundCount > 0) {
         SnackBarHelper.showErrorSnackBar(
@@ -312,44 +556,63 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
   Future<void> _handleBulkDownload(List<HealthFile> files) async {
     if (_selectedFileIds.isEmpty) return;
 
-    // Check storage permissions for Android before bulk download
+    // Check storage permissions for Android before bulk download - use default Android dialog
     if (Platform.isAndroid) {
-      Permission? storagePermission;
+      // Check both permission statuses
+      final storageStatus = await Permission.storage.status;
+      final manageStorageStatus = await Permission.manageExternalStorage.status;
 
-      if (await Permission.storage.isDenied ||
-          await Permission.storage.isPermanentlyDenied) {
-        storagePermission = Permission.storage;
-      } else if (await Permission.manageExternalStorage.isDenied ||
-          await Permission.manageExternalStorage.isPermanentlyDenied) {
-        storagePermission = Permission.manageExternalStorage;
-      }
+      // If neither permission is granted, request permission using default Android dialog
+      if (!storageStatus.isGranted && !manageStorageStatus.isGranted) {
+        // Determine which permission to request
+        Permission storagePermission = Permission.storage;
 
-      if (storagePermission != null) {
-        final status = await storagePermission.status;
+        // For Android 11+, try manageExternalStorage first if not permanently denied
+        if (manageStorageStatus != PermissionStatus.permanentlyDenied) {
+          storagePermission = Permission.manageExternalStorage;
+        }
 
-        if (!status.isGranted) {
-          if (!mounted) return;
-          await showDialog(
-            context: context,
-            builder: (context) => PermissionRequestDialog(
-              permission: storagePermission!,
-              title: 'Storage Permission Required',
-              message:
-                  'We need storage permission to download files to your device.',
-              onGranted: () async {
-                await _proceedWithBulkDownload(files);
-              },
-              onDenied: () {
-                if (mounted) {
-                  SnackBarHelper.showErrorSnackBar(
-                    context,
-                    'Storage permission is required to download files',
-                    duration: const Duration(seconds: 2),
-                  );
-                }
-              },
-            ),
-          );
+        // Request permission directly (shows default Android dialog)
+        final result = await storagePermission.request();
+
+        if (!result.isGranted) {
+          if (mounted) {
+            if (result.isPermanentlyDenied) {
+              // Show dialog to open settings
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Storage Permission Required'),
+                  content: const Text(
+                    'Storage permission is permanently denied. Please enable it in app settings to download files.',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        Navigator.pop(context);
+                        await openAppSettings();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2372EC),
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Open Settings'),
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              SnackBarHelper.showErrorSnackBar(
+                context,
+                'Storage permission is required to download files',
+                duration: const Duration(seconds: 2),
+              );
+            }
+          }
           return;
         }
       }
@@ -399,13 +662,11 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
       if (!mounted) return;
 
       if (successCount > 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          CustomSuccessSnackBar(
-            context: context,
-            title: 'Download successful',
-            subtitle: '$successCount file(s) downloaded successfully',
-            duration: const Duration(seconds: 3),
-          ),
+        CustomSuccessSnackBar.show(
+          context: context,
+          title: 'Download successful',
+          subtitle: '$successCount file(s) downloaded successfully',
+          duration: const Duration(seconds: 3),
         );
       } else {
         SnackBarHelper.showErrorSnackBar(
@@ -491,7 +752,7 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
   Future<void> _proceedWithDelete(HealthFile file) async {
     final confirmed = await EcliniqBottomSheet.show<bool>(
       context: context,
-      child: DeleteFileBottomSheet(),
+      child: const DeleteFileBottomSheet(),
     );
 
     if (confirmed != true || !mounted) return;
@@ -534,13 +795,11 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
       if (!mounted) return;
 
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          CustomSuccessSnackBar(
-            context: context,
-            title: 'Success',
-            subtitle: 'File deleted successfully',
-            duration: const Duration(seconds: 2),
-          ),
+        CustomSuccessSnackBar.show(
+          context: context,
+          title: 'Success',
+          subtitle: 'File deleted successfully',
+          duration: const Duration(seconds: 2),
         );
       } else {
         SnackBarHelper.showErrorSnackBar(
@@ -585,54 +844,63 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
   }) async {
     if (!mounted) return;
 
-    // Check storage permissions for Android
+    // Check storage permissions for Android - use default Android dialog like location
     if (Platform.isAndroid) {
-      Permission? storagePermission;
+      // Check both permission statuses
+      final storageStatus = await Permission.storage.status;
+      final manageStorageStatus = await Permission.manageExternalStorage.status;
 
-      // Check Android version and request appropriate permission
-      if (await Permission.storage.isDenied ||
-          await Permission.storage.isPermanentlyDenied) {
-        // For Android 10 and below, use storage permission
-        storagePermission = Permission.storage;
-      } else if (await Permission.manageExternalStorage.isDenied ||
-          await Permission.manageExternalStorage.isPermanentlyDenied) {
-        // For Android 11+, use manage external storage
-        storagePermission = Permission.manageExternalStorage;
-      }
+      // If neither permission is granted, request permission using default Android dialog
+      if (!storageStatus.isGranted && !manageStorageStatus.isGranted) {
+        // Determine which permission to request
+        Permission storagePermission = Permission.storage;
 
-      if (storagePermission != null) {
-        final status = await storagePermission.status;
+        // For Android 11+, try manageExternalStorage first if not permanently denied
+        if (manageStorageStatus != PermissionStatus.permanentlyDenied) {
+          storagePermission = Permission.manageExternalStorage;
+        }
 
-        if (!status.isGranted) {
-          // Show permission dialog
-          if (!mounted) return;
-          await showDialog(
-            context: context,
-            builder: (context) => PermissionRequestDialog(
-              permission: storagePermission!,
-              title: 'Storage Permission Required',
-              message:
-                  'We need storage permission to download files to your device.',
-              onGranted: () async {
-                // Permission granted, proceed with download
-                await _proceedWithDownload(file, showSnackbar: showSnackbar);
-              },
-              onDenied: () {
-                if (mounted && showSnackbar) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Storage permission is required to download files',
-                      ),
-                      backgroundColor: Colors.red,
-                      dismissDirection: DismissDirection.horizontal,
-                      duration: Duration(seconds: 2),
+        // Request permission directly (shows default Android dialog)
+        final result = await storagePermission.request();
+
+        if (!result.isGranted) {
+          if (mounted) {
+            if (result.isPermanentlyDenied) {
+              // Show dialog to open settings
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Storage Permission Required'),
+                  content: const Text(
+                    'Storage permission is permanently denied. Please enable it in app settings to download files.',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel'),
                     ),
-                  );
-                }
-              },
-            ),
-          );
+                    ElevatedButton(
+                      onPressed: () async {
+                        Navigator.pop(context);
+                        await openAppSettings();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2372EC),
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Open Settings'),
+                    ),
+                  ],
+                ),
+              );
+            } else if (showSnackbar) {
+              SnackBarHelper.showErrorSnackBar(
+                context,
+                'Storage permission is required to download files',
+                duration: const Duration(seconds: 2),
+              );
+            }
+          }
           return;
         }
       }
@@ -725,13 +993,11 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
 
           // Show success snackbar
           if (showSnackbar) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              CustomSuccessSnackBar(
-                context: context,
-                title: 'Download successful',
-                subtitle: 'File saved: $fileName',
-                duration: const Duration(seconds: 3),
-              ),
+            CustomSuccessSnackBar.show(
+              context: context,
+              title: 'Download successful',
+              subtitle: 'File saved: $fileName',
+              duration: const Duration(seconds: 3),
             );
           }
 
@@ -794,13 +1060,11 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
 
           // Show success message
           if (showSnackbar) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              CustomSuccessSnackBar(
-                context: context,
-                title: 'Download successful',
-                subtitle: 'File saved to app Downloads folder: $fileName',
-                duration: const Duration(seconds: 3),
-              ),
+            CustomSuccessSnackBar.show(
+              context: context,
+              title: 'Download successful',
+              subtitle: 'File saved to app Downloads folder: $fileName',
+              duration: const Duration(seconds: 3),
             );
           }
 
@@ -882,13 +1146,43 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
   }
 
   void _showFilterBottomSheet() {
-    EcliniqBottomSheet.show<String>(
+    EcliniqBottomSheet.show<Map<String, dynamic>>(
       context: context,
-      child: HealthFilesFilter(),
-    ).then((selected) {
-      if (selected != null) {
+      child: HealthFilesFilter(
+        initialSelectedNames: _selectedNames,
+        onApply: (result) {
+          // This callback is called before the bottom sheet closes
+          // We'll update state in .then() after the sheet closes
+        },
+      ),
+    ).then((result) {
+      // Update state after bottom sheet closes
+      if (mounted) {
         setState(() {
-          _selectedRecordFor = selected == 'All' ? null : selected;
+          if (result != null) {
+            final selectedNames = result['selectedNames'] as List<dynamic>?;
+            final sortBy = result['sortBy'];
+            // Check if reset was called (empty result)
+            if (selectedNames == null ||
+                (selectedNames.isEmpty && sortBy == null)) {
+              // Reset filters - clear all selections
+              _selectedNames.clear();
+              _selectedRecordFor = null;
+            } else if (selectedNames != null && selectedNames.isNotEmpty) {
+              _selectedNames.clear();
+              _selectedNames.addAll(
+                selectedNames.map((name) => name.toString()),
+              );
+              // Clear single selection for backward compatibility
+              _selectedRecordFor = null;
+            } else {
+              _selectedNames.clear();
+              _selectedRecordFor = null;
+            }
+          } else {
+            // If result is null, user dismissed without applying
+            // Keep current selections
+          }
         });
       }
     });
@@ -926,8 +1220,8 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
 
           if (!mounted) return;
 
-          // Call the delete method which will show confirmation and handle deletion
-          await _proceedWithDelete(file);
+          // Call the delete method which will check permissions, show confirmation and handle deletion
+          await _handleFileDelete(file);
         },
       ),
     );
@@ -939,11 +1233,15 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
     return Column(
       children: [
         SizedBox(
-          height: 50,
+          height: EcliniqTextStyles.getResponsiveHeight(context, 50),
           child: SingleChildScrollView(
             controller: _tabScrollController,
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+              context,
+              horizontal: 16.0,
+              vertical: 0,
+            ),
             child: Row(
               children: allTabs.asMap().entries.map((entry) {
                 final index = entry.key;
@@ -963,29 +1261,41 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 8,
-                          ),
+                          padding:
+                              EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                                context,
+                                horizontal: 8,
+                                vertical: 8,
+                              ),
                           child: Text(
                             displayName,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w400,
-                              color: isSelected
-                                  ? const Color(0xFF2372EC)
-                                  : const Color(0xFF626060),
-                            ),
+                            style:
+                                EcliniqTextStyles.responsiveHeadlineBMedium(
+                                  context,
+                                ).copyWith(
+                                  fontWeight: FontWeight.w400,
+                                  color: isSelected
+                                      ? const Color(0xFF2372EC)
+                                      : const Color(0xFF626060),
+                                ),
                           ),
                         ),
                         Container(
-                          height: 3,
+                          height: EcliniqTextStyles.getResponsiveHeight(
+                            context,
+                            3,
+                          ),
                           width: displayName.length * 10.0 + 16,
                           decoration: BoxDecoration(
                             color: isSelected
                                 ? const Color(0xFF2372EC)
                                 : Colors.transparent,
-                            borderRadius: BorderRadius.circular(2),
+                            borderRadius: BorderRadius.circular(
+                              EcliniqTextStyles.getResponsiveBorderRadius(
+                                context,
+                                2,
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -1006,7 +1316,11 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
     final selectedCount = _selectedFileIds.length;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+      padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+        context,
+        horizontal: 12,
+        vertical: 12,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -1021,86 +1335,119 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
         child: Row(
           children: [
             // Selected count badge
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: hasSelection
-                        ? const Color(0xFF96BFFF)
-                        : const Color(0xFFffffff),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
+            Expanded(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: EcliniqTextStyles.getResponsiveWidth(context, 24),
+                    height: EcliniqTextStyles.getResponsiveHeight(context, 24),
+                    decoration: BoxDecoration(
                       color: hasSelection
                           ? const Color(0xFF96BFFF)
-                          : const Color(0xFF8E8E8E),
-                      width: 1,
+                          : const Color(0xFFffffff),
+                      borderRadius: BorderRadius.circular(
+                        EcliniqTextStyles.getResponsiveBorderRadius(context, 6),
+                      ),
+                      border: Border.all(
+                        color: hasSelection
+                            ? const Color(0xFF96BFFF)
+                            : const Color(0xFF8E8E8E),
+                        width: 1,
+                      ),
                     ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: Center(
-                      child: SvgPicture.asset(
-                        EcliniqIcons.minus.assetPath,
-                        width: 8,
-                        height: 8,
+                    child: Padding(
+                      padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(
+                        context,
+                        4.0,
+                      ),
+                      child: Center(
+                        child: SvgPicture.asset(
+                          EcliniqIcons.minus.assetPath,
+                          width: EcliniqTextStyles.getResponsiveWidth(
+                            context,
+                            8,
+                          ),
+                          height: EcliniqTextStyles.getResponsiveHeight(
+                            context,
+                            8,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  '$selectedCount ${selectedCount == 1 ? 'File' : 'Files'} Selected',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF424242),
+                  SizedBox(
+                    width: EcliniqTextStyles.getResponsiveSpacing(context, 6),
                   ),
-                ),
-              ],
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '$selectedCount ${selectedCount == 1 ? 'File' : 'Files'} Selected',
+                        style:
+                            EcliniqTextStyles.responsiveHeadlineBMedium(
+                              context,
+                            ).copyWith(
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF424242),
+                            ),
+                        maxLines: 1,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
 
-            Spacer(),
             // Download button
             IconButton(
+              padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 6),
+              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
               onPressed: hasSelection ? () => _handleBulkDownload(files) : null,
               icon: SvgPicture.asset(
                 hasSelection
                     ? EcliniqIcons.downloadfiles.assetPath
                     : EcliniqIcons.downloadDisabled.assetPath,
-                width: 30,
-                height: 30,
+                width: EcliniqTextStyles.getResponsiveIconSize(context, 20),
+                height: EcliniqTextStyles.getResponsiveIconSize(context, 20),
               ),
             ),
-            SizedBox(width: 8),
-            Container(width: 0.5, height: 20, color: const Color(0xFFB8B8B8)),
-            SizedBox(width: 8),
+            SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 2)),
+            Container(
+              width: 0.5,
+              height: EcliniqTextStyles.getResponsiveHeight(context, 20),
+              color: const Color(0xFFB8B8B8),
+            ),
+            SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 2)),
             // Delete button
             IconButton(
+              padding: const EdgeInsets.all(6),
+              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
               onPressed: hasSelection ? () => _handleBulkDelete(files) : null,
               icon: SvgPicture.asset(
                 hasSelection
                     ? EcliniqIcons.delete.assetPath
                     : EcliniqIcons.trashBin.assetPath,
-                width: 30,
-                height: 30,
+                width: 20,
+                height: 20,
               ),
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 2),
             Container(width: 0.5, height: 20, color: const Color(0xFFB8B8B8)),
-            SizedBox(width: 8),
+            const SizedBox(width: 2),
             // Close/Cancel button
             IconButton(
+              padding: const EdgeInsets.all(6),
+              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
               onPressed: _clearSelection,
               icon: SvgPicture.asset(
                 EcliniqIcons.closeCircle.assetPath,
-                width: 30,
-                height: 30,
+                width: 20,
+                height: 20,
               ),
             ),
-            SizedBox(width: 00),
+            const SizedBox(width: 2),
           ],
         ),
       ),
@@ -1127,9 +1474,9 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
           alignment: Alignment.centerLeft,
           child: Text(
             'My Files',
-            style: EcliniqTextStyles.headlineMedium.copyWith(
-              color: const Color(0xff424242),
-            ),
+            style: EcliniqTextStyles.responsiveHeadlineMedium(
+              context,
+            ).copyWith(color: const Color(0xff424242)),
           ),
         ),
         bottom: PreferredSize(
@@ -1137,35 +1484,69 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
           child: Container(color: const Color(0xFFB8B8B8), height: 1.0),
         ),
         actions: [
-          IconButton(
-            icon: SvgPicture.asset(
-              EcliniqIcons.magnifierMyDoctor.assetPath,
-              width: 32,
-              height: 32,
+          if (!_isSearchMode)
+            IconButton(
+              icon: SvgPicture.asset(
+                EcliniqIcons.magnifierMyDoctor.assetPath,
+                width: EcliniqTextStyles.getResponsiveIconSize(context, 30),
+                height: EcliniqTextStyles.getResponsiveIconSize(context, 30),
+              ),
+              onPressed: () {
+                setState(() {
+                  _isSearchMode = true;
+                });
+              },
+            )
+          else
+            IconButton(
+              icon: Icon(
+                Icons.close,
+                color: const Color(0xFF424242),
+                size: EcliniqTextStyles.getResponsiveIconSize(context, 30),
+              ),
+              onPressed: () {
+                _clearSearch();
+              },
             ),
-            onPressed: () {},
-          ),
           const SizedBox(width: 8),
         ],
       ),
       body: Stack(
         children: [
-          Consumer<HealthFilesProvider>(
-            builder: (context, provider, child) {
-              final files = provider.getFilesByType(
-                _selectedFileType,
-                recordFor: _selectedRecordFor,
-              );
+          Column(
+            children: [
+              if (_isSearchMode) ...[
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: SearchBarWidget(
+                    controller: _searchController,
+                    onSearch: (String value) {
+                      _onSearchChanged();
+                    },
+                    hintText: 'Search File',
+                    onVoiceSearch: _toggleVoiceSearch,
+                    onClear: _clearSearch,
+                  ),
+                ),
+              ],
+              Expanded(
+                child: Consumer<HealthFilesProvider>(
+                  builder: (context, provider, child) {
+                    final files = _isSearchMode
+                        ? provider.searchResults
+                        : provider.getFilesByType(
+                            _selectedFileType,
+                            recordFor: _selectedRecordFor,
+                            selectedNames: _selectedNames.isNotEmpty
+                                ? _selectedNames.toList()
+                                : null,
+                          );
 
-              return Column(
-                children: [
-                  _buildFileTypeTabs(),
-                  if (files.isEmpty) ...[
-                    _buildEmptyState(context),
-                  ] else
-                    Expanded(
-                      child: Column(
-                        children: [
+                    return Column(
+                      children: [
+                        if (!_isSearchMode) _buildFileTypeTabs(),
+                        // Show filter header only if there are files present and not in search mode
+                        if (files.isNotEmpty && !_isSearchMode)
                           Padding(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16.0,
@@ -1177,25 +1558,53 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
                                   onTap: _showFilterBottomSheet,
                                   child: Row(
                                     children: [
-                                      SvgPicture.asset(
-                                        EcliniqIcons.filter.assetPath,
-                                        width: 24,
-                                        height: 24,
+                                      Stack(
+                                        clipBehavior: Clip.none,
+                                        children: [
+                                          SvgPicture.asset(
+                                            EcliniqIcons.filter.assetPath,
+                                            width: 24,
+                                            height: 24,
+                                          ),
+                                          if (_hasActiveFilters())
+                                            Positioned(
+                                              right: -2,
+                                              top: -2,
+                                              child: Container(
+                                                width: 10,
+                                                height: 10,
+                                                decoration: const BoxDecoration(
+                                                  color: Colors.red,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                              ),
+                                            ),
+                                        ],
                                       ),
                                       const SizedBox(width: 8),
-                                      const Text(
+                                      Text(
                                         'Filters',
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          color: Color(0xFF424242),
-                                          fontWeight: FontWeight.w400,
-                                        ),
+                                        style:
+                                            EcliniqTextStyles.responsiveHeadlineBMedium(
+                                              context,
+                                            ).copyWith(
+                                              color: Color(0xFF424242),
+                                              fontWeight: FontWeight.w400,
+                                            ),
                                       ),
                                       const SizedBox(width: 4),
                                       SvgPicture.asset(
                                         EcliniqIcons.arrowDown.assetPath,
-                                        width: 24,
-                                        height: 24,
+                                        width:
+                                            EcliniqTextStyles.getResponsiveIconSize(
+                                              context,
+                                              24,
+                                            ),
+                                        height:
+                                            EcliniqTextStyles.getResponsiveIconSize(
+                                              context,
+                                              24,
+                                            ),
                                       ),
                                     ],
                                   ),
@@ -1220,63 +1629,79 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
                                 const Spacer(),
                                 Text(
                                   '${files.length} ${files.length == 1 ? 'File' : 'Files'}',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    color: Color(0xFF424242),
-                                    fontWeight: FontWeight.w500,
+                                  style:
+                                      EcliniqTextStyles.responsiveTitleXLarge(
+                                        context,
+                                      ).copyWith(
+                                        color: Color(0xFF424242),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (files.isEmpty) ...[
+                          _buildEmptyState(),
+                        ] else
+                          Expanded(
+                            child: Column(
+                              children: [
+                                Expanded(
+                                  child: ListView.separated(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16.0,
+                                    ),
+                                    itemCount: files.length,
+                                    separatorBuilder: (context, index) =>
+                                        const SizedBox(height: 12),
+                                    itemBuilder: (context, index) {
+                                      final file = files[index];
+                                      final isSelected = _selectedFileIds
+                                          .contains(file.id);
+
+                                      return PrescriptionCardList(
+                                        file: file,
+                                        isOlder: false,
+                                        isSelectionMode:
+                                            _isSelectionMode && !_isSearchMode,
+                                        isSelected: isSelected,
+                                        onTap: () {
+                                          if (_isSelectionMode &&
+                                              !_isSearchMode) {
+                                            _toggleFileSelection(file);
+                                          } else {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    _FileViewerScreen(
+                                                      file: file,
+                                                    ),
+                                              ),
+                                            );
+                                          }
+                                        },
+                                        onMenuTap:
+                                            (_isSelectionMode && !_isSearchMode)
+                                            ? null
+                                            : () => _showFileActions(file),
+                                        onSelectionToggle: () =>
+                                            _toggleFileSelection(file),
+                                      );
+                                    },
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          Expanded(
-                            child: ListView.separated(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16.0,
-                              ),
-                              itemCount: files.length,
-                              separatorBuilder: (context, index) =>
-                                  const SizedBox(height: 12),
-                              itemBuilder: (context, index) {
-                                final file = files[index];
-                                final isSelected = _selectedFileIds.contains(
-                                  file.id,
-                                );
-
-                                return PrescriptionCardList(
-                                  file: file,
-                                  isOlder: false,
-                                  isSelectionMode: _isSelectionMode,
-                                  isSelected: isSelected,
-                                  onTap: () {
-                                    if (_isSelectionMode) {
-                                      _toggleFileSelection(file);
-                                    } else {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              _FileViewerScreen(file: file),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                  onMenuTap: _isSelectionMode
-                                      ? null
-                                      : () => _showFileActions(file),
-                                  onSelectionToggle: () =>
-                                      _toggleFileSelection(file),
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  if (_isSelectionMode) _buildSelectionBottomBar(files),
-                ],
-              );
-            },
+                        if (_isSelectionMode && !_isSearchMode)
+                          _buildSelectionBottomBar(files),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
           // Only show upload button when not in selection mode
           if (!_isSelectionMode)
@@ -1308,18 +1733,56 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
                       SizedBox(width: 4),
                       Text(
                         'Upload',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
-                          decoration: TextDecoration.none,
-                        ),
+                        style:
+                            EcliniqTextStyles.responsiveHeadlineBMedium(
+                              context,
+                            ).copyWith(
+                              color: Colors.white,
+
+                              fontWeight: FontWeight.w500,
+                              decoration: TextDecoration.none,
+                            ),
                       ),
                     ],
                   ),
                 ),
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  bool _hasActiveFilters() {
+    return _selectedNames.isNotEmpty || _selectedRecordFor != null;
+  }
+
+  Widget _buildEmptyState() {
+    // Check if filter is applied
+    final hasFilter = _selectedNames.isNotEmpty || _selectedRecordFor != null;
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(height: 40),
+          SvgPicture.asset(EcliniqIcons.nofiles.assetPath),
+          const SizedBox(height: 12),
+          Text(
+            hasFilter ? 'No Files Found' : 'No Documents Uploaded Yet',
+            style: EcliniqTextStyles.responsiveButtonXLarge(
+              context,
+            ).copyWith(fontWeight: FontWeight.w400, color: Color(0xff424242)),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            hasFilter
+                ? 'Try adjusting your filters to see more files'
+                : 'Click upload button to maintain your health files',
+            style: EcliniqTextStyles.responsiveButtonXLargeProminent(
+              context,
+            ).copyWith(color: Color(0xff8E8E8E), fontWeight: FontWeight.w400),
+          ),
         ],
       ),
     );
@@ -1339,25 +1802,23 @@ class _FileViewerScreen extends StatelessWidget {
         automaticallyImplyLeading: false,
         leading: IconButton(
           icon: SvgPicture.asset(
-              EcliniqIcons.arrowLeft.assetPath,
-              width: 32,
-              height: 32,
-              colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
-            ),
+            EcliniqIcons.arrowLeft.assetPath,
+            width: 32,
+            height: 32,
+            colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           file.fileName,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-          ),
+          style: EcliniqTextStyles.responsiveHeadlineBMedium(
+            context,
+          ).copyWith(color: Colors.white, fontWeight: FontWeight.w500),
         ),
         backgroundColor: Colors.black,
         actions: [
           IconButton(
-            icon:  SvgPicture.asset(
+            icon: SvgPicture.asset(
               EcliniqIcons.downloadfiles.assetPath,
               width: 32,
               height: 32,
@@ -1376,11 +1837,17 @@ class _FileViewerScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.description, size: 64, color: Colors.grey),
+                  Icon(
+                    Icons.description,
+                    size: EcliniqTextStyles.getResponsiveIconSize(context, 64),
+                    color: Colors.grey,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'File: ${file.fileName}',
-                    style: const TextStyle(fontSize: 18),
+                    style: EcliniqTextStyles.responsiveHeadlineBMedium(
+                      context,
+                    ).copyWith(),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -1421,13 +1888,11 @@ class _FilterBottomSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Filter by Person',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF424242),
-            ),
+            style: EcliniqTextStyles.responsiveHeadlineLarge(
+              context,
+            ).copyWith(fontWeight: FontWeight.bold, color: Color(0xFF424242)),
           ),
           const SizedBox(height: 20),
           Flexible(
@@ -1466,13 +1931,15 @@ class _FilterBottomSheet extends StatelessWidget {
                           Expanded(
                             child: Text(
                               option,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: isSelected
-                                    ? FontWeight.w600
-                                    : FontWeight.w400,
-                                color: const Color(0xFF424242),
-                              ),
+                              style:
+                                  EcliniqTextStyles.responsiveTitleXLarge(
+                                    context,
+                                  ).copyWith(
+                                    fontWeight: isSelected
+                                        ? FontWeight.w600
+                                        : FontWeight.w400,
+                                    color: const Color(0xFF424242),
+                                  ),
                             ),
                           ),
                           if (isSelected)
@@ -1494,38 +1961,4 @@ class _FilterBottomSheet extends StatelessWidget {
       ),
     );
   }
-}
-
-Widget _buildEmptyState(BuildContext context) {
-  return Stack(
-    children: [
-      Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const SizedBox(height: 40),
-            SvgPicture.asset(EcliniqIcons.nofiles.assetPath),
-            const SizedBox(height: 12),
-            const Text(
-              'No Documents Uploaded Yet',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w400,
-                color: Color(0xff424242),
-              ),
-            ),
-            const SizedBox(height: 2),
-            const Text(
-              'Click upload button to maintain your health files',
-              style: TextStyle(
-                fontSize: 15,
-                color: Color(0xff8E8E8E),
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ],
-        ),
-      ),
-    ],
-  );
 }

@@ -41,22 +41,22 @@ class HospitalBranchDetail extends StatelessWidget {
                   children: [
                     Text(
                       'Sunrise Family Clinic',
-                      style: EcliniqTextStyles.headlineLarge.copyWith(
+                      style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
                         color: Color(0xff424242),
                       ),
                     ),
                     Text(
                       'Est. Date : Aug, 2015',
-                      style: EcliniqTextStyles.titleXLarge.copyWith(
+                      style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                         color: Color(0xff424242),
-                        fontSize: 16,
+              
                       ),
                     ),
                     Row(
                       children: [
                         Text(
                           'Read About',
-                          style: EcliniqTextStyles.bodySmall.copyWith(
+                          style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                             color: Color(0xff2372EC),
                           ),
                         ),
@@ -86,7 +86,7 @@ class HospitalBranchDetail extends StatelessWidget {
                   child: Center(
                     child: Text(
                       "M",
-                      style: EcliniqTextStyles.bodySmall.copyWith(
+                      style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                         color: Color(0xffEC7600),
                       ),
                     ),
@@ -95,7 +95,7 @@ class HospitalBranchDetail extends StatelessWidget {
                 SizedBox(width: 10),
                 Text(
                   'Dr. Milind Chauhan',
-                  style: EcliniqTextStyles.titleXLarge.copyWith(
+                  style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                     color: Color(0xff626060),
                   ),
                 ),
@@ -112,7 +112,7 @@ class HospitalBranchDetail extends StatelessWidget {
                 SizedBox(width: 10),
                 Text(
                   '10am - 9:30pm (Mon - Sat)',
-                  style: EcliniqTextStyles.titleXLarge.copyWith(
+                  style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                     color: Color(0xff626060),
                   ),
                 ),
@@ -131,7 +131,7 @@ class HospitalBranchDetail extends StatelessWidget {
                 Flexible(
                   child: Text(
                     'Survey No 111/11/1, Veerbhadra Nagar Road, Mhalunge Main Road, Baner, Pune, Maharashtra - 411045.',
-                    style: EcliniqTextStyles.titleXLarge.copyWith(
+                    style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                       color: Color(0xff626060),
                     ),
                   ),
@@ -149,7 +149,7 @@ class HospitalBranchDetail extends StatelessWidget {
                 SizedBox(width: 10),
                 Text(
                   'Wakad, Pune',
-                  style: EcliniqTextStyles.titleXLarge.copyWith(
+                  style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                     color: Color(0xff626060),
                   ),
                 ),
@@ -168,9 +168,9 @@ class HospitalBranchDetail extends StatelessWidget {
                       Center(
                         child: Text(
                           '4KM ',
-                          style: EcliniqTextStyles.bodySmall.copyWith(
+                          style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                             color: Color(0xff424242),
-                            fontSize: 16,
+                   
                           ),
                         ),
                       ),
@@ -196,9 +196,9 @@ class HospitalBranchDetail extends StatelessWidget {
               child: Center(
                 child: Text(
                   '25 Token Available',
-                  style: EcliniqTextStyles.bodyMedium.copyWith(
+                  style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                     color: Color(0xff3EAF3F),
-                    fontSize: 16,
+                  
                   ),
                 ),
               ),
@@ -207,7 +207,7 @@ class HospitalBranchDetail extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
+                Flexible(
                   flex: 1,
                   child: Container(
                     height: 52,
@@ -218,6 +218,7 @@ class HospitalBranchDetail extends StatelessWidget {
                     child: Center(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
                             width: 16,
@@ -228,11 +229,14 @@ class HospitalBranchDetail extends StatelessWidget {
                             ),
                           ),
                           SizedBox(width: 4),
-                          Text(
-                            'Queue Started',
-                            style: EcliniqTextStyles.bodyMedium.copyWith(
-                              color: Color(0xff3EAF3F),
-                              fontSize: 16,
+                          Flexible(
+                            child: Text(
+                              'Queue Started',
+                              style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+                                color: Color(0xff3EAF3F),
+                              
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
@@ -240,10 +244,11 @@ class HospitalBranchDetail extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(width: 10),
-                Expanded(
-                  flex: 1,
+                SizedBox(width: 8),
+                Flexible(
+                  flex: 2,
                   child: Container(
+                    constraints: BoxConstraints(minWidth: 140),
                     height: 52,
                     decoration: BoxDecoration(
                       boxShadow: [
@@ -258,13 +263,16 @@ class HospitalBranchDetail extends StatelessWidget {
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(4.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
                       child: Center(
                         child: Text(
                           'Book Appointment',
-                          style: EcliniqTextStyles.headlineMedium.copyWith(
+                          style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                             color: Colors.white,
                           ),
+                          textAlign: TextAlign.center,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
                       ),
                     ),

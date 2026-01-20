@@ -1,3 +1,4 @@
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 
 class HospitalHeaderWidget extends StatelessWidget {
@@ -61,7 +62,10 @@ class HospitalHeaderWidget extends StatelessWidget {
                   CircleAvatar(
                     backgroundColor: Colors.white,
                     child: IconButton(
-                      icon: const Icon(Icons.favorite_border, color: Colors.black),
+                      icon: const Icon(
+                        Icons.favorite_border,
+                        color: Colors.black,
+                      ),
                       onPressed: onFavoritePressed,
                     ),
                   ),
@@ -86,7 +90,10 @@ class HospitalHeaderWidget extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFF0E4395), width: 3),
+                    border: Border.all(
+                      color: const Color(0xFF0E4395),
+                      width: 3,
+                    ),
                   ),
                   child: const Icon(
                     Icons.local_hospital,
@@ -105,8 +112,8 @@ class HospitalHeaderWidget extends StatelessWidget {
             children: [
               Text(
                 name,
-                style: const TextStyle(
-                  fontSize: 24,
+                style:  EcliniqTextStyles.responsiveHeadlineXLarge(context).copyWith(
+              
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
@@ -117,16 +124,14 @@ class HospitalHeaderWidget extends StatelessWidget {
                 children: [
                   Text(
                     specialty,
-                    style: TextStyle(
-                      fontSize: 14,
+                    style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                       color: Colors.grey[600],
                     ),
                   ),
                   const SizedBox(width: 16),
                   Text(
                     doctorCount,
-                    style: TextStyle(
-                      fontSize: 14,
+                    style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                       color: Colors.grey[600],
                     ),
                   ),
@@ -135,8 +140,7 @@ class HospitalHeaderWidget extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 establishedInfo,
-                style: TextStyle(
-                  fontSize: 14,
+                style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                   color: Colors.grey[600],
                 ),
               ),
@@ -144,22 +148,26 @@ class HospitalHeaderWidget extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.location_on, color: Color(0xFF0E4395), size: 18),
-                  const SizedBox(width: 4),
-                  Text(
-                    location,
-                    style: const TextStyle(fontSize: 14),
+                  const Icon(
+                    Icons.location_on,
+                    color: Color(0xFF0E4395),
+                    size: 18,
                   ),
+                  const SizedBox(width: 4),
+                  Text(location, style: EcliniqTextStyles.responsiveBodySmall(context).copyWith()),
                   const SizedBox(width: 8),
                   Text(
                     distance,
-                    style: TextStyle(
-                      fontSize: 14,
+                    style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                       color: Colors.grey[600],
                     ),
                   ),
                   const SizedBox(width: 4),
-                  const Icon(Icons.navigation, color: Colors.grey, size: 16),
+                  Icon(
+                    Icons.navigation,
+                    color: Colors.grey,
+                    size: EcliniqTextStyles.getResponsiveIconSize(context, 16),
+                  ),
                 ],
               ),
             ],

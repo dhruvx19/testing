@@ -2,6 +2,8 @@ import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/search_specialities/speciality_doctors_list.dart';
 import 'package:ecliniq/ecliniq_modules/screens/search_specialities/speciality_hospital_list.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
 import 'package:ecliniq/ecliniq_ui/scripts/ecliniq_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -15,14 +17,13 @@ class QuickActionsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (showShimmer) {
-      return _buildShimmer();
+      return _buildShimmer( context);
     }
 
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 360;
     final itemWidth = isSmallScreen ? 160.0 : 192.0;
     final itemHeight = isSmallScreen ? 100.0 : 105.0;
- 
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,21 +33,20 @@ class QuickActionsWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Container(
-              width: 8,
-              height: 24,
+              width: EcliniqTextStyles.getResponsiveSize(context, 8.0),
+              height: EcliniqTextStyles.getResponsiveSize(context, 24.0),
               decoration: BoxDecoration(
                 color: Color(0xFF96BFFF),
                 borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(4),
-                  bottomRight: Radius.circular(4),
+                  topRight: Radius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0)),
+                  bottomRight: Radius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0)),
                 ),
               ),
             ),
-            const SizedBox(width: 12),
-            const Text(
+            SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 12.0)),
+            EcliniqText(
               'Quick Actions',
-              style: TextStyle(
-                fontSize: 20.0,
+              style: EcliniqTextStyles.responsiveHeadlineLargeBold(context).copyWith(
                 fontWeight: FontWeight.w600,
                 color: Color(0xff424242),
               ),
@@ -55,7 +55,13 @@ class QuickActionsWidget extends StatelessWidget {
         ),
 
         Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+            context,
+            left: 16.0,
+            right: 16.0,
+            bottom: 16.0,
+            top: 12.0,
+          ),
           child: Row(
             children: [
               Expanded(
@@ -68,7 +74,7 @@ class QuickActionsWidget extends StatelessWidget {
                   onTap: () => EcliniqRouter.push(SpecialityDoctorsList()),
                 ),
               ),
-              SizedBox(width: 24),
+              SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 24.0)),
               Expanded(
                 child: _buildQuickActionItem(
                   context,
@@ -94,42 +100,48 @@ class QuickActionsWidget extends StatelessWidget {
     required String title,
     required VoidCallback onTap,
   }) {
- 
-
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16.0),
+        borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 16.0)),
         child: Container(
           width: width,
           height: height,
-          padding: EdgeInsets.all(6),
+          padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 6.0),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16.0),
+            borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 16.0)),
             border: Border.all(color: Color(0xffD6D6D6), width: 0.5),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 52,
-                height: 52,
+                width: EcliniqTextStyles.getResponsiveWidth(context, 52),
+                height: EcliniqTextStyles.getResponsiveHeight(context, 52),
                 decoration: BoxDecoration(
                   color: Color(0xFFF8FAFF),
-                  borderRadius: BorderRadius.circular(26.0),
+                  borderRadius: BorderRadius.circular(
+                    EcliniqTextStyles.getResponsiveBorderRadius(context, 26.0),
+                  ),
                   border: Border.all(color: Color(0xFFE4EFFF), width: 0.5),
                 ),
                 child: Center(
-                  child: SvgPicture.asset(assetPath, width: 32.0, height: 32.0),
+                  child: SvgPicture.asset(
+                    assetPath,
+                    width: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
+                    height: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
+                  ),
                 ),
               ),
-              SizedBox(height: 2),
-              Text(
+              SizedBox(
+                height: EcliniqTextStyles.getResponsiveSpacing(context, 2),
+              ),
+              EcliniqText(
                 title,
                 textAlign: TextAlign.center,
-                style: EcliniqTextStyles.titleXLarge.copyWith(
+                style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                   color: Color(0xFF424242),
                 ),
               ),
@@ -140,47 +152,47 @@ class QuickActionsWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildShimmer() {
+  Widget _buildShimmer(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
             Container(
-              width: 8,
-              height: 24,
+              width: EcliniqTextStyles.getResponsiveSize(context, 8.0),
+              height: EcliniqTextStyles.getResponsiveSize(context, 24.0),
               decoration: BoxDecoration(
                 color: Color(0xFF96BFFF),
                 borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(4),
-                  bottomRight: Radius.circular(4),
+                  topRight: Radius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0)),
+                  bottomRight: Radius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0)),
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 12.0)),
             Shimmer.fromColors(
               baseColor: Colors.grey.shade300,
               highlightColor: Colors.grey.shade100,
               child: Container(
-                height: 20,
-                width: 150,
+                height: EcliniqTextStyles.getResponsiveSize(context, 20.0),
+                width: EcliniqTextStyles.getResponsiveWidth(context, 150.0),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(4.0),
+                  borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0)),
                 ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 16.0)),
 
         Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 12.0),
           child: Row(
             children: [
-              Expanded(child: _buildCardShimmer()),
-              const SizedBox(width: 10),
-              Expanded(child: _buildCardShimmer()),
+              Expanded(child: _buildCardShimmer(context)),
+              SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 10.0)),
+              Expanded(child: _buildCardShimmer(context)),
             ],
           ),
         ),
@@ -188,15 +200,15 @@ class QuickActionsWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildCardShimmer() {
+  Widget _buildCardShimmer(BuildContext context) {
     return Shimmer.fromColors(
       baseColor: Colors.grey.shade300,
       highlightColor: Colors.grey.shade100,
       child: Container(
-        height: 105,
+        height: EcliniqTextStyles.getResponsiveHeight(context, 105.0),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12.0),
+          borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 12.0)),
           border: Border.all(color: Colors.grey.shade200, width: 1),
         ),
       ),

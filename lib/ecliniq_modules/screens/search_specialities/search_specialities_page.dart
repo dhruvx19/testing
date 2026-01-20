@@ -223,6 +223,8 @@ class _SearchSpecialitiesState extends State<SearchSpecialities> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        leadingWidth: EcliniqTextStyles.getResponsiveSize(context, 58.0),
+        titleSpacing: 0,
         backgroundColor: Colors.white,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
@@ -230,8 +232,8 @@ class _SearchSpecialitiesState extends State<SearchSpecialities> {
         leading: IconButton(
           icon: SvgPicture.asset(
             EcliniqIcons.backArrow.assetPath,
-            width: 32,
-            height: 32,
+            width: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
+            height: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -239,25 +241,32 @@ class _SearchSpecialitiesState extends State<SearchSpecialities> {
           alignment: Alignment.centerLeft,
           child: Text(
             'Specialities',
-            style: EcliniqTextStyles.headlineMedium.copyWith(
-              color: Color(0xff424242),
-            ),
+            style: EcliniqTextStyles.responsiveHeadlineMedium(
+              context,
+            ).copyWith(color: Color(0xff424242)),
           ),
         ),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1.0),
-          child: Container(color: Color(0xFFB8B8B8), height: 0.5),
+          preferredSize: Size.fromHeight(
+            EcliniqTextStyles.getResponsiveSize(context, 1.0),
+          ),
+          child: Container(
+            color: Color(0xFFB8B8B8),
+            height: EcliniqTextStyles.getResponsiveSize(context, 0.5),
+          ),
         ),
       ),
       body: Column(
         children: [
           _buildSearchBar(),
-          const SizedBox(height: 8),
           Expanded(
             child: _filteredSpecialities.isEmpty
                 ? _buildEmptyState()
                 : ListView.builder(
-                    padding: EdgeInsets.all(15),
+                    padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(
+                      context,
+                      15.0,
+                    ),
                     itemCount: _filteredSpecialities.length,
                     itemBuilder: (context, index) {
                       return _buildSpecialityItem(_filteredSpecialities[index]);
@@ -271,16 +280,23 @@ class _SearchSpecialitiesState extends State<SearchSpecialities> {
 
   Widget _buildSearchBar() {
     final outlinedBorder = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(
+        EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0),
+      ),
       borderSide: BorderSide.none,
     );
 
     return Container(
-      margin: const EdgeInsets.all(16.0),
+      margin: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16.0),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8.0),
-        border: Border.all(color: Color(0xFF626060), width: 0.5),
+        borderRadius: BorderRadius.circular(
+          EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0),
+        ),
+        border: Border.all(
+          color: Color(0xFF626060),
+          width: EcliniqTextStyles.getResponsiveSize(context, 0.5),
+        ),
       ),
       child: TextField(
         controller: _searchController,
@@ -292,29 +308,30 @@ class _SearchSpecialitiesState extends State<SearchSpecialities> {
           fillColor: Colors.white,
           isDense: true,
           prefixIcon: Container(
-            margin: const EdgeInsets.only(left: 16.0, right: 8.0),
+            margin: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+              context,
+              left: 16.0,
+              right: 8.0,
+            ),
             child: SvgPicture.asset(
               EcliniqIcons.magnifierMyDoctor.assetPath,
-              width: 24,
-              height: 24,
+              width: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
+              height: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
             ),
           ),
           hintText: 'Search Speciality',
-          hintStyle: TextStyle(
-            color: Color(0xFFD6D6D6),
-            fontSize: 18,
-            fontWeight: FontWeight.w400,
-          ),
-          contentPadding: const EdgeInsets.symmetric(
+          hintStyle: EcliniqTextStyles.responsiveHeadlineBMedium(
+            context,
+          ).copyWith(color: Color(0xFFD6D6D6), fontWeight: FontWeight.w400),
+          contentPadding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+            context,
             horizontal: 16.0,
             vertical: 14.0,
           ),
         ),
-        style: const TextStyle(
-          color: Colors.black87,
-          fontSize: 16,
-          fontWeight: FontWeight.w400,
-        ),
+        style: EcliniqTextStyles.responsiveTitleXLarge(
+          context,
+        ).copyWith(color: Colors.black87, fontWeight: FontWeight.w400),
         textInputAction: TextInputAction.search,
         cursorColor: Colors.blue,
       ),
@@ -334,10 +351,18 @@ class _SearchSpecialitiesState extends State<SearchSpecialities> {
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                border: Border.all(color: Color(0xFFD6D6D6), width: 0.5),
+                borderRadius: BorderRadius.all(
+                  Radius.circular(
+                    EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0),
+                  ),
+                ),
+                border: Border.all(
+                  color: Color(0xFFD6D6D6),
+                  width: EcliniqTextStyles.getResponsiveSize(context, 0.5),
+                ),
               ),
-              padding: const EdgeInsets.symmetric(
+              padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                context,
                 horizontal: 12.0,
                 vertical: 10.0,
               ),
@@ -346,33 +371,46 @@ class _SearchSpecialitiesState extends State<SearchSpecialities> {
                   Container(
                     decoration: BoxDecoration(
                       color: Color(0xFFF8FAFF),
-                      borderRadius: BorderRadius.circular(99.0),
+                      borderRadius: BorderRadius.circular(
+                        EcliniqTextStyles.getResponsiveBorderRadius(
+                          context,
+                          99.0,
+                        ),
+                      ),
                     ),
                     child: Center(
                       child: Image.asset(
                         speciality.iconPath,
-                        width: 52,
-                        height: 52,
+                        width: EcliniqTextStyles.getResponsiveIconSize(
+                          context,
+                          52.0,
+                        ),
+                        height: EcliniqTextStyles.getResponsiveIconSize(
+                          context,
+                          52.0,
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(
+                    width: EcliniqTextStyles.getResponsiveSpacing(context, 16.0),
+                  ),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           speciality.title,
-                          style: EcliniqTextStyles.headlineXMedium.copyWith(
-                            color: Color(0xff424242),
-                          ),
+                          style: EcliniqTextStyles.responsiveHeadlineXMedium(
+                            context,
+                          ).copyWith(color: Color(0xff424242)),
                         ),
                         if (speciality.subtitle != null) ...[
                           Text(
                             speciality.subtitle!,
-                            style: EcliniqTextStyles.bodySmall.copyWith(
-                              color: Color(0xff626060),
-                            ),
+                            style: EcliniqTextStyles.responsiveBodySmall(
+                              context,
+                            ).copyWith(color: Color(0xff626060)),
                           ),
                         ],
                       ],
@@ -380,15 +418,17 @@ class _SearchSpecialitiesState extends State<SearchSpecialities> {
                   ),
                   SvgPicture.asset(
                     EcliniqIcons.arrowRight1.assetPath,
-                    width: 24,
-                    height: 24,
+                    width: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
+                    height: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
                   ),
                 ],
               ),
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(
+          height: EcliniqTextStyles.getResponsiveSpacing(context, 16.0),
+        ),
       ],
     );
   }
@@ -398,20 +438,28 @@ class _SearchSpecialitiesState extends State<SearchSpecialities> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.search_off, size: 64, color: Color(0xFF8E8E8E)),
-          const SizedBox(height: 16),
+          Icon(
+            Icons.search_off,
+            size: EcliniqTextStyles.getResponsiveIconSize(context, 64.0),
+            color: Color(0xFF8E8E8E),
+          ),
+          SizedBox(
+            height: EcliniqTextStyles.getResponsiveSpacing(context, 16.0),
+          ),
           Text(
             'No specialities found',
-            style: EcliniqTextStyles.headlineMedium.copyWith(
-              color: Color(0xFF8E8E8E),
-            ),
+            style: EcliniqTextStyles.responsiveHeadlineMedium(
+              context,
+            ).copyWith(color: Color(0xFF8E8E8E)),
           ),
-          const SizedBox(height: 8),
+          SizedBox(
+            height: EcliniqTextStyles.getResponsiveSpacing(context, 8.0),
+          ),
           Text(
             'Try searching with a different term',
-            style: EcliniqTextStyles.titleXLarge.copyWith(
-              color: Color(0xFF8E8E8E),
-            ),
+            style: EcliniqTextStyles.responsiveTitleXLarge(
+              context,
+            ).copyWith(color: Color(0xFF8E8E8E)),
           ),
         ],
       ),

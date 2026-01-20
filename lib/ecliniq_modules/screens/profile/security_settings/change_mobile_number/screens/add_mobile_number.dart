@@ -36,12 +36,12 @@ class _AddMobileNumberState extends State<AddMobileNumber> {
   Future<void> _requestNewOTP() async {
     if (_phoneController.text.isEmpty || _phoneController.text.length < 10) {
       // Show validation error as snackbar
-      ScaffoldMessenger.of(context).showSnackBar(
-        CustomErrorSnackBar(
+    
+CustomErrorSnackBar.show(
           title: 'Invalid mobile number',
           subtitle: 'Please enter a valid 10-digit mobile number',
           context: context,
-        ),
+     
       );
       return;
     }
@@ -66,7 +66,7 @@ class _AddMobileNumberState extends State<AddMobileNumber> {
         setState(() {
           _isLoading = false;
         });
-        
+
         // Navigate to verify new mobile screen with new challengeId
         final verifyResult = await Navigator.push(
           context,
@@ -86,15 +86,15 @@ class _AddMobileNumberState extends State<AddMobileNumber> {
         setState(() {
           _isLoading = false;
         });
-        
+
         // Show error snackbar instead of inline error
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            CustomErrorSnackBar(
+     CustomErrorSnackBar.show(
+  
               title: 'Failed to send OTP',
               subtitle: result['message'] ?? 'Failed to send OTP to new mobile',
               context: context,
-            ),
+       
           );
         }
       }
@@ -103,15 +103,15 @@ class _AddMobileNumberState extends State<AddMobileNumber> {
       setState(() {
         _isLoading = false;
       });
-      
+
       // Show error snackbar for exceptions
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          CustomErrorSnackBar(
+        
+  CustomErrorSnackBar.show(
             title: 'Error',
             subtitle: 'An error occurred: $e',
             context: context,
-          ),
+          
         );
       }
     }
@@ -144,10 +144,10 @@ class _AddMobileNumberState extends State<AddMobileNumber> {
             color: _isLoading
                 ? const Color(0xFF2372EC)
                 : _isButtonPressed
-                    ? const Color(0xFF0E4395) // Pressed color
-                    : _isPhoneValid
-                        ? const Color(0xFF2372EC) // Enabled color
-                        : const Color(0xffF9F9F9), // Disabled color
+                ? const Color(0xFF0E4395) // Pressed color
+                : _isPhoneValid
+                ? const Color(0xFF2372EC) // Enabled color
+                : const Color(0xffF9F9F9), // Disabled color
             borderRadius: BorderRadius.circular(4),
           ),
           child: Center(
@@ -162,7 +162,7 @@ class _AddMobileNumberState extends State<AddMobileNumber> {
                     children: [
                       Text(
                         'Continue',
-                        style: EcliniqTextStyles.headlineMedium.copyWith(
+                        style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                           color: _isPhoneValid
                               ? Colors.white
                               : const Color(0xffD6D6D6),
@@ -174,7 +174,9 @@ class _AddMobileNumberState extends State<AddMobileNumber> {
                         width: 24,
                         height: 24,
                         colorFilter: ColorFilter.mode(
-                          _isPhoneValid ? Colors.white : const Color(0xff8E8E8E),
+                          _isPhoneValid
+                              ? Colors.white
+                              : const Color(0xff8E8E8E),
                           BlendMode.srcIn,
                         ),
                       ),
@@ -206,7 +208,7 @@ class _AddMobileNumberState extends State<AddMobileNumber> {
           alignment: Alignment.centerLeft,
           child: Text(
             'Add Mobile Number',
-            style: EcliniqTextStyles.headlineMedium.copyWith(
+            style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
               color: Color(0xff424242),
             ),
           ),
@@ -224,7 +226,7 @@ class _AddMobileNumberState extends State<AddMobileNumber> {
           children: [
             Text(
               'Enter a new mobile number, and we will send an OTP for verification.',
-              style: EcliniqTextStyles.headlineXMedium.copyWith(
+              style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                 color: Color(0xff424242),
               ),
             ),
@@ -250,10 +252,9 @@ class _AddMobileNumberState extends State<AddMobileNumber> {
                       ),
                       child: Row(
                         children: [
-                          const Text(
+                          Text(
                             '+91',
-                            style: TextStyle(
-                              fontSize: 18,
+                            style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                               fontWeight: FontWeight.w400,
                               color: Color(0xff424242),
                             ),
@@ -267,11 +268,7 @@ class _AddMobileNumberState extends State<AddMobileNumber> {
                         ],
                       ),
                     ),
-                    Container(
-                      width: 1,
-                      height: 32,
-                      color: Color(0xffD6D6D6),
-                    ),
+                    Container(width: 1, height: 32, color: Color(0xffD6D6D6)),
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -281,21 +278,20 @@ class _AddMobileNumberState extends State<AddMobileNumber> {
                           keyboardType: TextInputType.phone,
                           autofocus: true,
                           maxLength: 10,
-                          style: const TextStyle(
-                            fontSize: 18,
+                          style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                             fontWeight: FontWeight.w400,
                             color: Color(0xff424242),
                           ),
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             hintText: 'Mobile Number',
                             border: InputBorder.none,
                             counterText: '',
                             contentPadding: EdgeInsets.zero,
-                            hintStyle: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w400,
-                              color: Color(0xffD6D6D6),
-                            ),
+                            hintStyle: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                                .copyWith(
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xffD6D6D6),
+                                ),
                           ),
                           onChanged: (value) {
                             if (mounted) {
@@ -319,7 +315,7 @@ class _AddMobileNumberState extends State<AddMobileNumber> {
                 padding: const EdgeInsets.only(top: 8.0),
                 child: Text(
                   _errorMessage!,
-                  style: EcliniqTextStyles.bodyMedium.copyWith(
+                  style: EcliniqTextStyles.responsiveBodyMedium(context).copyWith(
                     color: Colors.red,
                   ),
                 ),
@@ -330,7 +326,7 @@ class _AddMobileNumberState extends State<AddMobileNumber> {
               children: [
                 Text(
                   'By Continuing, you agree to our',
-                  style: EcliniqTextStyles.bodySmall.copyWith(
+                  style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                     color: Color(0xff8E8E8E),
                   ),
                 ),
@@ -338,23 +334,22 @@ class _AddMobileNumberState extends State<AddMobileNumber> {
                   children: [
                     Text(
                       'Terms & Conditions',
-                      style: EcliniqTextStyles.headlineMedium.copyWith(
-                        fontSize: 18,
+                      style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                         fontWeight: FontWeight.w400,
                         color: Color(0xff424242),
                       ),
                     ),
                     Text(
                       ' and ',
-                      style: EcliniqTextStyles.bodySmall.copyWith(
+                      style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
                         color: Color(0xff8E8E8E),
-                        fontSize: 20
+                        fontWeight: FontWeight.w400,
+                  
                       ),
                     ),
                     Text(
                       'Privacy Policy',
-                      style: EcliniqTextStyles.headlineMedium.copyWith(
-                        fontSize: 18,
+                      style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                         fontWeight: FontWeight.w400,
                         color: Color(0xff424242),
                       ),

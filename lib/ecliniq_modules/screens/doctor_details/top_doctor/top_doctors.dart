@@ -1,13 +1,15 @@
+import 'package:ecliniq/ecliniq_api/storage_service.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/booking/clinic_visit_slot_screen.dart';
 import 'package:ecliniq/ecliniq_modules/screens/doctor_details/doctor_details.dart';
-import 'package:ecliniq/ecliniq_modules/screens/doctor_details/top_doctor/model/top_doctor_model.dart';
+import 'package:ecliniq/ecliniq_api/top_doctor_model.dart';
 import 'package:ecliniq/ecliniq_modules/screens/doctor_details/widgets/doctor_hospital_select_bottom_sheet.dart';
-import 'package:ecliniq/ecliniq_modules/screens/doctors/doctors_list.dart';
 import 'package:ecliniq/ecliniq_modules/screens/search_specialities/speciality_doctors_list.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/button/button.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/widgets.dart';
 import 'package:ecliniq/ecliniq_ui/scripts/ecliniq_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -100,82 +102,102 @@ class _TopDoctorsWidgetState extends State<TopDoctorsWidget> {
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildHeader(),
-        const SizedBox(height: 16),
+        SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 16.0)),
         _buildDoctorsList(),
       ],
     );
   }
 
   Widget _buildHeader() {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: 8,
-          height: 24,
-          decoration: const BoxDecoration(
-            color: Color(0xFF96BFFF),
-            borderRadius: BorderRadius.only(
-              topRight: Radius.circular(4),
-              bottomRight: Radius.circular(4),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: EcliniqTextStyles.getResponsiveSize(context, 8.0),
+              height: EcliniqTextStyles.getResponsiveSize(context, 24.0),
+              decoration: BoxDecoration(
+                color: Color(0xFF96BFFF),
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(
+                    EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+                  ),
+                  bottomRight: Radius.circular(
+                    EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+                  ),
+                ),
+              ),
             ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        const Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
+            SizedBox(
+              width: EcliniqTextStyles.getResponsiveSpacing(context, 12.0),
+            ),
+            Expanded(
+              child: Text(
                 'Top Doctors',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF424242),
-                ),
+                style: EcliniqTextStyles.responsiveHeadlineLarge(context)
+                    .copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF424242),
+                    ),
               ),
-        
-              Text(
-                'Near you',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF8E8E8E),
-                  fontWeight: FontWeight.w400,
+            ),
+            TextButton(
+              onPressed: () {
+                EcliniqRouter.push(SpecialityDoctorsList());
+              },
+              style: TextButton.styleFrom(
+                padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                  context,
+                  horizontal: 8.0,
+                  vertical: 4.0,
                 ),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
-            ],
-          ),
-        ),
-        TextButton(
-          onPressed: () {
-            EcliniqRouter.push(SpecialityDoctorsList());
-          },
-          style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            minimumSize: Size.zero,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'View All',
-                style: TextStyle(
-                  color: Color(0xFF2372EC),
-                  fontWeight: FontWeight.w400,
-                  fontSize: 18,
-                ),
-              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'View All',
+                    style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                        .copyWith(
+                          color: Color(0xFF2372EC),
+                          fontWeight: FontWeight.w400,
+                        ),
+                  ),
 
-              SvgPicture.asset(
-                EcliniqIcons.arrowRightBlue.assetPath,
-                width: 24,
-                height: 24,
-                colorFilter: const ColorFilter.mode(
-                  Color(0xFF2372EC),
-                  BlendMode.srcIn,
-                ),
+                  SvgPicture.asset(
+                    EcliniqIcons.arrowRightBlue.assetPath,
+                    width: EcliniqTextStyles.getResponsiveIconSize(
+                      context,
+                      24.0,
+                    ),
+                    height: EcliniqTextStyles.getResponsiveIconSize(
+                      context,
+                      24.0,
+                    ),
+                    colorFilter: const ColorFilter.mode(
+                      Color(0xFF2372EC),
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
+          ],
+        ),
+        Padding(
+          padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+            context,
+            left: 20.0,
+          ),
+          child: Text(
+            'Near you',
+            style: EcliniqTextStyles.responsiveLabelSmall(
+              context,
+            ).copyWith(color: Color(0xFF8E8E8E), fontWeight: FontWeight.w400),
           ),
         ),
       ],
@@ -189,7 +211,11 @@ class _TopDoctorsWidgetState extends State<TopDoctorsWidget> {
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+        context,
+        horizontal: 16.0,
+        vertical: 0,
+      ),
       child: IntrinsicHeight(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -197,8 +223,11 @@ class _TopDoctorsWidgetState extends State<TopDoctorsWidget> {
             final index = entry.key;
             final doctor = entry.value;
             return Padding(
-              padding: EdgeInsets.only(
-                right: index < widget.doctors!.length - 1 ? 16 : 0,
+              padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+                context,
+                right: index < widget.doctors!.length - 1
+                    ? EcliniqTextStyles.getResponsiveSpacing(context, 16.0)
+                    : 0,
               ),
               child: _DoctorCard(
                 doctor: doctor,
@@ -234,25 +263,35 @@ class _DoctorCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(
+          EcliniqTextStyles.getResponsiveBorderRadius(context, 16.0),
+        ),
         child: Container(
-          width: 300,
-          padding: const EdgeInsets.all(16),
+          width: EcliniqTextStyles.getResponsiveWidth(context, 300.0),
+          padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16.0),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(
+              EcliniqTextStyles.getResponsiveBorderRadius(context, 16.0),
+            ),
             border: Border.all(color: Color(0xffD6D6D6), width: 0.5),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _DoctorAvatar(initial: doctor.initial),
-              const SizedBox(height: 8),
+              _DoctorAvatar(doctor: doctor),
+              SizedBox(
+                height: EcliniqTextStyles.getResponsiveSpacing(context, 8.0),
+              ),
               _DoctorInfo(doctor: doctor),
-              const SizedBox(height: 4),
+              SizedBox(
+                height: EcliniqTextStyles.getResponsiveSpacing(context, 4.0),
+              ),
               _DoctorStats(doctor: doctor),
-              const SizedBox(height: 16),
+              SizedBox(
+                height: EcliniqTextStyles.getResponsiveSpacing(context, 16.0),
+              ),
               _BookButton(isPressed: isPressed, onPressed: onBookVisit),
             ],
           ),
@@ -263,31 +302,58 @@ class _DoctorCard extends StatelessWidget {
 }
 
 class _DoctorAvatar extends StatelessWidget {
-  final String initial;
+  final Doctor doctor;
+  final StorageService _storageService = StorageService();
 
-  const _DoctorAvatar({required this.initial});
+   _DoctorAvatar({required this.doctor});
 
   @override
   Widget build(BuildContext context) {
+    
     return Stack(
       children: [
         Container(
-          width: 80,
-          height: 80,
+          width: EcliniqTextStyles.getResponsiveSize(context, 80.0),
+          height: EcliniqTextStyles.getResponsiveSize(context, 80.0),
           decoration: BoxDecoration(
             color: const Color(0xFFF8FAFF),
             shape: BoxShape.circle,
             border: Border.all(color: Color(0xff96BFFF), width: 0.5),
           ),
-          child: Center(
-            child: Text(
-              initial,
-              style: const TextStyle(
-                fontSize: 36,
-                fontWeight: FontWeight.w400,
-                color: Color(0xFF2372EC),
-              ),
-            ),
+          child: FutureBuilder<String?>(
+            
+            future: doctor.getProfilePhotoUrl(_storageService),
+            builder: (context, snapshot) {
+              final imageUrl = snapshot.data;
+              if (imageUrl != null && imageUrl.isNotEmpty) {
+                return ClipOval(
+                  child: Image.network(
+                    imageUrl,
+                    width: EcliniqTextStyles.getResponsiveSize(context, 80.0),
+                    height: EcliniqTextStyles.getResponsiveSize(context, 80.0),
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Center(
+                        child: Text(
+                          doctor.initial,
+                          style: EcliniqTextStyles.responsiveTitleInitial(
+                            context,
+                          ).copyWith(color: Color(0xFF2372EC)),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              }
+              return Center(
+                child: Text(
+                  doctor.initial,
+                  style: EcliniqTextStyles.responsiveTitleInitial(
+                    context,
+                  ).copyWith(color: Color(0xFF2372EC)),
+                ),
+              );
+            },
           ),
         ),
         Positioned(
@@ -295,8 +361,8 @@ class _DoctorAvatar extends StatelessWidget {
           right: 0,
           child: SvgPicture.asset(
             EcliniqIcons.verified.assetPath,
-            width: 24,
-            height: 24,
+            width: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
+            height: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
           ),
         ),
       ],
@@ -316,26 +382,28 @@ class _DoctorInfo extends StatelessWidget {
       children: [
         Text(
           doctor.name,
-          style: EcliniqTextStyles.headlineLarge.copyWith(
-            color: Color(0xff424242),
-            fontWeight: FontWeight.w600,
-          ),
+          style: EcliniqTextStyles.responsiveHeadlineLarge(
+            context,
+          ).copyWith(color: Color(0xff424242), fontWeight: FontWeight.w600),
         ),
-        const SizedBox(height: 4),
+
+        SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 4.0)),
         Text(
           doctor.primarySpecialization,
-          style: EcliniqTextStyles.titleXLarge.copyWith(
-            color: Color(0xff424242),
-          ),
+          style: EcliniqTextStyles.responsiveTitleXLarge(
+            context,
+          ).copyWith(color: Color(0xff424242)),
         ),
-        if(doctor.educationText.isNotEmpty)...[
-        const SizedBox(height: 2),
-        Text(
-          doctor.educationText,
-          style: EcliniqTextStyles.titleXLarge.copyWith(
-            color: Color(0xff424242),
+        if (doctor.educationText.isNotEmpty) ...[
+          SizedBox(
+            height: EcliniqTextStyles.getResponsiveSpacing(context, 4.0),
           ),
-        ),
+          Text(
+            doctor.educationText,
+            style: EcliniqTextStyles.responsiveTitleXLarge(
+              context,
+            ).copyWith(color: Color(0xff424242)),
+          ),
         ],
       ],
     );
@@ -352,64 +420,73 @@ class _DoctorStats extends StatelessWidget {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+            context,
+            horizontal: 8.0,
+            vertical: 4.0,
+          ),
           decoration: BoxDecoration(
             color: const Color(0xFFFEF9E6),
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(
+              EcliniqTextStyles.getResponsiveBorderRadius(context, 6.0),
+            ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               SvgPicture.asset(
                 EcliniqIcons.star.assetPath,
-                width: 18,
-                height: 18,
+                width: EcliniqTextStyles.getResponsiveIconSize(context, 18.0),
+                height: EcliniqTextStyles.getResponsiveIconSize(context, 18.0),
               ),
-              const SizedBox(width: 2),
+              SizedBox(
+                width: EcliniqTextStyles.getResponsiveSpacing(context, 2.0),
+              ),
               Text(
                 doctor.ratingText,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFFBE8B00),
-                  fontWeight: FontWeight.w400,
-                ),
+                style: EcliniqTextStyles.responsiveTitleXLarge(context)
+                    .copyWith(
+                      color: Color(0xFFBE8B00),
+                      fontWeight: FontWeight.w400,
+                    ),
               ),
             ],
           ),
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 8.0)),
         Container(
-          width: 6,
-          height: 6,
+          width: EcliniqTextStyles.getResponsiveSize(context, 6.0),
+          height: EcliniqTextStyles.getResponsiveSize(context, 6.0),
           decoration: BoxDecoration(
             color: const Color(0xFF8E8E8E),
             shape: BoxShape.circle,
           ),
         ),
-        const SizedBox(width: 8),
-        Text(
-          doctor.experienceText,
-          style: EcliniqTextStyles.titleXLarge.copyWith(
-            color: Color(0xff424242),
+        SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 8.0)),
+        FittedBox(
+          child: Text(
+            doctor.experienceText,
+            style: EcliniqTextStyles.responsiveTitleXLarge(
+              context,
+            ).copyWith(color: Color(0xff424242)),
           ),
-          
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 8.0)),
         Container(
-          width: 6,
-          height: 6,
+          width: EcliniqTextStyles.getResponsiveSize(context, 6.0),
+          height: EcliniqTextStyles.getResponsiveSize(context, 6.0),
           decoration: BoxDecoration(
             color: const Color(0xFF8E8E8E),
             shape: BoxShape.circle,
           ),
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 8.0)),
         Expanded(
           child: Text(
             '₹500',
-            style: EcliniqTextStyles.titleXLarge.copyWith(
-              color: Color(0xff424242),
-            ),
+            style: EcliniqTextStyles.responsiveTitleXLarge(
+              context,
+            ).copyWith(color: Color(0xff424242)),
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -428,9 +505,14 @@ class _BookButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: 52,
+      height: EcliniqTextStyles.getResponsiveButtonHeight(
+        context,
+        baseHeight: 52.0,
+      ),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(
+          EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+        ),
         boxShadow: [
           BoxShadow(
             color: Color(0x4D2372EC),
@@ -446,12 +528,18 @@ class _BookButton extends StatelessWidget {
           backgroundColor: isPressed
               ? const Color(0xFF0E4395)
               : EcliniqButtonType.brandPrimary.backgroundColor(context),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+              EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+            ),
+          ),
           elevation: 0,
         ),
         child: Text(
           'Book Clinic Visit',
-          style: EcliniqTextStyles.headlineMedium.copyWith(color: Colors.white),
+          style: EcliniqTextStyles.responsiveHeadlineMedium(
+            context,
+          ).copyWith(color: Colors.white),
         ),
       ),
     );
@@ -464,13 +552,15 @@ class _EmptyDoctorsState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 320,
+      height: EcliniqTextStyles.getResponsiveHeight(context, 320.0),
       child: Center(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16.0),
           child: Text(
             'No doctors available',
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+            style: EcliniqTextStyles.responsiveBodySmall(
+              context,
+            ).copyWith(color: Colors.grey.shade600),
           ),
         ),
       ),
@@ -487,17 +577,23 @@ class _DoctorListShimmer extends StatelessWidget {
         Row(
           children: [
             Container(
-              width: 8,
-              height: 24,
-              decoration: const BoxDecoration(
+              width: EcliniqTextStyles.getResponsiveSize(context, 8.0),
+              height: EcliniqTextStyles.getResponsiveSize(context, 24.0),
+              decoration: BoxDecoration(
                 color: Color(0xFF96BFFF),
                 borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(4),
-                  bottomRight: Radius.circular(4),
+                  topRight: Radius.circular(
+                    EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+                  ),
+                  bottomRight: Radius.circular(
+                    EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+                  ),
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(
+              width: EcliniqTextStyles.getResponsiveSpacing(context, 12.0),
+            ),
             Expanded(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -506,11 +602,22 @@ class _DoctorListShimmer extends StatelessWidget {
                     baseColor: Colors.grey.shade300,
                     highlightColor: Colors.grey.shade100,
                     child: Container(
-                      height: 20,
-                      width: 120,
+                      height: EcliniqTextStyles.getResponsiveSize(
+                        context,
+                        20.0,
+                      ),
+                      width: EcliniqTextStyles.getResponsiveWidth(
+                        context,
+                        120.0,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(
+                          EcliniqTextStyles.getResponsiveBorderRadius(
+                            context,
+                            4.0,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -518,11 +625,22 @@ class _DoctorListShimmer extends StatelessWidget {
                     baseColor: Colors.grey.shade300,
                     highlightColor: Colors.grey.shade100,
                     child: Container(
-                      height: 16,
-                      width: 80,
+                      height: EcliniqTextStyles.getResponsiveSize(
+                        context,
+                        16.0,
+                      ),
+                      width: EcliniqTextStyles.getResponsiveWidth(
+                        context,
+                        80.0,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(
+                          EcliniqTextStyles.getResponsiveBorderRadius(
+                            context,
+                            4.0,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -531,13 +649,19 @@ class _DoctorListShimmer extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 20.0)),
         SizedBox(
-          height: 320,
+          height: EcliniqTextStyles.getResponsiveHeight(context, 320.0),
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            separatorBuilder: (_, __) => const SizedBox(width: 16),
+            padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+              context,
+              horizontal: 12.0,
+              vertical: 0,
+            ),
+            separatorBuilder: (_, __) => SizedBox(
+              width: EcliniqTextStyles.getResponsiveSpacing(context, 16.0),
+            ),
             itemCount: 3,
             itemBuilder: (_, __) => const _DoctorCardShimmer(),
           ),
@@ -556,67 +680,92 @@ class _DoctorCardShimmer extends StatelessWidget {
       baseColor: Colors.grey.shade300,
       highlightColor: Colors.grey.shade100,
       child: Container(
-        width: 300,
-        padding: const EdgeInsets.all(16),
+        width: EcliniqTextStyles.getResponsiveWidth(context, 300.0),
+        padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16.0),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(
+            EcliniqTextStyles.getResponsiveBorderRadius(context, 16.0),
+          ),
           border: Border.all(color: Colors.grey.shade200),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 80,
-              height: 80,
+              width: EcliniqTextStyles.getResponsiveSize(context, 80.0),
+              height: EcliniqTextStyles.getResponsiveSize(context, 80.0),
               decoration: const BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(
+              height: EcliniqTextStyles.getResponsiveSpacing(context, 16.0),
+            ),
             Container(
-              height: 18,
-              width: 150,
+              height: EcliniqTextStyles.getResponsiveSize(context, 18.0),
+              width: EcliniqTextStyles.getResponsiveWidth(context, 150.0),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(
+                  EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+                ),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(
+              height: EcliniqTextStyles.getResponsiveSpacing(context, 8.0),
+            ),
             Container(
-              height: 14,
-              width: 120,
+              height: EcliniqTextStyles.getResponsiveSize(context, 14.0),
+              width: EcliniqTextStyles.getResponsiveWidth(context, 120.0),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(
+                  EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+                ),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(
+              height: EcliniqTextStyles.getResponsiveSpacing(context, 8.0),
+            ),
             Container(
-              height: 14,
-              width: 180,
+              height: EcliniqTextStyles.getResponsiveSize(context, 14.0),
+              width: EcliniqTextStyles.getResponsiveWidth(context, 180.0),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(
+                  EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+                ),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(
+              height: EcliniqTextStyles.getResponsiveSpacing(context, 16.0),
+            ),
             Container(
-              height: 16,
-              width: 100,
+              height: EcliniqTextStyles.getResponsiveSize(context, 16.0),
+              width: EcliniqTextStyles.getResponsiveWidth(context, 100.0),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(
+                  EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+                ),
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(
+              height: EcliniqTextStyles.getResponsiveSpacing(context, 20.0),
+            ),
             Container(
-              height: 52,
+              height: EcliniqTextStyles.getResponsiveButtonHeight(
+                context,
+                baseHeight: 52.0,
+              ),
               width: double.infinity,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(
+                  EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+                ),
               ),
             ),
           ],

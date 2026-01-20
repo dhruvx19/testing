@@ -326,7 +326,7 @@ class _ClinicLocationCardState extends State<ClinicLocationCard> {
                 children: [
                   Text(
                     _getLocationName(),
-                    style: EcliniqTextStyles.headlineMedium.copyWith(
+                    style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                       color: Color(0xff424242),
                     ),
                   ),
@@ -344,7 +344,7 @@ class _ClinicLocationCardState extends State<ClinicLocationCard> {
                       : Text(
                           _getHospitalAddress(),
                     maxLines: 2,
-                    style: EcliniqTextStyles.titleXLarge.copyWith(
+                    style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                       color: Color(0xff8E8E8E),
                     ),
                   ),
@@ -414,8 +414,8 @@ class _ClinicLocationCardState extends State<ClinicLocationCard> {
                                               const SizedBox(height: 8),
                                               Text(
                                                 _hospitalDetail!.name,
-                                                style: TextStyle(
-                                                  fontSize: 12,
+                                                style: EcliniqTextStyles.responsiveBodyXSmall(context).copyWith(
+                                           
                                                   color: Colors.grey[700],
                                                   fontWeight: FontWeight.w500,
                                                 ),
@@ -474,7 +474,7 @@ class _ClinicLocationCardState extends State<ClinicLocationCard> {
                           const SizedBox(width: 6),
                           Text(
                             'Tap to get directions',
-                    style: EcliniqTextStyles.bodySmall.copyWith(
+                    style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                               color: _hospitalDetail != null
                                   ? Color(0xff2372EC)
                                   : Colors.grey,
@@ -499,7 +499,7 @@ class _ClinicLocationCardState extends State<ClinicLocationCard> {
                         const SizedBox(width: 6),
                         Text(
                           'Clinic location',
-                  style: EcliniqTextStyles.bodySmall.copyWith(
+                  style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                             color: Colors.grey,
                             fontWeight: FontWeight.w500,
                           ),

@@ -1,4 +1,5 @@
 import 'package:ecliniq/ecliniq_icons/icons.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_utils/bottom_sheets/ratings/thank_you.dart';
 import 'package:flutter/material.dart';
@@ -99,8 +100,8 @@ class _FeedbackBottomSheetState extends State<FeedbackBottomSheet> {
                   )
                 : Text(
                     'Submit Feedback',
-                    style: TextStyle(
-                      fontSize: 18,
+                    style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+             
                       fontWeight: FontWeight.w600,
                       color: _isFormValid
                           ? Colors.white
@@ -132,12 +133,12 @@ class _FeedbackBottomSheetState extends State<FeedbackBottomSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Title
-            const Padding(
+             Padding(
               padding: EdgeInsets.all(20),
               child: Text(
                 'Send Feedback',
-                style: TextStyle(
-                  fontSize: 24,
+                style: EcliniqTextStyles.responsiveHeadlineXLarge(context).copyWith(
+             
                   fontWeight: FontWeight.w500,
                   color: Color(0xff424242),
                 ),
@@ -155,10 +156,10 @@ class _FeedbackBottomSheetState extends State<FeedbackBottomSheet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                   Text(
                     'Rate your Experience :',
-                    style: TextStyle(
-                      fontSize: 18,
+                    style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+                 
                       fontWeight: FontWeight.w400,
                       color: Color(0xff2372EC),
                     ),
@@ -198,10 +199,10 @@ class _FeedbackBottomSheetState extends State<FeedbackBottomSheet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                   Text(
                     'Tell us what you love about the app, or what we could do better.',
-                    style: TextStyle(
-                      fontSize: 16,
+                    style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+               
                       color: Color(0xff626060),
                       fontWeight: FontWeight.w400,
                     ),

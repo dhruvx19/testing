@@ -1,9 +1,13 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:ecliniq/ecliniq_icons/icons.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 class DoctorFilterBottomSheet extends StatefulWidget {
   const DoctorFilterBottomSheet({super.key, required this.onFilterChanged});
@@ -22,6 +26,26 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
   String? selectedGender;
   String? selectedExperience;
   double distanceRange = 50;
+  String _searchQuery = '';
+
+  void _resetFilters() {
+    setState(() {
+      selectedSpecialities.clear();
+      selectedAvailability = null;
+      selectedGender = null;
+      selectedExperience = null;
+      distanceRange = 50;
+      selectedTab = 'Specialities';
+    });
+    // Emit empty filter state to clear active filters in parent
+    widget.onFilterChanged({
+      'specialities': <String>[],
+      'availability': null,
+      'gender': null,
+      'experience': null,
+      'distance': 50,
+    });
+  }
 
   void _emitFilterChange() {
     widget.onFilterChanged({
@@ -82,36 +106,80 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,
-      decoration: const BoxDecoration(
-        color: Colors.white,
+        decoration: BoxDecoration(
+        color: Colors.white,  
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-          bottomLeft: Radius.circular(16),
-          bottomRight: Radius.circular(16),
+          topLeft: Radius.circular(
+            EcliniqTextStyles.getResponsiveBorderRadius(context, 20),
+          ),
+          topRight: Radius.circular(
+            EcliniqTextStyles.getResponsiveBorderRadius(context, 20),
+          ),
+          bottomLeft: Radius.circular(
+            EcliniqTextStyles.getResponsiveBorderRadius(context, 16),
+          ),
+          bottomRight: Radius.circular(
+            EcliniqTextStyles.getResponsiveBorderRadius(context, 16),
+          ),
         ),
       ),
+      clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
           // Title
-          const Padding(
-            padding: EdgeInsets.only(left: 16, right: 16, top: 22),
+          Padding(
+            padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+              context,
+              left: 16,
+              right: 16,
+              top: 22,
+              bottom: 0,
+            ),
             child: Align(
               alignment: Alignment.centerLeft,
-              child: Text(
-                'Filters',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xff424242),
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Filters',
+                    style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                        .copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xff424242),
+                        ),
+                  ),
+                  GestureDetector(
+                    onTap: _resetFilters,
+                    child: Text(
+                      'Reset',
+                      style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                          .copyWith(
+                            fontWeight: FontWeight.w400,
+                            color: Color(0xff2372EC),
+                          ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-          SearchBarWidget(onSearch: (String value) {}),
-          SizedBox(height: 22),
-          Container(height: 0.5, color: Color(0xffD6D6D6)),
-          SizedBox(height: 8),
+          SearchBarWidget(
+            onSearch: (String value) {
+              setState(() {
+                _searchQuery = value.toLowerCase();
+              });
+            },
+          ),
+          SizedBox(
+            height: EcliniqTextStyles.getResponsiveSpacing(context, 22),
+          ),
+          Container(
+            height: 0.5,
+            color: Color(0xffD6D6D6),
+          ),
+          SizedBox(
+            height: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+          ),
           // Content
           Expanded(
             child: Row(
@@ -131,7 +199,8 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
                           });
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
+                          padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                            context,
                             horizontal: 16,
                             vertical: 12,
                           ),
@@ -162,15 +231,18 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
                           ),
                           child: Text(
                             tab,
-                            style: TextStyle(
-                              color: isSelected
-                                  ? Color(0xff2372EC)
-                                  : Color(0xff626060),
-                              fontSize: 16,
-                              fontWeight: isSelected
-                                  ? FontWeight.w500
-                                  : FontWeight.w400,
-                            ),
+                            style:
+                                EcliniqTextStyles.responsiveTitleXLarge(
+                                  context,
+                                ).copyWith(
+                                  color: isSelected
+                                      ? Color(0xff2372EC)
+                                      : Color(0xff626060),
+
+                                  fontWeight: isSelected
+                                      ? FontWeight.w500
+                                      : FontWeight.w400,
+                                ),
                           ),
                         ),
                       );
@@ -217,11 +289,37 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
   }
 
   Widget _buildSpecialitiesList() {
+    // Filter specialities based on search query
+    final filteredSpecialities = _searchQuery.isEmpty
+        ? specialities
+        : specialities.where((speciality) {
+            return speciality.toLowerCase().contains(_searchQuery);
+          }).toList();
+
+    if (filteredSpecialities.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 32.0),
+          child: Text(
+            'No specialities found matching "$_searchQuery"',
+            style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+              color: Colors.grey[600],
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      itemCount: specialities.length,
+      padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+        context,
+        horizontal: 0,
+        vertical: 8,
+      ),
+      itemCount: filteredSpecialities.length,
       itemBuilder: (context, index) {
-        final speciality = specialities[index];
+        final speciality = filteredSpecialities[index];
         final isSelected = selectedSpecialities.contains(speciality);
         return InkWell(
           onTap: () {
@@ -235,20 +333,26 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
             _emitFilterChange();
           },
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+              context,
+              horizontal: 16,
+              vertical: 8,
+            ),
             child: Row(
               children: [
                 Expanded(
                   child: Text(
                     speciality,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Color(0xff424242),
-                      fontWeight: FontWeight.w400,
-                    ),
+                    style: EcliniqTextStyles.responsiveTitleXLarge(context)
+                        .copyWith(
+                          color: Color(0xff424242),
+                          fontWeight: FontWeight.w400,
+                        ),
                   ),
                 ),
-                SizedBox(width: 12),
+                SizedBox(
+                  width: EcliniqTextStyles.getResponsiveSpacing(context, 16),
+                ),
                 Container(
                   width: 24,
                   height: 24,
@@ -257,11 +361,17 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
                       color: isSelected ? Color(0xff2372EC) : Color(0xff8E8E8E),
                       width: 1,
                     ),
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(
+                      EcliniqTextStyles.getResponsiveBorderRadius(context, 6),
+                    ),
                     color: isSelected ? Color(0xff2372EC) : Colors.transparent,
                   ),
                   child: isSelected
-                      ? const Icon(Icons.check, size: 18, color: Colors.white)
+                      ? Icon(
+                          Icons.check,
+                          size: EcliniqTextStyles.getResponsiveIconSize(context, 18),
+                          color: Colors.white,
+                        )
                       : null,
                 ),
               ],
@@ -274,7 +384,11 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
 
   Widget _buildAvailabilityList() {
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+        context,
+        horizontal: 0,
+        vertical: 8,
+      ),
       itemCount: availabilityOptions.length,
       itemBuilder: (context, index) {
         final option = availabilityOptions[index];
@@ -287,17 +401,21 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
             _emitFilterChange();
           },
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+              context,
+              horizontal: 16,
+              vertical: 12,
+            ),
             child: Row(
               children: [
                 Expanded(
                   child: Text(
                     option,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Color(0xff424242),
-                      fontWeight: FontWeight.w400,
-                    ),
+                    style: EcliniqTextStyles.responsiveTitleXLarge(context)
+                        .copyWith(
+                          color: Color(0xff424242),
+                          fontWeight: FontWeight.w400,
+                        ),
                   ),
                 ),
                 Container(
@@ -333,7 +451,11 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
 
   Widget _buildGenderList() {
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+        context,
+        horizontal: 0,
+        vertical: 8,
+      ),
       itemCount: genderOptions.length,
       itemBuilder: (context, index) {
         final option = genderOptions[index];
@@ -346,17 +468,21 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
             _emitFilterChange();
           },
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+              context,
+              horizontal: 16,
+              vertical: 12,
+            ),
             child: Row(
               children: [
                 Expanded(
                   child: Text(
                     option,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Color(0xff424242),
-                      fontWeight: FontWeight.w400,
-                    ),
+                    style: EcliniqTextStyles.responsiveTitleXLarge(context)
+                        .copyWith(
+                          color: Color(0xff424242),
+                          fontWeight: FontWeight.w400,
+                        ),
                   ),
                 ),
                 Container(
@@ -367,11 +493,17 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
                       color: isSelected ? Color(0xff2372EC) : Color(0xff8E8E8E),
                       width: 1,
                     ),
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(
+                      EcliniqTextStyles.getResponsiveBorderRadius(context, 6),
+                    ),
                     color: isSelected ? Colors.blue : Colors.transparent,
                   ),
                   child: isSelected
-                      ? const Icon(Icons.check, size: 16, color: Colors.white)
+                      ? Icon(
+                          Icons.check,
+                          size: EcliniqTextStyles.getResponsiveIconSize(context, 16),
+                          color: Colors.white,
+                        )
                       : null,
                 ),
               ],
@@ -384,7 +516,11 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
 
   Widget _buildExperienceList() {
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+        context,
+        horizontal: 0,
+        vertical: 8,
+      ),
       itemCount: experienceOptions.length,
       itemBuilder: (context, index) {
         final option = experienceOptions[index];
@@ -396,17 +532,21 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
             });
           },
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+              context,
+              horizontal: 16,
+              vertical: 12,
+            ),
             child: Row(
               children: [
                 Expanded(
                   child: Text(
                     option,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Color(0xff424242),
-                      fontWeight: FontWeight.w400,
-                    ),
+                    style: EcliniqTextStyles.responsiveTitleXLarge(context)
+                        .copyWith(
+                          color: Color(0xff424242),
+                          fontWeight: FontWeight.w400,
+                        ),
                   ),
                 ),
                 Container(
@@ -442,17 +582,15 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
 
   Widget _buildDistanceSlider() {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Select Km Range',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-              color: Color(0xff424242),
-            ),
+            style: EcliniqTextStyles.responsiveTitleXLarge(
+              context,
+            ).copyWith(fontWeight: FontWeight.w400, color: Color(0xff424242)),
           ),
           const SizedBox(height: 12),
           Row(
@@ -464,7 +602,7 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
                     border: Border.all(color: Color(0xff626060), width: 0.5),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Padding(
                       padding: EdgeInsets.only(left: 10, right: 10),
                       child: Row(
@@ -472,19 +610,23 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
                         children: [
                           Text(
                             '0',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w400,
-                              color: Color(0xff424242),
-                            ),
+                            style:
+                                EcliniqTextStyles.responsiveHeadlineBMedium(
+                                  context,
+                                ).copyWith(
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xff424242),
+                                ),
                           ),
                           Text(
                             'Km',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w400,
-                              color: Color(0xff626060),
-                            ),
+                            style:
+                                EcliniqTextStyles.responsiveHeadlineBMedium(
+                                  context,
+                                ).copyWith(
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xff626060),
+                                ),
                           ),
                         ],
                       ),
@@ -508,19 +650,23 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
                         children: [
                           Text(
                             '${distanceRange.toInt()}',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w400,
-                              color: Color(0xff424242),
-                            ),
+                            style:
+                                EcliniqTextStyles.responsiveHeadlineBMedium(
+                                  context,
+                                ).copyWith(
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xff424242),
+                                ),
                           ),
                           Text(
                             'Km',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w400,
-                              color: Color(0xff626060),
-                            ),
+                            style:
+                                EcliniqTextStyles.responsiveHeadlineBMedium(
+                                  context,
+                                ).copyWith(
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xff626060),
+                                ),
                           ),
                         ],
                       ),
@@ -586,6 +732,133 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
   String query = '';
   final _controller = TextEditingController();
   Timer? _timer;
+  final SpeechToText _speechToText = SpeechToText();
+  bool _speechEnabled = false;
+  bool _isListening = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initSpeech();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    _speechToText.cancel();
+    super.dispose();
+  }
+
+  Future<void> _initSpeech() async {
+    try {
+      _speechEnabled = await _speechToText.initialize(
+        onError: (error) {
+          if (mounted) {
+            setState(() => _isListening = false);
+          }
+        },
+        onStatus: (status) {
+          if (mounted) {
+            if (status == 'notListening' ||
+                status == 'done' ||
+                status == 'doneNoResult') {
+              setState(() => _isListening = false);
+            } else if (status == 'listening') {
+              setState(() => _isListening = true);
+            }
+          }
+        },
+      );
+    } catch (e) {
+      _speechEnabled = false;
+    }
+  }
+
+  void _startListening() async {
+    if (_isListening) return;
+
+    if (!_speechEnabled) {
+      await _initSpeech();
+      if (!_speechEnabled) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Speech recognition is not available. Please check your permissions.',
+              ),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      }
+    }
+
+    try {
+      await _speechToText.listen(
+        onResult: _onSpeechResult,
+        listenFor: const Duration(seconds: 30),
+        pauseFor: const Duration(seconds: 3),
+        partialResults: true,
+        localeId: 'en_US',
+        cancelOnError: false,
+        listenMode: ListenMode.confirmation,
+      );
+
+      if (mounted) {
+        setState(() {
+          _isListening = true;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isListening = false);
+      }
+    }
+  }
+
+  void _stopListening() async {
+    try {
+      await _speechToText.stop();
+      if (mounted) {
+        setState(() => _isListening = false);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isListening = false);
+      }
+    }
+  }
+
+  void _onSpeechResult(SpeechRecognitionResult result) {
+    _controller.text = result.recognizedWords;
+    _controller.selection = TextSelection.fromPosition(
+      TextPosition(offset: result.recognizedWords.length),
+    );
+
+    setState(() {
+      query = result.recognizedWords;
+    });
+
+    widget.onSearch(result.recognizedWords);
+
+    if (result.finalResult) {
+      _stopListening();
+    }
+  }
+
+  void _handleVoiceSearch() {
+    if (widget.onVoiceSearch != null) {
+      widget.onVoiceSearch!();
+    } else {
+      if (_isListening) {
+        _stopListening();
+      } else {
+        _startListening();
+      }
+    }
+  }
 
   Future<void> search(String text) async {
     setState(() => query = text);
@@ -596,13 +869,6 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
   }
 
   @override
-  void dispose() {
-    _timer?.cancel();
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final outlinedBorder = OutlineInputBorder(
       borderRadius: BorderRadius.circular(30),
@@ -610,7 +876,7 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
     );
 
     return Container(
-      margin: EdgeInsets.only(top: 22, left: 16, right: 16, bottom: 16),
+      margin: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 16),
 
       height: 52,
       decoration: BoxDecoration(
@@ -666,24 +932,58 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
                               }
                               setState(() => query = '');
                               _controller.clear();
+                              widget.onSearch('');
                             },
                           ),
                         )
-                      : SizedBox(),
+                      : Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: IconButton(
+                            icon: Container(
+                              padding: const EdgeInsets.all(4),
+                              // decoration: _isListening
+                              //     ? BoxDecoration(
+                              //         shape: BoxShape.circle,
+                              //         boxShadow: [
+                              //           BoxShadow(
+                              //             color: const Color(0xFF2372EC)
+                              //                 .withOpacity(0.5),
+                              //             blurRadius: 12,
+                              //             spreadRadius: 2,
+                              //           ),
+                              //         ],
+                              //       )
+                              //     : null,
+                              child: SvgPicture.asset(
+                                EcliniqIcons.microphone.assetPath,
+                                width: 24,
+                                height: 24,
+                                colorFilter: _isListening
+                                    ? const ColorFilter.mode(
+                                        Color(0xFF2372EC),
+                                        BlendMode.srcIn,
+                                      )
+                                    : null,
+                              ),
+                            ),
+                            onPressed: _handleVoiceSearch,
+                          ),
+                        ),
                   hintText: widget.hintText,
-                  hintStyle: TextStyle(
-                    color: Color(0xffD6D6D6),
-                    fontSize: 18,
-                    fontWeight: FontWeight.w400,
-                  ),
+                  hintStyle:
+                      EcliniqTextStyles.responsiveHeadlineBMedium(
+                        context,
+                      ).copyWith(
+                        color: Color(0xffD6D6D6),
+
+                        fontWeight: FontWeight.w400,
+                      ),
                 ),
                 onChanged: search,
                 textInputAction: TextInputAction.search,
-                style: const TextStyle(
-                  color: Colors.black87,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                ),
+                style: EcliniqTextStyles.responsiveTitleXLarge(
+                  context,
+                ).copyWith(color: Colors.black87, fontWeight: FontWeight.w400),
                 textAlignVertical: TextAlignVertical.center,
                 cursorColor: Colors.blue,
                 cursorWidth: 1.5,

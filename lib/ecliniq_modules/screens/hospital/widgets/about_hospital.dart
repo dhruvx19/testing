@@ -1,4 +1,5 @@
 import 'package:ecliniq/ecliniq_api/models/hospital.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 
 class AboutHospital extends StatelessWidget {
@@ -35,10 +36,10 @@ class AboutHospital extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                     Text(
                       'About',
-                      style: TextStyle(
-                        fontSize: 20.0,
+                      style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
+             
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
                       ),
@@ -56,8 +57,8 @@ class AboutHospital extends StatelessWidget {
                 Text(
                   aboutText,
                   maxLines: 8,
-                  style: const TextStyle(
-                    fontSize: 18,
+                  style:  EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+                
                     fontWeight: FontWeight.w400,
                     color: Color(0xff626060),
                   ),

@@ -1,3 +1,4 @@
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 
 class ReasonBottomSheet extends StatelessWidget {
@@ -18,10 +19,10 @@ class ReasonBottomSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+           Text(
             'Select Reason for Visit',
-            style: TextStyle(
-              fontSize: 24,
+            style: EcliniqTextStyles.responsiveHeadlineXLarge(context).copyWith(
+          
               fontWeight: FontWeight.bold,
               color: Color(0xFF2D2D2D),
             ),
@@ -88,8 +89,7 @@ class _ReasonOption extends StatelessWidget {
               Expanded(
                 child: Text(
                   reason,
-                  style: TextStyle(
-                    fontSize: 18,
+                  style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                     color: const Color(0xFF2D2D2D),
                   ),
@@ -108,4 +108,3 @@ class _ReasonOption extends StatelessWidget {
     );
   }
 }
-

@@ -31,10 +31,10 @@ class _RescheduleBottomSheetState extends State<RescheduleBottomSheet> {
         children: [
           SvgPicture.asset(EcliniqIcons.reschedule.assetPath),
            const SizedBox(height: 8),
-          const EcliniqText(
+           EcliniqText(
             'Are you sure you want Reschedule the Confirmed Appointment?',
-            style: TextStyle(
-              fontSize: 18,
+            style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+         
               fontWeight: FontWeight.w500,
               color: Color(0xFF424242),
             ),
@@ -55,14 +55,14 @@ class _RescheduleBottomSheetState extends State<RescheduleBottomSheet> {
                           widget.appointment.isRescheduled ?? false;
                       if (isAlreadyRescheduled) {
                         Navigator.pop(context, false);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          CustomErrorSnackBar(
+                
+                          CustomErrorSnackBar.show(
                             context: context,
                             title: 'Cannot Reschedule',
                             subtitle:
                                 'This appointment has already been rescheduled. You cannot reschedule it again.',
                             duration: const Duration(seconds: 3),
-                          ),
+                      
                         );
                         return;
                       }
@@ -87,7 +87,7 @@ class _RescheduleBottomSheetState extends State<RescheduleBottomSheet> {
                         children: [
                           Text(
                             'Yes',
-                            style: EcliniqTextStyles.headlineMedium.copyWith(
+                            style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                               color: Color(0xff2372EC),
                             ),
                           ),
@@ -123,7 +123,7 @@ class _RescheduleBottomSheetState extends State<RescheduleBottomSheet> {
                         children: [
                           Text(
                             'No',
-                            style: EcliniqTextStyles.headlineMedium.copyWith(
+                            style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                               color: Color(0xff424242),
                             ),
                           ),

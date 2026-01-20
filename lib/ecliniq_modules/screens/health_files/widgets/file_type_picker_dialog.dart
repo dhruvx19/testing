@@ -1,5 +1,6 @@
 import 'package:ecliniq/ecliniq_icons/icons.dart';
-import 'package:ecliniq/ecliniq_modules/screens/health_files/models/health_file_model.dart';
+import 'package:ecliniq/ecliniq_api/health_file_model.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -33,10 +34,10 @@ class FileTypePickerDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+             Text(
               'Select File Category',
-              style: TextStyle(
-                fontSize: 20,
+              style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
+              
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF424242),
               ),
@@ -127,8 +128,8 @@ class _FileTypeOption extends StatelessWidget {
                 Expanded(
                   child: Text(
                     fileType.displayName,
-                    style: const TextStyle(
-                      fontSize: 18,
+                    style:  EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+                     
                       fontWeight: FontWeight.w500,
                       color: Color(0xFF424242),
                     ),

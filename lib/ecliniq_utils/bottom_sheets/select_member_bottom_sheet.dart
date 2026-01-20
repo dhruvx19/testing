@@ -1,19 +1,27 @@
-import 'package:ecliniq/ecliniq_icons/icons.dart';
-import 'package:ecliniq/ecliniq_modules/screens/profile/add_dependent/add_dependent.dart';
-import 'package:ecliniq/ecliniq_ui/lib/widgets/widgets.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:provider/provider.dart';
-import 'package:ecliniq/ecliniq_api/patient_service.dart';
-import 'package:ecliniq/ecliniq_api/models/patient.dart';
-import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
-import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
-import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:ecliniq/ecliniq_api/models/patient.dart';
+import 'package:ecliniq/ecliniq_api/patient_service.dart';
+import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
+import 'package:ecliniq/ecliniq_icons/icons.dart';
+import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
+import 'package:ecliniq/ecliniq_modules/screens/profile/add_dependent/add_dependent.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/widgets.dart';
+import 'package:ecliniq/ecliniq_utils/bottom_sheets/circular.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+
 class SelectMemberBottomSheet extends StatefulWidget {
-  const SelectMemberBottomSheet({super.key});
+  final DependentData? currentlySelectedDependent;
+  
+  const SelectMemberBottomSheet({
+    super.key,
+    this.currentlySelectedDependent,
+  });
 
   @override
   State<SelectMemberBottomSheet> createState() =>
@@ -25,7 +33,9 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
   final PatientService _patientService = PatientService();
   bool _isLoading = true;
   String? _errorMessage;
+  DependentData? _self;
   List<DependentData> _dependents = [];
+  List<DependentData> _allMembers = []; // Combined list with self first
   String? _authToken;
   final Map<String, String> _imageUrlCache = {};
 
@@ -38,7 +48,7 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
   double _computeListHeight() {
     const double itemHeight = 86;
     const double verticalMargin = 12;
-    final count = _dependents.length;
+    final count = _allMembers.length;
     if (count <= 0) return 0;
     final total = (itemHeight + verticalMargin) * count;
     return total.clamp(86.0, 240.0);
@@ -69,7 +79,35 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
 
       if (response.success) {
         setState(() {
-          _dependents = response.data;
+          _self = response.self;
+          _dependents = response.dependents;
+          // Combine self and dependents, with self first
+          _allMembers = [];
+          if (_self != null) {
+            _allMembers.add(_self!);
+          }
+          _allMembers.addAll(_dependents);
+          
+          // Find the index of currently selected member
+          if (widget.currentlySelectedDependent != null) {
+            // Find the index of the currently selected dependent
+            final currentIndex = _allMembers.indexWhere(
+              (member) => member.id == widget.currentlySelectedDependent!.id,
+            );
+            selectedIndex = currentIndex >= 0 ? currentIndex : (_self != null ? 0 : -1);
+          } else {
+            // If no dependent is selected, it means "self" is selected
+            // Find self in the list and select it
+            if (_self != null) {
+              final selfIndex = _allMembers.indexWhere(
+                (member) => member.isSelf,
+              );
+              selectedIndex = selfIndex >= 0 ? selfIndex : 0;
+            } else {
+              selectedIndex = -1;
+            }
+          }
+          
           _isLoading = false;
           _authToken = authToken;
         });
@@ -133,21 +171,21 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding:  EdgeInsets.only(top: 12, left: 16, right: 16),
             child: Text(
               'Select Family Member',
-              style: TextStyle(
-                fontSize: 18,
+              style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+               
                 fontWeight: FontWeight.w500,
                 color: Color(0xFF424242),
               ),
             ),
           ),
 
-          SizedBox(height: 20),
+          SizedBox(height: 18),
           // Dependents list
           Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
+            padding: const EdgeInsets.only(bottom: 12.0),
             child: SizedBox(
               height: _isLoading ? 240 : _computeListHeight(),
               child: _isLoading
@@ -167,15 +205,16 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
                   : ListView.builder(
                       padding: EdgeInsets.zero,
                       shrinkWrap: true,
-                      itemCount: _dependents.length,
+                      itemCount: _allMembers.length,
                       itemBuilder: (context, index) {
-                        final d = _dependents[index];
+                        final d = _allMembers[index];
                         final isSelected = selectedIndex == index;
                         return InkWell(
                           onTap: () {
                             setState(() {
                               selectedIndex = index;
                             });
+                            // Close bottom sheet with selected member
                             Navigator.of(context).pop<DependentData>(d);
                           },
                           child: Container(
@@ -198,40 +237,40 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
                             ),
                             child: Row(
                               children: [
-                                // Radio button
                                 Container(
                                   height: 24,
                                   width: 24,
                                   decoration: BoxDecoration(
                                     border: Border.all(
                                       color: isSelected
-                                          ? Color(0xFF4F46E5)
-                                          : Color(0xFFD1D5DB),
-                                      width: 2,
+                                          ? const Color(0xFF2563EB)
+                                          : const Color(0xFF8E8E8E),
+                                      width: 1,
                                     ),
                                     shape: BoxShape.circle,
-                                    color: Colors.white,
+                                    color: isSelected
+                                        ? const Color(0xFF2563EB)
+                                        : Colors.white,
                                   ),
                                   child: isSelected
-                                      ? Center(
-                                          child: Container(
-                                            width: 12,
-                                            height: 12,
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: Color(0xFF4F46E5),
-                                            ),
+                                      ? Container(
+                                          margin: const EdgeInsets.all(5),
+                                          decoration: const BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.white,
                                           ),
                                         )
                                       : null,
                                 ),
 
-                                SizedBox(width: 16),
+                                SizedBox(
+                                  width: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+                                ),
 
                                 // Avatar
                                 Container(
-                                  width: 52,
-                                  height: 52,
+                                  width: EcliniqTextStyles.getResponsiveWidth(context, 52),
+                                  height: EcliniqTextStyles.getResponsiveHeight(context, 52),
                                   decoration: BoxDecoration(
                                     color: Color(0xffF2F7FF),
                                     shape: BoxShape.circle,
@@ -243,27 +282,34 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
                                       final key = d.profilePhoto;
                                       if (key != null && key.isNotEmpty) {
                                         final cached = _imageUrlCache[key];
-                                        if (cached != null && cached.isNotEmpty) {
+                                        if (cached != null &&
+                                            cached.isNotEmpty) {
                                           return DecorationImage(
                                             fit: BoxFit.cover,
                                             image: NetworkImage(cached),
                                           );
                                         } else {
                                           // kick off fetch, show initials till then
-                                          _ensureDownloadUrl(key, isPublic: false);
+                                          _ensureDownloadUrl(
+                                            key,
+                                            isPublic: false,
+                                          );
                                         }
                                       }
                                       return null;
                                     }(),
                                   ),
-                                  child: (d.profilePhoto == null ||
-                                          d.profilePhoto!.isEmpty) ||
-                                          !_imageUrlCache.containsKey(d.profilePhoto!)
+                                  child:
+                                      (d.profilePhoto == null ||
+                                              d.profilePhoto!.isEmpty) ||
+                                          !_imageUrlCache.containsKey(
+                                            d.profilePhoto!,
+                                          )
                                       ? Center(
                                           child: Text(
                                             _initials(d.fullName),
-                                            style: const TextStyle(
-                                              fontSize: 18,
+                                            style:  EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+                                              
                                               fontWeight: FontWeight.w600,
                                               color: Color(0xFF2372EC),
                                             ),
@@ -272,7 +318,7 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
                                       : null,
                                 ),
 
-                                SizedBox(width: 16),
+                                SizedBox(width: 8),
 
                                 // Name and Relation
                                 Expanded(
@@ -282,17 +328,17 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
                                     children: [
                                       Text(
                                         d.fullName,
-                                        style: TextStyle(
-                                          fontSize: 16,
+                                        style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+                                          
                                           fontWeight: FontWeight.w500,
                                           color: Color(0xFF424242),
                                         ),
                                       ),
-                                      SizedBox(height: 2),
+                                      SizedBox(height: 4),
                                       Text(
-                                        d.relation,
-                                        style: TextStyle(
-                                          fontSize: 14,
+                                        d.formattedRelation,
+                                        style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
+                                     
                                           fontWeight: FontWeight.w400,
                                           color: Color(0xFF626060),
                                         ),
@@ -314,7 +360,7 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
           // Add Dependents Section
           Container(
             margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.only(left: 12, right: 12, bottom: 12),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(8),
@@ -322,7 +368,7 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
             ),
             child: Column(
               children: [
-                SizedBox(height: 16),
+                CircularProfileCarousel(),
 
                 InkWell(
                   onTap: () async {
@@ -336,8 +382,12 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
                     }
                   },
                   child: Container(
+                    height: EcliniqTextStyles.getResponsiveButtonHeight(
+                      context,
+                      baseHeight: 52.0,
+                    ),
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+
                     decoration: BoxDecoration(
                       color: Color(0xFFF2F7FF),
                       borderRadius: BorderRadius.circular(4),
@@ -355,11 +405,11 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
                             BlendMode.srcIn,
                           ),
                         ),
-                        SizedBox(width: 8),
+                        SizedBox(width: 4),
                         Text(
                           'Add Dependents',
-                          style: TextStyle(
-                            fontSize: 18,
+                          style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+                
                             fontWeight: FontWeight.w500,
                             color: Color(0xFF2372EC),
                           ),
@@ -371,6 +421,7 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
               ],
             ),
           ),
+             SizedBox(height: 12),
         ],
       ),
     );

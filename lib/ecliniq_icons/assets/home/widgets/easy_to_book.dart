@@ -1,4 +1,6 @@
 import 'package:ecliniq/ecliniq_icons/icons.dart';
+import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shimmer/shimmer.dart';
@@ -37,25 +39,24 @@ class _EasyWayToBookWidgetState extends State<EasyWayToBookWidget> {
         Row(
           children: [
             Container(
-              width: 8,
-              height: 24,
+              width: EcliniqTextStyles.getResponsiveSize(context, 8.0),
+              height: EcliniqTextStyles.getResponsiveSize(context, 24.0),
               decoration: BoxDecoration(
                 color: Color(0xFF96BFFF),
                 borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(4),
-                  bottomRight: Radius.circular(4),
+                  topRight: Radius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0)),
+                  bottomRight: Radius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0)),
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 12.0)),
             Expanded(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  EcliniqText(
                     'Easy Way to book',
-                    style: TextStyle(
-                      fontSize: 20.0,
+                    style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
                       fontWeight: FontWeight.w600,
                       color: Color(0xff424242),
                     ),
@@ -69,33 +70,36 @@ class _EasyWayToBookWidgetState extends State<EasyWayToBookWidget> {
         Column(
           children: [
             Padding(
-              padding: const EdgeInsets.only(top: 8, left: 16, right: 16),
+              padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+                context,
+                top: 8.0,
+                left: 16.0,
+                right: 16.0,
+              ),
               child: Row(
                 children: [
                   SvgPicture.asset(
                     EcliniqIcons.call.assetPath,
-                    width: 32,
-                    height: 32,
+                    width: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
+                    height: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 12.0)),
 
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        EcliniqText(
                           'Request a Callback',
-                          style: TextStyle(
-                            fontSize: 18,
+                          style: EcliniqTextStyles.responsiveHeadlineZMedium(context).copyWith(
                             fontWeight: FontWeight.w500,
                             color: Color(0xff424242),
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
+                        SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 2.0)),
+                        EcliniqText(
                           'Assisted booking with expert',
-                          style: TextStyle(
-                            fontSize: 14,
+                          style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                             color: Color(0xff8E8E8E),
                             fontWeight: FontWeight.w400,
                           ),
@@ -107,24 +111,25 @@ class _EasyWayToBookWidgetState extends State<EasyWayToBookWidget> {
                   OutlinedButton(
                     onPressed: _callUs,
                     style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 7,
+                      padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                        context,
+                        horizontal: 14.0,
+                        vertical: 7.0,
                       ),
                       side: const BorderSide(
                         color: Color(0xFF96BFFF),
                         width: 0.5,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0)),
                       ),
                       backgroundColor: Color(0xFFF2F7FF),
                     ),
-                    child: const Text(
+                    child: EcliniqText(
                       'Call Us',
-                      style: TextStyle(
+                      style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                         color: Color(0xFF2372EC),
-                        fontSize: 14,
+
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -132,29 +137,29 @@ class _EasyWayToBookWidgetState extends State<EasyWayToBookWidget> {
                 ],
               ),
             ),
-
+            SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 8.0)),
             Divider(
               height: 1,
               color: Color(0xffB8B8B8),
               thickness: 0.5,
-              indent: 16,
-              endIndent: 16,
+              indent: EcliniqTextStyles.getResponsiveSize(context, 16.0),
+              endIndent: EcliniqTextStyles.getResponsiveSize(context, 16.0),
             ),
 
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16.0),
               child: Row(
                 children: [
                   GestureDetector(
                     onTap: () => _toggleWhatsAppUpdates(!_isWhatsAppEnabled),
                     child: Container(
-                      width: 16,
-                      height: 16,
+                      width: EcliniqTextStyles.getResponsiveSize(context, 16.0),
+                      height: EcliniqTextStyles.getResponsiveSize(context, 16.0),
                       decoration: BoxDecoration(
                         color: _isWhatsAppEnabled
                             ? const Color(0xff2372EC)
                             : Colors.white,
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0)),
                         border: Border.all(
                           color: _isWhatsAppEnabled
                               ? const Color(0xff2372EC)
@@ -165,22 +170,22 @@ class _EasyWayToBookWidgetState extends State<EasyWayToBookWidget> {
                       child: _isWhatsAppEnabled
                           ? SvgPicture.asset(
                               EcliniqIcons.checkWhite.assetPath,
-                              width: 10,
-                              height: 10,
+                              width: EcliniqTextStyles.getResponsiveIconSize(context, 10.0),
+                              height: EcliniqTextStyles.getResponsiveIconSize(context, 10.0),
                             )
                           : null,
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 10.0)),
 
                   Expanded(
                     child: GestureDetector(
                       onTap: () => _toggleWhatsAppUpdates(!_isWhatsAppEnabled),
                       behavior: HitTestBehavior.opaque,
-                      child: Text(
+                      child: EcliniqText(
                         'Get updates/information on WhatsApp/SMS',
-                        style: TextStyle(
-                          fontSize: 13,
+                        style: EcliniqTextStyles.responsiveBodyMediumProminent(context).copyWith(
+                   
                           color: Color(0xff626060),
                           fontWeight: FontWeight.w400,
                         ),
@@ -203,58 +208,58 @@ class _EasyWayToBookWidgetState extends State<EasyWayToBookWidget> {
         Row(
           children: [
             Container(
-              width: 8,
-              height: 24,
+              width: EcliniqTextStyles.getResponsiveSize(context, 8.0),
+              height: EcliniqTextStyles.getResponsiveSize(context, 24.0),
               decoration: BoxDecoration(
                 color: Color(0xFF96BFFF),
                 borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(4),
-                  bottomRight: Radius.circular(4),
+                  topRight: Radius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0)),
+                  bottomRight: Radius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0)),
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 12.0)),
             Shimmer.fromColors(
               baseColor: Colors.grey.shade300,
               highlightColor: Colors.grey.shade100,
               child: Container(
-                height: 20,
-                width: 150,
+                height: EcliniqTextStyles.getResponsiveSize(context, 20.0),
+                width: EcliniqTextStyles.getResponsiveWidth(context, 150.0),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(4.0),
+                  borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0)),
                 ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 20.0)),
 
         Container(
           decoration: BoxDecoration(
             border: Border.all(color: Colors.grey.shade200, width: 1),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0)),
             color: Colors.grey.shade50,
           ),
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16.0),
                 child: Row(
                   children: [
                     Shimmer.fromColors(
                       baseColor: Colors.grey.shade300,
                       highlightColor: Colors.grey.shade100,
                       child: Container(
-                        width: 36,
-                        height: 36,
+                        width: EcliniqTextStyles.getResponsiveSize(context, 36.0),
+                        height: EcliniqTextStyles.getResponsiveSize(context, 36.0),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(8.0),
+                          borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0)),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 12.0)),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -263,24 +268,24 @@ class _EasyWayToBookWidgetState extends State<EasyWayToBookWidget> {
                             baseColor: Colors.grey.shade300,
                             highlightColor: Colors.grey.shade100,
                             child: Container(
-                              height: 16,
-                              width: 150,
+                              height: EcliniqTextStyles.getResponsiveSize(context, 16.0),
+                              width: EcliniqTextStyles.getResponsiveWidth(context, 150.0),
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(4.0),
+                                borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0)),
                               ),
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 8.0)),
                           Shimmer.fromColors(
                             baseColor: Colors.grey.shade300,
                             highlightColor: Colors.grey.shade100,
                             child: Container(
-                              height: 14,
-                              width: 200,
+                              height: EcliniqTextStyles.getResponsiveSize(context, 14.0),
+                              width: EcliniqTextStyles.getResponsiveWidth(context, 200.0),
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(4.0),
+                                borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0)),
                               ),
                             ),
                           ),
@@ -291,11 +296,11 @@ class _EasyWayToBookWidgetState extends State<EasyWayToBookWidget> {
                       baseColor: Colors.grey.shade300,
                       highlightColor: Colors.grey.shade100,
                       child: Container(
-                        height: 32,
-                        width: 80,
+                        height: EcliniqTextStyles.getResponsiveSize(context, 32.0),
+                        width: EcliniqTextStyles.getResponsiveWidth(context, 80.0),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(8.0),
+                          borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0)),
                         ),
                       ),
                     ),
@@ -304,31 +309,31 @@ class _EasyWayToBookWidgetState extends State<EasyWayToBookWidget> {
               ),
               Container(height: 1, color: Colors.grey.shade200),
               Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16.0),
                 child: Row(
                   children: [
                     Shimmer.fromColors(
                       baseColor: Colors.grey.shade300,
                       highlightColor: Colors.grey.shade100,
                       child: Container(
-                        width: 16,
-                        height: 16,
+                        width: EcliniqTextStyles.getResponsiveSize(context, 16.0),
+                        height: EcliniqTextStyles.getResponsiveSize(context, 16.0),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(4.0),
+                          borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0)),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 10.0)),
                     Expanded(
                       child: Shimmer.fromColors(
                         baseColor: Colors.grey.shade300,
                         highlightColor: Colors.grey.shade100,
                         child: Container(
-                          height: 14,
+                          height: EcliniqTextStyles.getResponsiveSize(context, 14.0),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(4.0),
+                            borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0)),
                           ),
                         ),
                       ),

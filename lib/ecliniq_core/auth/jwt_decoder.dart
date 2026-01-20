@@ -2,8 +2,6 @@ import 'dart:convert';
 
 /// Utility to decode JWT tokens and extract expiration time
 class JwtDecoder {
-  /// Decode JWT token and extract expiration timestamp
-  /// Returns expiration timestamp in seconds, or null if not found
   static int? getExpirationTimestamp(String token) {
     try {
       final parts = token.split('.');

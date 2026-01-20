@@ -81,10 +81,9 @@ class _DoctorLocationChangeSheetState extends State<DoctorLocationChangeSheet> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'Switch Profile',
-                      style: TextStyle(
-                        fontSize: 18,
+                      style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                         fontWeight: FontWeight.w500,
                         color: Color(0xFF424242),
                       ),
@@ -95,8 +94,7 @@ class _DoctorLocationChangeSheetState extends State<DoctorLocationChangeSheet> {
                 // Description
                 Text(
                   _buildDescription(),
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                     fontWeight: FontWeight.w400,
                     color: Color(0xFF626060),
                   ),
@@ -240,8 +238,7 @@ class _LocationDetails extends StatelessWidget {
       children: [
         Text(
           location.name,
-          style: const TextStyle(
-            fontSize: 16,
+          style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
             fontWeight: FontWeight.w500,
             color: Color(0xFF424242),
           ),
@@ -258,8 +255,7 @@ class _LocationDetails extends StatelessWidget {
             Flexible(
               child: Text(
                 location.address,
-                style: const TextStyle(
-                  fontSize: 14,
+                style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                   fontWeight: FontWeight.w400,
                   color: Color(0xFF626060),
                 ),
@@ -279,9 +275,8 @@ class _LocationDetails extends StatelessWidget {
               child: Center(
                 child: Text(
                   '4 Km',
-                  style: EcliniqTextStyles.bodySmall.copyWith(
+                  style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                     color: Color(0xff424242),
-                    fontSize: 14,
                   ),
                 ),
               ),
@@ -299,12 +294,12 @@ class _EmptyLocationState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 20),
         child: Text(
           'No locations available',
-          style: TextStyle(fontSize: 14, color: Color(0xFF9E9E9E)),
+          style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(color: Color(0xFF9E9E9E)),
         ),
       ),
     );

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:ecliniq/ecliniq_api/models/doctor.dart' as api;
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
-import 'package:ecliniq/ecliniq_modules/screens/doctor_details/top_doctor/model/top_doctor_model.dart';
+import 'package:ecliniq/ecliniq_api/top_doctor_model.dart';
 import 'package:ecliniq/ecliniq_core/location/location_storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -85,9 +85,10 @@ class DoctorProvider with ChangeNotifier {
       
       // Fetch directly to parse with UI model
       final url = Uri.parse(Endpoints.topDoctors);
+      // Hardcoded latitude and longitude
       final requestBody = api.TopDoctorsRequest(
-        latitude: requestLat,
-        longitude: requestLong,
+        latitude: 12.9173,
+        longitude: 77.6377,
       );
 
       final httpResponse = await http.post(

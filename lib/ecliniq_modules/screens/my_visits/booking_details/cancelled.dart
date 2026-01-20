@@ -112,7 +112,7 @@ class _BookingCancelledDetailState extends State<BookingCancelledDetail> {
           alignment: Alignment.centerLeft,
           child: Text(
             'Booking Detail',
-            style: EcliniqTextStyles.headlineMedium.copyWith(
+            style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
               color: Color(0xff424242),
             ),
           ),
@@ -131,9 +131,9 @@ class _BookingCancelledDetailState extends State<BookingCancelledDetail> {
               ),
               Text(
                 ' Help',
-                style: EcliniqTextStyles.titleXBLarge.copyWith(
+                style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                   color: Color(0xff424242),
-                  fontSize: 18,
+           
                   fontWeight: FontWeight.w400,
                 ),
               ),
@@ -221,11 +221,15 @@ class _BookingCancelledDetailState extends State<BookingCancelledDetail> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+            Icon(
+              Icons.error_outline,
+              size: EcliniqTextStyles.getResponsiveIconSize(context, 64),
+              color: Colors.red[300],
+            ),
             const SizedBox(height: 16),
             Text(
               _errorMessage ?? 'Failed to load appointment details',
-              style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+              style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith( color: Colors.grey[700]),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -298,10 +302,10 @@ class _BookingCancelledDetailState extends State<BookingCancelledDetail> {
         Row(
           children: [
             Expanded(
-              child: const Text(
+              child:  Text(
                 'Easy Way to book',
-                style: TextStyle(
-                  fontSize: 20.0,
+                style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
+        
                   fontWeight: FontWeight.w600,
                   color: Color(0xff424242),
                 ),
@@ -325,10 +329,10 @@ class _BookingCancelledDetailState extends State<BookingCancelledDetail> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                       Text(
                         'Request a Callback',
-                        style: TextStyle(
-                          fontSize: 18,
+                        style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+                   
                           fontWeight: FontWeight.w500,
                           color: Color(0xff424242),
                         ),
@@ -336,8 +340,8 @@ class _BookingCancelledDetailState extends State<BookingCancelledDetail> {
                       const SizedBox(height: 2),
                       Text(
                         'Assisted booking with expert',
-                        style: TextStyle(
-                          fontSize: 14,
+                        style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
+                          
                           color: Color(0xff8E8E8E),
                           fontWeight: FontWeight.w400,
                         ),
@@ -362,11 +366,11 @@ class _BookingCancelledDetailState extends State<BookingCancelledDetail> {
                     ),
                     backgroundColor: Color(0xFFF2F7FF),
                   ),
-                  child: const Text(
+                  child:  Text(
                     'Call Us',
-                    style: TextStyle(
+                    style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                       color: Color(0xFF2372EC),
-                      fontSize: 14,
+              
                       fontWeight: FontWeight.w500,
                     ),
                   ),

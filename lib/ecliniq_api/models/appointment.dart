@@ -68,23 +68,23 @@ class AppointmentData {
 
   factory AppointmentData.fromJson(Map<String, dynamic> json) {
     // Helper to safely convert to string
-    final toString = (dynamic value, String defaultValue) {
+    toString(dynamic value, String defaultValue) {
       if (value == null) return defaultValue;
       if (value is String) return value;
       return value.toString();
-    };
+    }
 
     // Helper to safely convert to int
-    final toInt = (dynamic value, int defaultValue) {
+    toInt(dynamic value, int defaultValue) {
       if (value == null) return defaultValue;
       if (value is int) return value;
       if (value is String) return int.tryParse(value) ?? defaultValue;
       if (value is double) return value.toInt();
       return defaultValue;
-    };
+    }
 
     // Helper to safely parse DateTime
-    final parseDateTime = (dynamic value, DateTime defaultValue) {
+    parseDateTime(dynamic value, DateTime defaultValue) {
       if (value == null) return defaultValue;
       try {
         final timeStr = value is String ? value : value.toString();
@@ -92,7 +92,7 @@ class AppointmentData {
       } catch (e) {
         return defaultValue;
       }
-    };
+    }
 
     final defaultDate = DateTime.utc(1970, 1, 1);
 
@@ -157,15 +157,6 @@ class BookAppointmentResponse {
       final dataMap = json['data'] as Map<String, dynamic>;
 
       // Debug: Log the data structure
-      print(
-        'BookAppointmentResponse.fromJson - Data keys: ${dataMap.keys.toList()}',
-      );
-      print(
-        'BookAppointmentResponse.fromJson - Has paymentRequired: ${dataMap.containsKey('paymentRequired')}',
-      );
-      print(
-        'BookAppointmentResponse.fromJson - Has payment: ${dataMap.containsKey('payment')}',
-      );
 
       // Check if response contains payment-related fields
       // Backend returns: { appointmentId, status, paymentRequired, payment: {...} }
@@ -173,20 +164,13 @@ class BookAppointmentResponse {
           dataMap.containsKey('payment') ||
           dataMap.containsKey('merchantTransactionId')) {
         // Keep as Map for payment data - this structure has paymentRequired and payment object
-        print(
-          'BookAppointmentResponse.fromJson - Keeping as Map (payment data detected)',
-        );
         parsedData = dataMap;
       } else {
         // Parse as AppointmentData for regular booking response (free appointments or wallet-only)
-        print('BookAppointmentResponse.fromJson - Parsing as AppointmentData');
         try {
           parsedData = AppointmentData.fromJson(dataMap);
         } catch (e) {
           // If parsing fails, keep as Map
-          print(
-            'BookAppointmentResponse.fromJson - Failed to parse as AppointmentData: $e',
-          );
           parsedData = dataMap;
         }
       }
@@ -223,7 +207,7 @@ class AppointmentTime {
   AppointmentTime({required this.startTime, required this.endTime});
 
   factory AppointmentTime.fromJson(Map<String, dynamic> json) {
-    final parseDateTime = (dynamic value) {
+    parseDateTime(dynamic value) {
       if (value == null) return DateTime.now();
       try {
         final timeStr = value is String ? value : value.toString();
@@ -231,7 +215,7 @@ class AppointmentTime {
       } catch (e) {
         return DateTime.now();
       }
-    };
+    }
 
     return AppointmentTime(
       startTime: parseDateTime(json['startTime']),
@@ -277,7 +261,7 @@ class AppointmentListItem {
   });
 
   factory AppointmentListItem.fromJson(Map<String, dynamic> json) {
-    final parseDateTime = (dynamic value) {
+    parseDateTime(dynamic value) {
       if (value == null) return DateTime.now();
       try {
         final timeStr = value is String ? value : value.toString();
@@ -285,23 +269,23 @@ class AppointmentListItem {
       } catch (e) {
         return DateTime.now();
       }
-    };
+    }
 
-    final toStringList = (dynamic value) {
+    toStringList(dynamic value) {
       if (value == null) return <String>[];
       if (value is List) {
         return value.map((e) => e.toString()).toList();
       }
       return <String>[];
-    };
+    }
 
-    final toInt = (dynamic value) {
+    toInt(dynamic value) {
       if (value == null) return null;
       if (value is int) return value;
       if (value is String) return int.tryParse(value);
       if (value is double) return value.toInt();
       return null;
-    };
+    }
 
     return AppointmentListItem(
       appointmentId: json['appointmentId']?.toString() ?? '',
@@ -468,7 +452,7 @@ class AppointmentDetailData {
   });
 
   factory AppointmentDetailData.fromJson(Map<String, dynamic> json) {
-    final parseDateTime = (dynamic value) {
+    parseDateTime(dynamic value) {
       if (value == null) return DateTime.now();
       try {
         final timeStr = value is String ? value : value.toString();
@@ -476,25 +460,25 @@ class AppointmentDetailData {
       } catch (e) {
         return DateTime.now();
       }
-    };
+    }
 
-    final toInt = (dynamic value) {
+    toInt(dynamic value) {
       if (value == null) return null;
       if (value is int) return value;
       if (value is String) return int.tryParse(value);
       if (value is double) return value.toInt();
       return null;
-    };
+    }
 
-    final toDouble = (dynamic value) {
+    toDouble(dynamic value) {
       if (value == null) return null;
       if (value is double) return value;
       if (value is int) return value.toDouble();
       if (value is String) return double.tryParse(value);
       return null;
-    };
+    }
 
-    final toBool = (dynamic value) {
+    toBool(dynamic value) {
       if (value == null) return false;
       if (value is bool) return value;
       if (value is String) {
@@ -502,7 +486,7 @@ class AppointmentDetailData {
       }
       if (value is int) return value != 0;
       return false;
-    };
+    }
 
     return AppointmentDetailData(
       appointmentId: json['appointmentId']?.toString() ?? '',
@@ -584,29 +568,29 @@ class DoctorDetail {
   });
 
   factory DoctorDetail.fromJson(Map<String, dynamic> json) {
-    final toStringList = (dynamic value) {
+    toStringList(dynamic value) {
       if (value == null) return <String>[];
       if (value is List) {
         return value.map((e) => e.toString()).toList();
       }
       return <String>[];
-    };
+    }
 
-    final toDouble = (dynamic value) {
+    toDouble(dynamic value) {
       if (value == null) return null;
       if (value is double) return value;
       if (value is int) return value.toDouble();
       if (value is String) return double.tryParse(value);
       return null;
-    };
+    }
 
-    final toInt = (dynamic value) {
+    toInt(dynamic value) {
       if (value == null) return null;
       if (value is int) return value;
       if (value is String) return int.tryParse(value);
       if (value is double) return value.toInt();
       return null;
-    };
+    }
 
     return DoctorDetail(
       userId: json['userId']?.toString() ?? '',
@@ -708,13 +692,13 @@ class AssociatedHospital {
   });
 
   factory AssociatedHospital.fromJson(Map<String, dynamic> json) {
-    final toDouble = (dynamic value) {
+    toDouble(dynamic value) {
       if (value == null) return 0.0;
       if (value is double) return value;
       if (value is int) return value.toDouble();
       if (value is String) return double.tryParse(value) ?? 0.0;
       return 0.0;
-    };
+    }
 
     return AssociatedHospital(
       id: json['id']?.toString() ?? '',
@@ -760,7 +744,7 @@ class PatientDetail {
   });
 
   factory PatientDetail.fromJson(Map<String, dynamic> json) {
-    final parseDateTime = (dynamic value) {
+    parseDateTime(dynamic value) {
       if (value == null) return DateTime.now();
       try {
         final timeStr = value is String ? value : value.toString();
@@ -768,7 +752,7 @@ class PatientDetail {
       } catch (e) {
         return DateTime.now();
       }
-    };
+    }
 
     return PatientDetail(
       name: json['name']?.toString() ?? '',
@@ -806,7 +790,7 @@ class ScheduleDetail {
   });
 
   factory ScheduleDetail.fromJson(Map<String, dynamic> json) {
-    final parseDateTime = (dynamic value) {
+    parseDateTime(dynamic value) {
       if (value == null) return DateTime.now();
       try {
         final timeStr = value is String ? value : value.toString();
@@ -814,7 +798,7 @@ class ScheduleDetail {
       } catch (e) {
         return DateTime.now();
       }
-    };
+    }
 
     return ScheduleDetail(
       date: parseDateTime(json['date']),

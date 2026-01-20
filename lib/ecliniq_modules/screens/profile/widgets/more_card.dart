@@ -45,7 +45,7 @@ class MoreSettingsMenuWidget extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             child: Text(
               'More',
-              style: EcliniqTextStyles.headlineLarge.copyWith(
+              style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
                 color: Color(0xff8E8E8E),
               ),
             ),
@@ -118,26 +118,24 @@ class MoreSettingsMenuWidget extends StatelessWidget {
 
           const SizedBox(height: 30),
 
-          Center(
-            child: Column(
-              children: [
-                SvgPicture.asset(
-                  EcliniqIcons.ecliniqLogo.assetPath,
-                  width: 116,
-                  height: 20,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  appVersion,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xffB8B8B8),
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          // Center(
+          //   child: Column(
+          //     children: [
+          //       SvgPicture.asset(
+          //         EcliniqIcons.nameLogo.assetPath,
+          //       ),
+          //       const SizedBox(height: 4),
+          //       Text(
+          //         appVersion,
+          //         style: TextStyle(
+          //           fontSize: 14,
+          //           color: Color(0xffB8B8B8),
+          //           fontWeight: FontWeight.w400,
+          //         ),
+          //       ),
+          //     ],
+          //   ),
+          // ),
 
           const SizedBox(height: 20),
         ],
@@ -181,7 +179,11 @@ class _ReferEarnMenuItem extends StatelessWidget {
             SizedBox(
               width: 24,
               height: 24,
-              child: SvgPicture.asset(icon, width: 24, height: 24),
+              child: SvgPicture.asset(
+                icon,
+                width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+                height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -190,7 +192,7 @@ class _ReferEarnMenuItem extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: EcliniqTextStyles.headlineXMedium.copyWith(
+                    style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                       color: Color(0xff424242),
                     ),
                   ),
@@ -198,7 +200,7 @@ class _ReferEarnMenuItem extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       subtitle!,
-                      style: EcliniqTextStyles.bodySmall.copyWith(
+                      style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                         color: Color(0xff8E8E8E),
                       ),
                     ),
@@ -265,7 +267,11 @@ class _MoreMenuItem extends StatelessWidget {
             SizedBox(
               width: 24,
               height: 24,
-              child: SvgPicture.asset(icon, width: 24, height: 24),
+              child: SvgPicture.asset(
+                icon,
+                width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+                height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -274,7 +280,7 @@ class _MoreMenuItem extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: EcliniqTextStyles.headlineXMedium.copyWith(
+                    style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                       color: Color(0xff424242),
                     ),
                   ),
@@ -282,7 +288,7 @@ class _MoreMenuItem extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       subtitle!,
-                      style: EcliniqTextStyles.bodySmall.copyWith(
+                      style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                         color: Color(0xff8E8E8E),
                       ),
                     ),

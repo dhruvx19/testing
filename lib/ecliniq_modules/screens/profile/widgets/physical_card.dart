@@ -32,10 +32,9 @@ class PhysicalHealthCard extends StatelessWidget {
         children: [
           Text(
             'Physical Health Info',
-            style: EcliniqTextStyles.headlineMedium.copyWith(
+            style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
               color: Color(0xff626060),
               fontWeight: FontWeight.w400,
-              fontSize: 16,
             ),
           ),
           const SizedBox(height: 24),
@@ -113,8 +112,8 @@ class _BMIVisualization extends StatelessWidget {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     'BMI',
-                    style: EcliniqTextStyles.headlineLarge.copyWith(
-                      fontSize: 24,
+                    style: EcliniqTextStyles.responsiveHeadlineXLarge(context).copyWith(
+                
                       fontWeight: FontWeight.w400,
                       color: Color(0xff424242),
                     ),
@@ -143,8 +142,8 @@ class _BMIVisualization extends StatelessWidget {
                   alignment: Alignment.centerRight,
                   child: Text(
                     '22.3',
-                    style: EcliniqTextStyles.headlineLarge.copyWith(
-                      fontSize: 24,
+                    style: EcliniqTextStyles.responsiveHeadlineXLarge(context).copyWith(
+                     
                       fontWeight: FontWeight.w700,
                       color: _getBMIColor(),
                       height: 1,
@@ -222,9 +221,9 @@ class _TriangleIndicator extends StatelessWidget {
               child: FittedBox(
                 child: EcliniqText(
                   status,
-                  style: EcliniqTextStyles.bodyMedium.copyWith(
+                  style: EcliniqTextStyles.responsiveBodyXSmall(context).copyWith(
                     color: Colors.white,
-                    fontSize: 12,
+
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -286,18 +285,18 @@ class _InfoBox extends StatelessWidget {
         children: [
           Text(
             label,
-            style: EcliniqTextStyles.bodyXSmall.copyWith(
+            style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
               color: Color(0xff626060),
-              fontSize: 16,
+
               fontWeight: FontWeight.w400,
             ),
           ),
           const Spacer(),
           Text(
             value,
-            style: EcliniqTextStyles.headlineMedium.copyWith(
+            style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
               color: Color(0xff424242),
-              fontSize: 18,
+
               fontWeight: FontWeight.w500,
             ),
           ),

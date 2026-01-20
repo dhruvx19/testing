@@ -1,5 +1,5 @@
 class Endpoints {
-  static const String localhost = 'http://192.168.1.3:3000';
+  static const String localhost = 'https://api.upcharq.com';
   static const String prod = '';
 
   static String get websocketBaseUrl => localhost.replaceAll('/api', '');
@@ -25,7 +25,7 @@ class Endpoints {
   static String get topDoctors => '$localhost/api/doctors/top-doctors';
   static String get filteredDoctors => '$localhost/api/doctors/filteredDoctors';
   static String hospitalDetails(String hospitalId) =>
-      '$localhost/api/hospitals/getHospitalDetailsByIdbyPatient/$hospitalId';
+      '$localhost/api/hospitals/getHospitalDetailsByIdbyPatient?hospitalId=$hospitalId';
   static String getAllDoctorHospital(String hospitalId) =>
       '$localhost/api/doctors/getAllDoctorsByHospitalIdForPatient/$hospitalId';
   static String get getSlotsByDate => '$localhost/api/slots/patient/find-slots';
@@ -80,6 +80,9 @@ class Endpoints {
   static String paymentDetails(String appointmentId) =>
       '$localhost/api/payments/appointment/$appointmentId';
 
+  static String get bannersForHome =>
+      '$localhost/api/appointments/patient/home-banners';
+
   // Forget MPIN endpoints (3-step flow)
   static String get forgetMpinSendOtp =>
       '$localhost/api/auth/forget-mpin/send-otp';
@@ -92,4 +95,26 @@ class Endpoints {
       '$localhost/api/patients/update-notification-preferences';
   static String get getUnreadNotificationCount =>
       '$localhost/api/notifications/patients/get-unread-count';
+  
+  // Notifications
+  static String get getAllNotifications =>
+      '$localhost/api/notifications/patients/get-all-notifications';
+  static String markAsRead(String notificationId) =>
+      '$localhost/api/notifications/patients/mark-as-read/$notificationId';
+  static String get markAllAsRead =>
+      '$localhost/api/notifications/patients/mark-all-as-read';
+  
+  // Search
+  static String get searchProviders =>
+      '$localhost/api/search/providers';
+  
+  // Filtered Hospitals
+  static String get getFilteredHospitals =>
+      '$localhost/api/hospitals/getFilteredHospitalsByPatient';
+  
+  // Wallet endpoints
+  static String get walletBalance =>
+      '$localhost/api/patients/wallet/balance';
+  static String walletTransactions(int year) =>
+      '$localhost/api/patients/wallet/transactions?year=$year';
 }

@@ -38,25 +38,27 @@ class AuthService {
     }
   }
 
-  Future<OTPVerificationResponse> verifyOTP(String challengeId, String phone, String otp) async {
+  Future<OTPVerificationResponse> verifyOTP(
+    String challengeId,
+    String phone,
+    String otp,
+  ) async {
     final url = Uri.parse(Endpoints.verifyUser);
-    
+
     try {
       // Debug logging
-      
+
       final requestBody = {
         'challengeId': challengeId,
         'phone': phone,
         'otp': otp,
       };
-      
-      
+
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody),
       );
-
 
       final responseData = jsonDecode(response.body);
 
@@ -65,50 +67,45 @@ class AuthService {
       } else {
         // Try to get the actual error message from the server
         String errorMessage = 'Invalid OTP or verification failed';
-        
+
         if (responseData is Map<String, dynamic>) {
           // Try different common error message formats
-          errorMessage = responseData['message'] ?? 
-                        responseData['error'] ?? 
-                        responseData['data']?['message'] ??
-                        'Invalid OTP or verification failed';
-          
+          errorMessage =
+              responseData['message'] ??
+              responseData['error'] ??
+              responseData['data']?['message'] ??
+              'Invalid OTP or verification failed';
+
           // Log specific error details
         }
-        
+
         return OTPVerificationResponse.error(errorMessage);
       }
     } catch (e) {
-      return OTPVerificationResponse.error('Failed to connect to the server: $e');
+      return OTPVerificationResponse.error(
+        'Failed to connect to the server: $e',
+      );
     }
   }
 
-  /// Setup MPIN via backend API
-  /// POST /api/auth/create-mpin
-  /// Request: { "mpin": "9998" }
-  /// Response: { "success": true, "message": "MPIN created successfully", ... }
-  /// Note: User should be authenticated (have valid token) after OTP verification
-  Future<Map<String, dynamic>> setupMPIN(String mpin, {String? authToken}) async {
+  Future<Map<String, dynamic>> setupMPIN(
+    String mpin, {
+    String? authToken,
+  }) async {
     final url = Uri.parse('${Endpoints.localhost}/api/auth/create-mpin');
     try {
-      
-      final headers = <String, String>{
-        'Content-Type': 'application/json',
-      };
-      
+      final headers = <String, String>{'Content-Type': 'application/json'};
+
       // Include auth token if provided (user should be authenticated after OTP)
       if (authToken != null && authToken.isNotEmpty) {
         headers['Authorization'] = 'Bearer $authToken';
       }
-      
+
       final response = await http.post(
         url,
         headers: headers,
-        body: jsonEncode({
-          'mpin': mpin,
-        }),
+        body: jsonEncode({'mpin': mpin}),
       );
-
 
       final responseData = jsonDecode(response.body);
 
@@ -131,19 +128,15 @@ class AuthService {
     }
   }
 
-  /// Login with MPIN via backend API
-  /// POST /api/auth/login-with-mpin
-  /// Request: { "userName": "7007308462", "mpin": "9998" }
-  /// Response: { "success": true, "data": { "token": "...", "roleNames": [...] }, ... }
   Future<Map<String, dynamic>> loginWithMPIN(String phone, String mpin) async {
     final url = Uri.parse('${Endpoints.localhost}/api/auth/login-with-mpin');
     try {
-      
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'userName': phone, // Backend expects userName (can be email or mobile)
+          'userName':
+              phone, // Backend expects userName (can be email or mobile)
           'mpin': mpin,
         }),
       );
@@ -154,9 +147,10 @@ class AuthService {
           final errorData = jsonDecode(response.body);
           return {
             'success': false,
-            'message': errorData['message'] ?? 
-                       errorData['error'] ?? 
-                       'MPIN login failed with status ${response.statusCode}',
+            'message':
+                errorData['message'] ??
+                errorData['error'] ??
+                'MPIN login failed with status ${response.statusCode}',
           };
         } catch (_) {
           return {
@@ -178,29 +172,30 @@ class AuthService {
       }
 
       // Check if success is explicitly false (error response)
-      final isExplicitlyFailed = responseData['success'] == false || 
-                                 responseData['success'] == 'false';
-      
+      final isExplicitlyFailed =
+          responseData['success'] == false ||
+          responseData['success'] == 'false';
+
       if (isExplicitlyFailed) {
         // API returned explicit failure
         return {
           'success': false,
-          'message': responseData['message'] ?? 
-                    responseData['error'] ?? 
-                    'Invalid MPIN or login failed',
+          'message':
+              responseData['message'] ??
+              responseData['error'] ??
+              'Invalid MPIN or login failed',
         };
       }
 
-      // Check if success is true (handle both bool and string)
-      // If success field is missing but status is 200, assume success (for backward compatibility)
-      final isSuccess = responseData['success'] == true || 
-                       responseData['success'] == 'true' ||
-                       (responseData['success'] == null && response.statusCode == 200);
+      final isSuccess =
+          responseData['success'] == true ||
+          responseData['success'] == 'true' ||
+          (responseData['success'] == null && response.statusCode == 200);
 
       if (isSuccess) {
         // Try to get data from responseData['data'] first
         dynamic data = responseData['data'];
-        
+
         // If data is null, check if token is directly in responseData (fallback)
         if (data == null && responseData['token'] != null) {
           data = responseData;
@@ -210,21 +205,17 @@ class AuthService {
           final token = data['token'];
           if (token != null && token.toString().isNotEmpty) {
             // Extract userId from token if needed, or use phone as identifier
-            print('✅ Token extracted successfully, length: ${token.toString().length}');
             return {
               'success': true,
               'token': token.toString(),
               'roleNames': data['roleNames'] ?? [],
-              'message': data['message'] ?? 
-                        responseData['message'] ?? 
-                        'Login successful',
+              'message':
+                  data['message'] ??
+                  responseData['message'] ??
+                  'Login successful',
             };
-          } else {
-            print('❌ Token is null or empty in data: $data');
-          }
-        } else {
-          print('❌ Data is null or not a Map: $data');
-        }
+          } else {}
+        } else {}
 
         // If we got here, token is missing
         return {
@@ -235,9 +226,10 @@ class AuthService {
         // Login failed
         return {
           'success': false,
-          'message': responseData['message'] ?? 
-                    responseData['error'] ?? 
-                    'MPIN login failed',
+          'message':
+              responseData['message'] ??
+              responseData['error'] ??
+              'MPIN login failed',
         };
       }
     } catch (e) {
@@ -248,19 +240,13 @@ class AuthService {
     }
   }
 
-  /// Step 1: Send OTP to existing contact (email or mobile)
-  /// POST /api/auth/change-contact/send-existing-otp
-  /// Request: { "type": "mobile" } or { "type": "email" }
-  /// Response: { "success": true, "data": { "challengeId": "...", "sentTo": "...", "contact": "..." } }
   Future<Map<String, dynamic>> sendExistingContactOTP({
     required String type, // "mobile" or "email"
     String? authToken,
   }) async {
     final url = Uri.parse(Endpoints.sendExistingContactOTP);
     try {
-      final headers = <String, String>{
-        'Content-Type': 'application/json',
-      };
+      final headers = <String, String>{'Content-Type': 'application/json'};
 
       if (authToken != null && authToken.isNotEmpty) {
         headers['Authorization'] = 'Bearer $authToken';
@@ -269,9 +255,7 @@ class AuthService {
       final response = await http.post(
         url,
         headers: headers,
-        body: jsonEncode({
-          'type': type,
-        }),
+        body: jsonEncode({'type': type}),
       );
 
       final responseData = jsonDecode(response.body);
@@ -288,7 +272,9 @@ class AuthService {
       } else {
         return {
           'success': false,
-          'message': responseData['message'] ?? 'Failed to send OTP to existing contact',
+          'message':
+              responseData['message'] ??
+              'Failed to send OTP to existing contact',
         };
       }
     } catch (e) {
@@ -299,10 +285,6 @@ class AuthService {
     }
   }
 
-  /// Step 2: Verify existing contact OTP
-  /// POST /api/auth/change-contact/verify-existing-otp
-  /// Request: { "challengeId": "...", "otp": "..." }
-  /// Response: { "success": true, "data": { "verificationToken": "..." } }
   Future<Map<String, dynamic>> verifyExistingContactOtp({
     required String challengeId,
     required String otp,
@@ -310,9 +292,7 @@ class AuthService {
   }) async {
     final url = Uri.parse(Endpoints.verifyExistingContactOtp);
     try {
-      final headers = <String, String>{
-        'Content-Type': 'application/json',
-      };
+      final headers = <String, String>{'Content-Type': 'application/json'};
 
       if (authToken != null && authToken.isNotEmpty) {
         headers['Authorization'] = 'Bearer $authToken';
@@ -321,10 +301,7 @@ class AuthService {
       final response = await http.post(
         url,
         headers: headers,
-        body: jsonEncode({
-          'challengeId': challengeId,
-          'otp': otp,
-        }),
+        body: jsonEncode({'challengeId': challengeId, 'otp': otp}),
       );
 
       final responseData = jsonDecode(response.body);
@@ -334,12 +311,16 @@ class AuthService {
         return {
           'success': true,
           'verificationToken': data['verificationToken'],
-          'message': responseData['message'] ?? 'Existing contact verified successfully',
+          'message':
+              responseData['message'] ??
+              'Existing contact verified successfully',
         };
       } else {
         return {
           'success': false,
-          'message': responseData['message'] ?? 'Failed to verify existing contact OTP',
+          'message':
+              responseData['message'] ??
+              'Failed to verify existing contact OTP',
         };
       }
     } catch (e) {
@@ -350,11 +331,6 @@ class AuthService {
     }
   }
 
-  /// Step 3: Send OTP to new contact
-  /// POST /api/auth/change-contact/send-new-otp
-  /// Request: { "type": "mobile", "newContact": "..." } or { "type": "email", "newContact": "..." }
-  /// Response: { "success": true, "data": { "challengeId": "...", "maskedContact": "..." } }
-  /// Note: Verification token from step 2 is checked automatically by backend
   Future<Map<String, dynamic>> sendNewContactOtp({
     required String type, // "mobile" or "email"
     required String newContact, // New mobile number or email
@@ -362,9 +338,7 @@ class AuthService {
   }) async {
     final url = Uri.parse(Endpoints.sendNewContactOtp);
     try {
-      final headers = <String, String>{
-        'Content-Type': 'application/json',
-      };
+      final headers = <String, String>{'Content-Type': 'application/json'};
 
       if (authToken != null && authToken.isNotEmpty) {
         headers['Authorization'] = 'Bearer $authToken';
@@ -373,10 +347,7 @@ class AuthService {
       final response = await http.post(
         url,
         headers: headers,
-        body: jsonEncode({
-          'type': type,
-          'newContact': newContact,
-        }),
+        body: jsonEncode({'type': type, 'newContact': newContact}),
       );
 
       final responseData = jsonDecode(response.body);
@@ -392,7 +363,8 @@ class AuthService {
       } else {
         return {
           'success': false,
-          'message': responseData['message'] ?? 'Failed to send OTP to new contact',
+          'message':
+              responseData['message'] ?? 'Failed to send OTP to new contact',
           'statusCode': response.statusCode,
         };
       }
@@ -404,11 +376,6 @@ class AuthService {
     }
   }
 
-  /// Step 4: Verify new contact OTP and complete the change contact flow
-  /// POST /api/auth/change-contact/verify-new-otp
-  /// Request: { "challengeId": "...", "otp": "..." }
-  /// Response: { "success": true, "data": { "phone": "..." } or { "email": "..." } }
-  /// Note: Contact type is stored in Redis from step 3, no need to pass type
   Future<Map<String, dynamic>> verifyNewContact({
     required String challengeId, // From send-new-otp response
     required String otp, // OTP from new contact
@@ -416,9 +383,7 @@ class AuthService {
   }) async {
     final url = Uri.parse(Endpoints.verifyNewContactOtp);
     try {
-      final headers = <String, String>{
-        'Content-Type': 'application/json',
-      };
+      final headers = <String, String>{'Content-Type': 'application/json'};
 
       if (authToken != null && authToken.isNotEmpty) {
         headers['Authorization'] = 'Bearer $authToken';
@@ -427,10 +392,7 @@ class AuthService {
       final response = await http.post(
         url,
         headers: headers,
-        body: jsonEncode({
-          'challengeId': challengeId,
-          'otp': otp,
-        }),
+        body: jsonEncode({'challengeId': challengeId, 'otp': otp}),
       );
 
       final responseData = jsonDecode(response.body);
@@ -456,19 +418,13 @@ class AuthService {
     }
   }
 
-  /// Step 1: Send OTP for forget MPIN
-  /// POST /api/auth/forget-mpin/send-otp
-  /// Request: { "phone": "1234567890" }
-  /// Response: { "success": true, "data": { "challengeId": "...", "phone": "..." } }
   Future<Map<String, dynamic>> forgetMpinSendOtp({
     required String phone,
     String? authToken,
   }) async {
     final url = Uri.parse(Endpoints.forgetMpinSendOtp);
     try {
-      final headers = <String, String>{
-        'Content-Type': 'application/json',
-      };
+      final headers = <String, String>{'Content-Type': 'application/json'};
 
       if (authToken != null && authToken.isNotEmpty) {
         headers['Authorization'] = 'Bearer $authToken';
@@ -477,9 +433,7 @@ class AuthService {
       final response = await http.post(
         url,
         headers: headers,
-        body: jsonEncode({
-          'phone': phone,
-        }),
+        body: jsonEncode({'phone': phone}),
       );
 
       final responseData = jsonDecode(response.body);
@@ -506,10 +460,6 @@ class AuthService {
     }
   }
 
-  /// Step 2: Verify OTP for forget MPIN
-  /// POST /api/auth/forget-mpin/verify-otp
-  /// Request: { "challengeId": "...", "otp": "...", "phone": "..." }
-  /// Response: { "success": true, "data": { "phone": "..." } }
   Future<Map<String, dynamic>> forgetMpinVerifyOtp({
     required String challengeId,
     required String otp,
@@ -521,7 +471,7 @@ class AuthService {
         'challengeId': challengeId,
         'otp': otp,
       };
-      
+
       if (phone != null && phone.isNotEmpty) {
         requestBody['phone'] = phone;
       }
@@ -555,10 +505,6 @@ class AuthService {
     }
   }
 
-  /// Step 3: Reset MPIN
-  /// POST /api/auth/forget-mpin/reset
-  /// Request: { "mpin": "1234", "phone": "1234567890" }
-  /// Response: { "success": true, "message": "MPIN reset successfully" }
   Future<Map<String, dynamic>> forgetMpinReset({
     required String mpin,
     required String phone,
@@ -568,10 +514,7 @@ class AuthService {
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'mpin': mpin,
-          'phone': phone,
-        }),
+        body: jsonEncode({'mpin': mpin, 'phone': phone}),
       );
 
       final responseData = jsonDecode(response.body);

@@ -54,7 +54,10 @@ class DateSelector extends StatelessWidget {
           }
 
           return Padding(
-            padding: const EdgeInsets.only(right: 10),
+            padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+              context,
+              right: 10.0,
+            ),
             child: GestureDetector(
               onTap: isLoading ? null : () => onDateChanged(date),
               child: isLoading
@@ -62,19 +65,22 @@ class DateSelector extends StatelessWidget {
                       baseColor: Colors.grey.shade300,
                       highlightColor: Colors.grey.shade100,
                       child: Container(
-                        width: 100,
-                        height: 70,
+                        width: EcliniqTextStyles.getResponsiveWidth(context, 100.0),
+                        height: EcliniqTextStyles.getResponsiveHeight(context, 70.0),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           border: Border.all(color: Colors.grey[300]!),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(
+                            EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0),
+                          ),
                         ),
                       ),
                     )
                   : Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
+                      padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                        context,
+                        horizontal: 16.0,
+                        vertical: 8.0,
                       ),
                       decoration: BoxDecoration(
                         color: isSelected
@@ -84,15 +90,17 @@ class DateSelector extends StatelessWidget {
                           color: isSelected
                               ? const Color(0xFF2372EC)
                               : Color(0xffB8B8B8),
-                          width: 0.5,
+                          width: EcliniqTextStyles.getResponsiveSize(context, 0.5),
                         ),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(
+                          EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0),
+                        ),
                       ),
                       child: Column(
                         children: [
                           Text(
                             label,
-                            style: EcliniqTextStyles.titleXBLarge.copyWith(
+                            style: EcliniqTextStyles.responsiveTitleXBLarge(context).copyWith(
                               color: isSelected
                                   ? Colors.white
                                   : Color(0xff424242),
@@ -102,7 +110,7 @@ class DateSelector extends StatelessWidget {
                             tokenCount != null
                                 ? '$tokenCount Tokens Available'
                                 : 'Tap to view slots',
-                            style: EcliniqTextStyles.bodySmall.copyWith(
+                            style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                               color: isSelected
                                   ? Colors.white
                                   : const Color(0xFF3EAF3F),

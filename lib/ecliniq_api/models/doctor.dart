@@ -1,3 +1,5 @@
+import 'package:ecliniq/ecliniq_api/storage_service.dart';
+
 class Doctor {
   final String id;
   final String name;
@@ -139,6 +141,31 @@ class Doctor {
       'isFavourite': isFavourite,
       'serviceFee': serviceFee,
     };
+  }
+
+  /// Get public URL for profile photo
+  /// @description Gets the public URL for the profile photo using StorageService.
+  /// Returns null if profilePhoto is null or empty, or if it's not a public key.
+  /// @param storageService - StorageService instance to fetch public URLs
+  /// @returns Future<String?> - Public URL if available, null otherwise
+  /// @example
+  /// ```dart
+  /// final storageService = StorageService();
+  /// final photoUrl = await doctor.getProfilePhotoUrl(storageService);
+  /// ```
+  Future<String?> getProfilePhotoUrl(StorageService storageService) async {
+    if (profilePhoto == null || profilePhoto!.isEmpty) {
+      return null;
+    }
+    // If already a full URL, return as-is
+    if (profilePhoto!.startsWith('http://') || profilePhoto!.startsWith('https://')) {
+      return profilePhoto;
+    }
+    // Get public URL if it starts with "public/"
+    if (profilePhoto!.startsWith('public/')) {
+      return await storageService.getPublicUrl(profilePhoto);
+    }
+    return null;
   }
 }
 
@@ -776,6 +803,31 @@ class DoctorDetails {
           .toList(),
       isFavourite: json['isFavourite'] ?? false,
     );
+  }
+
+  /// Get public URL for profile photo
+  /// @description Gets the public URL for the profile photo using StorageService.
+  /// Returns null if profilePhoto is null or empty, or if it's not a public key.
+  /// @param storageService - StorageService instance to fetch public URLs
+  /// @returns Future<String?> - Public URL if available, null otherwise
+  /// @example
+  /// ```dart
+  /// final storageService = StorageService();
+  /// final photoUrl = await doctorDetails.getProfilePhotoUrl(storageService);
+  /// ```
+  Future<String?> getProfilePhotoUrl(StorageService storageService) async {
+    if (profilePhoto == null || profilePhoto!.isEmpty) {
+      return null;
+    }
+    // If already a full URL, return as-is
+    if (profilePhoto!.startsWith('http://') || profilePhoto!.startsWith('https://')) {
+      return profilePhoto;
+    }
+    // Get public URL if it starts with "public/"
+    if (profilePhoto!.startsWith('public/')) {
+      return await storageService.getPublicUrl(profilePhoto);
+    }
+    return null;
   }
 }
 

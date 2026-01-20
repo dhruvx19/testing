@@ -1,79 +1,92 @@
+import 'package:ecliniq/ecliniq_api/models/wallet.dart';
 import 'package:flutter/widgets.dart';
 import '../model/transaction_model.dart';
 
 class TransactionProvider extends ChangeNotifier {
-  final List<MonthlyTransactions> _monthlyData = [
-    MonthlyTransactions(
-      month: 'September, 2025',
-      transactions: [
-        Transaction(
-          type: 'credit',
-          amount: 20,
-          date: DateTime(2025, 9, 20, 12, 7),
-        ),
-        Transaction(
-          type: 'debit',
-          amount: 20,
-          date: DateTime(2025, 9, 20, 12, 7),
-        ),
-        Transaction(
-          type: 'credit',
-          amount: 15,
-          date: DateTime(2025, 9, 18, 10, 30),
-        ),
-      ],
-    ),
-    MonthlyTransactions(
-      month: 'August, 2025',
-      transactions: [
-        Transaction(
-          type: 'debit',
-          amount: 30,
-          date: DateTime(2025, 8, 15, 14, 20),
-        ),
-        Transaction(
-          type: 'credit',
-          amount: 50,
-          date: DateTime(2025, 8, 10, 9, 15),
-        ),
-        Transaction(
-          type: 'debit',
-          amount: 10,
-          date: DateTime(2025, 8, 5, 16, 45),
-        ),
-      ],
-    ),
-    MonthlyTransactions(
-      month: 'April, 2025',
-      transactions: [
-        Transaction(
-          type: 'credit',
-          amount: 100,
-          date: DateTime(2025, 4, 25, 11, 30),
-        ),
-        Transaction(
-          type: 'debit',
-          amount: 25,
-          date: DateTime(2025, 4, 20, 13, 15),
-        ),
-        Transaction(
-          type: 'credit',
-          amount: 40,
-          date: DateTime(2025, 4, 10, 10, 0),
-        ),
-        Transaction(
-          type: 'debit',
-          amount: 15,
-          date: DateTime(2025, 4, 5, 15, 30),
-        ),
-      ],
-    ),
-  ];
+  WalletTransactionsData? transactionsData;
+  bool isLoading;
+  int selectedYear;
+  final Function(int)? onYearChanged;
+  final Map<int, bool> _expansionState = {}; // Track expansion state by index
 
-  List<MonthlyTransactions> get monthlyData => _monthlyData;
+  TransactionProvider({
+    this.transactionsData,
+    this.isLoading = false,
+    this.selectedYear = 2025,
+    this.onYearChanged,
+  }) {
+    // Initialize expansion states
+    _initializeExpansionStates();
+  }
+
+  void updateData({
+    WalletTransactionsData? newTransactionsData,
+    bool? newIsLoading,
+    int? newSelectedYear,
+  }) {
+    transactionsData = newTransactionsData ?? transactionsData;
+    isLoading = newIsLoading ?? isLoading;
+    selectedYear = newSelectedYear ?? selectedYear;
+    _initializeExpansionStates();
+    notifyListeners();
+  }
+
+  void _initializeExpansionStates() {
+    final data = monthlyData;
+    for (int i = 0; i < data.length; i++) {
+      if (!_expansionState.containsKey(i)) {
+        // Always expand the first month (latest/January)
+        _expansionState[i] = i == 0;
+      }
+    }
+    // Ensure first month is always expanded
+    if (data.isNotEmpty) {
+      _expansionState[0] = true;
+    }
+  }
+
+  List<MonthlyTransactions> get monthlyData {
+    if (isLoading || transactionsData == null) {
+      return [];
+    }
+
+    // Convert API transactions to UI model
+    final List<MonthlyTransactions> monthlyList = [];
+    
+    transactionsData!.transactions.forEach((monthKey, transactions) {
+      final uiTransactions = transactions.map((tx) {
+        return Transaction(
+          type: tx.isCredit ? 'credit' : 'debit',
+          amount: tx.amount.toInt(),
+          date: tx.createdAt,
+        );
+      }).toList();
+
+      monthlyList.add(
+        MonthlyTransactions(
+          month: monthKey,
+          transactions: uiTransactions,
+          isExpanded: _expansionState[monthlyList.length] ?? false,
+        ),
+      );
+    });
+
+    // Sort by date (newest first)
+    monthlyList.sort((a, b) {
+      if (a.transactions.isEmpty || b.transactions.isEmpty) return 0;
+      return b.transactions.first.date.compareTo(a.transactions.first.date);
+    });
+
+    // Update expansion states after sorting
+    for (int i = 0; i < monthlyList.length; i++) {
+      monthlyList[i].isExpanded = _expansionState[i] ?? false;
+    }
+
+    return monthlyList;
+  }
 
   void toggleExpansion(int index) {
-    _monthlyData[index].isExpanded = !_monthlyData[index].isExpanded;
+    _expansionState[index] = !(_expansionState[index] ?? false);
     notifyListeners();
   }
 }

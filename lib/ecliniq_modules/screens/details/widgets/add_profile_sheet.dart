@@ -26,8 +26,7 @@ class ProfilePhotoSelector extends StatelessWidget {
             children: [
               EcliniqText(
                 'Add Profile Photo',
-                style: EcliniqTextStyles.titleXLarge.copyWith(
-                  fontSize: 18,
+                style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                   fontWeight: FontWeight.w500,
                   color: Color(0xff424242),
                 ),
@@ -80,8 +79,7 @@ class ProfilePhotoSelector extends StatelessWidget {
           children: [
             Text(
               title,
-              style: EcliniqTextStyles.titleMedium.copyWith(
-                fontSize: 18,
+              style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                 fontWeight: FontWeight.w500,
                 color: Color(0xff424242),
               ),

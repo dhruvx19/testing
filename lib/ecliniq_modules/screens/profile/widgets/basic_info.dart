@@ -1,8 +1,11 @@
+import 'package:ecliniq/ecliniq_api/wallet_service.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
+import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/upchar_Q_coin/upchar_q_coin_page.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:provider/provider.dart';
 
 class BasicInfoCards extends StatelessWidget {
   final String age;
@@ -58,20 +61,24 @@ class _InfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SvgPicture.asset(path, height: 26, width: 26),
+        SvgPicture.asset(
+          path,
+          height: EcliniqTextStyles.getResponsiveIconSize(context, 26),
+          width: EcliniqTextStyles.getResponsiveIconSize(context, 26),
+        ),
         const SizedBox(height: 8),
-        Text(label, style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+        Text(label, style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith( color: Colors.grey[600])),
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith( fontWeight: FontWeight.bold),
         ),
       ],
     );
   }
 }
 
-class ProfileHeader extends StatelessWidget {
+class ProfileHeader extends StatefulWidget {
   final VoidCallback? onSettingsPressed;
   final String? profileImageUrl;
 
@@ -80,6 +87,51 @@ class ProfileHeader extends StatelessWidget {
     this.onSettingsPressed,
     this.profileImageUrl,
   });
+
+  @override
+  State<ProfileHeader> createState() => _ProfileHeaderState();
+}
+
+class _ProfileHeaderState extends State<ProfileHeader> {
+  final WalletService _walletService = WalletService();
+  double _walletBalance = 0.0;
+  bool _isLoadingBalance = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchWalletBalance();
+  }
+
+  Future<void> _fetchWalletBalance() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final authToken = authProvider.authToken;
+
+    if (authToken == null) {
+      setState(() {
+        _isLoadingBalance = false;
+      });
+      return;
+    }
+
+    try {
+      final response = await _walletService.getBalance(authToken: authToken);
+      if (mounted) {
+        setState(() {
+          if (response.success && response.data != null) {
+            _walletBalance = response.data!.balance;
+          }
+          _isLoadingBalance = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingBalance = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -119,11 +171,12 @@ class ProfileHeader extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        '20',
-                        style: EcliniqTextStyles.bodyMedium.copyWith(
+                        _isLoadingBalance
+                            ? '...'
+                            : _walletBalance.toStringAsFixed(0),
+                        style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                           color: Color(0xff626060),
                           fontWeight: FontWeight.w500,
-                          fontSize: 18,
                           height: 1.0,
                         ),
                       ),

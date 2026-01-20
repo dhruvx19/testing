@@ -276,7 +276,7 @@ class _VerifyExistingEmailState extends State<VerifyExistingEmail> {
                     children: [
                       Text(
                         'Verify & Next',
-                        style: EcliniqTextStyles.headlineMedium.copyWith(
+                        style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
                           color: _isOtpValid
                               ? Colors.white
                               : const Color(0xffD6D6D6),
@@ -325,7 +325,7 @@ class _VerifyExistingEmailState extends State<VerifyExistingEmail> {
         ),
         title: Text(
           'Verify Existing Account',
-          style: EcliniqTextStyles.headlineMedium.copyWith(
+          style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
             color: const Color(0xff424242),
           ),
         ),
@@ -343,7 +343,7 @@ class _VerifyExistingEmailState extends State<VerifyExistingEmail> {
           children: [
             Text(
               'For your security, please verify your existing account information.',
-              style: EcliniqTextStyles.headlineXMedium.copyWith(
+              style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                 color: const Color(0xff424242),
               ),
             ),
@@ -372,17 +372,17 @@ class _VerifyExistingEmailState extends State<VerifyExistingEmail> {
                 children: [
                   Text(
                     'OTP sent to ',
-                    style: EcliniqTextStyles.headlineMedium.copyWith(
+                    style:EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                       fontWeight: FontWeight.w400,
-                      fontSize: 18,
+                     
                       color: const Color(0xff424242),
                     ),
                   ),
                   Text(
                     _contact!,
-                    style: EcliniqTextStyles.headlineMedium.copyWith(
+                    style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                       fontWeight: FontWeight.w500,
-                      fontSize: 18,
+                     
                       color: const Color(0xff424242),
                     ),
                   ),
@@ -393,7 +393,7 @@ class _VerifyExistingEmailState extends State<VerifyExistingEmail> {
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
                     _errorMessage!,
-                    style: EcliniqTextStyles.bodyMedium.copyWith(
+                    style: EcliniqTextStyles.responsiveBodyMedium(context).copyWith(
                       color: Colors.red,
                     ),
                   ),
@@ -401,7 +401,7 @@ class _VerifyExistingEmailState extends State<VerifyExistingEmail> {
               const SizedBox(height: 24),
               PinCodeTextField(
                 appContext: context,
-                textStyle: EcliniqTextStyles.headlineXMedium.copyWith(
+                textStyle: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                   color: const Color(0xff424242),
                 ),
                 length: 6,
@@ -444,7 +444,7 @@ class _VerifyExistingEmailState extends State<VerifyExistingEmail> {
                 children: [
                   Text(
                     'Didn\'t receive the OTP',
-                    style: EcliniqTextStyles.bodySmall.copyWith(
+                    style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                       color: const Color(0xff8E8E8E),
                     ),
                   ),
@@ -459,7 +459,7 @@ class _VerifyExistingEmailState extends State<VerifyExistingEmail> {
                       const SizedBox(width: 4),
                       Text(
                         _formatTimer(_resendTimer),
-                        style: EcliniqTextStyles.bodySmall.copyWith(
+                        style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                           color: const Color(0xff424242),
                         ),
                       ),
@@ -472,7 +472,7 @@ class _VerifyExistingEmailState extends State<VerifyExistingEmail> {
                 onTap: _canResend ? _resendOTP : null,
                 child: Text(
                   'Resend',
-                  style: EcliniqTextStyles.headlineXMedium.copyWith(
+                  style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                     color: const Color(0xff2372EC),
                   ),
                 ),
@@ -501,7 +501,7 @@ class _VerifyExistingEmailState extends State<VerifyExistingEmail> {
                       Expanded(
                         child: Text(
                           _errorMessage!,
-                          style: EcliniqTextStyles.bodyMedium.copyWith(
+                          style: EcliniqTextStyles.responsiveBodyMedium(context).copyWith(
                             color: Colors.red.shade600,
                           ),
                         ),
@@ -524,7 +524,7 @@ class _VerifyExistingEmailState extends State<VerifyExistingEmail> {
                   ),
                   child: Text(
                     'Retry',
-                    style: EcliniqTextStyles.titleXLarge.copyWith(
+                    style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                       color: Colors.white,
                     ),
                   ),
