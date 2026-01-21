@@ -64,7 +64,7 @@ class NotificationService {
         'x-access-token': authToken,
       };
 
-      final response = await http.put(url, headers: headers);
+      final response = await http.patch(url, headers: headers);
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);

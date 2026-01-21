@@ -51,7 +51,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     await provider.fetchAllNotifications();
   }
 
-  /// Get notifications from provider
+  /// Get all notifications from provider (flattened list)
   List<NotificationModel> get _allNotifications {
     final provider = Provider.of<NotificationProvider>(context);
     final data = provider.allNotifications?['data'];
@@ -70,65 +70,72 @@ class _NotificationScreenState extends State<NotificationScreen> {
     allNotifications.addAll(
       olderList.map((item) => NotificationModel.fromJson(item)),
     );
+    
+    // Sort by createdAt descending (newest first)
+    allNotifications.sort((a, b) {
+      try {
+        final dateA = DateTime.parse(a.createdAt);
+        final dateB = DateTime.parse(b.createdAt);
+        return dateB.compareTo(dateA);
+      } catch (e) {
+        return 0;
+      }
+    });
 
     return allNotifications;
   }
 
   /// Get unread notifications from provider
   List<NotificationModel> get _unreadNotifications {
-    final provider = Provider.of<NotificationProvider>(context);
-    final data = provider.allNotifications?['data'];
-    if (data == null) return [];
-
-    final unreadData = data['unread'];
-    if (unreadData == null) return [];
-
-    final newList = (unreadData['new'] as List<dynamic>?) ?? [];
-    final olderList = (unreadData['older'] as List<dynamic>?) ?? [];
-
-    final unreadNotifications = <NotificationModel>[];
-    unreadNotifications.addAll(
-      newList.map((item) => NotificationModel.fromJson(item)),
-    );
-    unreadNotifications.addAll(
-      olderList.map((item) => NotificationModel.fromJson(item)),
-    );
-
-    return unreadNotifications;
+    // Filter _allNotifications where isRead is false
+    return _allNotifications.where((n) => !n.isRead).toList();
   }
 
-  /// Get filtered notifications based on selected tab
-  List<NotificationModel> get _filteredNotifications {
+  /// Get new notifications based on custom logic
+  /// (Unread) OR (Time < 48 hours)
+  List<NotificationModel> get _newNotifications {
     if (selectedTab == 'Unread') {
+      // In Unread tab, everything is "New" basically
       return _unreadNotifications;
     }
-    return _allNotifications;
+
+    final all = _allNotifications;
+    final now = DateTime.now();
+    final fortyEightHoursAgo = now.subtract(const Duration(hours: 48));
+
+    return all.where((n) {
+      if (!n.isRead) return true; // Keep unread in New
+      
+      try {
+        final date = DateTime.parse(n.createdAt);
+        return date.isAfter(fortyEightHoursAgo); // Keep recent (< 48h) in New
+      } catch (e) {
+        return true; // Fallback to new if date parse fails
+      }
+    }).toList();
   }
 
-  /// Get new notifications (from "new" array)
-  List<NotificationModel> get _newNotifications {
-    final provider = Provider.of<NotificationProvider>(context);
-    final data = provider.allNotifications?['data'];
-    if (data == null) return [];
-
-    final allData = selectedTab == 'All' ? data['all'] : data['unread'];
-    if (allData == null) return [];
-
-    final newList = (allData['new'] as List<dynamic>?) ?? [];
-    return newList.map((item) => NotificationModel.fromJson(item)).toList();
-  }
-
-  /// Get older notifications (from "older" array)
+  /// Get older notifications based on custom logic
+  /// (Read) AND (Time >= 48 hours)
   List<NotificationModel> get _olderNotifications {
-    final provider = Provider.of<NotificationProvider>(context);
-    final data = provider.allNotifications?['data'];
-    if (data == null) return [];
+    if (selectedTab == 'Unread') {
+      return []; // No "older" section in unread tab
+    }
 
-    final allData = selectedTab == 'All' ? data['all'] : data['unread'];
-    if (allData == null) return [];
+    final all = _allNotifications;
+    final now = DateTime.now();
+    final fortyEightHoursAgo = now.subtract(const Duration(hours: 48));
 
-    final olderList = (allData['older'] as List<dynamic>?) ?? [];
-    return olderList.map((item) => NotificationModel.fromJson(item)).toList();
+    return all.where((n) {
+      if (!n.isRead) return false; // Unread are in New
+      
+      try {
+        final date = DateTime.parse(n.createdAt);
+        return date.isBefore(fortyEightHoursAgo) || date.isAtSameMomentAs(fortyEightHoursAgo);
+      } catch (e) {
+        return false;
+      }
+    }).toList();
   }
 
   /// Check if there are unread notifications
@@ -492,8 +499,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
     NotificationItem notification,
     NotificationModel model,
   ) {
-    // Set background color based on notification type
-    final backgroundColor = notification.type == NotificationType.bookingRequestReceived
+    // Set background color based on read status
+    final backgroundColor = notification.isRead
         ? const Color(0xFFF9F9F9)
         : Colors.white;
 
