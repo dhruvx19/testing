@@ -5,11 +5,13 @@ import 'package:flutter_svg/svg.dart';
 class CircularProfileCarousel extends StatefulWidget {
   final List<String>? profileImages;
   final List<String>? profileNames;
+  final List<String>? profileSvgs; // Optional custom SVG list
 
   const CircularProfileCarousel({
     super.key,
     this.profileImages,
     this.profileNames,
+    this.profileSvgs,
   });
 
   @override
@@ -21,20 +23,25 @@ class _CircularProfileCarouselState extends State<CircularProfileCarousel>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
-  // Fallback colors if no images provided
-  // final List<Color> profileColors = [
-  //   Color(0xFF4F46E5),
-  //   Color(0xFF2372EC),
-  //   Color(0xFFEC4899),
-  //   Color(0xFFF59E0B),
-  //   Color(0xFF10B981),
-  //   Color(0xFF8B5CF6),
-  //   Color(0xFF06B6D4),
-  // ];
+  // Default 7 different SVG assets for profiles
+  // Replace these with your actual SVG asset paths from EcliniqIcons
+  late final List<String> defaultProfileSvgs;
 
   @override
   void initState() {
     super.initState();
+    
+    // Initialize default SVGs - replace with your actual icon paths
+    defaultProfileSvgs = [
+      EcliniqIcons.one.assetPath,   // Profile 1
+      EcliniqIcons.two.assetPath,   // Profile 2 - REPLACE with different icon
+      EcliniqIcons.three.assetPath,   // Profile 3 - REPLACE with different icon
+      EcliniqIcons.four.assetPath,   // Profile 4 - REPLACE with different icon
+      EcliniqIcons.five.assetPath,   // Profile 5 - REPLACE with different icon
+      EcliniqIcons.six.assetPath,   // Profile 6 - REPLACE with different icon
+      EcliniqIcons.seven.assetPath,   // Profile 7 - REPLACE with different icon
+    ];
+    
     _controller = AnimationController(
       duration: const Duration(seconds: 4),
       vsync: this,
@@ -53,6 +60,14 @@ class _CircularProfileCarouselState extends State<CircularProfileCarousel>
     if (parts.isEmpty) return '?';
     if (parts.length == 1) return parts.first[0].toUpperCase();
     return (parts.first[0] + parts.last[0]).toUpperCase();
+  }
+
+  String _getSvgForProfile(int profileIndex) {
+    // Use custom SVGs if provided, otherwise use defaults
+    if (widget.profileSvgs != null && profileIndex < widget.profileSvgs!.length) {
+      return widget.profileSvgs![profileIndex];
+    }
+    return defaultProfileSvgs[profileIndex % defaultProfileSvgs.length];
   }
 
   @override
@@ -211,8 +226,8 @@ class _CircularProfileCarouselState extends State<CircularProfileCarousel>
                     containerSize: containerSize,
                     opacity: opacity,
                     zIndex: zIndex,
-                    //  color: profileColors[profileIndex],
                     imageUrl: imageUrl,
+                    svgAssetPath: _getSvgForProfile(profileIndex),
                     initials: _getInitials(name),
                   ),
                 );
@@ -239,8 +254,8 @@ class _ProfileItem extends StatelessWidget {
   final double containerSize;
   final double opacity;
   final double zIndex;
-  // final Color color;
   final String? imageUrl;
+  final String svgAssetPath;
   final String initials;
 
   const _ProfileItem({
@@ -250,8 +265,8 @@ class _ProfileItem extends StatelessWidget {
     required this.containerSize,
     required this.opacity,
     required this.zIndex,
-    // required this.color,
     this.imageUrl,
+    required this.svgAssetPath,
     required this.initials,
   });
 
@@ -265,31 +280,12 @@ class _ProfileItem extends StatelessWidget {
         child: SizedBox(
           width: containerSize,
           height: containerSize,
-          // decoration: BoxDecoration(
-          //   shape: BoxShape.circle,
-          //   // color: imageUrl == null,
-          //   border: Border.all(color: Color(0xFF96BFFF), width: 1.5),
-          // ),
           child: SvgPicture.asset(
-            EcliniqIcons.photo2.assetPath,
+            svgAssetPath,
             width: containerSize,
             height: containerSize,
+            fit: BoxFit.contain,
           ),
-          // child: ClipOval(
-          //   child: imageUrl != null && imageUrl!.isNotEmpty
-          //       ? Image.network(
-          //           imageUrl!,
-          //           fit: BoxFit.cover,
-          //           errorBuilder: (context, error, stackTrace) {
-          //             return _buildInitials();
-          //           },
-          //           loadingBuilder: (context, child, loadingProgress) {
-          //             if (loadingProgress == null) return child;
-          //             return _buildInitials();
-          //           },
-          //         )
-          //       : _buildInitials(),
-          // ),
         ),
       ),
     );

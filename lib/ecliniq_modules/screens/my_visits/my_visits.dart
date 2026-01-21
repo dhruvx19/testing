@@ -8,6 +8,8 @@ import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/comple
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/confirmed.dart';
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/requested.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/widgets/quick_actions.dart';
+import 'package:ecliniq/ecliniq_modules/screens/search_specialities/speciality_doctors_list.dart';
+import 'package:ecliniq/ecliniq_modules/screens/search_specialities/speciality_hospital_list.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_modules/screens/notifications/notification_screen.dart';
 import 'package:ecliniq/ecliniq_modules/screens/notifications/provider/notification_provider.dart';
@@ -23,6 +25,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:shimmer/shimmer.dart';
 
 class AppointmentData {
   final String id;
@@ -290,7 +293,6 @@ class _MyVisitsState extends State<MyVisits>
       title: 'Error',
       subtitle: message,
       duration: const Duration(seconds: 3),
-      
     );
   }
 
@@ -354,6 +356,7 @@ class _MyVisitsState extends State<MyVisits>
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Container(
+      
       height: screenWidth * 0.13,
       padding: EdgeInsets.only(
         left: 16,
@@ -695,7 +698,7 @@ class _MyVisitsState extends State<MyVisits>
             context,
             baseHeight: 52.0,
           ),
-         
+
           child: ElevatedButton(
             onPressed: () => _navigateToDetailPage(appointment),
             style: ElevatedButton.styleFrom(
@@ -705,11 +708,11 @@ class _MyVisitsState extends State<MyVisits>
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(4),
               ),
-              padding:  EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
-                  context,
-                  horizontal: 0,
-                  vertical: 12,
-                ),
+              padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                context,
+                horizontal: 0,
+                vertical: 12,
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -950,17 +953,49 @@ class _MyVisitsState extends State<MyVisits>
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: [
+                                        
+                                            SvgPicture.asset(
+                                              EcliniqIcons
+                                                  .noSchedule
+                                                  .assetPath,
+                                              width: EcliniqTextStyles
+                                                  .getResponsiveWidth(
+                                                context,
+                                                130,
+                                              ),
+                                              height: EcliniqTextStyles
+                                                  .getResponsiveHeight(
+                                                context,
+                                                140,
+                                              ),
+                                            ),
+                                            SizedBox(
+                                              height:
+                                                  EcliniqTextStyles
+                                                      .getResponsiveSpacing(
+                                                context,
+                                                16,
+                                              ),
+                                            ),
+                                            Text('No Schedule yet!',
+                                                style: EcliniqTextStyles
+                                                    .responsiveBodyLarge(
+                                                  context,
+                                                ).copyWith(
+                                                  color: Color(0xFF424242),
+                                                  fontWeight: FontWeight.w400,
+                                                )),
                                             Text(
-                                              'No appointments found',
-                                              style: EcliniqTextStyles
-                                                  .responsiveTitleXLarge(
+                                              'You didn’t scheduled any appointment.',
+                                              style:
+                                                  EcliniqTextStyles.responsiveBodyLarge(
                                                     context,
-                                                  )
-                                                  .copyWith(
-                                                    color: Color(0xFF666666),
+                                                  ).copyWith(
+                                                    color: Color(0xFF8E8E8E),
+                                                      fontWeight: FontWeight.w400,
                                                   ),
                                             ),
-                                            const SizedBox(height: 24),
+                                            const SizedBox(height: 8),
                                             const Padding(
                                               padding: EdgeInsets.symmetric(
                                                 horizontal: 16.0,
@@ -1001,6 +1036,211 @@ class _MyVisitsState extends State<MyVisits>
           ],
         );
       },
+    );
+  }
+}
+
+class QuickActionsWidget extends StatelessWidget {
+  final bool showShimmer;
+
+  const QuickActionsWidget({super.key, this.showShimmer = false});
+
+  @override
+  Widget build(BuildContext context) {
+    if (showShimmer) {
+      return _buildShimmer(context);
+    }
+
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    final itemWidth = isSmallScreen ? 195.0 : 195.0;
+    final itemHeight = isSmallScreen ? 192.0 : 90.0;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+
+      children: [
+        Padding(
+          padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+            context,
+           
+            bottom: 16.0,
+            top: 12.0,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: _buildQuickActionItem(
+                  context,
+                  width: itemWidth,
+                  height: itemHeight,
+                  assetPath: EcliniqIcons.quick1.assetPath,
+                  title: 'Consult Doctors',
+                  onTap: () => EcliniqRouter.push(SpecialityDoctorsList()),
+                ),
+              ),
+              SizedBox(
+                width: EcliniqTextStyles.getResponsiveSpacing(context, 12.0),
+              ),
+              Expanded(
+                child: _buildQuickActionItem(
+                  context,
+                  width: itemWidth,
+                  height: itemHeight,
+                  assetPath: EcliniqIcons.hospitalBuilding.assetPath,
+                  title: 'Visit Hospitals',
+                  onTap: () => EcliniqRouter.push(SpecialityHospitalList()),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickActionItem(
+    BuildContext context, {
+    required double width,
+    required double height,
+    required String assetPath,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(
+          EcliniqTextStyles.getResponsiveBorderRadius(context, 16.0),
+        ),
+        child: Container(
+          width: width,
+          height: height,
+          padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 6.0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(
+              EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0),
+            ),
+            border: Border.all(color: Color(0xffD6D6D6), width: 0.5),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: EcliniqTextStyles.getResponsiveWidth(context, 52),
+                height: EcliniqTextStyles.getResponsiveHeight(context, 52),
+                decoration: BoxDecoration(
+                  color: Color(0xFFF8FAFF),
+                  borderRadius: BorderRadius.circular(
+                    EcliniqTextStyles.getResponsiveBorderRadius(context, 26.0),
+                  ),
+                  border: Border.all(color: Color(0xFFE4EFFF), width: 0.5),
+                ),
+                child: Center(
+                  child: SvgPicture.asset(
+                    assetPath,
+                    width: EcliniqTextStyles.getResponsiveIconSize(
+                      context,
+                      32.0,
+                    ),
+                    height: EcliniqTextStyles.getResponsiveIconSize(
+                      context,
+                      32.0,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: EcliniqTextStyles.getResponsiveSpacing(context, 2),
+              ),
+              EcliniqText(
+                title,
+                textAlign: TextAlign.center,
+                style: EcliniqTextStyles.responsiveTitleXLarge(
+                  context,
+                ).copyWith(color: Color(0xFF424242)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShimmer(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: EcliniqTextStyles.getResponsiveSize(context, 8.0),
+              height: EcliniqTextStyles.getResponsiveSize(context, 24.0),
+              decoration: BoxDecoration(
+                color: Color(0xFF96BFFF),
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(
+                    EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+                  ),
+                  bottomRight: Radius.circular(
+                    EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(
+              width: EcliniqTextStyles.getResponsiveSpacing(context, 12.0),
+            ),
+            Shimmer.fromColors(
+              baseColor: Colors.grey.shade300,
+              highlightColor: Colors.grey.shade100,
+              child: Container(
+                height: EcliniqTextStyles.getResponsiveSize(context, 20.0),
+                width: EcliniqTextStyles.getResponsiveWidth(context, 150.0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(
+                    EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 16.0)),
+
+        Padding(
+          padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 12.0),
+          child: Row(
+            children: [
+              Expanded(child: _buildCardShimmer(context)),
+              SizedBox(
+                width: EcliniqTextStyles.getResponsiveSpacing(context, 10.0),
+              ),
+              Expanded(child: _buildCardShimmer(context)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCardShimmer(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade300,
+      highlightColor: Colors.grey.shade100,
+      child: Container(
+        height: EcliniqTextStyles.getResponsiveHeight(context, 105.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(
+            EcliniqTextStyles.getResponsiveBorderRadius(context, 12.0),
+          ),
+          border: Border.all(color: Colors.grey.shade200, width: 1),
+        ),
+      ),
     );
   }
 }

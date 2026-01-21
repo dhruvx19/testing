@@ -38,28 +38,42 @@ class _TimeSlotCardState extends State<TimeSlotCard> {
     return const Color(0xFF3EAf3f);
   }
 
+  Color _getAvailabilityColorToken() {
+    if (widget.isDisabled || widget.available == 0) {
+      return Color(0xffB8B8B8);
+    }
+    if (widget.available <= 2) return const Color(0xFFFEF9E6);
+    if (widget.available <= 5) return const Color(0xFFFEF9E6);
+    return const Color(0xFFF2FFF3);
+  }
+
   @override
   Widget build(BuildContext context) {
     Color backgroundColor;
     Color borderColor;
-    Color textColor;
+    Color titleColor;
+    Color timeColor;
 
     if (widget.isDisabled) {
       backgroundColor = Colors.white;
-      borderColor = const Color(0xFFB8B8B8);
-      textColor = Color(0xffB8B8B8);
+      borderColor = const Color(0xFFD6D6D6);
+      titleColor = const Color(0xFFD6D6D6);
+      timeColor = const Color(0xFFD6D6D6);
     } else if (_isPressed) {
       backgroundColor = const Color(0xFF2372EC);
       borderColor = const Color(0xFF2372EC);
-      textColor = Colors.white;
+      titleColor = Colors.white;
+      timeColor = Colors.white;
     } else if (widget.isSelected) {
       backgroundColor = const Color(0xFFF8FAFF);
       borderColor = const Color(0xFF0D47A1);
-      textColor = const Color(0xFF0D47A1);
+      titleColor = const Color(0xFF424242);
+      timeColor = const Color(0xFF424242);
     } else {
       backgroundColor = Colors.white;
       borderColor = const Color(0xFFB8B8B8);
-      textColor = Colors.black87;
+      titleColor = const Color(0xFF424242);
+      timeColor = const Color(0xFF424242);
     }
 
     return Listener(
@@ -115,41 +129,64 @@ class _TimeSlotCardState extends State<TimeSlotCard> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                 
+                        Row(
+                          children: [
+                            Text(
+                              widget.title,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: titleColor,
+                              ),
+                            ),
+                        SizedBox(width: 4,),
                         Text(
-                          '${widget.title} (${widget.time})',
-                          style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
-                            color: textColor,
+                          '(${widget.time})',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w400,
+                            color: timeColor,
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: widget.isDisabled
-                                ? Colors.transparent
-                                : _isPressed
-                                ? Colors.white.withOpacity(0.9)
-                                : _getAvailabilityColor().withOpacity(0.15),
-                            border: Border.all(
-                              color: widget.isSelected
-                                  ? Color(0xff2372EC)
-                                  : Colors.transparent,
-                              width: 0.5,
+                          ],
+                        ),
+                        
+                        const SizedBox(height: 4),
+                        // Only show container when tokens are available
+                        if (widget.available > 0)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
                             ),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            widget.available == 0
-                                ? 'No tokens available'
-                                : '${widget.available} Tokens Available',
+                            decoration: BoxDecoration(
+                              color: _isPressed
+                                  ? Colors.white.withOpacity(0.9)
+                                  : _getAvailabilityColorToken(),
+                              border: Border.all(
+                                color: widget.isSelected
+                                    ? Color(0xff2372EC)
+                                    : Colors.transparent,
+                                width: 0.5,
+                              ),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              '${widget.available} Tokens Available',
+                              style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+                                color: _getAvailabilityColor(),
+                              ),
+                            ),
+                          )
+                        else
+                          // Simple text without container padding when no tokens
+                          Text(
+                            'No tokens available',
                             style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
                               color: _getAvailabilityColor(),
                             ),
                           ),
-                        ),
                       ],
                     ),
                   ),
