@@ -9,7 +9,6 @@ import 'package:ecliniq/ecliniq_api/patient_service.dart';
 import 'package:ecliniq/ecliniq_api/payment_service.dart';
 import 'package:ecliniq/ecliniq_api/wallet_service.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
-import 'package:ecliniq/ecliniq_icons/assets/home/widgets/top_bar_widgets/easy_way_book.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/booking/payment_method_selection_screen.dart'
     show PaymentMethodBottomSheet;
@@ -19,12 +18,12 @@ import 'package:ecliniq/ecliniq_modules/screens/login/profile_help.dart';
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/widgets/common.dart'
     hide DoctorInfoCard;
 import 'package:ecliniq/ecliniq_services.dart/phonepe_service.dart';
-import 'package:ecliniq/ecliniq_utils/bottom_sheets/select_member_bottom_sheet.dart';
-import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
-import 'package:ecliniq/ecliniq_ui/lib/widgets/button/button.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/error_snackbar.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
+import 'package:ecliniq/ecliniq_utils/bottom_sheets/select_member_bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -355,18 +354,18 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
       if (errors.isEmpty) {
         return defaultMessage;
       }
-      
+
       // Extract messages from error objects
       final messages = errors
           .where((error) => error is Map && error['message'] != null)
           .map((error) => error['message'].toString())
           .where((msg) => msg.isNotEmpty)
           .toList();
-      
+
       if (messages.isNotEmpty) {
         return messages.join(', ');
       }
-      
+
       // If no message field, try to convert first item to string
       return errors.first.toString();
     }
@@ -682,7 +681,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
       }
 
       final age = _calculateAgeFromDob(_selectedDependent!.dob);
-      
+
       // Capitalize gender properly
       final gender = capitalize(_selectedDependent!.gender);
 
@@ -782,9 +781,9 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
           alignment: Alignment.centerLeft,
           child: Text(
             'Review Details',
-            style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
-              color: Color(0xff424242),
-            ),
+            style: EcliniqTextStyles.responsiveHeadlineMedium(
+              context,
+            ).copyWith(color: Color(0xff424242)),
           ),
         ),
         actions: [
@@ -795,16 +794,16 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
             child: Row(
               children: [
                 SvgPicture.asset(
-                  EcliniqIcons.questionCircleWhite.assetPath,
+                  EcliniqIcons.questionCircleFilled.assetPath,
                   width: 24,
                   height: 24,
                 ),
                 const SizedBox(width: 4),
-                 Text(
+                Text(
                   'Help',
-                  style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
-                    color: Colors.white,
-                  ),
+                  style: EcliniqTextStyles.responsiveHeadlineXMedium(
+                    context,
+                  ).copyWith(color: Color(0xff424242)),
                 ),
                 const SizedBox(width: 10),
               ],
@@ -842,11 +841,12 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                 children: [
                   RepaintBoundary(
                     child: Padding(
-                      padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
-                        context,
-                        horizontal: 16,
-                        vertical: 0,
-                      ),
+                      padding:
+                          EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                            context,
+                            horizontal: 16,
+                            vertical: 0,
+                          ),
                       child: AppointmentDetailsSection(
                         patient: _buildPatientInfo(),
                         timeInfo: _buildAppointmentTimeInfo(),
@@ -857,11 +857,12 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                   const SizedBox(height: 8),
                   RepaintBoundary(
                     child: Padding(
-                      padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
-                        context,
-                        horizontal: 16,
-                        vertical: 0,
-                      ),
+                      padding:
+                          EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                            context,
+                            horizontal: 16,
+                            vertical: 0,
+                          ),
                       child: ClinicLocationCard(clinic: _buildClinicInfo()),
                     ),
                   ),
@@ -870,9 +871,9 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                     padding: EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
                       'Reason for Visit',
-                      style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
-                        color: Color(0xff626060),
-                      ),
+                      style: EcliniqTextStyles.responsiveHeadlineXMedium(
+                        context,
+                      ).copyWith(color: Color(0xff626060)),
                     ),
                   ),
                   SizedBox(
@@ -894,9 +895,10 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                           minLines: 1,
                           decoration: InputDecoration(
                             hintText: 'Enter Reason for Visit',
-                            hintStyle: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
-                              color: Color(0xffD6D6D6),
-                            ),
+                            hintStyle:
+                                EcliniqTextStyles.responsiveHeadlineXMedium(
+                                  context,
+                                ).copyWith(color: Color(0xffD6D6D6)),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                               borderSide: const BorderSide(
@@ -919,16 +921,17 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                                 width: 0.5,
                               ),
                             ),
-                            contentPadding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
-                              context,
-                              horizontal: 12,
-                              vertical: 14,
-                            ),
+                            contentPadding:
+                                EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                                  context,
+                                  horizontal: 12,
+                                  vertical: 14,
+                                ),
                             counterText: '',
                             suffixText: '${_reasonController.text.length}/150',
-                            suffixStyle: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
-                              color: Color(0xff8E8E8E),
-                            ),
+                            suffixStyle: EcliniqTextStyles.responsiveBodySmall(
+                              context,
+                            ).copyWith(color: Color(0xff8E8E8E)),
                           ),
                           onChanged: (_) => setState(() {}),
                         );
@@ -946,9 +949,9 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                     ),
                     child: Text(
                       'Refer By',
-                      style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
-                        color: Color(0xff626060),
-                      ),
+                      style: EcliniqTextStyles.responsiveHeadlineXMedium(
+                        context,
+                      ).copyWith(color: Color(0xff626060)),
                     ),
                   ),
                   SizedBox(
@@ -965,11 +968,14 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                       controller: _referByController,
                       decoration: InputDecoration(
                         hintText: 'Enter Who Refer you',
-                        hintStyle:  EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
-                          color: Color(0xffD6D6D6),
-                        
-                          fontWeight: FontWeight.w400,
-                        ),
+                        hintStyle:
+                            EcliniqTextStyles.responsiveHeadlineBMedium(
+                              context,
+                            ).copyWith(
+                              color: Color(0xffD6D6D6),
+
+                              fontWeight: FontWeight.w400,
+                            ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide: const BorderSide(
@@ -992,11 +998,12 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                             width: 0.5,
                           ),
                         ),
-                        contentPadding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
-                          context,
-                          horizontal: 12,
-                          vertical: 14,
-                        ),
+                        contentPadding:
+                            EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                              context,
+                              horizontal: 12,
+                              vertical: 14,
+                            ),
                       ),
                     ),
                   ),
@@ -1005,15 +1012,18 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                   // Wallet checkbox section (only for new appointments)
                   RepaintBoundary(
                     child: Container(
-                      padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16),
+                      padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(
+                        context,
+                        16,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Payment Details',
-                            style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
-                              color: Color(0xff424242),
-                            ),
+                            style: EcliniqTextStyles.responsiveHeadlineLarge(
+                              context,
+                            ).copyWith(color: Color(0xff424242)),
                           ),
                           const SizedBox(height: 16),
                           Row(
@@ -1021,13 +1031,17 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                             children: [
                               Text(
                                 'Consultation Fee',
-                                style: EcliniqTextStyles.responsiveHeadlineXMedium(context)
-                                    .copyWith(color: Color(0xff626060)),
+                                style:
+                                    EcliniqTextStyles.responsiveHeadlineXMedium(
+                                      context,
+                                    ).copyWith(color: Color(0xff626060)),
                               ),
                               Text(
                                 'Pay at Clinic',
-                                style: EcliniqTextStyles.responsiveHeadlineXMedium(context)
-                                    .copyWith(color: Color(0xff424242)),
+                                style:
+                                    EcliniqTextStyles.responsiveHeadlineXMedium(
+                                      context,
+                                    ).copyWith(color: Color(0xff424242)),
                               ),
                             ],
                           ),
@@ -1040,8 +1054,10 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                                   children: [
                                     Text(
                                       'Service Fee & Tax',
-                                      style: EcliniqTextStyles.responsiveHeadlineXMedium(context)
-                                          .copyWith(color: Color(0xff626060)),
+                                      style:
+                                          EcliniqTextStyles.responsiveHeadlineXMedium(
+                                            context,
+                                          ).copyWith(color: Color(0xff626060)),
                                     ),
                                     const SizedBox(width: 6),
                                     Icon(
@@ -1053,8 +1069,10 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                                 ),
                                 Text(
                                   '₹${_serviceFee.toStringAsFixed(0)}',
-                                  style: EcliniqTextStyles.responsiveHeadlineXMedium(context)
-                                      .copyWith(color: Color(0xff424242)),
+                                  style:
+                                      EcliniqTextStyles.responsiveHeadlineXMedium(
+                                        context,
+                                      ).copyWith(color: Color(0xff424242)),
                                 ),
                               ],
                             ),
@@ -1067,8 +1085,10 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                                   children: [
                                     Text(
                                       'Service Fee & Tax',
-                                      style: EcliniqTextStyles.responsiveHeadlineXMedium(context)
-                                          .copyWith(color: Color(0xff626060)),
+                                      style:
+                                          EcliniqTextStyles.responsiveHeadlineXMedium(
+                                            context,
+                                          ).copyWith(color: Color(0xff626060)),
                                     ),
                                     const SizedBox(width: 6),
                                     Icon(
@@ -1082,14 +1102,18 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                                   children: [
                                     Text(
                                       '₹49',
-                                      style: EcliniqTextStyles.responsiveHeadlineXLMedium(context)
-                                          .copyWith(color: Color(0xff8E8E8E)),
+                                      style:
+                                          EcliniqTextStyles.responsiveHeadlineXLMedium(
+                                            context,
+                                          ).copyWith(color: Color(0xff8E8E8E)),
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
                                       'Free',
-                                      style: EcliniqTextStyles.responsiveHeadlineMedium(context)
-                                          .copyWith(color: Color(0xff54B955)),
+                                      style:
+                                          EcliniqTextStyles.responsiveHeadlineMedium(
+                                            context,
+                                          ).copyWith(color: Color(0xff54B955)),
                                     ),
                                   ],
                                 ),
@@ -1098,9 +1122,9 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                             const SizedBox(height: 4),
                             Text(
                               'We care for you and provide a free booking',
-                              style: EcliniqTextStyles.responsiveButtonSmall(context).copyWith(
-                                color: Color(0xff54B955),
-                              ),
+                              style: EcliniqTextStyles.responsiveButtonSmall(
+                                context,
+                              ).copyWith(color: Color(0xff54B955)),
                             ),
                           ],
                           const SizedBox(height: 8),
@@ -1117,18 +1141,22 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                                 _serviceFee > 0
                                     ? 'Total Payable Now'
                                     : 'Total Payable',
-                                style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
-                                  color: Color(0xff424242),
-                                ),
+                                style:
+                                    EcliniqTextStyles.responsiveHeadlineLarge(
+                                      context,
+                                    ).copyWith(color: Color(0xff424242)),
                               ),
                               Text(
                                 _serviceFee > 0
                                     ? '₹${_serviceFee.toStringAsFixed(0)}'
                                     : '₹00.00',
-                                style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
-                                  color: Color(0xff424242),
-                                  fontWeight: FontWeight.w500,
-                                ),
+                                style:
+                                    EcliniqTextStyles.responsiveHeadlineLarge(
+                                      context,
+                                    ).copyWith(
+                                      color: Color(0xff424242),
+                                      fontWeight: FontWeight.w500,
+                                    ),
                               ),
                             ],
                           ),
@@ -1149,7 +1177,10 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
             _buildPaymentBottomBar()
           else
             Container(
-              padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16),
+              padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(
+                context,
+                16,
+              ),
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
@@ -1171,25 +1202,17 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
   Future<void> _onConfirmVisit() async {
     if (_isBooking) return;
 
-    if (!widget.isReschedule && _reasonController.text.trim().isEmpty) {
-        CustomErrorSnackBar.show(
-          context: context,
-          title: 'Reason required',
-          subtitle: 'Please enter a reason for visit',
-          duration: const Duration(seconds: 4),
-      
-      );
-      return;
-    }
+    
 
     // Check if payment method is selected when service fee > 0 and wallet is not used
-    if (_serviceFee > 0 && !_useWallet && _selectedPaymentMethodPackage == null) {
-        CustomErrorSnackBar.show(
-          context: context,
-          title: 'Payment Method Required',
-          subtitle: 'Please select a payment method',
-          duration: const Duration(seconds: 4),
-     
+    if (_serviceFee > 0 &&
+        !_useWallet &&
+        _selectedPaymentMethodPackage == null) {
+      CustomErrorSnackBar.show(
+        context: context,
+        title: 'Payment Method Required',
+        subtitle: 'Please select a payment method',
+        duration: const Duration(seconds: 4),
       );
       return;
     }
@@ -1199,12 +1222,11 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
     final finalPatientId = _currentUserDetails?.userId ?? _patientId;
 
     if (finalPatientId == null || finalPatientId.isEmpty) {
-        CustomErrorSnackBar.show(
-          context: context,
-          title: 'Patient ID Required',
-          subtitle: 'Unable to get patient information. Please try again.',
-          duration: const Duration(seconds: 4),
-       
+      CustomErrorSnackBar.show(
+        context: context,
+        title: 'Patient ID Required',
+        subtitle: 'Unable to get patient information. Please try again.',
+        duration: const Duration(seconds: 4),
       );
       return;
     }
@@ -1252,17 +1274,19 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
 
             String errorMessage = 'Failed to reschedule appointment';
             if (response.errors != null) {
-              errorMessage = _extractErrorMessage(response.errors, errorMessage);
+              errorMessage = _extractErrorMessage(
+                response.errors,
+                errorMessage,
+              );
             } else if (response.message.isNotEmpty) {
               errorMessage = response.message;
             }
 
-              CustomErrorSnackBar.show(
-                context: context,
-                title: 'Reschedule Failed',
-                subtitle: errorMessage,
-                duration: const Duration(seconds: 4),
-           
+            CustomErrorSnackBar.show(
+              context: context,
+              title: 'Reschedule Failed',
+              subtitle: errorMessage,
+              duration: const Duration(seconds: 4),
             );
           }
         }
@@ -1296,8 +1320,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                 : null;
 
             // Debug logging
-            if (responseDataJson != null) {
-            }
+            if (responseDataJson != null) {}
 
             // Check if payment data is present (new backend format)
             if (responseDataJson != null &&
@@ -1307,7 +1330,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
 
               // Check if total amount is 0, gateway amount is 0, service fee was 0, or wallet is used
               // If any of these conditions are true, skip payment and go directly to request sent screen
-              if (paymentData.totalAmount == 0 || 
+              if (paymentData.totalAmount == 0 ||
                   paymentData.gatewayAmount == 0 ||
                   _serviceFee == 0 ||
                   _useWallet) {
@@ -1343,7 +1366,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
               }
 
               if (paymentData.requiresGateway) {
-
                 // Validate payment data
                 if (paymentData.requestPayload == null ||
                     paymentData.requestPayload!.isEmpty) {
@@ -1353,12 +1375,11 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                     });
 
                     CustomErrorSnackBar.show(
-                        context: context,
-                        title: 'Payment Error',
-                        subtitle:
-                            'Payment data is missing. Please try booking again.',
-                        duration: const Duration(seconds: 4),
-                    
+                      context: context,
+                      title: 'Payment Error',
+                      subtitle:
+                          'Payment data is missing. Please try booking again.',
+                      duration: const Duration(seconds: 4),
                     );
                     return;
                   }
@@ -1369,13 +1390,12 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                       _isBooking = false;
                     });
 
-                      CustomErrorSnackBar.show(
-                        context: context,
-                        title: 'Payment Error',
-                        subtitle:
-                            'Order ID is missing. Please try booking again.',
-                        duration: const Duration(seconds: 4),
-                 
+                    CustomErrorSnackBar.show(
+                      context: context,
+                      title: 'Payment Error',
+                      subtitle:
+                          'Order ID is missing. Please try booking again.',
+                      duration: const Duration(seconds: 4),
                     );
                     return;
                   }
@@ -1433,13 +1453,11 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                     _isBooking = false;
                   });
 
-           
-                    CustomErrorSnackBar.show(
-                      context: context,
-                      title: 'Payment Method Required',
-                      subtitle: 'Please select a payment method',
-                      duration: const Duration(seconds: 4),
-                
+                  CustomErrorSnackBar.show(
+                    context: context,
+                    title: 'Payment Method Required',
+                    subtitle: 'Please select a payment method',
+                    duration: const Duration(seconds: 4),
                   );
                 }
               } else {
@@ -1518,18 +1536,19 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
 
             String errorMessage = 'Failed to book appointment';
             if (response.errors != null) {
-              errorMessage = _extractErrorMessage(response.errors, errorMessage);
+              errorMessage = _extractErrorMessage(
+                response.errors,
+                errorMessage,
+              );
             } else if (response.message.isNotEmpty) {
               errorMessage = response.message;
             }
 
-        
-CustomErrorSnackBar.show(
-                context: context,
-                title: 'Booking Failed',
-                subtitle: errorMessage,
-                duration: const Duration(seconds: 4),
-             
+            CustomErrorSnackBar.show(
+              context: context,
+              title: 'Booking Failed',
+              subtitle: errorMessage,
+              duration: const Duration(seconds: 4),
             );
           }
         }
@@ -1540,18 +1559,15 @@ CustomErrorSnackBar.show(
           _isBooking = false;
         });
 
-
-          CustomErrorSnackBar.show(
-            context: context,
-            title: widget.isReschedule ? 'Reschedule Failed' : 'Booking Failed',
-            subtitle: e.toString().replaceFirst('Exception: ', ''),
-            duration: const Duration(seconds: 4),
-        
+        CustomErrorSnackBar.show(
+          context: context,
+          title: widget.isReschedule ? 'Reschedule Failed' : 'Booking Failed',
+          subtitle: e.toString().replaceFirst('Exception: ', ''),
+          duration: const Duration(seconds: 4),
         );
       }
     }
   }
-
 
   Widget _buildConfirmVisitButtonForZeroFee() {
     final isButtonEnabled = !_isBooking;
@@ -1610,20 +1626,22 @@ CustomErrorSnackBar.show(
                           children: [
                             Text(
                               '₹00.00',
-                              style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
-                                color: Colors.white,
-                                height: 1.0,
-                              ),
+                              style: EcliniqTextStyles.responsiveHeadlineMedium(
+                                context,
+                              ).copyWith(color: Colors.white, height: 1.0),
                             ),
                             Text(
                               'Total',
-                              style: EcliniqTextStyles.responsiveBodyMedium(context).copyWith(
-                                fontWeight: FontWeight.w300,
-                                color: isButtonEnabled
-                                    ? Colors.white
-                                    : const Color(0xff8E8E8E),
-                                height: 1.0,
-                              ),
+                              style:
+                                  EcliniqTextStyles.responsiveBodyMedium(
+                                    context,
+                                  ).copyWith(
+                                    fontWeight: FontWeight.w300,
+                                    color: isButtonEnabled
+                                        ? Colors.white
+                                        : const Color(0xff8E8E8E),
+                                    height: 1.0,
+                                  ),
                             ),
                           ],
                         ),
@@ -1634,17 +1652,23 @@ CustomErrorSnackBar.show(
                         children: [
                           Text(
                             'Confirm Visit',
-                            style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
-                              color: Colors.white,
-                            ),
+                            style: EcliniqTextStyles.responsiveHeadlineMedium(
+                              context,
+                            ).copyWith(color: Colors.white),
                           ),
 
                           Transform.rotate(
                             angle: 1.5708,
                             child: SvgPicture.asset(
                               EcliniqIcons.arrowUp.assetPath,
-                              width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
-                              height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+                              width: EcliniqTextStyles.getResponsiveIconSize(
+                                context,
+                                24,
+                              ),
+                              height: EcliniqTextStyles.getResponsiveIconSize(
+                                context,
+                                24,
+                              ),
                               colorFilter: ColorFilter.mode(
                                 isButtonEnabled
                                     ? Colors.white
@@ -1663,260 +1687,283 @@ CustomErrorSnackBar.show(
     );
   }
 
-
- Widget _buildPaymentBottomBar() {
-  return Container(
-    padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
-      context,
-      left: 16,
-      right: 16,
-      top: 16,
-      bottom: 28,
-    ),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey.withOpacity(0.2),
-          spreadRadius: 2,
-          blurRadius: 8,
-          offset: const Offset(0, -2),
-        ),
-      ],
-    ),
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Wallet balance checkbox
-        Row(
-          children: [
-            Image.asset(
-              EcliniqIcons.upcharCoinSmall1.assetPath,
-              width: 24,
-              height: 24,
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Upchar-Q Coin Balance : ₹${_walletBalance.toStringAsFixed(2)}',
-                style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
-                  color: Color(0xff424242),
-                ),
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                setState(() {
-                  _useWallet = !_useWallet;
-                });
-              },
-              child: Container(
+  Widget _buildPaymentBottomBar() {
+    return Container(
+      padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+        context,
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: 28,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 2,
+            blurRadius: 8,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Wallet balance checkbox
+          Row(
+            children: [
+              Image.asset(
+                EcliniqIcons.upcharCoinSmall1.assetPath,
                 width: 24,
                 height: 24,
-                decoration: BoxDecoration(
-                  color: _useWallet
-                      ? const Color(0xFF2372EC)
-                      : Colors.transparent,
-                  border: Border.all(
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Upchar-Q Coin Balance : ₹${_walletBalance.toStringAsFixed(2)}',
+                  style: EcliniqTextStyles.responsiveBodySmall(
+                    context,
+                  ).copyWith(color: Color(0xff424242)),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _useWallet = !_useWallet;
+                  });
+                },
+                child: Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
                     color: _useWallet
                         ? const Color(0xFF2372EC)
-                        : const Color(0xFF8E8E8E),
-                    width: 1,
-                  ),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: _useWallet
-                    ? Icon(
-                        Icons.check,
-                        size: EcliniqTextStyles.getResponsiveIconSize(context, 18),
-                        color: Colors.white,
-                      )
-                    : null,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Container(height: 0.5, color: const Color(0xffB8B8B8)),
-        const SizedBox(height: 8),
-        // Payment method selector and button
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // Left side - Payment method selector
-            Expanded(
-              child: GestureDetector(
-                onTap: _isBooking ? null : () => _showPaymentMethodBottomSheet(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Icon and "Pay using" in same row
-                    Row(
-                      children: [
-                        if (_selectedPaymentMethodPackage != null)
-                          Image.asset(
-                            _getIconForPackage(
-                              _selectedPaymentMethodPackage!,
-                            ),
-                            width: 20,
-                            height: 20,
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Icon(
-                                Icons.payment,
-                                size: 20,
-                                color: Color(0xFF2372EC),
-                              );
-                            },
-                          )
-                        else
-                          Image.asset(
-                            EcliniqIcons.googlePay.assetPath,
-                            width: 20,
-                            height: 20,
-                          ),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            'Pay using',
-                            style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
-                              color: Color(0xff424242),
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        SvgPicture.asset(
-                          EcliniqIcons.arrowUp.assetPath,
-                          width: 16,
-                          height: 16,
-                          colorFilter: const ColorFilter.mode(
-                            Color(0xff626060),
-                            BlendMode.srcIn,
-                          ),
-                        ),
-                      ],
+                        : Colors.transparent,
+                    border: Border.all(
+                      color: _useWallet
+                          ? const Color(0xFF2372EC)
+                          : const Color(0xFF8E8E8E),
+                      width: 1,
                     ),
-                    const SizedBox(height: 2),
-                    // Payment method name below
-                    Text(
-                      _selectedPaymentMethod ?? 'Google Pay UPI',
-                      style: EcliniqTextStyles.responsiveBodyMedium(context).copyWith(
-                        fontWeight: FontWeight.w300,
-                        color: _selectedPaymentMethod != null
-                            ? Color(0xff424242)
-                            : Color(0xff8E8E8E),
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-
-            // Right side - Pay & Confirm button
-            GestureDetector(
-              onTap: _isBooking ? null : () => _onConfirmVisit(),
-              child: Container(
-                height: EcliniqTextStyles.getResponsiveButtonHeight(
-                  context,
-                  baseHeight: 52.0,
-                ),
-                decoration: BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                      color: Color(0x4D2372EC),
-                      offset: Offset(2, 2),
-                      blurRadius: 10,
-                      spreadRadius: 0,
-                    ),
-                  ],
-                  color: const Color(0xFF2372EC),
-                  borderRadius: BorderRadius.circular(
-                    EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
+                    borderRadius: BorderRadius.circular(4),
                   ),
-                ),
-                child: Padding(
-                  padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
-                    context,
-                    left: 12,
-                    top: 6,
-                    bottom: 6,
-                    right: 12,
-                  ),
-                  child: _isBooking
-                      ? SizedBox(
-                          width: 180, // Fixed width for loading state
-                          child: const Center(
-                            child: EcliniqLoader(size: 24, color: Colors.white),
+                  child: _useWallet
+                      ? Icon(
+                          Icons.check,
+                          size: EcliniqTextStyles.getResponsiveIconSize(
+                            context,
+                            18,
                           ),
+                          color: Colors.white,
                         )
-                      : Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // Amount and Total
-                            Flexible(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '₹${_serviceFee.toStringAsFixed(0)}',
-                                    style: EcliniqTextStyles.responsiveTitleXBLarge(context).copyWith(
-                                      color: Colors.white,
-                                      height: 1.0,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'Total',
-                                    style: EcliniqTextStyles.responsiveBodyMediumProminent(context).copyWith(
-                                      fontWeight: FontWeight.w300,
-                                      color: Colors.white,
-                                      height: 1.0,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 34),
-                            // Pay & Confirm text
-                            Expanded(
-                              child: Text(
-                                'Pay & Confirm',
-                                style: EcliniqTextStyles.responsiveTitleXBLarge(context).copyWith(
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-
-                            Transform.rotate(
-                              angle: 1.5708,
-                              child: SvgPicture.asset(
-                                EcliniqIcons.arrowUp.assetPath,
-                                width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
-                                height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
-                                colorFilter: const ColorFilter.mode(
-                                  Colors.white,
-                                  BlendMode.srcIn,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                      : null,
                 ),
               ),
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
-}
+            ],
+          ),
+          const SizedBox(height: 8),
+          Container(height: 0.5, color: const Color(0xffB8B8B8)),
+          const SizedBox(height: 8),
+          // Payment method selector and button
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Left side - Payment method selector
+              Expanded(
+                child: GestureDetector(
+                  onTap: _isBooking
+                      ? null
+                      : () => _showPaymentMethodBottomSheet(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Icon and "Pay using" in same row
+                      Row(
+                        children: [
+                          if (_selectedPaymentMethodPackage != null)
+                            Image.asset(
+                              _getIconForPackage(
+                                _selectedPaymentMethodPackage!,
+                              ),
+                              width: 20,
+                              height: 20,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Icon(
+                                  Icons.payment,
+                                  size: 20,
+                                  color: Color(0xFF2372EC),
+                                );
+                              },
+                            )
+                          else
+                            Image.asset(
+                              EcliniqIcons.googlePay.assetPath,
+                              width: 20,
+                              height: 20,
+                            ),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              'Pay using',
+                              style: EcliniqTextStyles.responsiveBodySmall(
+                                context,
+                              ).copyWith(color: Color(0xff424242)),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          SvgPicture.asset(
+                            EcliniqIcons.arrowUp.assetPath,
+                            width: 16,
+                            height: 16,
+                            colorFilter: const ColorFilter.mode(
+                              Color(0xff626060),
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      // Payment method name below
+                      Text(
+                        _selectedPaymentMethod ?? 'Google Pay UPI',
+                        style: EcliniqTextStyles.responsiveBodyMedium(context)
+                            .copyWith(
+                              fontWeight: FontWeight.w300,
+                              color: _selectedPaymentMethod != null
+                                  ? Color(0xff424242)
+                                  : Color(0xff8E8E8E),
+                            ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              // Right side - Pay & Confirm button
+              GestureDetector(
+                onTap: _isBooking ? null : () => _onConfirmVisit(),
+                child: Container(
+                  height: EcliniqTextStyles.getResponsiveButtonHeight(
+                    context,
+                    baseHeight: 52.0,
+                  ),
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0x4D2372EC),
+                        offset: Offset(2, 2),
+                        blurRadius: 10,
+                        spreadRadius: 0,
+                      ),
+                    ],
+                    color: const Color(0xFF2372EC),
+                    borderRadius: BorderRadius.circular(
+                      EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+                      context,
+                      left: 12,
+                      top: 6,
+                      bottom: 6,
+                      right: 12,
+                    ),
+                    child: _isBooking
+                        ? SizedBox(
+                            width: 180, // Fixed width for loading state
+                            child: const Center(
+                              child: EcliniqLoader(
+                                size: 24,
+                                color: Colors.white,
+                              ),
+                            ),
+                          )
+                        : Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Amount and Total
+                              Flexible(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '₹${_serviceFee.toStringAsFixed(0)}',
+                                      style:
+                                          EcliniqTextStyles.responsiveTitleXBLarge(
+                                            context,
+                                          ).copyWith(
+                                            color: Colors.white,
+                                            height: 1.0,
+                                          ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Total',
+                                      style:
+                                          EcliniqTextStyles.responsiveBodyMediumProminent(
+                                            context,
+                                          ).copyWith(
+                                            fontWeight: FontWeight.w300,
+                                            color: Colors.white,
+                                            height: 1.0,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 34),
+                              // Pay & Confirm text
+                              Expanded(
+                                child: Text(
+                                  'Pay & Confirm',
+                                  style:
+                                      EcliniqTextStyles.responsiveTitleXBLarge(
+                                        context,
+                                      ).copyWith(color: Colors.white),
+                                ),
+                              ),
+
+                              Transform.rotate(
+                                angle: 1.5708,
+                                child: SvgPicture.asset(
+                                  EcliniqIcons.arrowUp.assetPath,
+                                  width:
+                                      EcliniqTextStyles.getResponsiveIconSize(
+                                        context,
+                                        24,
+                                      ),
+                                  height:
+                                      EcliniqTextStyles.getResponsiveIconSize(
+                                        context,
+                                        24,
+                                      ),
+                                  colorFilter: const ColorFilter.mode(
+                                    Colors.white,
+                                    BlendMode.srcIn,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
   String _getIconForPackage(String packageName) {
     final paymentMethods = [
@@ -2086,13 +2133,11 @@ CustomErrorSnackBar.show(
                 ),
               );
             } else {
-             
-          CustomErrorSnackBar.show(
-                  context: context,
-                  title: 'Payment Verification Failed',
-                  subtitle: verifyResponse.message,
-                  duration: const Duration(seconds: 4),
-           
+              CustomErrorSnackBar.show(
+                context: context,
+                title: 'Payment Verification Failed',
+                subtitle: verifyResponse.message,
+                duration: const Duration(seconds: 4),
               );
             }
           }
@@ -2102,14 +2147,13 @@ CustomErrorSnackBar.show(
               _isProcessingPayment = false;
             });
 
-    CustomErrorSnackBar.show(
-                context: context,
-                title: 'Payment Failed',
-                subtitle: statusData?.status == 'FAILED'
-                    ? 'Payment failed. Please try again.'
-                    : 'Payment verification timed out. Please check My Visits.',
-                duration: const Duration(seconds: 4),
-              
+            CustomErrorSnackBar.show(
+              context: context,
+              title: 'Payment Failed',
+              subtitle: statusData?.status == 'FAILED'
+                  ? 'Payment failed. Please try again.'
+                  : 'Payment verification timed out. Please check My Visits.',
+              duration: const Duration(seconds: 4),
             );
           }
         }
@@ -2119,12 +2163,11 @@ CustomErrorSnackBar.show(
             _isProcessingPayment = false;
           });
 
-       CustomErrorSnackBar.show(
-              context: context,
-              title: 'Payment Cancelled',
-              subtitle: 'Payment was cancelled. You can try booking again.',
-              duration: const Duration(seconds: 4),
-          
+          CustomErrorSnackBar.show(
+            context: context,
+            title: 'Payment Cancelled',
+            subtitle: 'Payment was cancelled. You can try booking again.',
+            duration: const Duration(seconds: 4),
           );
         }
       }
@@ -2133,16 +2176,195 @@ CustomErrorSnackBar.show(
         setState(() {
           _isProcessingPayment = false;
         });
-       
+
         CustomErrorSnackBar.show(
-            context: context,
-            title: 'Payment Error',
-            subtitle: e.toString().replaceFirst('Exception: ', ''),
-            duration: const Duration(seconds: 4),
-      
+          context: context,
+          title: 'Payment Error',
+          subtitle: e.toString().replaceFirst('Exception: ', ''),
+          duration: const Duration(seconds: 4),
         );
       }
     }
   }
 }
 
+class EasyWayToBookWidget extends StatefulWidget {
+  const EasyWayToBookWidget({super.key});
+
+  @override
+  State<EasyWayToBookWidget> createState() => _EasyWayToBookWidgetState();
+}
+
+class _EasyWayToBookWidgetState extends State<EasyWayToBookWidget> {
+  bool _isWhatsAppEnabled = true;
+
+  void _callUs() {
+    print('Call us tapped');
+  }
+
+  void _toggleWhatsAppUpdates(bool value) {
+    setState(() {
+      _isWhatsAppEnabled = value;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            SizedBox(width: 16),
+
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  EcliniqText(
+                    'Easy Way to book',
+                    style: EcliniqTextStyles.responsiveHeadlineLarge(
+                      context,
+                    ).copyWith(color: Color(0xff424242)),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+
+        Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  SvgPicture.asset(
+                    EcliniqIcons.call.assetPath,
+                    width: 32,
+                    height: 32,
+                  ),
+                  const SizedBox(width: 8),
+
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const EcliniqText(
+                          'Request a Callback',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xff424242),
+                          ),
+                        ),
+
+                        EcliniqText(
+                          'Assisted booking with expert',
+                          style: EcliniqTextStyles.responsiveBodySmall(context)
+                              .copyWith(
+                                color: Color(0xff8E8E8E),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  OutlinedButton(
+                    onPressed: _callUs,
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 0,
+                      ),
+                      side: const BorderSide(
+                        color: Color(0xFF96BFFF),
+                        width: 0.5,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      backgroundColor: Color(0xFFF2F7FF),
+                    ),
+                    child: EcliniqText(
+                      'Call Us',
+                      style:
+                          EcliniqTextStyles.responsiveBodySmallProminent(
+                            context,
+                          ).copyWith(
+                            color: Color(0xFF2372EC),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            Divider(
+              height: 1,
+              thickness: 0.5,
+              color: Color(0xffB8B8B8),
+              indent: 15,
+              endIndent: 15,
+            ),
+
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => _toggleWhatsAppUpdates(!_isWhatsAppEnabled),
+                    child: Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: _isWhatsAppEnabled
+                            ? const Color(0xff2372EC)
+                            : Colors.white,
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: _isWhatsAppEnabled
+                              ? const Color(0xff2372EC)
+                              : Colors.grey.shade400,
+                          width: 2,
+                        ),
+                      ),
+                      child: _isWhatsAppEnabled
+                          ? const Icon(
+                              Icons.check,
+                              size: 16,
+                              color: Colors.white,
+                            )
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => _toggleWhatsAppUpdates(!_isWhatsAppEnabled),
+                      behavior: HitTestBehavior.opaque,
+                      child: EcliniqText(
+                        'Get updates/information on WhatsApp/SMS',
+                        style: EcliniqTextStyles.responsiveBodySmall(context)
+                            .copyWith(
+                              color: Color(0xff626060),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                            ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}

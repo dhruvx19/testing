@@ -17,11 +17,8 @@ import 'package:provider/provider.dart';
 
 class SelectMemberBottomSheet extends StatefulWidget {
   final DependentData? currentlySelectedDependent;
-  
-  const SelectMemberBottomSheet({
-    super.key,
-    this.currentlySelectedDependent,
-  });
+
+  const SelectMemberBottomSheet({super.key, this.currentlySelectedDependent});
 
   @override
   State<SelectMemberBottomSheet> createState() =>
@@ -87,14 +84,16 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
             _allMembers.add(_self!);
           }
           _allMembers.addAll(_dependents);
-          
+
           // Find the index of currently selected member
           if (widget.currentlySelectedDependent != null) {
             // Find the index of the currently selected dependent
             final currentIndex = _allMembers.indexWhere(
               (member) => member.id == widget.currentlySelectedDependent!.id,
             );
-            selectedIndex = currentIndex >= 0 ? currentIndex : (_self != null ? 0 : -1);
+            selectedIndex = currentIndex >= 0
+                ? currentIndex
+                : (_self != null ? 0 : -1);
           } else {
             // If no dependent is selected, it means "self" is selected
             // Find self in the list and select it
@@ -107,7 +106,7 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
               selectedIndex = -1;
             }
           }
-          
+
           _isLoading = false;
           _authToken = authToken;
         });
@@ -171,21 +170,18 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding:  EdgeInsets.only(top: 12, left: 16, right: 16),
+            padding: EdgeInsets.only(top: 12, left: 16, right: 16),
             child: Text(
               'Select Family Member',
-              style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
-               
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF424242),
-              ),
+              style: EcliniqTextStyles.responsiveHeadlineBMedium(
+                context,
+              ).copyWith(fontWeight: FontWeight.w500, color: Color(0xFF424242)),
             ),
           ),
 
-          SizedBox(height: 18),
-          // Dependents list
+          SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 22)),
           Padding(
-            padding: const EdgeInsets.only(bottom: 12.0),
+            padding: const EdgeInsets.only(bottom: 2.0),
             child: SizedBox(
               height: _isLoading ? 240 : _computeListHeight(),
               child: _isLoading
@@ -238,8 +234,8 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
                             child: Row(
                               children: [
                                 Container(
-                                  height: 24,
-                                  width: 24,
+                                  height: 20,
+                                  width: 20,
                                   decoration: BoxDecoration(
                                     border: Border.all(
                                       color: isSelected
@@ -264,13 +260,22 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
                                 ),
 
                                 SizedBox(
-                                  width: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+                                  width: EcliniqTextStyles.getResponsiveSpacing(
+                                    context,
+                                    8,
+                                  ),
                                 ),
 
                                 // Avatar
                                 Container(
-                                  width: EcliniqTextStyles.getResponsiveWidth(context, 52),
-                                  height: EcliniqTextStyles.getResponsiveHeight(context, 52),
+                                  width: EcliniqTextStyles.getResponsiveWidth(
+                                    context,
+                                    52,
+                                  ),
+                                  height: EcliniqTextStyles.getResponsiveHeight(
+                                    context,
+                                    52,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: Color(0xffF2F7FF),
                                     shape: BoxShape.circle,
@@ -308,17 +313,24 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
                                       ? Center(
                                           child: Text(
                                             _initials(d.fullName),
-                                            style:  EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
-                                              
-                                              fontWeight: FontWeight.w600,
-                                              color: Color(0xFF2372EC),
-                                            ),
+                                            style:
+                                                EcliniqTextStyles.responsiveHeadlineBMedium(
+                                                  context,
+                                                ).copyWith(
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Color(0xFF2372EC),
+                                                ),
                                           ),
                                         )
                                       : null,
                                 ),
 
-                                SizedBox(width: 8),
+                                SizedBox(
+                                  width: EcliniqTextStyles.getResponsiveSpacing(
+                                    context,
+                                    8,
+                                  ),
+                                ),
 
                                 // Name and Relation
                                 Expanded(
@@ -328,20 +340,29 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
                                     children: [
                                       Text(
                                         d.fullName,
-                                        style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
-                                          
-                                          fontWeight: FontWeight.w500,
-                                          color: Color(0xFF424242),
-                                        ),
+                                        style:
+                                            EcliniqTextStyles.responsiveTitleXLarge(
+                                              context,
+                                            ).copyWith(
+                                              fontWeight: FontWeight.w500,
+                                              color: Color(0xFF424242),
+                                            ),
                                       ),
-                                      SizedBox(height: 4),
+                                      SizedBox(
+                                  height: EcliniqTextStyles.getResponsiveSpacing(
+                                    context,
+                                    4,
+                                  ),
+                                ),
                                       Text(
                                         d.formattedRelation,
-                                        style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
-                                     
-                                          fontWeight: FontWeight.w400,
-                                          color: Color(0xFF626060),
-                                        ),
+                                        style:
+                                            EcliniqTextStyles.responsiveBodySmall(
+                                              context,
+                                            ).copyWith(
+                                              fontWeight: FontWeight.w400,
+                                              color: Color(0xFF626060),
+                                            ),
                                       ),
                                     ],
                                   ),
@@ -355,12 +376,17 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
             ),
           ),
 
-          SizedBox(height: 12),
+          // SizedBox(
+          //                         height: EcliniqTextStyles.getResponsiveSpacing(
+          //                           context,
+          //                           12,
+          //                         ),
+          //                       ),
 
           // Add Dependents Section
           Container(
             margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.only(left: 12, right: 12, bottom: 12),
+            padding: const EdgeInsets.only(left: 12, right: 12, bottom: 12, top: 0),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(8),
@@ -408,11 +434,13 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
                         SizedBox(width: 4),
                         Text(
                           'Add Dependents',
-                          style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
-                
-                            fontWeight: FontWeight.w500,
-                            color: Color(0xFF2372EC),
-                          ),
+                          style:
+                              EcliniqTextStyles.responsiveHeadlineBMedium(
+                                context,
+                              ).copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF2372EC),
+                              ),
                         ),
                       ],
                     ),
@@ -421,7 +449,7 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
               ],
             ),
           ),
-             SizedBox(height: 12),
+          SizedBox(height: 12),
         ],
       ),
     );

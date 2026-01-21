@@ -258,6 +258,14 @@ enum EcliniqIcons {
   headache('$_base/Headache 1.svg'),
   fever('$_base/Fever 1.svg'),
   noSchedule('$_base/no_schedule.svg'),
+  one('$_base/one.svg'),
+  two('$_base/two.svg'),
+  three('$_base/three.svg'),
+  four('$_base/four.svg'),
+  mapfilled('$_base/Map Point Filled.svg'),
+  five('$_base/five.svg'),
+  six('$_base/six.svg'),
+  seven('$_base/seven.svg'),
   noNotifications('$_base/no_notif.svg');
 
   //speciality
