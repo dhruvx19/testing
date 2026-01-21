@@ -765,6 +765,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         surfaceTintColor: Colors.transparent,
         leadingWidth: 58,
@@ -798,15 +799,19 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                   EcliniqIcons.questionCircleWhite.assetPath,
                   width: 24,
                   height: 24,
+                  colorFilter: const ColorFilter.mode(
+                    Color(0xFF2372EC),
+                    BlendMode.srcIn,
+                  ),
                 ),
                 const SizedBox(width: 4),
                  Text(
                   'Help',
                   style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
-                    color: Colors.white,
+                    color: const Color(0xFF2372EC),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 16),
               ],
             ),
           ),

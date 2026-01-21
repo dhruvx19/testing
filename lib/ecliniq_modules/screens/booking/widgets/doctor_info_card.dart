@@ -1,4 +1,5 @@
 import 'package:ecliniq/ecliniq_api/models/doctor.dart';
+import 'package:ecliniq/ecliniq_api/storage_service.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +14,7 @@ class DoctorInfoCard extends StatelessWidget {
   final String? locationDistance;
   final VoidCallback? onChangeLocation;
 
-  const DoctorInfoCard({
+   DoctorInfoCard({
     super.key,
     this.doctor,
     this.doctorName,
@@ -24,13 +25,25 @@ class DoctorInfoCard extends StatelessWidget {
     this.onChangeLocation,
   });
 
+  final StorageService _storageService = StorageService();
   static final Color _borderColor = const Color(0xFF1565C0).withOpacity(0.2);
 
   String _getInitials(String name) {
+    if (name.startsWith('Dr. ')) {
+      name = name.substring(4);
+    }
     final parts = name.trim().split(' ');
     if (parts.isEmpty) return '';
     if (parts.length == 1) return parts[0][0].toUpperCase();
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+
+  String _formatDoctorName(String name) {
+    if (name.toLowerCase().startsWith('dr.')) {
+      // Ensure proper capitalization if needed, or just return
+      return name;
+    }
+    return 'Dr. $name';
   }
 
   String _getSpecializations(List<String> specializations) {
@@ -50,6 +63,20 @@ class DoctorInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Check if Change option should be visible
+    bool shouldShowChange = false;
+    if (doctor != null) {
+      final totalLocations = doctor!.hospitals.length + doctor!.clinics.length;
+      shouldShowChange = totalLocations >= 2;
+    }
+    
+    // Also check if callback is provided
+    if (onChangeLocation == null) {
+      shouldShowChange = false;
+    }
+
+    final displayName = _formatDoctorName(doctor?.name ?? doctorName ?? 'Milind Chauhan');
+
     return Column(
       children: [
         Padding(
@@ -68,14 +95,49 @@ class DoctorInfoCard extends StatelessWidget {
                           shape: BoxShape.circle,
                           border: Border.all(color: _borderColor, width: 1),
                         ),
-                        child: Center(
-                          child: Text(
-                            _getInitials(doctor?.name ?? doctorName ?? 'M'),
-                            style: EcliniqTextStyles.responsiveHeadlineXXLargeBold(context).copyWith(
-                              color: Color(0xFF1565C0),
-                            ),
-                          ),
-                        ),
+                        child: doctor != null
+                            ? FutureBuilder<String?>(
+                                future: doctor!.getProfilePhotoUrl(_storageService),
+                                builder: (context, snapshot) {
+                                  final imageUrl = snapshot.data;
+                                  if (imageUrl != null && imageUrl.isNotEmpty) {
+                                    return ClipOval(
+                                      child: Image.network(
+                                        imageUrl,
+                                        width: EcliniqTextStyles.getResponsiveWidth(context, 70),
+                                        height: EcliniqTextStyles.getResponsiveHeight(context, 70),
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return Center(
+                                            child: Text(
+                                              _getInitials(displayName),
+                                              style: EcliniqTextStyles.responsiveHeadlineXXLargeBold(context).copyWith(
+                                                color: Color(0xFF1565C0),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  }
+                                  return Center(
+                                    child: Text(
+                                      _getInitials(displayName),
+                                      style: EcliniqTextStyles.responsiveHeadlineXXLargeBold(context).copyWith(
+                                        color: Color(0xFF1565C0),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              )
+                            : Center(
+                                child: Text(
+                                  _getInitials(displayName),
+                                  style: EcliniqTextStyles.responsiveHeadlineXXLargeBold(context).copyWith(
+                                    color: Color(0xFF1565C0),
+                                  ),
+                                ),
+                              ),
                       ),
                       Positioned(
                         right: 0,
@@ -96,7 +158,7 @@ class DoctorInfoCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          doctor?.name ?? doctorName ?? 'Dr. Milind Chauhan',
+                          displayName,
                           style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
                             color: Color(0xff424242),
                           ),
@@ -254,32 +316,34 @@ class DoctorInfoCard extends StatelessWidget {
                     height: EcliniqTextStyles.getResponsiveHeight(context, 20),
                     color: Color(0xffD6D6D6),
                   ),
-                  SizedBox(
-                    width: EcliniqTextStyles.getResponsiveSpacing(context, 8),
-                  ),
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: onChangeLocation,
-                        child:  Text(
-                          'Change',
-                          style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
-                        
-                            color: Color(0xFF2372EC),
-                            fontWeight: FontWeight.w400,
+                  if (shouldShowChange) ...[
+                    SizedBox(
+                      width: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+                    ),
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: onChangeLocation,
+                          child:  Text(
+                            'Change',
+                            style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
+                          
+                              color: Color(0xFF2372EC),
+                              fontWeight: FontWeight.w400,
+                            ),
                           ),
                         ),
-                      ),
-                      SizedBox(
-                        width: EcliniqTextStyles.getResponsiveSpacing(context, 4),
-                      ),
-                      SvgPicture.asset(
-                        EcliniqIcons.shuffle.assetPath,
-                        width: EcliniqTextStyles.getResponsiveIconSize(context, 16),
-                        height: EcliniqTextStyles.getResponsiveIconSize(context, 16),
-                      ),
-                    ],
-                  ),
+                        SizedBox(
+                          width: EcliniqTextStyles.getResponsiveSpacing(context, 4),
+                        ),
+                        SvgPicture.asset(
+                          EcliniqIcons.shuffle.assetPath,
+                          width: EcliniqTextStyles.getResponsiveIconSize(context, 16),
+                          height: EcliniqTextStyles.getResponsiveIconSize(context, 16),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
               SizedBox(
@@ -340,40 +404,6 @@ class DoctorInfoCard extends StatelessWidget {
             ],
           ),
         ),
-        // Container(
-        //   width: double.infinity,
-        //   color: const Color(0xffF8FAFF),
-        //   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        //   child: Row(
-        //     children: [
-        //       Container(
-        //         width: 16,
-        //         height: 16,
-        //         decoration: const BoxDecoration(
-        //           color: Colors.green,
-        //           shape: BoxShape.circle,
-        //         ),
-        //       ),
-        //       const SizedBox(width: 8),
-        //       Text(
-        //         '69',
-        //         style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
-        //           fontWeight: FontWeight.w700,
-        //           color: Colors.green,
-        //         ),
-        //       ),
-        //       const SizedBox(width: 8),
-        //       Text(
-        //         'Token Number Currently Running',
-        //         style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
-        //           color: Colors.grey[600],
-        //         ),
-        //       ),
-        //     ],
-        //   ),
-        // ),
-       // const Divider(height: 2, thickness: 0.3, color: Colors.grey),
-    
       ],
     );
   }
