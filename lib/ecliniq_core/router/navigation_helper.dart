@@ -43,10 +43,14 @@ class NavigationHelper {
 
     // Use pushReplacement to avoid stacking pages in navigation stack
     // This maintains a clean navigation history for tab switching
-    // Using leftToRight transition with optimized 300ms duration for smooth transitions
+    // Determine transition direction based on tab index
+    final transitionType = newIndex > currentIndex
+        ? PageTransitionType.rightToLeft
+        : PageTransitionType.leftToRight;
+
     await EcliniqRouter.pushReplacement(
       targetPage,
-      transition: PageTransitionType.leftToRight,
+      transition: transitionType,
       duration: const Duration(milliseconds: 300),
     );
   }
