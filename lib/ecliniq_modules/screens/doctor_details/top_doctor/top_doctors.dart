@@ -188,16 +188,19 @@ class _TopDoctorsWidgetState extends State<TopDoctorsWidget> {
             ),
           ],
         ),
-        Padding(
-          padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
-            context,
-            left: 20.0,
-          ),
-          child: Text(
-            'Near you',
-            style: EcliniqTextStyles.responsiveLabelSmall(
+        Transform.translate(
+          offset: const Offset(0, -2),
+          child: Padding(
+            padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
               context,
-            ).copyWith(color: Color(0xFF8E8E8E), fontWeight: FontWeight.w400),
+              left: 20.0,
+            ),
+            child: Text(
+              'Near you',
+              style: EcliniqTextStyles.responsiveLabelSmall(
+                context,
+              ).copyWith(color: Color(0xFF8E8E8E), fontWeight: FontWeight.w400),
+            ),
           ),
         ),
       ],
