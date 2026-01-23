@@ -11,11 +11,15 @@ class CustomSuccessSnackBar {
     Duration? duration,
   }) {
     final overlayState = Overlay.of(context);
-    final overlayEntry = OverlayEntry(
+    late OverlayEntry overlayEntry;
+    overlayEntry = OverlayEntry(
       builder: (context) => _SuccessSnackBarOverlay(
         title: title,
         subtitle: subtitle,
         duration: duration ?? const Duration(seconds: 15),
+        onDismiss: () {
+          overlayEntry.remove();
+        },
       ),
     );
 
@@ -32,11 +36,13 @@ class _SuccessSnackBarOverlay extends StatefulWidget {
   final String title;
   final String subtitle;
   final Duration duration;
+  final VoidCallback onDismiss;
 
   const _SuccessSnackBarOverlay({
     required this.title,
     required this.subtitle,
     required this.duration,
+    required this.onDismiss,
   });
 
   @override
@@ -85,6 +91,15 @@ class _SuccessSnackBarOverlayState extends State<_SuccessSnackBarOverlay>
     _progressController.forward();
   }
 
+  void _dismiss() {
+    _progressController.stop(); // Stop progress animation
+    _slideController.reverse().then((_) {
+      if (mounted) {
+        widget.onDismiss();
+      }
+    });
+  }
+
   @override
   void dispose() {
     _slideController.dispose();
@@ -106,13 +121,15 @@ class _SuccessSnackBarOverlayState extends State<_SuccessSnackBarOverlay>
           color: Colors.transparent,
           child: GestureDetector(
             onHorizontalDragEnd: (details) {
-              // Swipe to dismiss
-              if (details.primaryVelocity!.abs() > 500) {
-                _slideController.reverse().then((_) {
-                  if (mounted) {
-                    (context as Element).markNeedsBuild();
-                  }
-                });
+              // Swipe to dismiss horizontally (left or right)
+              if (details.primaryVelocity != null && details.primaryVelocity!.abs() > 300) {
+                _dismiss();
+              }
+            },
+            onVerticalDragEnd: (details) {
+              // Swipe to dismiss vertically (up or down)
+              if (details.primaryVelocity != null && details.primaryVelocity!.abs() > 300) {
+                _dismiss();
               }
             },
             child: Container(

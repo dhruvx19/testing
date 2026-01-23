@@ -147,6 +147,7 @@ class AuthService {
           final errorData = jsonDecode(response.body);
           return {
             'success': false,
+            'statusCode': response.statusCode,
             'message':
                 errorData['message'] ??
                 errorData['error'] ??
@@ -155,6 +156,7 @@ class AuthService {
         } catch (_) {
           return {
             'success': false,
+            'statusCode': response.statusCode,
             'message': 'MPIN login failed with status ${response.statusCode}',
           };
         }
@@ -180,6 +182,7 @@ class AuthService {
         // API returned explicit failure
         return {
           'success': false,
+          'statusCode': responseData['statusCode'] ?? response.statusCode,
           'message':
               responseData['message'] ??
               responseData['error'] ??

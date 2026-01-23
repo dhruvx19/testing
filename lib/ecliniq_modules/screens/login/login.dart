@@ -11,6 +11,7 @@ import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/button/button.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/action_snackbar.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/error_snackbar.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -121,6 +122,9 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
       false; // Track if we should show MPIN screen or phone input
   String _phoneNumber = ''; // Store phone number for MPIN verification
   bool _isButtonPressed = false; // Track button press state
+  bool _userExplicitlyChoseMPIN =
+      false; // Track if user explicitly chose MPIN (don't auto-trigger biometric)
+  bool _showLoadingOverlay = false; // Track if loading overlay should be shown
   final TextEditingController _textController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
@@ -144,18 +148,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
       // Check biometric availability
       await _checkBiometricAvailability();
 
-      // If biometric is enabled and phone number is pre-filled, auto-trigger biometric
-      // This allows direct biometric login without showing phone/MPIN screens (like Alaan)
-      if (mounted &&
-          _isBiometricAvailable &&
-          _isBiometricEnabled &&
-          _phoneNumber.isNotEmpty) {
-        // Small delay to ensure UI is ready
-        await Future.delayed(const Duration(milliseconds: 500));
-        if (mounted && !_showMPINScreen && !_isLoading) {
-          await _handleBiometricLogin();
-        }
-      }
+      // Don't auto-trigger biometric - user must explicitly click the button
     });
   }
 
@@ -227,6 +220,9 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
         // Reset show PIN when PIN is cleared
         if (v.isEmpty) {
           _showPin = false;
+          // Hide loader if user clears MPIN
+          _isLoading = false;
+          _showLoadingOverlay = false;
         }
       });
     }
@@ -236,44 +232,25 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
 
     // Auto-submit immediately when 4 digits entered
     if (v.length == 4) {
+      // Show loader immediately when user enters 4th digit
+      setState(() {
+        _isLoading = true;
+        _showLoadingOverlay = true;
+      });
+
       // Use microtask to ensure UI updates first, then submit immediately
       _mpinSubmitTimer = Timer(Duration.zero, () {
-        if (mounted && !_isLoading) {
+        if (mounted) {
           _handleMPINLogin(v);
         }
       });
     }
   }
 
-  Future<void> _autoTriggerBiometric() async {
-    // Auto-trigger biometric if available and enabled (after a short delay)
-    // Only trigger on MPIN screen and if user hasn't started typing MPIN
-    if (!_showMPINScreen) return; // Only on MPIN screen
+  // Removed _autoTriggerBiometric - biometric only triggers when user explicitly clicks the button
 
-    await Future.delayed(const Duration(milliseconds: 800));
-
-    // Double-check all conditions before triggering
-    if (!mounted) return;
-    if (_isLoading) return;
-    if (!_isBiometricAvailable) return;
-    if (!_isBiometricEnabled) return;
-    if (_entered.isNotEmpty) return; // User has started typing
-
-    try {
-      // Don't set loading state here - let _handleBiometricLogin() handle it
-      // This prevents race conditions
-      await _handleBiometricLogin();
-    } catch (e) {
-      // Silently fail - user can still use MPIN
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  /// Handle phone number submission - move to MPIN screen or biometric if enabled
+  /// Handle phone number submission - move to MPIN screen
+  /// User explicitly chose MPIN, so always show MPIN screen (don't skip to biometric)
   Future<void> _handlePhoneSubmit() async {
     final phone = _phoneController.text.trim();
 
@@ -293,34 +270,17 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
     // Check biometric availability first
     await _checkBiometricAvailability();
 
-    // If biometric is enabled and available, skip MPIN screen and go directly to biometric
-    if (_isBiometricAvailable && _isBiometricEnabled) {
-      setState(() {
-        _phoneNumber = phone;
-        _showMPINScreen = false; // Don't show MPIN screen
-        _isLoading = false;
-      });
+    // User explicitly clicked "Login Using MPin", so always show MPIN screen
+    // Don't skip to biometric even if it's enabled
+    setState(() {
+      _phoneNumber = phone;
+      _showMPINScreen = true;
+      _isLoading = false;
+      _userExplicitlyChoseMPIN = true; // Mark that user explicitly chose MPIN
+    });
 
-      // Trigger biometric login directly (like Alaan - no MPIN screen)
-      await Future.delayed(
-        const Duration(milliseconds: 300),
-      ); // Small delay for smooth transition
-      if (mounted) {
-        await _handleBiometricLogin();
-      }
-    } else {
-      // Move to MPIN screen if biometric not enabled
-      setState(() {
-        _phoneNumber = phone;
-        _showMPINScreen = true;
-        _isLoading = false;
-      });
-
-      // Auto-trigger biometric if enabled (only on MPIN screen)
-      if (mounted && _showMPINScreen) {
-        _autoTriggerBiometric();
-      }
-    }
+    // Don't auto-trigger biometric when user explicitly chose MPIN
+    // User can still use biometric button on MPIN screen if they want
   }
 
   Future<void> _checkBiometricAvailability() async {
@@ -465,10 +425,12 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
   }
 
   Future<void> _handleMPINLogin(String mpin) async {
-    if (_isLoading) return;
-
     // Ensure we have phone number
     if (_phoneNumber.isEmpty) {
+      setState(() {
+        _isLoading = false;
+        _showLoadingOverlay = false;
+      });
       CustomErrorSnackBar.show(
         context: context,
         title: 'Validation Error',
@@ -478,196 +440,102 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    // Loading state and overlay already set when 4th digit was entered
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       // Phone number is already stored in secure storage, loginWithMPIN will retrieve it
       final success = await authProvider.loginWithMPIN(mpin);
 
-      // Debug logging
-      print(
-        'MPIN Login result: success=$success, errorMessage=${authProvider.errorMessage}',
-      );
+      // Removed debug logging for performance
 
       if (mounted) {
         if (success) {
-          print('✅✅✅ LOGIN SUCCESS - Starting navigation process...');
-
-          // Reset loading state immediately
+          // Keep loading overlay showing (already shown when 4th digit entered)
           setState(() {
             _isLoading = false;
+            // _showLoadingOverlay already true from when user entered 4th digit
           });
-
-          print('✅ Step 1: Loading state reset, mounted: $mounted');
 
           // After successful MPIN login, ask for biometric permission if available and not enabled
           // Run in background (non-blocking) so it doesn't delay navigation
           if (_isBiometricAvailable && !_isBiometricEnabled) {
-            print('📱 Requesting biometric permission (non-blocking)...');
             // Don't await - let it run in background while we navigate
             _requestBiometricPermission(mpin)
                 .timeout(
                   const Duration(seconds: 1),
                   onTimeout: () {
-                    print(
-                      '⏱️ Biometric permission request timed out, continuing...',
-                    );
+                    // Silently timeout
                   },
                 )
                 .catchError((e) {
-                  print('⚠️ Biometric permission request failed: $e');
+                  // Silently handle errors
                 });
-          } else {
-            print(
-              'ℹ️ Skipping biometric permission (available: $_isBiometricAvailable, enabled: $_isBiometricEnabled)',
-            );
           }
 
-          // Ensure we're still mounted after biometric request
-          if (!mounted) {
-            print('❌ Widget not mounted after biometric, cannot navigate');
-            return;
-          }
+          // Navigate immediately using microtask for fastest execution
+          scheduleMicrotask(() {
+            if (!mounted) return;
 
-          print(
-            '✅ Step 2: About to navigate, context type: ${context.runtimeType}',
-          );
-          print(
-            '✅ Step 3: Navigator key available: ${EcliniqRouter.navigatorKey.currentState != null}',
-          );
-
-          // SIMPLIFIED: Just navigate directly using the most reliable method
-          print('🚀 NAVIGATING NOW...');
-
-          try {
-            // Use the router's navigator key directly
-            final navigator = EcliniqRouter.navigatorKey.currentState;
-            if (navigator != null && mounted) {
-              print('✅ Navigator found, pushing HomeScreen...');
-              navigator.pushAndRemoveUntil(
-                MaterialPageRoute(
-                  builder: (context) {
-                    print('🏠 HomeScreen builder called!');
-                    return const HomeScreen();
-                  },
-                ),
-                (route) {
-                  print('🗑️ Removing route: ${route.settings.name}');
-                  return false; // Remove all previous routes
-                },
-              );
-              print(
-                '✅✅✅ NAVIGATION COMPLETE - HomeScreen should be visible now!',
-              );
-              return; // Exit function
-            } else {
-              print('❌ Navigator is null or widget not mounted');
-            }
-          } catch (e, stackTrace) {
-            print('❌❌❌ NAVIGATION ERROR: $e');
-            print('Stack: $stackTrace');
-          }
-
-          // Fallback navigation methods
-          bool navigationSuccess = false;
-
-          // Method 2: Try direct Navigator with root context
-          if (!navigationSuccess && mounted) {
             try {
-              Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => const HomeScreen()),
-                (route) => false,
-              );
-              navigationSuccess = true;
-              print('✅ Navigation via root Navigator completed successfully');
-            } catch (e, stackTrace) {
-              print('❌ Root Navigator failed: $e');
-              print('Stack trace: $stackTrace');
-            }
-          }
-
-          // Method 3: Try regular Navigator
-          if (!navigationSuccess && mounted) {
-            try {
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => const HomeScreen()),
-                (route) => false,
-              );
-              navigationSuccess = true;
-              print(
-                '✅ Navigation via regular Navigator completed successfully',
-              );
-            } catch (e, stackTrace) {
-              print('❌ Regular Navigator failed: $e');
-              print('Stack trace: $stackTrace');
-            }
-          }
-
-          // Method 4: Try router method
-          if (!navigationSuccess && mounted) {
-            try {
-              EcliniqRouter.pushAndRemoveUntil(
-                const HomeScreen(),
-                (route) => false,
-              );
-              navigationSuccess = true;
-              print('✅ Navigation via EcliniqRouter completed successfully');
-            } catch (e, stackTrace) {
-              print('❌ EcliniqRouter failed: $e');
-              print('Stack trace: $stackTrace');
-            }
-          }
-
-          if (!navigationSuccess) {
-            print(
-              '⚠️ First navigation attempt failed, trying fallback methods...',
-            );
-
-            // Final fallback: Use post-frame callback
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                print('🔄 Post-frame callback: Attempting navigation again...');
-                try {
-                  final navigator = EcliniqRouter.navigatorKey.currentState;
-                  if (navigator != null) {
-                    navigator.pushAndRemoveUntil(
-                      MaterialPageRoute(
-                        builder: (context) => const HomeScreen(),
-                      ),
-                      (route) => false,
-                    );
-                    print('✅✅✅ Post-frame navigation succeeded!');
-                    return;
-                  }
-                } catch (e) {
-                  print('❌ Post-frame navigation also failed: $e');
-                }
-
-                // Last resort: Show error
-                if (mounted) {
-                  CustomActionSnackBar.show(
-                    context: context,
-                    title: 'Navigation Error',
-                    subtitle:
-                        'Login successful but navigation failed. Please restart the app.',
-                    duration: const Duration(seconds: 5),
-                  );
-                }
+              // Use the router's navigator key directly - most reliable method
+              final navigator = EcliniqRouter.navigatorKey.currentState;
+              if (navigator != null) {
+                navigator.pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const HomeScreen()),
+                  (route) => false,
+                );
+                return;
               }
-            });
-          }
+            } catch (e) {
+              // Fallback: Use router method
+              try {
+                EcliniqRouter.pushAndRemoveUntil(
+                  const HomeScreen(),
+                  (route) => false,
+                );
+                return;
+              } catch (e2) {
+                // Last resort: Use post-frame callback
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) {
+                    try {
+                      final navigator = EcliniqRouter.navigatorKey.currentState;
+                      if (navigator != null) {
+                        navigator.pushAndRemoveUntil(
+                          MaterialPageRoute(
+                            builder: (context) => const HomeScreen(),
+                          ),
+                          (route) => false,
+                        );
+                      }
+                    } catch (e3) {
+                      if (mounted) {
+                        CustomActionSnackBar.show(
+                          context: context,
+                          title: 'Navigation Error',
+                          subtitle:
+                              'Login successful but navigation failed. Please restart the app.',
+                          duration: const Duration(seconds: 5),
+                        );
+                      }
+                    }
+                  }
+                });
+              }
+            }
+          });
         } else {
           // Check if session expired - go back to phone input
           if (authProvider.errorMessage == 'SESSION_EXPIRED') {
             // Reset state and go back to phone input
             setState(() {
               _isLoading = false;
+              _showLoadingOverlay = false;
               _entered = '';
               _textController.clear();
               _showMPINScreen = false;
+              _userExplicitlyChoseMPIN = false; // Reset flag
             });
             CustomActionSnackBar.show(
               context: context,
@@ -678,6 +546,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
           } else {
             setState(() {
               _isLoading = false;
+              _showLoadingOverlay = false;
               _entered = '';
               _textController.clear();
             });
@@ -694,6 +563,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
       if (mounted) {
         setState(() {
           _isLoading = false;
+          _showLoadingOverlay = false;
         });
         CustomErrorSnackBar.show(
           context: context,
@@ -713,8 +583,20 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
 
     if (!mounted) return;
 
+    // Show loader immediately when user clicks biometric button
+    setState(() {
+      _isLoading = true;
+      _showLoadingOverlay = true;
+    });
+
     // Check if biometric is actually available before proceeding
     if (!_isBiometricAvailable) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _showLoadingOverlay = false;
+        });
+      }
       CustomErrorSnackBar.show(
         context: context,
         title: 'Biometric Unavailable',
@@ -736,6 +618,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
           if (mounted) {
             setState(() {
               _isLoading = false;
+              _showLoadingOverlay = false;
             });
           }
           return;
@@ -744,6 +627,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
         if (mounted) {
           setState(() {
             _isBiometricEnabled = true;
+            // Keep loading overlay showing
           });
         }
       } else {
@@ -751,6 +635,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
         if (mounted) {
           setState(() {
             _isLoading = false;
+            _showLoadingOverlay = false;
           });
           CustomErrorSnackBar.show(
             context: context,
@@ -763,9 +648,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
       }
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    // Loading state already set when function was called
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -779,6 +662,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
           if (mounted) {
             setState(() {
               _isLoading = false;
+              _showLoadingOverlay = false;
             });
             CustomActionSnackBar.show(
               context: context,
@@ -803,10 +687,31 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
       }
 
       if (success) {
-        // Navigate to home
-        EcliniqRouter.pushAndRemoveUntil(const HomeScreen(), (route) => false);
-        // Don't reset loading state here as we're navigating away
+        // Keep loading overlay showing (already shown when user clicked button)
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            // _showLoadingOverlay already true from when user clicked button
+          });
+        }
+
+        // Navigate immediately using microtask for fastest execution
+        scheduleMicrotask(() {
+          if (mounted) {
+            EcliniqRouter.pushAndRemoveUntil(
+              const HomeScreen(),
+              (route) => false,
+            );
+          }
+        });
       } else {
+        // Hide loading overlay on error
+        if (mounted) {
+          setState(() {
+            _showLoadingOverlay = false;
+          });
+        }
+
         // Check if session expired - navigate to phone input
         if (authProvider.errorMessage == 'SESSION_EXPIRED') {
           // Add a small delay to ensure state is reset before navigation
@@ -852,6 +757,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
       if (mounted) {
         setState(() {
           _isLoading = false;
+          _showLoadingOverlay = false;
         });
 
         // Check if it's a timeout exception
@@ -910,12 +816,12 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
               Container(
                 padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
                   context,
-                  horizontal: 16,
+                  horizontal: 12,
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
                   border: Border(
-                    right: BorderSide(color: Colors.grey.shade300),
+                    right: BorderSide(color: Color(0xffD6D6D6), width: 0.5),
                   ),
                 ),
                 child: Row(
@@ -930,7 +836,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                             color: Color(0xff424242),
                           ),
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: 8),
                     SvgPicture.asset(
                       EcliniqIcons.arrowDown.assetPath,
                       width: 20,
@@ -974,7 +880,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
           width: double.infinity,
           height: EcliniqTextStyles.getResponsiveButtonHeight(
             context,
-            baseHeight: 54.0,
+            baseHeight: 55.0,
           ),
           child: GestureDetector(
             onTapDown: isButtonEnabled
@@ -1039,35 +945,63 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
   Widget _buildMPINScreen() {
     // Calculate responsive dimensions based on available screen width
     final screenW = MediaQuery.of(context).size.width;
-    final availableWidth =
-        screenW - 36.0; // Account for horizontal padding (18 * 2)
-    final responsiveSlotWidth = EcliniqTextStyles.getResponsiveSize(
-      context,
-      66.0,
-      minSize: 50.0, // Minimum slot width to maintain readability
-      maxSize: 66.0,
-    );
-    final responsiveMargin = EcliniqTextStyles.getResponsiveSize(
-      context,
-      7.0,
-      minSize: 4.0,
-      maxSize: 7.0,
-    );
-
-    // Calculate total width needed: (slotWidth + margin*2) * 4
-    final totalWidthNeeded = (responsiveSlotWidth + (responsiveMargin * 2)) * 4;
-
-    // If total width exceeds available space, scale down proportionally
-    double finalSlotWidth = responsiveSlotWidth;
-    double finalMargin = responsiveMargin;
-
-    if (totalWidthNeeded > availableWidth) {
-      final scaleFactor = availableWidth / totalWidthNeeded;
-      finalSlotWidth = (responsiveSlotWidth * scaleFactor).clamp(45.0, 66.0);
-      finalMargin = (responsiveMargin * scaleFactor).clamp(3.0, 7.0);
+    // Fixed 16 padding on each side (32 total)
+    final availableWidth = (screenW - 32.0).clamp(120.0, double.infinity);
+    
+    // Minimum and maximum constraints
+    const minSlotWidth = 30.0;
+    const maxSlotWidth = 80.0;
+    const minMargin = 4.0;
+    const preferredMargin = 8.0;
+    
+    // Calculate optimal slot width and margin
+    double finalSlotWidth;
+    double finalMargin;
+    
+    // Try with preferred margin first
+    final preferredTotalMarginSpace = 3 * (preferredMargin * 2); // 3 gaps * 16 pixels each
+    final calculatedSlotWidth = (availableWidth - preferredTotalMarginSpace) / 4;
+    
+    if (calculatedSlotWidth >= minSlotWidth) {
+      // Preferred margin works, use it
+      finalSlotWidth = calculatedSlotWidth.clamp(minSlotWidth, maxSlotWidth);
+      finalMargin = preferredMargin;
+    } else {
+      // Need to reduce margin to fit minimum slot width
+      // Calculate maximum margin space available
+      final maxMarginSpace = availableWidth - (minSlotWidth * 4);
+      if (maxMarginSpace > 0) {
+        // Calculate margin per gap (divide by 3 gaps, then by 2 for each side)
+        finalMargin = (maxMarginSpace / 6).clamp(minMargin, preferredMargin);
+        // Recalculate slot width with reduced margin
+        final totalMarginSpace = 3 * (finalMargin * 2);
+        finalSlotWidth = ((availableWidth - totalMarginSpace) / 4).clamp(minSlotWidth, maxSlotWidth);
+      } else {
+        // Extremely small screen - use minimum values
+        finalSlotWidth = minSlotWidth;
+        finalMargin = minMargin;
+      }
     }
-
-    final finalTotalWidth = (finalSlotWidth + (finalMargin * 2)) * 4;
+    
+    // Calculate final total width
+    final totalMarginSpace = 3 * (finalMargin * 2);
+    var calculatedTotalWidth = (finalSlotWidth * 4) + totalMarginSpace;
+    
+    // Final safety check: ensure total width never exceeds available width
+    if (calculatedTotalWidth > availableWidth) {
+      // Scale down proportionally to fit exactly
+      final scaleFactor = availableWidth / calculatedTotalWidth;
+      finalSlotWidth = (finalSlotWidth * scaleFactor);
+      finalMargin = (finalMargin * scaleFactor);
+      calculatedTotalWidth = (finalSlotWidth * 4) + (3 * (finalMargin * 2));
+    }
+    
+    // Ensure values are within bounds
+    finalSlotWidth = finalSlotWidth.clamp(minSlotWidth, maxSlotWidth);
+    finalMargin = finalMargin.clamp(minMargin, preferredMargin);
+    
+    // Final total width - must be <= availableWidth
+    final finalTotalWidth = ((finalSlotWidth * 4) + (3 * (finalMargin * 2))).clamp(0.0, availableWidth);
     final responsiveLetterSpacing = finalSlotWidth + 4;
 
     return SingleChildScrollView(
@@ -1101,48 +1035,69 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: List.generate(4, (i) {
-                      final ch = i < _entered.length
-                          ? (_showPin ? _entered[i] : '*')
-                          : '-';
-                      return Container(
-                        margin: EdgeInsets.symmetric(horizontal: finalMargin),
-                        child: Column(
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      // Ensure we never exceed the available width
+                      final maxWidth = constraints.maxWidth.isFinite 
+                          ? constraints.maxWidth 
+                          : finalTotalWidth;
+                      final safeTotalWidth = finalTotalWidth.clamp(0.0, maxWidth);
+                      
+                      return SizedBox(
+                        width: safeTotalWidth,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              ch,
-                              style:
-                                  EcliniqTextStyles.responsiveHeadlineBMedium(
-                                    context,
-                                  ).copyWith(
-                                    fontWeight: FontWeight.w400,
-                                    color: i < _entered.length
-                                        ? Colors.black
-                                        : Colors.grey.shade400,
-                                  ),
-                            ),
-                            const SizedBox(height: 8),
-                            Container(
-                              height: 2,
-                              width: finalSlotWidth,
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade400,
-                                borderRadius: BorderRadius.circular(0),
+                            for (int i = 0; i < 4; i++) ...[
+                              if (i > 0) SizedBox(width: finalMargin * 2),
+                              SizedBox(
+                                width: finalSlotWidth,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      i < _entered.length
+                                          ? (_showPin ? _entered[i] : '*')
+                                          : '-',
+                                      style:
+                                          EcliniqTextStyles.responsiveHeadlineBMedium(
+                                            context,
+                                          ).copyWith(
+                                            fontWeight: FontWeight.w400,
+                                            color: i < _entered.length
+                                                ? Colors.black
+                                                : Color(0xffD6D6D6),
+                                          ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Container(
+                                      height: 0.5,
+                                      width: finalSlotWidth,
+                                      decoration: BoxDecoration(
+                                        color: Color(0xff8E8E8E),
+                                        borderRadius: BorderRadius.circular(0),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
+                            ],
                           ],
                         ),
                       );
-                    }),
+                    },
                   ),
                   Center(
-                    child: SizedBox(
-                      width: finalTotalWidth.clamp(180.0, availableWidth),
-                      child: TextField(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final maxWidth = constraints.maxWidth.isFinite 
+                            ? constraints.maxWidth 
+                            : finalTotalWidth;
+                        final safeWidth = finalTotalWidth.clamp(0.0, maxWidth);
+                        return SizedBox(
+                          width: safeWidth,
+                          child: TextField(
                         controller: _textController,
                         focusNode: _focusNode,
                         keyboardType: TextInputType.number,
@@ -1165,14 +1120,15 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                         ),
                         cursorColor: Colors.transparent,
                         autofocus: false,
-                      ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],
               ),
             ),
           ),
-
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -1185,12 +1141,16 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                         : () {
                             _navigateToForgotPin();
                           },
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
                     child: Text(
                       'Forgot PIN?',
                       style: EcliniqTextStyles.responsiveBodySmall(context)
                           .copyWith(
                             color: Color(0xff424242),
-
                             fontWeight: FontWeight.w400,
                             fontFamily: 'Inter',
                           ),
@@ -1243,114 +1203,131 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
             ],
           ),
 
-          if (_isBiometricAvailable) ...[
-            const SizedBox(height: 30),
-            Row(
-              children: [
-                const Expanded(
-                  child: Divider(thickness: 1, color: Color(0xFFEEEEEE)),
+          //if (_isBiometricAvailable) ...[
+          const SizedBox(height: 40),
+          Row(
+            children: [
+              const Expanded(
+                child: Divider(
+                  thickness: 1,
+                  color: Color(0xFFD6D6D6),
+                  indent: 100.0,
+                  endIndent: 14,
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  child: Text(
-                    'OR',
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w500,
-                    ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Text(
+                  'OR',
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-                const Expanded(
-                  child: Divider(thickness: 1, color: Color(0xFFEEEEEE)),
+              ),
+              const Expanded(
+                child: Divider(
+                  thickness: 1,
+                  color: Color(0xFFD6D6D6),
+                  endIndent: 100.0,
+                  indent: 14,
                 ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Center(
-              child: _isBiometricEnabled
-                  ? OutlinedButton.icon(
-                      onPressed: _isLoading ? null : _handleBiometricLogin,
-                      icon: SvgPicture.asset(
-                        EcliniqIcons.faceId.assetPath,
-                        width: 22,
-                        height: 22,
-                      ),
-                      label: Text(
-                        _isLoading
-                            ? 'Authenticating...'
-                            : 'Use ${BiometricService.getBiometricTypeName()}',
-                        style:
-                            EcliniqTextStyles.responsiveHeadlineBMedium(
-                              context,
-                            ).copyWith(
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF2372EC),
-                            ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size(150, 48),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        side: const BorderSide(color: Color(0x382372EC)),
-                        backgroundColor: Colors.blue.shade50,
-                        foregroundColor: Colors.blue.shade100,
-                      ),
-                    )
-                  : OutlinedButton.icon(
-                      onPressed: _isLoading
-                          ? null
-                          : () async {
-                              final mpin = await SecureStorageService.getMPIN();
-                              if (mpin != null && mpin.isNotEmpty) {
-                                await _requestBiometricPermission(mpin);
-                                await _checkBiometricAvailability();
-                              } else {
-                                CustomErrorSnackBar.show(
-                                  context: context,
-                                  title: 'MPIN Required',
-                                  subtitle: 'Please enter MPIN first',
-                                  duration: const Duration(seconds: 3),
-                                );
-                              }
-                            },
-                      icon: SvgPicture.asset(
-                        EcliniqIcons.faceId.assetPath,
-                        width: 22,
-                        height: 22,
-                      ),
-                      label: Text(
-                        'Use ${BiometricService.getBiometricTypeName()}',
-                        style:
-                            EcliniqTextStyles.responsiveHeadlineBMedium(
-                              context,
-                            ).copyWith(
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF2372EC),
-                            ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size(150, 48),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        side: const BorderSide(color: Color(0x382372EC)),
-                        backgroundColor: Colors.blue.shade50,
-                        foregroundColor: Colors.blue.shade100,
-                      ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Center(
+            child: _isBiometricEnabled
+                ? OutlinedButton.icon(
+                    onPressed: _isLoading ? null : _handleBiometricLogin,
+                    icon: SvgPicture.asset(
+                      EcliniqIcons.faceId.assetPath,
+                      width: 22,
+                      height: 22,
                     ),
-            ),
-          ],
+                    label: Text(
+                      _isLoading
+                          ? 'Authenticating...'
+                          : 'Use ${BiometricService.getBiometricTypeName()}',
+                      style:
+                          EcliniqTextStyles.responsiveHeadlineBMedium(
+                            context,
+                          ).copyWith(
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF2372EC),
+                          ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(150, 48),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      side: const BorderSide(
+                        color: Color(0xff96BFFF),
+                        width: 0.5,
+                      ),
+                      backgroundColor: Color(0xffF2F7FF),
+                      foregroundColor: Color(0xffF2F7FF),
+                    ),
+                  )
+                : OutlinedButton.icon(
+                    onPressed: _isLoading
+                        ? null
+                        : () async {
+                            final mpin = await SecureStorageService.getMPIN();
+                            if (mpin != null && mpin.isNotEmpty) {
+                              await _requestBiometricPermission(mpin);
+                              await _checkBiometricAvailability();
+                              if (_isBiometricEnabled && mounted) {
+                                await _handleBiometricLogin();
+                              }
+                            } else {
+                              CustomErrorSnackBar.show(
+                                context: context,
+                                title: 'MPIN Required',
+                                subtitle:
+                                    'Please enter MPIN first to enable biometric',
+                                duration: const Duration(seconds: 3),
+                              );
+                            }
+                          },
+                    icon: SvgPicture.asset(
+                      EcliniqIcons.faceId.assetPath,
+                      width: 22,
+                      height: 22,
+                    ),
+                    label: Text(
+                      'Use ${BiometricService.getBiometricTypeName()}',
+                      style:
+                          EcliniqTextStyles.responsiveHeadlineBMedium(
+                            context,
+                          ).copyWith(
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF2372EC),
+                          ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(150, 48),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      side: const BorderSide(color: Color(0x382372EC)),
+                      backgroundColor: Colors.blue.shade50,
+                      foregroundColor: Colors.blue.shade100,
+                    ),
+                  ),
+          ),
         ],
+        // ],
       ),
     );
   }
@@ -1361,193 +1338,207 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
     final screenW = MediaQuery.of(context).size.width;
     final headerHeight = (screenH * 0.38).clamp(260.0, 420.0).toDouble();
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      resizeToAvoidBottomInset: true,
-      body: SingleChildScrollView(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minHeight: MediaQuery.of(context).size.height,
-          ),
-          child: IntrinsicHeight(
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: headerHeight,
-                    width: double.infinity,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Container(
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [Color(0xFF2372EC), Color(0xFFF8DFFF)],
-                              stops: [0.0, 0.95],
-                            ),
-                          ),
-                        ),
-                        Positioned.fill(
-                          child: Opacity(
-                            opacity: 0.45,
-                            child: Image.asset(
-                              EcliniqIcons.lottie.assetPath,
-                              fit: BoxFit.cover,
-                              cacheWidth: 800,
-                              cacheHeight: 600,
-                              filterQuality: FilterQuality.low,
-                            ),
-                          ),
-                        ),
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SvgPicture.asset(
-                              EcliniqIcons.loginLogo.assetPath,
-                              height: 44,
-                              width: 198,
-                            ),
-                       
-                            Text(
-                              'Welcome back!',
-                              style:
-                                  EcliniqTextStyles.responsiveHeadlineXLarge(
-                                    context,
-                                  ).copyWith(
-                                    color: Colors.white,
-                                    fontFamily: 'Rubik',
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Your Healthcare Platform',
-                              style:
-                                  EcliniqTextStyles.responsiveTitleXLarge(
-                                    context,
-                                  ).copyWith(
-                                    color: Colors.white,
-                                    fontFamily: 'Rubik',
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: Transform.translate(
-                      offset: const Offset(0, -65),
-                      child: Padding(
-                        padding: EdgeInsets.zero,
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: Colors.white,
+          resizeToAvoidBottomInset: true,
+          body: SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height,
+              ),
+              child: IntrinsicHeight(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: headerHeight,
+                        width: double.infinity,
                         child: Stack(
-                          clipBehavior: Clip.none,
+                          alignment: Alignment.center,
                           children: [
-                            Positioned.fill(
-                              child: Stack(
-                                children: [
-                                  PhysicalShape(
-                                    clipper: CardHoleClipper(
-                                      radius: 52.0,
-                                      centerYOffset: 14.0,
-                                    ),
-                                    color: Colors.white,
-                                    elevation: 0,
-                                    child: const SizedBox.expand(),
-                                  ),
-                                  Positioned.fill(
-                                    child: CustomPaint(
-                                      painter: TopEdgePainter(
-                                        leftColor: const Color(
-                                          0xFFBF50FF,
-                                        ).withOpacity(0.3),
-                                        rightColor: const Color(
-                                          0xFF0064FF,
-                                        ).withOpacity(0.4),
-                                        holeRadius: 52.0,
-                                        holeCenterYOffset: 14.0,
-                                        cornerRadius: 18.0,
-                                        bandHeight: 36.0,
-                                      ),
-                                    ),
-                                  ),
-              
-                                  Positioned.fill(
-                                    child: Padding(
-                                      padding: const EdgeInsets.fromLTRB(
-                                        18.0,
-                                        56.0,
-                                        18.0,
-                                        0.0,
-                                      ),
-                                      child: _showMPINScreen
-                                          ? _buildMPINScreen()
-                                          : _buildPhoneInputScreen(),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            // if (_showMPINScreen)
-                            Positioned(
-                              top: -35,
-                              left: 18,
-                              right: 18,
-                              child: Center(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
-                                        blurRadius: 15,
-                                        offset: const Offset(0, 5),
-                                      ),
-                                    ],
-                                  ),
-                                  width: 94,
-                                  height: 94,
-                                  child: Center(
-                                    child: ClipOval(
-                                      child: SvgPicture.asset(
-                                        'lib/ecliniq_icons/assets/Group.svg',
-              
-                                        width: 80,
-                                        fit: BoxFit.contain,
-              
-                                        errorBuilder:
-                                            (
-                                              context,
-                                              error,
-                                              stackTrace,
-                                            ) => Image.asset(
-                                              EcliniqIcons.userCircle.assetPath,
-                                              width: 72,
-                                              height: 72,
-                                              fit: BoxFit.cover,
-                                            ),
-                                      ),
-                                    ),
-                                  ),
+                            Container(
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Color(0xFF2372EC),
+                                    Color(0xFFF8DFFF),
+                                  ],
+                                  stops: [0.0, 0.95],
                                 ),
                               ),
+                            ),
+                            Positioned.fill(
+                              child: Opacity(
+                                opacity: 0.45,
+                                child: Image.asset(
+                                  EcliniqIcons.lottie.assetPath,
+                                  fit: BoxFit.cover,
+                                  cacheWidth: 800,
+                                  cacheHeight: 600,
+                                  filterQuality: FilterQuality.low,
+                                ),
+                              ),
+                            ),
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SvgPicture.asset(
+                                  EcliniqIcons.loginLogo.assetPath,
+                                  height: 44,
+                                  width: 198,
+                                ),
+
+                                Text(
+                                  'Welcome back!',
+                                  style:
+                                      EcliniqTextStyles.responsiveHeadlineXLarge(
+                                        context,
+                                      ).copyWith(
+                                        color: Colors.white,
+                                        fontFamily: 'Rubik',
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Your Healthcare Platform',
+                                  style:
+                                      EcliniqTextStyles.responsiveTitleXLarge(
+                                        context,
+                                      ).copyWith(
+                                        color: Colors.white,
+                                        fontFamily: 'Rubik',
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ),
-                    ),
+                      Expanded(
+                        child: Transform.translate(
+                          offset: const Offset(0, -65),
+                          child: Padding(
+                            padding: EdgeInsets.zero,
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                Positioned.fill(
+                                  child: Stack(
+                                    children: [
+                                      PhysicalShape(
+                                        clipper: CardHoleClipper(
+                                          radius: 52.0,
+                                          centerYOffset: 14.0,
+                                        ),
+                                        color: Colors.white,
+                                        elevation: 0,
+                                        child: const SizedBox.expand(),
+                                      ),
+                                      Positioned.fill(
+                                        child: CustomPaint(
+                                          painter: TopEdgePainter(
+                                            leftColor: const Color(
+                                              0xFFBF50FF,
+                                            ).withOpacity(0.3),
+                                            rightColor: const Color(
+                                              0xFF0064FF,
+                                            ).withOpacity(0.4),
+                                            holeRadius: 52.0,
+                                            holeCenterYOffset: 14.0,
+                                            cornerRadius: 18.0,
+                                            bandHeight: 36.0,
+                                          ),
+                                        ),
+                                      ),
+
+                                      Positioned.fill(
+                                        child: Padding(
+                                          padding: const EdgeInsets.fromLTRB(
+                                            16.0,
+                                            56.0,
+                                            16.0,
+                                            0.0,
+                                          ),
+                                          child: _showMPINScreen
+                                              ? _buildMPINScreen()
+                                              : _buildPhoneInputScreen(),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // if (_showMPINScreen)
+                                Positioned(
+                                  top: -35,
+                                  left: 16,
+                                  right: 16,
+                                  child: Center(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(
+                                              0.1,
+                                            ),
+                                            blurRadius: 15,
+                                            offset: const Offset(0, 5),
+                                          ),
+                                        ],
+                                      ),
+                                      width: 94,
+                                      height: 94,
+                                      child: Center(
+                                        child: ClipOval(
+                                          child: SvgPicture.asset(
+                                            'lib/ecliniq_icons/assets/Group.svg',
+
+                                            width: 80,
+                                            fit: BoxFit.contain,
+
+                                            errorBuilder:
+                                                (context, error, stackTrace) =>
+                                                    Image.asset(
+                                                      EcliniqIcons
+                                                          .userCircle
+                                                          .assetPath,
+                                                      width: 72,
+                                                      height: 72,
+                                                      fit: BoxFit.cover,
+                                                    ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
         ),
-      ),
+        // Loading overlay with spinner
+        if (_showLoadingOverlay)
+          Container(
+            color: Colors.transparent,
+            child: const Center(child: EcliniqLoader(size: 28)),
+          ),
+      ],
     );
   }
 }

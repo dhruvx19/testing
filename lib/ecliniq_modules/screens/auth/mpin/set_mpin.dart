@@ -200,16 +200,22 @@ class _MPINSetState extends State<MPINSet> with TickerProviderStateMixin {
               return; // Exit early to prevent finally block from resetting loading state again
             } else {
               // User is not authenticated - this is forget PIN from login
+              // Clear flow state since MPIN reset is complete
+              await SessionService.clearFlowState();
+              
               // Reset loading state
               _isLoadingNotifier.value = false;
               // Show snackbar before navigating
               _showSuccessSnackBar();
               await Future.delayed(const Duration(milliseconds: 500));
-              // Navigate back to login
-              EcliniqRouter.pushAndRemoveUntil(
-                const LoginPage(),
-                (route) => route.isFirst,
-              );
+              
+              // Navigate back to login - remove ALL routes to ensure clean navigation stack
+              if (mounted) {
+                EcliniqRouter.pushAndRemoveUntil(
+                  const LoginPage(),
+                  (route) => false, // Remove all routes, start fresh with LoginPage
+                );
+              }
               return; // Exit early
             }
           } else {

@@ -565,20 +565,23 @@ class AuthProvider with ChangeNotifier {
         notifyListeners();
         return true;
       } else {
-        // If backend login fails, check if we have a valid session
-        final hasValidSession = await SessionService.hasValidSession();
-        if (hasValidSession) {
-          // Use existing session
-          _authToken = await SessionService.getAuthToken();
-          _isLoading = false;
-          notifyListeners();
-          return true;
-        } else {
-          _isLoading = false;
-          _errorMessage = result['message'] ?? 'MPIN login failed';
-          notifyListeners();
+        // Backend login failed - do NOT use existing session for security
+        // Always fail and show error message, especially for 401 (Invalid MPIN)
+        final statusCode = result['statusCode'] as int?;
+        final errorMessage = result['message'] ?? 'MPIN login failed';
+        
+        _isLoading = false;
+        _errorMessage = errorMessage;
+        notifyListeners();
+        
+        // For 401 (Unauthorized) or explicit invalid MPIN, always fail
+        // Do not fallback to existing session as this is a security risk
+        if (statusCode == 401 || errorMessage.toLowerCase().contains('invalid mpin')) {
           return false;
         }
+        
+        // For other errors, also fail (removed session fallback for security)
+        return false;
       }
     } catch (e) {
       _isLoading = false;
