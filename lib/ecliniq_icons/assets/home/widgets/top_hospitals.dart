@@ -128,7 +128,7 @@ class _TopHospitalsWidgetState extends State<TopHospitalsWidget>
                         padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
                           context,
                           horizontal: 8.0,
-                          vertical: 4.0,
+                          vertical: 0.0,
                         ),
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -156,6 +156,7 @@ class _TopHospitalsWidgetState extends State<TopHospitalsWidget>
                     ),
                   ],
                 ),
+                
                 Padding(
                   padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
                     context,

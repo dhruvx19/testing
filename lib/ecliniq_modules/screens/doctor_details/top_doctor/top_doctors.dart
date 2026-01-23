@@ -151,7 +151,7 @@ class _TopDoctorsWidgetState extends State<TopDoctorsWidget> {
                 padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
                   context,
                   horizontal: 8.0,
-                  vertical: 4.0,
+                  vertical: 0.0,
                 ),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
