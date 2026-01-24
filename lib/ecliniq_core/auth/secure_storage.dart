@@ -20,6 +20,7 @@ class SecureStorageService {
   // Keys for secure storage
   static const String _keyUserID = 'user_id';
   static const String _keyPhoneNumber = 'phone_number';
+  static const String _keyUserName = 'user_name';
 
   // Storage version for migration support
   static const String _keyStorageVersion = 'storage_version';
@@ -332,6 +333,25 @@ class SecureStorageService {
       return true;
     } catch (e) {
       return false;
+    }
+  }
+
+  /// Store user name in secure storage
+  static Future<bool> storeUserName(String userName) async {
+    try {
+      await _secureStorage.write(key: _keyUserName, value: userName);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Get user name from secure storage
+  static Future<String?> getUserName() async {
+    try {
+      return await _secureStorage.read(key: _keyUserName);
+    } catch (e) {
+      return null;
     }
   }
 

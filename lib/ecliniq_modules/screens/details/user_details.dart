@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:ecliniq/ecliniq_core/auth/secure_storage.dart';
 import 'package:ecliniq/ecliniq_core/auth/session_service.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/home_screen.dart';
@@ -117,14 +118,23 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
         final dobParts = _dobController.text.split('/');
         final formattedDob = '${dobParts[2]}-${dobParts[1]}-${dobParts[0]}';
 
+        final firstName = _firstNameController.text.trim();
+        final lastName = _lastNameController.text.trim();
+        
         final success = await authProvider.savePatientDetails(
-          firstName: _firstNameController.text.trim(),
-          lastName: _lastNameController.text.trim(),
+          firstName: firstName,
+          lastName: lastName,
           dob: formattedDob,
           gender: _selectedGender.toLowerCase(),
         );
 
         if (success && mounted) {
+          // Store user name in secure storage
+          final fullName = '$firstName $lastName'.trim();
+          if (fullName.isNotEmpty) {
+            await SecureStorageService.storeUserName(fullName);
+          }
+          
           // Mark onboarding as complete
           await SessionService.setOnboardingComplete(true);
 
@@ -209,7 +219,10 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
 
         return SizedBox(
           width: double.infinity,
-          height: 52,
+          height: EcliniqTextStyles.getResponsiveButtonHeight(
+            context,
+            baseHeight: 52.0,
+          ),
           child: GestureDetector(
             onTapDown: isButtonEnabled
                 ? (_) => setState(() => _isButtonPressed = true)
@@ -254,11 +267,13 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
                                 : const Color(0xffD6D6D6),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(
+                          width: EcliniqTextStyles.getResponsiveSpacing(context, 8.0),
+                        ),
                         SvgPicture.asset(
                           EcliniqIcons.arrowRightWhite.assetPath,
-                          width: 24,
-                          height: 24,
+                          width: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
+                          height: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
                           colorFilter: ColorFilter.mode(
                             isButtonEnabled
                                 ? Colors.white
@@ -283,6 +298,7 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
           appBar: AppBar(
             automaticallyImplyLeading: false,
             backgroundColor: EcliniqScaffold.primaryBlue,
+            centerTitle: true,
             title: Text(
               'Profile Details',
               style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
@@ -298,19 +314,22 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
                   children: [
                     SvgPicture.asset(
                       EcliniqIcons.questionCircleWhite.assetPath,
-                      width: 24,
-                      height: 24,
+                      width: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
+                      height: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
                     ),
-                    const SizedBox(width: 4),
+                    SizedBox(
+                      width: EcliniqTextStyles.getResponsiveSpacing(context, 4.0),
+                    ),
                     Text(
                       'Help',
                       style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                         color: Colors.white,
-
                         fontWeight: FontWeight.w400,
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(
+                      width: EcliniqTextStyles.getResponsiveSpacing(context, 10.0),
+                    ),
                   ],
                 ),
               ),
@@ -333,7 +352,10 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
                       children: [
                         Expanded(
                           child: SingleChildScrollView(
-                            padding: const EdgeInsets.all(20),
+                            padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(
+                              context,
+                              20.0,
+                            ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -345,8 +367,18 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
                                     child: Stack(
                                       children: [
                                         Container(
-                                          width: 150,
-                                          height: 150,
+                                          width: EcliniqTextStyles.getResponsiveSize(
+                                            context,
+                                            150.0,
+                                            minSize: 120.0,
+                                            maxSize: 180.0,
+                                          ),
+                                          height: EcliniqTextStyles.getResponsiveSize(
+                                            context,
+                                            150.0,
+                                            minSize: 120.0,
+                                            maxSize: 180.0,
+                                          ),
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
                                             border: Border.all(
@@ -374,8 +406,14 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
                                                       EcliniqIcons
                                                           .add
                                                           .assetPath,
-                                                      width: 48,
-                                                      height: 48,
+                                                      width: EcliniqTextStyles.getResponsiveIconSize(
+                                                        context,
+                                                        48.0,
+                                                      ),
+                                                      height: EcliniqTextStyles.getResponsiveIconSize(
+                                                        context,
+                                                        48.0,
+                                                      ),
                                                       colorFilter:
                                                           ColorFilter.mode(
                                                             Color(0xff2372EC),
@@ -403,8 +441,18 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
                                             bottom: 0,
                                             right: 0,
                                             child: Container(
-                                              width: 40,
-                                              height: 40,
+                                              width: EcliniqTextStyles.getResponsiveSize(
+                                                context,
+                                                40.0,
+                                                minSize: 36.0,
+                                                maxSize: 44.0,
+                                              ),
+                                              height: EcliniqTextStyles.getResponsiveSize(
+                                                context,
+                                                40.0,
+                                                minSize: 36.0,
+                                                maxSize: 44.0,
+                                              ),
                                               decoration: BoxDecoration(
                                                 color: Primitives.brightBlue,
                                                 shape: BoxShape.circle,
@@ -413,10 +461,13 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
                                                   width: 3,
                                                 ),
                                               ),
-                                              child: const Icon(
+                                              child: Icon(
                                                 Icons.edit,
                                                 color: Colors.white,
-                                                size: 20,
+                                                size: EcliniqTextStyles.getResponsiveIconSize(
+                                                  context,
+                                                  20.0,
+                                                ),
                                               ),
                                             ),
                                           ),
@@ -425,7 +476,12 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
                                   ),
                                 ),
 
-                                const SizedBox(height: 22),
+                                SizedBox(
+                                  height: EcliniqTextStyles.getResponsiveSpacing(
+                                    context,
+                                    22.0,
+                                  ),
+                                ),
 
                                 _buildFormField(
                                   label: 'First Name',
@@ -440,7 +496,12 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
                                   },
                                 ),
 
-                                const SizedBox(height: 22),
+                                SizedBox(
+                                  height: EcliniqTextStyles.getResponsiveSpacing(
+                                    context,
+                                    22.0,
+                                  ),
+                                ),
 
                                 _buildFormField(
                                   label: 'Last Name',
@@ -455,11 +516,21 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
                                   },
                                 ),
 
-                                const SizedBox(height: 22),
+                                SizedBox(
+                                  height: EcliniqTextStyles.getResponsiveSpacing(
+                                    context,
+                                    22.0,
+                                  ),
+                                ),
 
                                 _buildDateField(),
 
-                                const SizedBox(height: 22),
+                                SizedBox(
+                                  height: EcliniqTextStyles.getResponsiveSpacing(
+                                    context,
+                                    22.0,
+                                  ),
+                                ),
 
                                 _buildGenderField(),
                               ],
@@ -468,10 +539,18 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
                         ),
 
                         Container(
-                          padding: const EdgeInsets.all(18),
+                          padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(
+                            context,
+                            18.0,
+                          ),
                           child: _buildSaveButton(),
                         ),
-                        const SizedBox(height: 10),
+                        SizedBox(
+                          height: EcliniqTextStyles.getResponsiveSpacing(
+                            context,
+                            10.0,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -511,7 +590,9 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
                 : null,
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(
+          height: EcliniqTextStyles.getResponsiveSpacing(context, 4.0),
+        ),
         TextFormField(
           controller: controller,
           validator: validator,
@@ -522,24 +603,30 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
             hintText: hintText,
             hintStyle: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
               color: Color(0xffD6D6D6),
-
               fontWeight: FontWeight.w400,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(
+                EcliniqTextStyles.getResponsiveBorderRadius(context, 8),
+              ),
               borderSide: BorderSide(color: Color(0xff626060), width: 0.5),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(
+                EcliniqTextStyles.getResponsiveBorderRadius(context, 8),
+              ),
               borderSide: BorderSide(color: Color(0xff626060), width: 0.5),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(
+                EcliniqTextStyles.getResponsiveBorderRadius(context, 8),
+              ),
               borderSide: BorderSide(color: Color(0xff626060), width: 0.5),
             ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 12,
+            contentPadding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+              context,
+              horizontal: 12.0,
+              vertical: 12.0,
             ),
             filled: true,
             fillColor: Colors.white,
@@ -567,7 +654,9 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
             ],
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(
+          height: EcliniqTextStyles.getResponsiveSpacing(context, 4.0),
+        ),
         TextFormField(
           controller: _dobController,
           readOnly: true,
@@ -582,37 +671,42 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
             hintText: 'DD/MM/YYYY',
             hintStyle: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
               color: Color(0xffD6D6D6),
-
               fontWeight: FontWeight.w400,
             ),
-
             suffixIcon: Padding(
-              padding: const EdgeInsets.all(8),
+              padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 8.0),
               child: SvgPicture.asset(
                 EcliniqIcons.calendarDate.assetPath,
-                width: 32,
-                height: 32,
+                width: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
+                height: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
               ),
             ),
-            suffixIconConstraints: const BoxConstraints(
-              minWidth: 48,
-              minHeight: 48,
+            suffixIconConstraints: BoxConstraints(
+              minWidth: EcliniqTextStyles.getResponsiveSize(context, 48.0),
+              minHeight: EcliniqTextStyles.getResponsiveSize(context, 48.0),
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(
+                EcliniqTextStyles.getResponsiveBorderRadius(context, 8),
+              ),
               borderSide: BorderSide(color: Color(0xff626060), width: 0.5),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(
+                EcliniqTextStyles.getResponsiveBorderRadius(context, 8),
+              ),
               borderSide: BorderSide(color: Color(0xff626060), width: 0.5),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(
+                EcliniqTextStyles.getResponsiveBorderRadius(context, 8),
+              ),
               borderSide: BorderSide(color: Color(0xff626060), width: 0.5),
             ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 12,
+            contentPadding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+              context,
+              horizontal: 12.0,
+              vertical: 12.0,
             ),
             filled: true,
             fillColor: Colors.white,
@@ -642,13 +736,19 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
             ],
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(
+          height: EcliniqTextStyles.getResponsiveSpacing(context, 4.0),
+        ),
         Row(
           children: [
             Expanded(child: _buildGenderOption('Male', EcliniqIcons.men)),
-            const SizedBox(width: 12),
+            SizedBox(
+              width: EcliniqTextStyles.getResponsiveSpacing(context, 12.0),
+            ),
             Expanded(child: _buildGenderOption('Female', EcliniqIcons.women)),
-            const SizedBox(width: 12),
+            SizedBox(
+              width: EcliniqTextStyles.getResponsiveSpacing(context, 12.0),
+            ),
             Expanded(
               child: _buildGenderOption('Other', EcliniqIcons.genderTrans),
             ),
@@ -667,13 +767,19 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+          context,
+          vertical: 12.0,
+          horizontal: 8.0,
+        ),
         decoration: BoxDecoration(
           border: Border.all(
             color: isSelected ? Color(0xff96BFFF) : Color(0xff8E8E8E),
             width: 0.5,
           ),
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(
+            EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
+          ),
           color: isSelected ? Color(0xffF2F7FF) : Colors.white,
         ),
         child: Row(
@@ -682,13 +788,15 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
           children: [
             SvgPicture.asset(
               icon.assetPath,
-              width: 20,
-              height: 20,
+              width: EcliniqTextStyles.getResponsiveIconSize(context, 20.0),
+              height: EcliniqTextStyles.getResponsiveIconSize(context, 20.0),
               colorFilter: isSelected
                   ? ColorFilter.mode(Color(0xff2372EC), BlendMode.srcIn)
                   : null,
             ),
-            const SizedBox(width: 4),
+            SizedBox(
+              width: EcliniqTextStyles.getResponsiveSpacing(context, 4.0),
+            ),
             Flexible(
               child: EcliniqText(
                 gender,

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:ecliniq/ecliniq_api/models/patient.dart' as patient_models;
 import 'package:ecliniq/ecliniq_api/patient_service.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
+import 'package:ecliniq/ecliniq_core/auth/secure_storage.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/details/widgets/add_profile_sheet.dart';
@@ -242,6 +243,14 @@ class _PersonalDetailsState extends State<PersonalDetails> {
         _weightController.text = d.weight != null ? d.weight.toString() : '';
         _dob = d.dob;
 
+        // Store user name in secure storage
+        final firstName = d.user?.firstName ?? '';
+        final lastName = d.user?.lastName ?? '';
+        final fullName = '$firstName $lastName'.trim();
+        if (fullName.isNotEmpty) {
+          await SecureStorageService.storeUserName(fullName);
+        }
+
         // Fetch raw JSON once to extract profilePhoto key (not present in model)
         try {
           final rawResp = await http.get(
@@ -395,9 +404,12 @@ class _PersonalDetailsState extends State<PersonalDetails> {
         photoKey = key;
       }
 
+      final firstName = _firstNameController.text.trim();
+      final lastName = _lastNameController.text.trim();
+      
       final success = await auth.updatePatientProfile(
-        firstName: _firstNameController.text.trim(),
-        lastName: _lastNameController.text.trim(),
+        firstName: firstName,
+        lastName: lastName,
         bloodGroup: _backendBloodGroup(
           _bloodGroupController.text.trim().isEmpty
               ? null
@@ -412,6 +424,12 @@ class _PersonalDetailsState extends State<PersonalDetails> {
       );
 
       if (success) {
+        // Store user name in secure storage
+        final fullName = '$firstName $lastName'.trim();
+        if (fullName.isNotEmpty) {
+          await SecureStorageService.storeUserName(fullName);
+        }
+        
         if (!mounted) return;
         CustomSuccessSnackBar.show(
           context: context,

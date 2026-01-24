@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:ecliniq/ecliniq_api/models/patient.dart';
 import 'package:ecliniq/ecliniq_api/patient_service.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
+import 'package:ecliniq/ecliniq_core/auth/secure_storage.dart';
 import 'package:ecliniq/ecliniq_core/router/navigation_helper.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
@@ -92,6 +93,17 @@ class _ProfilePageState extends State<ProfilePage>
       if (response.success && response.data != null) {
         // Do not resolve or display profile image for now
         _profilePhotoUrl = null;
+
+        // Store user name in secure storage
+        final user = response.data!.user;
+        if (user?.firstName != null || user?.lastName != null) {
+          final firstName = user?.firstName ?? '';
+          final lastName = user?.lastName ?? '';
+          final fullName = '$firstName $lastName'.trim();
+          if (fullName.isNotEmpty) {
+            await SecureStorageService.storeUserName(fullName);
+          }
+        }
 
         setState(() {
           _patientData = response.data;
@@ -695,9 +707,9 @@ extension _ProfilePageContent on _ProfilePageState {
             },
           ),
           const SizedBox(height: 24),
-          // Test widget for lock screen notifications (development/testing)
-          // const TestNotificationWidget(),
-          // const SizedBox(height: 24),
+          
+          const TestNotificationWidget(),
+          const SizedBox(height: 24),
         ],
       ),
     );
