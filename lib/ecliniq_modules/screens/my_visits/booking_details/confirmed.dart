@@ -9,7 +9,6 @@ import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/widget
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/widgets/cancellation_policy_bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/widgets/common.dart';
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/widgets/reschedule_bottom_sheet.dart';
-import 'package:ecliniq/ecliniq_modules/screens/my_visits/provider/eta_provider.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
@@ -43,6 +42,7 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
   String? _expectedTime;
   bool _isLoadingETA = false;
   final _appointmentService = AppointmentService();
+  Timer? _etaTimer;
 
   @override
   void initState() {
@@ -53,7 +53,7 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
       _isLoading = false;
       _currentTokenNumber = _appointment!.currentTokenNumber;
       _expectedTime = _appointment!.expectedTime;
-      _connectToWebSocket();
+      _startEtaPolling();
     } else {
       _loadAppointmentDetails();
     }
@@ -103,7 +103,7 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
         _expectedTime = appointmentDetail.expectedTime;
       });
 
-      _connectToWebSocket();
+      _startEtaPolling();
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -114,77 +114,60 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
     }
   }
 
-  Future<void> _connectToWebSocket() async {
-    final etaProvider = Provider.of<ETAProvider>(context, listen: false);
+  void _startEtaPolling() {
+    _fetchEtaOnce();
+    _etaTimer?.cancel();
+    _etaTimer = Timer.periodic(const Duration(minutes: 3), (_) => _fetchEtaOnce());
+  }
 
+  Future<void> _fetchEtaOnce() async {
+    if (!mounted) return;
     try {
       setState(() {
         _isLoadingETA = true;
       });
 
-      // Connect to appointment room for real-time ETA updates
-      await etaProvider.connectToAppointment(
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final authToken = authProvider.authToken;
+      if (authToken == null) {
+        setState(() {
+          _isLoadingETA = false;
+        });
+        return;
+      }
+
+      final eta = await _appointmentService.getEtaStatus(
         appointmentId: _appointment?.id ?? widget.appointmentId,
+        authToken: authToken,
       );
 
-      // Listen to ETA updates
-      etaProvider.addListener(_onETAUpdate);
+      if (!mounted) return;
 
-      setState(() {
-        _isLoadingETA = false;
-      });
+      if (eta != null) {
+        setState(() {
+          // API returns tokenNo (current running token)
+          final tokenNo = eta['tokenNo'];
+          _currentTokenNumber = tokenNo?.toString() ?? _currentTokenNumber;
+          // If appointmentStatus/slotStatus indicates completion, we could stop polling
+          _isLoadingETA = false;
+        });
+      } else {
+        setState(() {
+          _isLoadingETA = false;
+        });
+      }
     } catch (e) {
-      print('❌ Error connecting to WebSocket: $e');
-      setState(() {
-        _isLoadingETA = false;
-      });
-    }
-  }
-
-  void _onETAUpdate() {
-    final etaProvider = Provider.of<ETAProvider>(context, listen: false);
-    final etaUpdate = etaProvider.currentETA;
-
-    if (etaUpdate != null && mounted) {
-      setState(() {
-        // Update expected time from ETA
-        if (etaUpdate.eta != null) {
-          try {
-            final etaDate = DateTime.parse(etaUpdate.eta!);
-            final timeFormat = DateFormat('hh:mm a');
-            _expectedTime = timeFormat.format(etaDate);
-          } catch (e) {
-            print('Error parsing ETA date: $e');
-          }
-        }
-
-        // Update status message if available
-        if (etaUpdate.message != null) {
-          // You can show a snackbar or update UI with the message
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(etaUpdate.message!),
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        }
-      });
-    }
-
-    // Also check for slot display updates (current token)
-    final slotUpdate = etaProvider.currentSlotDisplay;
-    if (slotUpdate != null && mounted) {
-      setState(() {
-        _currentTokenNumber = slotUpdate.currentToken.toString();
-      });
+      if (mounted) {
+        setState(() {
+          _isLoadingETA = false;
+        });
+      }
     }
   }
 
   @override
   void dispose() {
-    final etaProvider = Provider.of<ETAProvider>(context, listen: false);
-    etaProvider.removeListener(_onETAUpdate);
-    // Don't disconnect here - let the provider manage connection lifecycle
+    _etaTimer?.cancel();
     super.dispose();
   }
 
@@ -348,6 +331,55 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
           expectedTime: _expectedTime ?? _appointment!.expectedTime,
           currentTokenNumber:
               _currentTokenNumber ?? _appointment!.currentTokenNumber,
+        ),
+        // Current Running Token info (just after green area)
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          child: _isLoadingETA
+              ? SizedBox(
+                  height: 48,
+                  child: ShimmerLoading(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                )
+              : (_currentTokenNumber != null)
+                  ? Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF2FFF3),
+                        border: Border.all(color: const Color(0xFF3EAF3F), width: 0.5),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          SvgPicture.asset(
+                            EcliniqIcons.queue.assetPath,
+                            width: 20,
+                            height: 20,
+                            colorFilter: const ColorFilter.mode(Color(0xFF3EAF3F), BlendMode.srcIn),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Current token running: ',
+                            style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
+                              color: const Color(0xFF3EAF3F),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            _currentTokenNumber ?? '-',
+                            style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+                              color: const Color(0xFF3EAF3F),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : const SizedBox.shrink(),
         ),
         // Scrollable content starting from DoctorInfoCard
         Expanded(

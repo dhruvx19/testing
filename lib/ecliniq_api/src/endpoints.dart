@@ -117,4 +117,8 @@ class Endpoints {
       '$localhost/api/patients/wallet/balance';
   static String walletTransactions(int year) =>
       '$localhost/api/patients/wallet/transactions?year=$year';
+
+  // ETA status
+  static String etaStatus(String appointmentId) =>
+      '$localhost/api/eta/appointment/$appointmentId/status';
 }

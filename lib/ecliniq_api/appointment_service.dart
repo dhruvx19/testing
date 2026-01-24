@@ -427,3 +427,38 @@ class AppointmentService {
     }
   }
 }
+
+extension AppointmentEtaExtension on AppointmentService {
+  Future<Map<String, dynamic>?> getEtaStatus({
+    required String appointmentId,
+    required String authToken,
+  }) async {
+    try {
+      final url = Uri.parse(Endpoints.etaStatus(appointmentId));
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $authToken',
+        'x-access-token': authToken,
+      };
+
+      final response = await http.get(url, headers: headers);
+      final body = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        // API shape per sample: message contains the payload
+        final msg = body['message'] as Map<String, dynamic>?;
+        if (msg == null) return null;
+        return {
+          'appointmentId': msg['appointmentId'],
+          'appointmentStatus': msg['appointmentStatus'],
+          'tokenNo': msg['tokenNo'],
+          'slotStatus': msg['slotStatus'],
+        };
+      }
+
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+}

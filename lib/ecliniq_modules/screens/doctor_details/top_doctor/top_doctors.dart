@@ -311,14 +311,50 @@ class _DoctorCard extends StatelessWidget {
   }
 }
 
-class _AvailabilityBadge extends StatelessWidget {
+class _AvailabilityBadge extends StatefulWidget {
   final Doctor doctor;
 
   const _AvailabilityBadge({required this.doctor});
 
   @override
+  State<_AvailabilityBadge> createState() => _AvailabilityBadgeState();
+}
+
+class _AvailabilityBadgeState extends State<_AvailabilityBadge>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _fade;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+      reverseDuration: const Duration(milliseconds: 1200),
+      lowerBound: 0.35,
+      upperBound: 1.0,
+    );
+    _fade = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+    _controller.addStatusListener((status) {
+      if (!mounted) return;
+      if (status == AnimationStatus.completed) {
+        _controller.reverse();
+      } else if (status == AnimationStatus.dismissed) {
+        _controller.forward();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final availability = doctor.availability;
+    final availability = widget.doctor.availability;
 
     if (availability == null) {
       return Container(
@@ -342,35 +378,50 @@ class _AvailabilityBadge extends StatelessWidget {
     }
 
     final status = availability.status.toUpperCase();
+    // Do not show the container if explicitly no slots available
+    if ((availability.availableTokens != null && availability.availableTokens == 0) ||
+        status == 'NO_SLOT' ||
+        status == 'NO_SLOTS' ||
+        status == 'UNAVAILABLE' ||
+        availability.message.toLowerCase().contains('no slot')) {
+      return const SizedBox.shrink();
+    }
 
     if (status == 'QUEUE_STARTED') {
-      return Container(
-        padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
-          context,
-          horizontal: 8.0,
-          vertical: 4.0,
-        ),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF2FFF3),
-          borderRadius: BorderRadius.circular(
-            EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+      // Start animation when queue is started
+      if (!_controller.isAnimating) {
+        _controller.forward();
+      }
+      return FadeTransition(
+        opacity: _fade,
+        child: Container(
+          padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+            context,
+            horizontal: 8.0,
+            vertical: 4.0,
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              'Queue Started',
-              style: EcliniqTextStyles.responsiveButtonXLargeProminent(context)
-                  .copyWith(color: const Color(0xFF3EAF3F), fontWeight: FontWeight.w400),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF2FFF3),
+            borderRadius: BorderRadius.circular(
+              EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
             ),
-            if (availability.availableTokens != null)
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
               Text(
-                '${availability.availableTokens} tokens left',
-                style: EcliniqTextStyles.responsiveLabelMedium(context)
-                    .copyWith(color: const Color(0xFF3EAF3F)),
+                'Queue Started',
+                style: EcliniqTextStyles.responsiveButtonXLargeProminent(context)
+                    .copyWith(color: const Color(0xFF3EAF3F), fontWeight: FontWeight.w400),
               ),
-          ],
+              if (availability.availableTokens != null)
+                Text(
+                  '${availability.availableTokens} tokens left',
+                  style: EcliniqTextStyles.responsiveLabelMedium(context)
+                      .copyWith(color: const Color(0xFF3EAF3F)),
+                ),
+            ],
+          ),
         ),
       );
     }
