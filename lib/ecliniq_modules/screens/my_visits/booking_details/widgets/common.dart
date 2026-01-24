@@ -651,15 +651,16 @@ class StatusHeader extends StatelessWidget {
                  fontWeight: FontWeight.w700,
               ),
             ),
-            if (expectedTime != null) ...[
+            // if (expectedTime != null) ...[
               const SizedBox(height: 4),
               Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.all(6.0),
                 child: Container(
-                  padding: EdgeInsets.all(8),
+                 
+                  padding: EdgeInsets.all(4),
                   decoration: BoxDecoration(
                     color: Color(0xffF9F9F9),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(6),
                     border: Border.all(color: Color(0xFFB8B8B8), width: 0.5),
                   ),
                   child: Row(
@@ -671,9 +672,9 @@ class StatusHeader extends StatelessWidget {
                           color: Color(0xff424242),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       SvgPicture.asset(
-                        EcliniqIcons.info.assetPath,
+                        EcliniqIcons.infoCircleBlack.assetPath,
                         width: 18,
                         height: 18,
                       ),
@@ -683,7 +684,7 @@ class StatusHeader extends StatelessWidget {
               ),
             ],
           ],
-        ],
+      //  ],
       );
     } else if (status == 'requested') {
       return Column(

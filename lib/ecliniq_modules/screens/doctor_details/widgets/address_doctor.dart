@@ -39,9 +39,7 @@ class _AddressWidgetState extends State<AddressWidget> {
     );
 
     // Try Apple Maps (will fall back to web on Android)
-    final appleMapsUrl = Uri.parse(
-      'https://maps.apple.com/?daddr=$lat,$lng',
-    );
+    final appleMapsUrl = Uri.parse('https://maps.apple.com/?daddr=$lat,$lng');
 
     try {
       bool canLaunchGoogle = false;
@@ -63,10 +61,7 @@ class _AddressWidgetState extends State<AddressWidget> {
       // Try to launch Google Maps
       if (canLaunchGoogle) {
         try {
-          await launchUrl(
-            googleMapsUrl,
-            mode: LaunchMode.externalApplication,
-          );
+          await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
           return;
         } catch (e) {
           // Continue to next option if Google Maps fails
@@ -76,10 +71,7 @@ class _AddressWidgetState extends State<AddressWidget> {
       // Try to launch Apple Maps
       if (canLaunchApple) {
         try {
-          await launchUrl(
-            appleMapsUrl,
-            mode: LaunchMode.externalApplication,
-          );
+          await launchUrl(appleMapsUrl, mode: LaunchMode.externalApplication);
           return;
         } catch (e) {
           // Continue to web fallback if Apple Maps fails
@@ -91,17 +83,11 @@ class _AddressWidgetState extends State<AddressWidget> {
         'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
       );
       try {
-        await launchUrl(
-          webMapsUrl,
-          mode: LaunchMode.externalApplication,
-        );
+        await launchUrl(webMapsUrl, mode: LaunchMode.externalApplication);
       } catch (e) {
         // If all methods fail, try launching without checking first
         try {
-          await launchUrl(
-            googleMapsUrl,
-            mode: LaunchMode.externalApplication,
-          );
+          await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
         } catch (finalLaunchError) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -131,16 +117,16 @@ class _AddressWidgetState extends State<AddressWidget> {
 
     final lat = widget.clinic.latitude!;
     final lng = widget.clinic.longitude!;
-    
+
     // Google Static Maps API (no API key required for basic usage)
     return 'https://maps.googleapis.com/maps/api/staticmap?center=$lat,$lng&zoom=15&size=400x150&maptype=roadmap&markers=color:red%7C$lat,$lng';
   }
 
   @override
   Widget build(BuildContext context) {
-    final hasCoordinates = widget.clinic.latitude != null && 
-                          widget.clinic.longitude != null;
-    
+    final hasCoordinates =
+        widget.clinic.latitude != null && widget.clinic.longitude != null;
+
     return Container(
       color: Colors.white,
       child: Column(
@@ -166,10 +152,11 @@ class _AddressWidgetState extends State<AddressWidget> {
                   children: [
                     Text(
                       'Clinic Address',
-                      style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                      ),
+                      style: EcliniqTextStyles.responsiveHeadlineLarge(context)
+                          .copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
                     ),
                   ],
                 ),
@@ -185,29 +172,31 @@ class _AddressWidgetState extends State<AddressWidget> {
                 Text(
                   widget.clinic.address,
                   maxLines: 8,
-                  style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
-                    fontWeight: FontWeight.w400,
-                    color: Color(0xff626060),
-                  ),
+                  style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                      .copyWith(
+                        fontWeight: FontWeight.w400,
+                        color: Color(0xff626060),
+                      ),
                 ),
                 const SizedBox(height: 16),
                 InkWell(
                   onTap: hasCoordinates ? _openMapsDirections : null,
                   borderRadius: BorderRadius.circular(12),
                   child: Container(
+                    height: 118,
                     decoration: BoxDecoration(
                       color: Color(0xffF9F9F9),
-                      border: Border.all(color: Colors.grey[300]!),
+
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Column(
                       children: [
                         Padding(
-                          padding: const EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.all(12.0),
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(12),
                             child: Container(
-                              height: 150,
+                              height: 70,
                               width: double.infinity,
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
@@ -219,146 +208,38 @@ class _AddressWidgetState extends State<AddressWidget> {
                                   ],
                                 ),
                               ),
-                              child: hasCoordinates
-                                  ? Stack(
-                                      fit: StackFit.expand,
-                                      children: [
-                                        // Try to load static map image
-                                        Image.network(
-                                          _getStaticMapUrl()!,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) {
-                                            // Fallback to gradient with clinic name
-                                            return Container(
-                                              decoration: BoxDecoration(
-                                                gradient: LinearGradient(
-                                                  begin: Alignment.topLeft,
-                                                  end: Alignment.bottomRight,
-                                                  colors: [
-                                                    Colors.blue.shade50,
-                                                    Colors.blue.shade100,
-                                                  ],
-                                                ),
-                                              ),
-                                              child: Center(
-                                                child: Column(
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  children: [
-                                                    Icon(
-                                                      Icons.location_on,
-                                                      size: 48,
-                                                      color: Colors.blue[700],
-                                                    ),
-                                                    const SizedBox(height: 8),
-                                                    Padding(
-                                                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                                                      child: Text(
-                                                        widget.clinic.name,
-                                                        style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
-                                                          color: Colors.grey[700],
-                                                          fontWeight: FontWeight.w500,
-                                                        ),
-                                                        textAlign: TextAlign.center,
-                                                        maxLines: 2,
-                                                        overflow: TextOverflow.ellipsis,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                          loadingBuilder: (context, child, loadingProgress) {
-                                            if (loadingProgress == null) return child;
-                                            return Container(
-                                              decoration: BoxDecoration(
-                                                gradient: LinearGradient(
-                                                  begin: Alignment.topLeft,
-                                                  end: Alignment.bottomRight,
-                                                  colors: [
-                                                    Colors.blue.shade50,
-                                                    Colors.blue.shade100,
-                                                  ],
-                                                ),
-                                              ),
-                                              child: Center(
-                                                child: CircularProgressIndicator(
-                                                  value: loadingProgress.expectedTotalBytes != null
-                                                      ? loadingProgress.cumulativeBytesLoaded /
-                                                          loadingProgress.expectedTotalBytes!
-                                                      : null,
-                                                  strokeWidth: 2,
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                        // Map pin icon overlay
-                                        Positioned(
-                                          bottom: 8,
-                                          right: 8,
-                                          child: Container(
-                                            padding: const EdgeInsets.all(4),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius: BorderRadius.circular(4),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.black.withOpacity(0.1),
-                                                  blurRadius: 4,
-                                                  offset: Offset(0, 2),
-                                                ),
-                                              ],
-                                            ),
-                                            child: Icon(
-                                              Icons.location_on,
-                                              size: 20,
-                                              color: Colors.red[600],
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  : Center(
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.map_outlined,
-                                            size: 48,
-                                            color: Colors.grey[400],
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            'Location not available',
-                                            style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
-                                              color: Colors.grey[500],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.map_outlined,
+                                      size: 48,
+                                      color: Colors.grey[400],
                                     ),
+                                    const SizedBox(height: 8),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                         ),
                         InkWell(
                           onTap: hasCoordinates ? _openMapsDirections : null,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(
-                                  Icons.directions,
-                                  size: 16,
-                                  color: hasCoordinates ? Color(0xff2372EC) : Colors.grey,
-                                ),
-                                const SizedBox(width: 4),
                                 Text(
-                                  'Tap to get directions from your location',
-                                  style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
-                                    color: hasCoordinates ? Color(0xff2372EC) : Colors.grey,
-                                  ),
+                                  'Tap to get the clinic direction',
+                                  style:
+                                      EcliniqTextStyles.responsiveBodySmall(
+                                        context,
+                                      ).copyWith(
+                                        color: hasCoordinates
+                                            ? Color(0xff2372EC)
+                                            : Colors.grey,
+                                      ),
                                 ),
                               ],
                             ),

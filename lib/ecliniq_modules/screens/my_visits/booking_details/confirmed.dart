@@ -14,6 +14,7 @@ import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/error_snackbar.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
@@ -364,35 +365,7 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
                       currentTokenNumber:
                           _currentTokenNumber ?? _appointment!.currentTokenNumber,
                     ),
-                    // const SizedBox(height: 12),
-
-                    // Show ETA connection status
-                    // if (_isLoadingETA)
-                    //   Padding(
-                    //     padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    //     child: Row(
-                    //       children: [
-                    //         SizedBox(
-                    //           width: 16,
-                    //           height: 16,
-                    //           child: EcliniqLoader(
-                    //             size: 16,
-                    //             color: Colors.blue,
-                    //           ),
-                    //         ),
-                    //         const SizedBox(width: 8),
-                    //         Text(
-                    //           'Connecting for live updates...',
-                    //           style: TextStyle(
-                    //             fontSize: 12,
-                    //             color: Colors.grey[600],
-                    //           ),
-                    //         ),
-                    //       ],
-                    //     ),
-                    //   ),
-
-                    // Show WebSocket connection status
+                
                     const SizedBox(height: 24),
                     AppointmentDetailsSection(
                       patient: _appointment!.patient,

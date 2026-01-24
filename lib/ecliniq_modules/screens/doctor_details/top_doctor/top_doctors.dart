@@ -283,7 +283,149 @@ class _DoctorCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _DoctorAvatar(doctor: doctor),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _DoctorAvatar(doctor: doctor),
+                  // Container(
+                  //   padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                  //     context,
+                  //     horizontal: 8.0,
+                  //     vertical: 4.0,
+                  //   ),
+                  //   decoration: BoxDecoration(
+                  //     color: Color(0xffF2FFF3),
+                  //     borderRadius: BorderRadius.circular(
+                  //       EcliniqTextStyles.getResponsiveBorderRadius(
+                  //         context,
+                  //         4.0,
+                  //       ),
+                  //     ),
+                  //   ),
+                  //   child: Row(
+                  //     children: [
+                  //       Container(
+                  //         width: EcliniqTextStyles.getResponsiveSize(
+                  //           context,
+                  //           16.0,
+                  //         ),
+                  //         height: EcliniqTextStyles.getResponsiveSize(
+                  //           context,
+                  //           16.0,
+                  //         ),
+                  //         decoration: BoxDecoration(
+                  //           color: Color(0xFF3EAF3F),
+                  //           shape: BoxShape.circle,
+                  //         ),
+                  //       ),
+                  //     SizedBox(
+                  //         width: EcliniqTextStyles.getResponsiveSpacing(
+                  //           context,
+                  //           4.0,
+                  //         ),
+                  //       ),
+                  //       Text(
+                  //         'Queue Started',
+                  //         style:
+                  //             EcliniqTextStyles.responsiveButtonXLargeProminent(
+                  //               context,
+                  //             ).copyWith(
+                  //               color: Color(0xFF3EAF3F),
+                  //               fontWeight: FontWeight.w400,
+                  //             ),
+                  //       ),
+                  //       SizedBox(
+                  //         width: EcliniqTextStyles.getResponsiveSpacing(
+                  //           context,
+                  //           8.0,
+                  //         ),
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
+                  // Container(
+                  //   padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                  //     context,
+                  //     horizontal: 8.0,
+                  //     vertical: 4.0,
+                  //   ),
+                  //   decoration: BoxDecoration(
+                  //     color: Color(0xffF9F9F9),
+                  //     borderRadius: BorderRadius.circular(
+                  //       EcliniqTextStyles.getResponsiveBorderRadius(
+                  //         context,
+                  //         4.0,
+                  //       ),
+                  //     ),
+                  //   ),
+                  //   child: Column(
+                  //     children: [
+                  //       Text(
+                  //         'Next Available',
+                  //         style:
+                  //             EcliniqTextStyles.responsiveButtonXLargeProminent(
+                  //               context,
+                  //             ).copyWith(
+                  //               color: Color(0xFF2372EC),
+                  //               fontWeight: FontWeight.w400,
+                  //             ),
+                  //       ),
+                  //       Text(
+                  //         'Tomorrow, 10:00AM',
+                  //         style:
+                  //             EcliniqTextStyles.responsiveButtonXLargeProminent(
+                  //               context,
+                  //             ).copyWith(
+                  //               color: Color(0xFF626060),
+                  //               fontWeight: FontWeight.w400,
+                  //             ),
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
+                   Container(
+                    padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                      context,
+                      horizontal: 6.0,
+                      vertical: 4.0,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Color(0xffFEF9E6),
+                      borderRadius: BorderRadius.circular(
+                        EcliniqTextStyles.getResponsiveBorderRadius(
+                          context,
+                          4.0,
+                        ),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          'Queue Not Started',
+                          style:
+                              EcliniqTextStyles.responsiveButtonXLargeProminent(
+                                context,
+                              ).copyWith(
+                                color: Color(0xFFBE8B00),
+                                fontWeight: FontWeight.w400,
+                              ),
+                        ),
+                        Text(
+                          'Tomorrow, 10:00AM',
+                          style:
+                              EcliniqTextStyles.responsiveButtonXLargeProminent(
+                                context,
+                              ).copyWith(
+                                color: Color(0xFF626060),
+                                fontWeight: FontWeight.w400,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
               SizedBox(
                 height: EcliniqTextStyles.getResponsiveSpacing(context, 8.0),
               ),
@@ -308,11 +450,10 @@ class _DoctorAvatar extends StatelessWidget {
   final Doctor doctor;
   final StorageService _storageService = StorageService();
 
-   _DoctorAvatar({required this.doctor});
+  _DoctorAvatar({required this.doctor});
 
   @override
   Widget build(BuildContext context) {
-    
     return Stack(
       children: [
         Container(
@@ -324,7 +465,6 @@ class _DoctorAvatar extends StatelessWidget {
             border: Border.all(color: Color(0xff96BFFF), width: 0.5),
           ),
           child: FutureBuilder<String?>(
-            
             future: doctor.getProfilePhotoUrl(_storageService),
             builder: (context, snapshot) {
               final imageUrl = snapshot.data;
@@ -390,7 +530,6 @@ class _DoctorInfo extends StatelessWidget {
           ).copyWith(color: Color(0xff424242), fontWeight: FontWeight.w600),
         ),
 
-       
         Text(
           doctor.primarySpecialization,
           style: EcliniqTextStyles.responsiveTitleXLarge(
@@ -398,15 +537,13 @@ class _DoctorInfo extends StatelessWidget {
           ).copyWith(color: Color(0xff424242)),
         ),
         //if (doctor.educationText.isNotEmpty) ...[
-          SizedBox(
-            height: EcliniqTextStyles.getResponsiveSpacing(context, 2.0),
-          ),
-          Text(
-            'MBBS',
-            style: EcliniqTextStyles.responsiveTitleXLarge(
-              context,
-            ).copyWith(color: Color(0xff424242)),
-          ),
+        SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 2.0)),
+        Text(
+          'MBBS',
+          style: EcliniqTextStyles.responsiveTitleXLarge(
+            context,
+          ).copyWith(color: Color(0xff424242)),
+        ),
         //],
       ],
     );
