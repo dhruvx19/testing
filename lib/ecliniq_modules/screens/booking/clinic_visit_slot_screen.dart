@@ -82,6 +82,7 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
   String? _currentLocationAddress;
   String? _currentDistance;
   bool _isLoadingDoctorDetails = false;
+  String? _currentTokenNumber;
 
   PatientDetailsData? _currentUserDetails;
 
@@ -112,6 +113,7 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
       _fetchDoctorDetails();
     }
     _fetchCurrentUserDetails();
+    _fetchCurrentTokenNumber();
   }
 
   void _initializeDates() {
@@ -156,6 +158,23 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
 
   String _formatDateForApi(DateTime date) {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _fetchCurrentTokenNumber() async {
+    try {
+      final response = await _doctorService.getDoctorDetailsById(
+        doctorId: widget.doctorId,
+        authToken: _cachedAuthToken,
+      );
+
+      if (mounted && response.success && response.data != null) {
+        setState(() {
+          _currentTokenNumber = response.data!.currentTokenNumber?.toString();
+        });
+      }
+    } catch (e) {
+      debugPrint('Failed to fetch current token number: $e');
+    }
   }
 
   Future<void> _fetchWeeklySlots() async {
@@ -1516,6 +1535,49 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
                       locationDistance: _currentDistance,
                       onChangeLocation: _onChangeLocation,
                     ),
+                  if (_currentTokenNumber != null) ...[
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Color(0xffF8FAFF),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Token Number Currently Running',
+                              style: EcliniqTextStyles.responsiveTitleXLarge(
+                                context,
+                              ).copyWith(color: Color(0xff626060)),
+                            ),
+                            SizedBox(width: 14),
+                            _AnimatedDot(),
+                            SizedBox(width: 4),
+                            Text(
+                              _currentTokenNumber!,
+                              style:
+                                  EcliniqTextStyles
+                                      .responsiveHeadlineLargeBold(
+                                        context,
+                                      )
+                                      .copyWith(
+                                        color: Color(0xFF3EAF3F),
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: DateSelector(
@@ -1580,3 +1642,51 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
     );
   }
 }
+
+class _AnimatedDot extends StatefulWidget {
+  const _AnimatedDot();
+
+  @override
+  State<_AnimatedDot> createState() => _AnimatedDotState();
+}
+
+class _AnimatedDotState extends State<_AnimatedDot>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _animation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _animation,
+      child: Container(
+        width: 16,
+        height: 16,
+        decoration: BoxDecoration(
+          color: Color(0xff3EAF3F),
+          shape: BoxShape.circle,
+        ),
+      ),
+    );
+  }
+}
+
