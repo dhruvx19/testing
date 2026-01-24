@@ -651,17 +651,16 @@ class StatusHeader extends StatelessWidget {
                  fontWeight: FontWeight.w700,
               ),
             ),
-            // if (expectedTime != null) ...[
+            if (expectedTime != null && expectedTime!.isNotEmpty) ...[
               const SizedBox(height: 4),
               Padding(
                 padding: const EdgeInsets.all(6.0),
                 child: Container(
-                 
-                  padding: EdgeInsets.all(4),
+                  padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    color: Color(0xffF9F9F9),
+                    color: const Color(0xffF9F9F9),
                     borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: Color(0xFFB8B8B8), width: 0.5),
+                    border: Border.all(color: const Color(0xFFB8B8B8), width: 0.5),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -669,7 +668,7 @@ class StatusHeader extends StatelessWidget {
                       Text(
                         'Expected Time - $expectedTime',
                         style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
-                          color: Color(0xff424242),
+                          color: const Color(0xff424242),
                         ),
                       ),
                       const SizedBox(width: 6),
