@@ -357,24 +357,7 @@ class _AvailabilityBadgeState extends State<_AvailabilityBadge>
     final availability = widget.doctor.availability;
 
     if (availability == null) {
-      return Container(
-        padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
-          context,
-          horizontal: 6.0,
-          vertical: 4.0,
-        ),
-        decoration: BoxDecoration(
-          color: const Color(0xffFEF9E6),
-          borderRadius: BorderRadius.circular(
-            EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
-          ),
-        ),
-        child: Text(
-          'Queue Not Started',
-          style: EcliniqTextStyles.responsiveButtonXLargeProminent(context)
-              .copyWith(color: const Color(0xFFBE8B00), fontWeight: FontWeight.w400),
-        ),
-      );
+      return SizedBox.shrink();
     }
 
     final status = availability.status.toUpperCase();
@@ -427,7 +410,8 @@ class _AvailabilityBadgeState extends State<_AvailabilityBadge>
     }
 
     if (status == 'QUEUE_NOT_STARTED') {
-      final timeText = (availability.startTime != null && availability.endTime != null)
+      final timeText =
+          (availability.startTime != null && availability.endTime != null)
           ? '${availability.startTime} - ${availability.endTime}'
           : null;
       return Container(
@@ -448,13 +432,21 @@ class _AvailabilityBadgeState extends State<_AvailabilityBadge>
             Text(
               'Queue Not Started',
               style: EcliniqTextStyles.responsiveButtonXLargeProminent(context)
-                  .copyWith(color: const Color(0xFFBE8B00), fontWeight: FontWeight.w400),
+                  .copyWith(
+                    color: const Color(0xFFBE8B00),
+                    fontWeight: FontWeight.w400,
+                  ),
             ),
             if (timeText != null)
               Text(
                 timeText,
-                style: EcliniqTextStyles.responsiveButtonXLargeProminent(context)
-                    .copyWith(color: const Color(0xFF626060), fontWeight: FontWeight.w400),
+                style:
+                    EcliniqTextStyles.responsiveButtonXLargeProminent(
+                      context,
+                    ).copyWith(
+                      color: const Color(0xFF626060),
+                      fontWeight: FontWeight.w400,
+                    ),
               ),
           ],
         ),
@@ -482,18 +474,24 @@ class _AvailabilityBadgeState extends State<_AvailabilityBadge>
         ),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        //crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (prefix.isNotEmpty)
             Text(
               prefix,
               style: EcliniqTextStyles.responsiveButtonXLargeProminent(context)
-                  .copyWith(color: const Color(0xFF2372EC), fontWeight: FontWeight.w400),
+                  .copyWith(
+                    color: const Color(0xFF2372EC),
+                    fontWeight: FontWeight.w400,
+                  ),
             ),
           Text(
             details.isNotEmpty ? details : message,
             style: EcliniqTextStyles.responsiveButtonXLargeProminent(context)
-                .copyWith(color: const Color(0xFF626060), fontWeight: FontWeight.w400),
+                .copyWith(
+                  color: const Color(0xFF626060),
+                  fontWeight: FontWeight.w400,
+                ),
           ),
         ],
       ),
