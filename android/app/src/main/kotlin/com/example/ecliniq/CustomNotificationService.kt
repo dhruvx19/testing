@@ -84,7 +84,7 @@ class CustomNotificationService(private val context: Context) {
         expandedView.setTextViewText(R.id.expected_time, "Expected Time: $expectedTime")
         
         // Set token values
-        expandedView.setTextViewText(12, "S")
+        // expandedView.setTextViewText(12, "S") // Removed: Invalid ID '12'
         expandedView.setTextViewText(R.id.current_token, currentToken.toString())
         expandedView.setTextViewText(R.id.your_token, userToken.toString())
 

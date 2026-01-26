@@ -230,8 +230,8 @@ class AppointmentLockScreenNotification {
             '$tokenProgressLine\n$tokenLabelsLine';
       }
 
-      // Use custom native notification for Android (with RemoteViews)
-      if (Platform.isAndroid) {
+      // Use custom native notification (Android) or Live Activity (iOS)
+      if (Platform.isAndroid || Platform.isIOS) {
         try {
           // Prepare time info string
           String timeInfoText = '';
@@ -245,7 +245,7 @@ class AppointmentLockScreenNotification {
             timeInfoText = 'Your token has been called';
           }
 
-          // Call native method to show custom notification
+          // Call native method to show custom notification / Live Activity
           await _customNotificationChannel.invokeMethod('showCustomNotification', {
             'title': title,
             'doctorName': doctorName,
@@ -256,16 +256,16 @@ class AppointmentLockScreenNotification {
             'hospitalName': hospitalName,
           });
 
-          log('✅ Custom native notification shown for Android');
+          log('✅ Custom native notification/Live Activity shown');
           _currentAppointmentId = appointment.id;
           return; // Exit early, native notification handles it
         } catch (e) {
-          log('⚠️ Failed to show custom native notification, falling back to default: $e');
-          // Fall through to default notification
+          log('⚠️ Failed to show custom native notification (falling back to default): $e');
+          // Fall through to default notification if native method fails (e.g. old iOS version)
         }
       }
 
-      // Default notification for iOS or Android fallback
+      // Default notification for fallback scenarios
       final androidDetails = AndroidNotificationDetails(
         _channelId,
         _channelName,
@@ -288,8 +288,6 @@ class AppointmentLockScreenNotification {
         color: const Color(0xFF0066CC), // Blue color matching AppointmentWaitingScreen design
         icon: '@mipmap/ic_launcher',
         largeIcon: const DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
-        // Custom layout for Android (requires native implementation)
-        // For now using BigTextStyle, but can be extended with RemoteViews
       );
 
       // iOS notification details - configured for lock screen display
@@ -389,8 +387,8 @@ class AppointmentLockScreenNotification {
       return;
     }
 
-    // For Android, try native update first
-    if (Platform.isAndroid) {
+    // Try native update first (Android & iOS)
+    if (Platform.isAndroid || Platform.isIOS) {
       try {
         final userToken = appointment.tokenNo;
         final runningToken = currentRunningToken ?? 0;
@@ -421,10 +419,10 @@ class AppointmentLockScreenNotification {
           'hospitalName': hospitalName,
         });
 
-        log('✅ Custom native notification updated');
+        log('✅ Custom native notification/Live Activity updated');
         return; // Exit early, native notification handles it
       } catch (e) {
-        log('⚠️ Failed to update custom notification, falling back to default: $e');
+        log('⚠️ Failed to update custom notification (falling back to default): $e');
         // Fall through to default notification
       }
     }
@@ -443,11 +441,11 @@ class AppointmentLockScreenNotification {
   /// @description Removes the persistent notification when appointment is completed or cancelled
   static Future<void> dismissNotification() async {
     try {
-      // Try native dismiss first (Android)
-      if (Platform.isAndroid) {
+      // Try native dismiss first (Android & iOS)
+      if (Platform.isAndroid || Platform.isIOS) {
         try {
           await _customNotificationChannel.invokeMethod('dismissCustomNotification');
-          log('✅ Custom native notification dismissed');
+          log('✅ Custom native notification/Live Activity dismissed');
         } catch (e) {
           log('⚠️ Failed to dismiss custom notification, using default: $e');
         }

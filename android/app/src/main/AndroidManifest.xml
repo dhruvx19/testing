@@ -24,6 +24,9 @@
     <!-- Required for file picker -->
     <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
     
+    <!-- Notification permission for Android 13+ -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    
     <application
         android:label="ecliniq"
         android:name="${applicationName}"
