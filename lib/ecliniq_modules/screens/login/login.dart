@@ -328,31 +328,10 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
       return;
     }
 
-    // For now, use hardcoded OTP "123456"
-    // TODO: Replace with API call later
-    if (otp != '123456') {
-      setState(() {
-        _isLoading = false;
-        _showLoadingOverlay = false;
-        _entered = '';
-        _otpController.clear();
-      });
-      CustomErrorSnackBar.show(
-        context: context,
-        title: 'Invalid OTP',
-        subtitle: 'Please enter the correct OTP',
-        duration: const Duration(seconds: 3),
-      );
-      return;
-    }
-
-    // OTP is valid, proceed with login
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      // Use MPIN login flow for now - will replace with OTP API later
-      final success = await authProvider.loginWithMPIN(
-        '',
-      ); // Empty MPIN for OTP flow
+      // Verify OTP using the API
+      final success = await authProvider.verifyOTP(otp);
 
       if (mounted) {
         if (success) {
@@ -360,6 +339,10 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
             _isLoading = false;
           });
 
+          // Check if this is a new user or needs profile setup
+          // We might need to redirect to MPIN setup if they don't have one
+          // But for now, following existing flow to Home
+          
           // Navigate to home screen
           scheduleMicrotask(() {
             if (!mounted) return;
@@ -465,21 +448,61 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
       return;
     }
 
-    // Save phone number to secure storage
-    await SecureStorageService.storePhoneNumber(phone);
-
-    // Check biometric availability first
-    await _checkBiometricAvailability();
-
-    // User explicitly clicked "Login using OTP", so show OTP screen
     setState(() {
-      _phoneNumber = phone;
-      _showMPINScreen = true;
-      _isOTPMode = true;
-      _isLoading = false;
-      _userExplicitlyChoseMPIN = false;
-      _otpController.clear();
+      _isLoading = true;
+      _showLoadingOverlay = true;
     });
+
+    try {
+      // Save phone number to secure storage
+      await SecureStorageService.storePhoneNumber(phone);
+
+      // Check biometric availability first
+      await _checkBiometricAvailability();
+
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      
+      // Call API to send OTP
+      final success = await authProvider.loginOrRegisterUser(phone);
+
+      if (mounted) {
+        if (success) {
+          // User explicitly clicked "Login using OTP", so show OTP screen
+          setState(() {
+            _phoneNumber = phone;
+            _showMPINScreen = true;
+            _isOTPMode = true;
+            _isLoading = false;
+            _userExplicitlyChoseMPIN = false;
+            _otpController.clear();
+          });
+        } else {
+          setState(() {
+             _isLoading = false;
+             _showLoadingOverlay = false;
+          });
+          CustomErrorSnackBar.show(
+            context: context,
+            title: 'Failed to send OTP',
+            subtitle: authProvider.errorMessage ?? 'Please try again',
+            duration: const Duration(seconds: 3),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _showLoadingOverlay = false;
+        });
+        CustomErrorSnackBar.show(
+          context: context,
+          title: 'Error',
+          subtitle: e.toString(),
+          duration: const Duration(seconds: 3),
+        );
+      }
+    }
   }
 
   Future<void> _checkBiometricAvailability() async {
