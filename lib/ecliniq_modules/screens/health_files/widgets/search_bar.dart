@@ -125,11 +125,14 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
                       size: 22,
                     ),
                   )
-                : SvgPicture.asset(
-                  EcliniqIcons.magnifierMyDoctor.assetPath,
-                  width: 20,
-                  height: 20,
-                ),
+                : Container(
+                    padding: const EdgeInsets.all(12.0),
+                    child: SvgPicture.asset(
+                      EcliniqIcons.magnifierMyDoctor.assetPath,
+                      width: 20,
+                      height: 20,
+                    ),
+                  ),
             hintText: widget.hintText,
             hintStyle: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
               color: Colors.grey[500],
