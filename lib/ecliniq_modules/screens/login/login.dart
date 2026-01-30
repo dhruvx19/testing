@@ -1708,14 +1708,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                             ),
                           ),
                 ],
-              ),
-              
-
-              
-                ],
-              ),
-            ),
-              
+                    
               if (!_isOTPMode)
                 GestureDetector(
                   onTap: _entered.isEmpty
@@ -1907,12 +1900,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
               constraints: BoxConstraints(
                 minHeight: MediaQuery.of(context).size.height,
               ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+                   
             child: IntrinsicHeight(
               child: Padding(
                 padding: EdgeInsets.only(bottom: _showMPINScreen ? 0 : 20),
