@@ -1636,95 +1636,75 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
           ),
           const SizedBox(height: 24),
           Center(
-            child: _isBiometricEnabled
-                ? OutlinedButton.icon(
-                  
-                    onPressed: _isLoading ? null : _handleBiometricLogin,
-                    icon: SvgPicture.asset(
-                      EcliniqIcons.faceId.assetPath,
-                      width: 22,
-                      height: 22,
-                    ),
-                    label: Text(
-                      _isLoading
-                          ? 'Authenticating...'
-                          : 'Use ${BiometricService.getBiometricTypeName()}',
-                      style:
-                          EcliniqTextStyles.responsiveHeadlineBMedium(
-                            context,
-                          ).copyWith(
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w500,
-                            color: Color(0xFF2372EC),
-                          ),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(150, 48),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 18,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      side: const BorderSide(
-                        color: Color(0xff96BFFF),
-                        width: 0.5,
-                      ),
-                      backgroundColor: Color(0xffF2F7FF),
-                      foregroundColor: Color(0xffF2F7FF),
-                    ),
-                  )
-                : OutlinedButton.icon(
-                    onPressed: _isLoading
-                        ? null
-                        : () async {
-                            final mpin = await SecureStorageService.getMPIN();
-                            if (mpin != null && mpin.isNotEmpty) {
-                              await _requestBiometricPermission(mpin);
-                              await _checkBiometricAvailability();
-                              if (_isBiometricEnabled && mounted) {
-                                await _handleBiometricLogin();
-                              }
-                            } else {
-                              CustomErrorSnackBar.show(
-                                context: context,
-                                title: 'MPIN Required',
-                                subtitle:
-                                    'Please enter MPIN first to enable biometric',
-                                duration: const Duration(seconds: 3),
-                              );
+            child: GestureDetector(
+              onTap: _isLoading
+                  ? null
+                  : (_isBiometricEnabled
+                      ? _handleBiometricLogin
+                      : () async {
+                          final mpin = await SecureStorageService.getMPIN();
+                          if (mpin != null && mpin.isNotEmpty) {
+                            await _requestBiometricPermission(mpin);
+                            await _checkBiometricAvailability();
+                            if (_isBiometricEnabled && mounted) {
+                              await _handleBiometricLogin();
                             }
-                          },
-                    icon: SvgPicture.asset(
+                          } else {
+                            CustomErrorSnackBar.show(
+                              context: context,
+                              title: 'MPIN Required',
+                              subtitle:
+                                  'Please enter MPIN first to enable biometric',
+                              duration: const Duration(seconds: 3),
+                            );
+                          }
+                        }),
+              child: Container(
+                constraints: const BoxConstraints(minWidth: 150, minHeight: 48),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: _isBiometricEnabled
+                      ? Color(0xffF2F7FF)
+                      : Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color: _isBiometricEnabled
+                        ? Color(0xff96BFFF)
+                        : Color(0x382372EC),
+                    width: 0.5,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SvgPicture.asset(
                       EcliniqIcons.faceId.assetPath,
                       width: 22,
                       height: 22,
                     ),
-                    label: Text(
-                      'Use ${BiometricService.getBiometricTypeName()}',
-                      style:
-                          EcliniqTextStyles.responsiveHeadlineBMedium(
-                            context,
-                          ).copyWith(
-                            fontWeight: FontWeight.w500,
-                            color: Color(0xFF2372EC),
-                          ),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(150, 48),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 18,
-                        vertical: 12,
+                    const SizedBox(width: 8),
+                    Text(
+                      _isBiometricEnabled
+                          ? (_isLoading
+                              ? 'Authenticating...'
+                              : 'Use ${BiometricService.getBiometricTypeName()}')
+                          : 'Use ${BiometricService.getBiometricTypeName()}',
+                      style: EcliniqTextStyles.responsiveHeadlineBMedium(
+                        context,
+                      ).copyWith(
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF2372EC),
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      side: const BorderSide(color: Color(0x382372EC)),
-                      backgroundColor: Colors.blue.shade50,
-                      foregroundColor: Colors.blue.shade100,
                     ),
-                  ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),
