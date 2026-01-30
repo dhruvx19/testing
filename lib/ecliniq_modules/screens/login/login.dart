@@ -1708,7 +1708,9 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                             ),
                           ),
                 ],
-                    
+              ),
+            ),
+              
               if (!_isOTPMode)
                 GestureDetector(
                   onTap: _entered.isEmpty
