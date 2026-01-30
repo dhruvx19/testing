@@ -384,13 +384,16 @@ class _SymptomsPageState extends State<SymptomsPage> {
 
     final filtered = <String, List<String>>{};
     _categorySymptoms.forEach((category, symptoms) {
-      final matchingSymptoms = symptoms.where((symptom) {
-        return symptom.toLowerCase().contains(_searchQuery.toLowerCase());
-      }).toList();
+      if (category.toLowerCase().contains(_searchQuery.toLowerCase())) {
+        filtered[category] = symptoms;
+      } else {
+        final matchingSymptoms = symptoms.where((symptom) {
+          return symptom.toLowerCase().contains(_searchQuery.toLowerCase());
+        }).toList();
 
-      if (matchingSymptoms.isNotEmpty ||
-          category.toLowerCase().contains(_searchQuery.toLowerCase())) {
-        filtered[category] = matchingSymptoms;
+        if (matchingSymptoms.isNotEmpty) {
+          filtered[category] = matchingSymptoms;
+        }
       }
     });
     return filtered;
@@ -591,15 +594,35 @@ class _SymptomsPageState extends State<SymptomsPage> {
     String category,
     List<String> symptoms,
   ) {
-    final isExpanded = _expandedCategories[category] ?? symptoms.isNotEmpty;
+    // If searching, default to expanded. Otherwise use mapped state or default to true if symptoms present
+    final isExpanded = _searchQuery.isNotEmpty
+        ? true 
+        : (_expandedCategories[category] ?? symptoms.isNotEmpty);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         InkWell(
+          // Allow toggling only if not searching. Or allow toggling but default is open.
+          // Better logic: user can still toggle off. But initial state during search matches "isExpanded".
           onTap: symptoms.isNotEmpty ? () {
             setState(() {
-              _expandedCategories[category] = !isExpanded;
+              if (_searchQuery.isNotEmpty) {
+                 // If searching, we don't really use _expandedCategories for initial state anymore,
+                 // but let's allow improved toggling? 
+                 // Simple approach: just toggle the map value. 
+                 // But wait, the line above `_searchQuery.isNotEmpty ? true` overrides it.
+                 // So if searching, we force expand. Let's make it user-controllable during search too?
+                 // If user collapses during search, we can respect that if we initialize map properly.
+                 // However, "force expand on search" is standard UX. Collapsing search results is rare.
+                 // So let's disable collapse onTap if searching, or just let it be.
+                 // To allow collapse during search:
+                 // isExpanded = _expandedCategories[category] ?? (_searchQuery.isNotEmpty || symptoms.isNotEmpty);
+                 // But _expandedCategories is empty initially.
+                 // Let's stick to "Force expand if searching".
+              } else {
+                 _expandedCategories[category] = !isExpanded;
+              }
             });
           } : null,
           child: Row(
@@ -618,6 +641,7 @@ class _SymptomsPageState extends State<SymptomsPage> {
                       ),
                 ),
               ),
+              if (_searchQuery.isEmpty) // Hide arrow if we force expanded? Or show it?
               AnimatedRotation(
                 duration: const Duration(milliseconds: 200),
                 turns: isExpanded ? 0 : -0.25,
