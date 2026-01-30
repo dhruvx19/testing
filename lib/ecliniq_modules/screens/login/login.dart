@@ -291,7 +291,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
       final name = await SecureStorageService.getUserName();
       if (name != null && name.isNotEmpty && mounted) {
         setState(() {
-          _userName = name.trim();
+          _userName = name.trim().split(' ').first;
         });
       }
     } catch (e) {
