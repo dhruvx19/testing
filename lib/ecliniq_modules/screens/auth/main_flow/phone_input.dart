@@ -376,28 +376,22 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
 
   @override
   Widget build(BuildContext context) {
-    return EcliniqScaffold(
-      backgroundColor: EcliniqScaffold.primaryBlue,
-      resizeToAvoidBottomInset: true,
-      body: SizedBox.expand(
-        child: Column(
-          children: [
-            SizedBox(
-              height: EcliniqTextStyles.getResponsiveSpacing(context, 20),
-            ),
-
-            Row(
-              children: [
-                IconButton(
-                  onPressed: widget.onClose,
-                  icon: SvgPicture.asset(
-                    EcliniqIcons.reply.assetPath,
-                    width: EcliniqTextStyles.getResponsiveIconSize(context, 32),
-                    height: EcliniqTextStyles.getResponsiveIconSize(context, 32),
-                  ),
-                ),
-                const Spacer(),
-                GestureDetector(
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        backgroundColor: EcliniqScaffold.primaryBlue,
+        toolbarHeight: 40,
+        leading: IconButton(
+          onPressed: widget.onClose,
+          icon: SvgPicture.asset(
+            EcliniqIcons.reply.assetPath,
+            width: EcliniqTextStyles.getResponsiveIconSize(context, 32),
+            height: EcliniqTextStyles.getResponsiveIconSize(context, 32),
+          ),
+        ),
+        actions: [
+          
+          GestureDetector(
                   onTap: () => EcliniqRouter.push(LoginTroublePage()),
                   child: FadeTransition(
                     opacity: widget.fadeAnimation,
@@ -422,10 +416,63 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
                     ),
                   ),
                 ),
-              ],
-            ),
+            
+      
+        
+      
+        ],),
+      //  automaticallyImplyLeading: false,
+      //   backgroundColor: EcliniqScaffold.primaryBlue,
+      //   toolbarHeight: 50,
+      // backgroundColor: EcliniqScaffold.primaryBlue,
+      // resizeToAvoidBottomInset: true,
+      // body: SizedBox.expand(
+      //   child: Column(
+      //     children: [
+      //       SizedBox(
+      //         height: EcliniqTextStyles.getResponsiveSpacing(context, 20),
+      //       ),
 
-            Expanded(
+      //       Row(
+      //         children: [
+      //           IconButton(
+      //             onPressed: widget.onClose,
+      //             icon: SvgPicture.asset(
+      //               EcliniqIcons.reply.assetPath,
+      //               width: EcliniqTextStyles.getResponsiveIconSize(context, 32),
+      //               height: EcliniqTextStyles.getResponsiveIconSize(context, 32),
+      //             ),
+      //           ),
+      //           const Spacer(),
+      //           GestureDetector(
+      //             onTap: () => EcliniqRouter.push(LoginTroublePage()),
+      //             child: FadeTransition(
+      //               opacity: widget.fadeAnimation,
+      //               child: Row(
+      //                 children: [
+      //                   SvgPicture.asset(
+      //                     EcliniqIcons.questionCircleWhite.assetPath,
+      //                      width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+      //               height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+      //                   ),
+      //                   const SizedBox(width: 4),
+      //                    Text(
+      //                     'Help',
+      //                     style: EcliniqTextStyles.responsiveHeadlineXLMedium(context).copyWith(
+      //                       color: Colors.white,
+                           
+      //                       fontWeight: FontWeight.w400,
+      //                     ),
+      //                   ),
+      //                   const SizedBox(width: 10),
+      //                 ],
+      //               ),
+      //             ),
+      //           ),
+      //         ],
+      //       ),
+
+         body:   Expanded(
               child: Container(
                 decoration: const BoxDecoration(color: Colors.white),
                 child: FadeTransition(
@@ -477,9 +524,9 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
                 ),
               ),
             ),
-          ],
-        ),
-      ),
+        
+      
+   
     );
   }
 }

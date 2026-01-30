@@ -572,7 +572,7 @@ class _DoctorInfo extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Dr. ${doctor.name}',
+          'Dr. ${doctor.name.trim()}',
           style: EcliniqTextStyles.responsiveHeadlineLarge(
             context,
           ).copyWith(color: Color(0xff424242), fontWeight: FontWeight.w600),
@@ -696,6 +696,8 @@ class _BookButton extends StatelessWidget {
       height: EcliniqTextStyles.getResponsiveButtonHeight(
         context,
         baseHeight: 52.0,
+        debugPrint: true,
+        debugLabel: 'TopDoctors - Book Clinic Visit',
       ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(

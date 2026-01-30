@@ -12,6 +12,7 @@ import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/button/button.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/action_snackbar.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/error_snackbar.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/success_snackbar.dart';
 import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -136,6 +137,11 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
   final FocusNode _focusNode = FocusNode();
   Timer? _mpinSubmitTimer;
 
+  // OTP Resend Timer variables
+  int _resendTimer = 150; // 2:30 minutes in seconds
+  bool _canResend = false;
+  Timer? _otpResendTimer;
+
   /// Getter to check if button should be enabled based on phone number validity
   bool get isButtonEnabled => _phoneNumber.length == 10 && !_isLoading;
 
@@ -158,6 +164,106 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
 
       // Don't auto-trigger biometric - user must explicitly click the button
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _textController.removeListener(_onMPINChanged);
+    _phoneController.removeListener(_onPhoneNumberChanged);
+    _mpinSubmitTimer?.cancel();
+    _otpResendTimer?.cancel();
+    _textController.dispose();
+    _otpController.dispose();
+    _phoneController.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  /// Start the OTP resend timer
+  void _startOTPResendTimer() {
+    _canResend = false;
+    _resendTimer = 150; // Reset to 2:30 minutes
+
+    _otpResendTimer?.cancel(); // Cancel any existing timer
+    _otpResendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) {
+        setState(() {
+          if (_resendTimer > 0) {
+            _resendTimer--;
+          } else {
+            _canResend = true;
+            _otpResendTimer?.cancel();
+          }
+        });
+      }
+    });
+  }
+
+  /// Format timer seconds to MM:SS format
+  String _formatResendTimer(int seconds) {
+    final minutes = seconds ~/ 60;
+    final secs = seconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+  }
+
+  /// Resend OTP
+  Future<void> _resendOTP() async {
+    if (!_canResend) return; // Don't allow resend if timer hasn't finished
+
+    setState(() {
+      _isLoading = true;
+      _showLoadingOverlay = true;
+    });
+
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final phone = _phoneNumber.isNotEmpty
+          ? _phoneNumber
+          : _phoneController.text.trim();
+
+      // Call API to resend OTP
+      final success = await authProvider.loginOrRegisterUser(phone);
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _showLoadingOverlay = false;
+        });
+
+        if (success) {
+          _startOTPResendTimer(); // Restart the timer after resending OTP
+          _otpController.clear(); // Clear the OTP field
+
+          CustomSuccessSnackBar.show(
+            context: context,
+            title: 'OTP Resent',
+            subtitle: 'OTP sent successfully to +91 $phone',
+            duration: const Duration(seconds: 3),
+          );
+        } else {
+          CustomErrorSnackBar.show(
+            context: context,
+            title: 'Failed to resend OTP',
+            subtitle: authProvider.errorMessage ?? 'Please try again',
+            duration: const Duration(seconds: 3),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _showLoadingOverlay = false;
+        });
+        CustomErrorSnackBar.show(
+          context: context,
+          title: 'Error',
+          subtitle: e.toString(),
+          duration: const Duration(seconds: 3),
+        );
+      }
+    }
   }
 
   /// Load saved phone number from secure storage and pre-fill the input
@@ -342,7 +448,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
           // Check if this is a new user or needs profile setup
           // We might need to redirect to MPIN setup if they don't have one
           // But for now, following existing flow to Home
-          
+
           // Navigate to home screen
           scheduleMicrotask(() {
             if (!mounted) return;
@@ -461,7 +567,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
       await _checkBiometricAvailability();
 
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      
+
       // Call API to send OTP
       final success = await authProvider.loginOrRegisterUser(phone);
 
@@ -473,13 +579,25 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
             _showMPINScreen = true;
             _isOTPMode = true;
             _isLoading = false;
+            _showLoadingOverlay = false;
             _userExplicitlyChoseMPIN = false;
             _otpController.clear();
           });
+
+          // Start the OTP resend timer
+          _startOTPResendTimer();
+
+          // Show success snackbar for OTP sent
+          CustomSuccessSnackBar.show(
+            context: context,
+            title: 'OTP Sent',
+            subtitle: 'OTP sent successfully to +91 $phone',
+            duration: const Duration(seconds: 3),
+          );
         } else {
           setState(() {
-             _isLoading = false;
-             _showLoadingOverlay = false;
+            _isLoading = false;
+            _showLoadingOverlay = false;
           });
           CustomErrorSnackBar.show(
             context: context,
@@ -1013,222 +1131,252 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
     final spacingFromPhoto = 16.0;
     final profilePhotoBottom = 59.0; // -35 (top) + 94 (height)
     final contentPaddingTop = 56.0;
-    final requiredSpacing = (profilePhotoBottom + spacingFromPhoto) - contentPaddingTop;
-    
-    return Column(
-      mainAxisSize: MainAxisSize.max,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SizedBox(height: requiredSpacing.clamp(16.0, double.infinity)),
-        Text(
-          'Enter Your Mobile Number to Login',
-          style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
-            fontFamily: 'Inter',
-            fontWeight: FontWeight.w500,
-            color: Colors.black87,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 24),
-        // Phone input field
-        Container(
-          width: double.infinity,
-          height: EcliniqTextStyles.getResponsiveButtonHeight(
-            context,
-            baseHeight: 56.0,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Color(0xff626060), width: 0.5),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
-                  context,
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  border: Border(
-                    right: BorderSide(color: Color(0xffD6D6D6), width: 0.5),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Text(
-                      '+91',
-                      style:
-                          EcliniqTextStyles.responsiveHeadlineBMedium(
-                            context,
-                          ).copyWith(
-                            fontWeight: FontWeight.w400,
-                            color: Color(0xff424242),
-                          ),
-                    ),
-                    const SizedBox(width: 8),
-                    SvgPicture.asset(
-                      EcliniqIcons.arrowDown.assetPath,
-                      width: 20,
-                      height: 20,
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: TextField(
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
-                  autofocus: true,
-                  maxLength: 10,
-                  decoration: InputDecoration(
-                    hintText: 'Mobile Number',
-                    hintStyle:
-                        EcliniqTextStyles.responsiveHeadlineXMedium(
-                          context,
-                        ).copyWith(
-                          color: Color(0xffD6D6D6),
-                          fontWeight: FontWeight.w400,
-                        ),
-                    border: InputBorder.none,
-                    counterText: '',
-                    contentPadding:
-                        EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
-                          context,
-                          horizontal: 14,
-                          vertical: 2,
-                        ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 24),
-        // Next button
-        SizedBox(
-          width: double.infinity,
-          height: EcliniqTextStyles.getResponsiveButtonHeight(
-            context,
-            baseHeight: 55.0,
-          ),
-          child: GestureDetector(
-            onTapDown: isButtonEnabled
-                ? (_) {
-                    setState(() {
-                      _isButtonPressed = true;
-                    });
-                  }
-                : null,
-            onTapUp: isButtonEnabled
-                ? (_) {
-                    setState(() {
-                      _isButtonPressed = false;
-                    });
-                    _handlePhoneSubmit();
-                  }
-                : null,
-            onTapCancel: () {
-              setState(() {
-                _isButtonPressed = false;
-              });
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                color: _isButtonPressed
-                    ? Color(0xFF0E4395)
-                    : isButtonEnabled
-                    ? EcliniqButtonType.brandPrimary.backgroundColor(context)
-                    : EcliniqButtonType.brandPrimary.disabledBackgroundColor(
-                        context,
-                      ),
-                borderRadius: BorderRadius.circular(
-                  EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+    final requiredSpacing =
+        (profilePhotoBottom + spacingFromPhoto) - contentPaddingTop;
+    final keyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: keyboardVisible
+              ? const ClampingScrollPhysics()
+              : const NeverScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: IntrinsicHeight(
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  SizedBox(
+                    height: requiredSpacing.clamp(16.0, double.infinity),
+                  ),
                   Text(
-                    'Using M-Pin',
-                    style: EcliniqTextStyles.responsiveHeadlineMedium(context)
+                    'Enter Your Mobile Number to Login',
+                    style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
                         .copyWith(
-                          color: _isButtonPressed
-                              ? Colors.white
-                              : isButtonEnabled
-                              ? Colors.white
-                              : Color(0xffD6D6D6),
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
                         ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  // Phone input field
+                  Container(
+                    width: double.infinity,
+                    height: EcliniqTextStyles.getResponsiveButtonHeight(
+                      context,
+                      baseHeight: 56.0,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Color(0xff626060), width: 0.5),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding:
+                              EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                                context,
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              right: BorderSide(
+                                color: Color(0xffD6D6D6),
+                                width: 0.5,
+                              ),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Text(
+                                '+91',
+                                style:
+                                    EcliniqTextStyles.responsiveHeadlineBMedium(
+                                      context,
+                                    ).copyWith(
+                                      fontWeight: FontWeight.w400,
+                                      color: Color(0xff424242),
+                                    ),
+                              ),
+                              const SizedBox(width: 8),
+                              SvgPicture.asset(
+                                EcliniqIcons.arrowDown.assetPath,
+                                width: 20,
+                                height: 20,
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: TextField(
+                            controller: _phoneController,
+                            keyboardType: TextInputType.phone,
+                            autofocus: true,
+                            maxLength: 10,
+                            decoration: InputDecoration(
+                              hintText: 'Mobile Number',
+                              hintStyle:
+                                  EcliniqTextStyles.responsiveHeadlineXMedium(
+                                    context,
+                                  ).copyWith(
+                                    color: Color(0xffD6D6D6),
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                              border: InputBorder.none,
+                              counterText: '',
+                              contentPadding:
+                                  EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                                    context,
+                                    horizontal: 14,
+                                    vertical: 2,
+                                  ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // Next button
+                  SizedBox(
+                    width: double.infinity,
+                    height: EcliniqTextStyles.getResponsiveButtonHeight(
+                      context,
+                      baseHeight: 55.0,
+                    ),
+                    child: GestureDetector(
+                      onTapDown: isButtonEnabled
+                          ? (_) {
+                              setState(() {
+                                _isButtonPressed = true;
+                              });
+                            }
+                          : null,
+                      onTapUp: isButtonEnabled
+                          ? (_) {
+                              setState(() {
+                                _isButtonPressed = false;
+                              });
+                              _handlePhoneSubmit();
+                            }
+                          : null,
+                      onTapCancel: () {
+                        setState(() {
+                          _isButtonPressed = false;
+                        });
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: _isButtonPressed
+                              ? Color(0xFF0E4395)
+                              : isButtonEnabled
+                              ? EcliniqButtonType.brandPrimary.backgroundColor(
+                                  context,
+                                )
+                              : EcliniqButtonType.brandPrimary
+                                    .disabledBackgroundColor(context),
+                          borderRadius: BorderRadius.circular(
+                            EcliniqTextStyles.getResponsiveBorderRadius(
+                              context,
+                              4,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Using M-Pin',
+                              style:
+                                  EcliniqTextStyles.responsiveHeadlineMedium(
+                                    context,
+                                  ).copyWith(
+                                    color: _isButtonPressed
+                                        ? Colors.white
+                                        : isButtonEnabled
+                                        ? Colors.white
+                                        : Color(0xffD6D6D6),
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // OTP button
+                  GestureDetector(
+                    onTapDown: isButtonEnabled
+                        ? (_) {
+                            setState(() {
+                              _isOTPButtonPressed = true;
+                            });
+                          }
+                        : null,
+                    onTapUp: isButtonEnabled
+                        ? (_) {
+                            setState(() {
+                              _isOTPButtonPressed = false;
+                            });
+                            _handleOTPPhoneSubmit();
+                          }
+                        : null,
+                    onTapCancel: () {
+                      setState(() {
+                        _isOTPButtonPressed = false;
+                      });
+                    },
+                    child: Center(
+                      child: Text(
+                        'Login using OTP',
+                        style:
+                            EcliniqTextStyles.responsiveHeadlineMedium(
+                              context,
+                            ).copyWith(
+                              fontWeight: FontWeight.w400,
+                              color: _isOTPButtonPressed
+                                  ? Color(0xffB8B8B8)
+                                  : isButtonEnabled
+                                  ? Color(0xff2372EC)
+                                  : Color(0xffB8B8B8),
+                            ),
+                      ),
+                    ),
+                  ),
+
+                  const Spacer(),
+
+                  // Trouble signing in link
+                  Padding(
+                    padding: EdgeInsets.only(bottom: keyboardVisible ? 16 : 16),
+                    child: GestureDetector(
+                      onTap: () {
+                        EcliniqRouter.push(const LoginTroublePage());
+                      },
+                      child: Text(
+                        'Trouble signing in?',
+                        style:
+                            EcliniqTextStyles.responsiveHeadlineBMedium(
+                              context,
+                            ).copyWith(
+                              color: Color(0xff424242),
+                              fontWeight: FontWeight.w400,
+                              fontFamily: 'Inter',
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
           ),
-        ),
-        const SizedBox(height: 16),
-        // OTP button
-        GestureDetector(
-          onTapDown: isButtonEnabled
-              ? (_) {
-                  setState(() {
-                    _isOTPButtonPressed = true;
-                  });
-                }
-              : null,
-          onTapUp: isButtonEnabled
-              ? (_) {
-                  setState(() {
-                    _isOTPButtonPressed = false;
-                  });
-                  _handleOTPPhoneSubmit();
-                }
-              : null,
-          onTapCancel: () {
-            setState(() {
-              _isOTPButtonPressed = false;
-            });
-          },
-          child: Center(
-            child: Text(
-              'Login using OTP',
-              style: EcliniqTextStyles.responsiveHeadlineMedium(context)
-                  .copyWith(
-                    fontWeight: FontWeight.w400,
-                    color: _isOTPButtonPressed
-                        ? Color(0xffB8B8B8)
-                        : isButtonEnabled
-                        ? Color(0xff2372EC)
-                        : Color(0xffB8B8B8),
-                  ),
-            ),
-          ),
-        ),
-
-        const Spacer(),
-
-        // Trouble signing in link
-        Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom > 0
-                ? MediaQuery.of(context).viewInsets.bottom + 40
-                : 16,
-          ),
-          child: GestureDetector(
-            onTap: () {
-              EcliniqRouter.push(const LoginTroublePage());
-            },
-            child: Text(
-              'Trouble signing in?',
-              style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
-                color: Color(0xff424242),
-                fontWeight: FontWeight.w400,
-                fontFamily: 'Inter',
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -1309,8 +1457,11 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
     final profilePhotoBottom = 59.0; // -35 (top) + 94 (height)
     final contentPaddingTop = 56.0;
     final secondSizedBoxHeight = 8.0;
-    final requiredSpacing = (profilePhotoBottom + spacingFromPhoto) - contentPaddingTop - secondSizedBoxHeight;
-    
+    final requiredSpacing =
+        (profilePhotoBottom + spacingFromPhoto) -
+        contentPaddingTop -
+        secondSizedBoxHeight;
+
     return SingleChildScrollView(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom > 0
@@ -1324,7 +1475,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
           SizedBox(height: requiredSpacing.clamp(16.0, double.infinity)),
 
           // Back button to go back to phone input
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Text(
             _isOTPMode
                 ? 'Enter Your OTP to Sign In'
@@ -1337,10 +1488,10 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                 ),
             textAlign: TextAlign.center,
           ),
-
+          const SizedBox(height: 18),
           _isOTPMode
               ? Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 2.0),
                   child: PinCodeTextField(
                     appContext: context,
                     length: 6,
@@ -1504,29 +1655,86 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextButton(
-                    onPressed: _isLoading
-                        ? null
-                        : () {
-                            _navigateToForgotPin();
-                          },
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: Text(
-                      _isOTPMode ? "Didn't receive OTP?" : 'Forgot PIN?',
-                      style: EcliniqTextStyles.responsiveBodySmall(context)
-                          .copyWith(
-                            color: Color(0xff424242),
-                            fontWeight: FontWeight.w400,
-                            fontFamily: 'Inter',
+                  if (_isOTPMode)
+                    // OTP mode: Show "Didn't receive OTP?" with timer and resend
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Didn’t receive the OTP",
+                          style: EcliniqTextStyles.responsiveBodySmall(context)
+                              .copyWith(
+                                color: Color(0xff424242),
+                                fontWeight: FontWeight.w400,
+                                fontFamily: 'Inter',
+                              ),
+                        ),
+             
+
+                        if (!_canResend)
+                          Row(
+                            children: [
+                              SvgPicture.asset(
+                                EcliniqIcons.clockCircle.assetPath,
+                                width: 16,
+                                height: 16,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                _formatResendTimer(_resendTimer),
+                                style: EcliniqTextStyles.responsiveBodySmall(
+                                  context,
+                                ).copyWith(color: const Color(0xff424242)),
+                              ),
+                            ],
                           ),
+                      ],
+                    )
+                  else
+                    // MPIN mode: Show "Forgot PIN?"
+                    TextButton(
+                      onPressed: _isLoading
+                          ? null
+                          : () {
+                              _navigateToForgotPin();
+                            },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        'Forgot PIN?',
+                        style: EcliniqTextStyles.responsiveBodySmall(context)
+                            .copyWith(
+                              color: Color(0xff424242),
+                              fontWeight: FontWeight.w400,
+                              fontFamily: 'Inter',
+                            ),
+                      ),
                     ),
-                  ),
+                    if (_isOTPMode)
+                          GestureDetector(
+                            onTap: _canResend && !_isLoading
+                                ? _resendOTP
+                                : null,
+                            child: Text(
+                              'Resend',
+                              style:
+                                  EcliniqTextStyles.responsiveHeadlineXMedium(
+                                    context,
+                                  ).copyWith(
+                                    color: _canResend && !_isLoading
+                                        ? const Color(0xff2372EC)
+                                        : const Color(0xffB8B8B8),
+                                  ),
+                            ),
+                          ),
                 ],
               ),
+              // OTP mode: Show Resend button (enabled when timer completes)
+
+              // MPIN mode: Show PIN toggle
               if (!_isOTPMode)
                 GestureDetector(
                   onTap: _entered.isEmpty
@@ -1720,9 +1928,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
               ),
               child: IntrinsicHeight(
                 child: Padding(
-                  padding: EdgeInsets.only(
-                    bottom: _showMPINScreen ? 0 : 50,
-                  ),
+                  padding: EdgeInsets.only(bottom: _showMPINScreen ? 0 : 50),
                   child: Column(
                     children: [
                       SizedBox(

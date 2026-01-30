@@ -1,6 +1,7 @@
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/search_specialities/search_specialities_page.dart';
+import 'package:ecliniq/ecliniq_modules/screens/symptoms/symptoms_page.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
 import 'package:flutter/material.dart';
@@ -73,7 +74,7 @@ class NotFeelingWell extends StatelessWidget {
                     ),
                     TextButton(
                       onPressed: () {
-                        EcliniqRouter.push(SearchSpecialities());
+                        EcliniqRouter.push(SymptomsPage());
                       },
                       style: TextButton.styleFrom(
                         padding:

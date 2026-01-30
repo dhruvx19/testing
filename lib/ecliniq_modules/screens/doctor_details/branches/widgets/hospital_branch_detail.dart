@@ -246,7 +246,7 @@ class HospitalBranchDetail extends StatelessWidget {
                 ),
                 SizedBox(width: 8),
                 Flexible(
-                  flex: 2,
+                  flex: 1,
                   child: Container(
                     constraints: BoxConstraints(minWidth: 140),
                     height: 52,

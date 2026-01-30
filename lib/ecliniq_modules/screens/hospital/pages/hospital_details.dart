@@ -626,7 +626,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen>
             ).copyWith(fontWeight: FontWeight.w400, color: Color(0xff626060)),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           Text(
             value,
             style: EcliniqTextStyles.responsiveHeadlineXLarge(

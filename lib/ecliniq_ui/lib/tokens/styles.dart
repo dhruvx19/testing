@@ -312,17 +312,57 @@ class EcliniqTextStyles {
   /// Get responsive button height
   /// @param baseHeight - Base button height (default: 52px for primary buttons, 46px for standard)
   /// @param context - BuildContext to access screen dimensions
+  /// @param debugPrint - If true, prints debug information about the button height calculation
+  /// @param debugLabel - Optional label to identify the button in debug output
   /// @returns Responsive button height
   static double getResponsiveButtonHeight(
     BuildContext context, {
     double baseHeight = 52.0,
+    bool debugPrint = false,
+    String? debugLabel,
   }) {
     // Buttons should maintain good touch targets (minimum 44px recommended by Material Design)
-    return getResponsiveSize(
+    // maxSize set to baseHeight to prevent buttons from becoming smaller than designed
+    final calculatedHeight = getResponsiveSize(
       context,
       baseHeight,
       minSize: 44.0, // Minimum touch target size
-      maxSize: baseHeight * 0.85, // Don't make buttons too large
+      maxSize: baseHeight, // Keep original height as maximum
+    );
+    
+    if (debugPrint || enableLogging) {
+      final screenWidth = MediaQuery.of(context).size.width;
+      final screenHeight = MediaQuery.of(context).size.height;
+      final label = debugLabel ?? 'Button';
+      print('═══════════════════════════════════════════════════════════');
+      print('🔘 BUTTON HEIGHT DEBUG: $label');
+      print('═══════════════════════════════════════════════════════════');
+      print('   Screen: ${screenWidth.toStringAsFixed(0)}x${screenHeight.toStringAsFixed(0)}');
+      print('   Base Height: ${baseHeight}px');
+      print('   Calculated Height: ${calculatedHeight}px');
+      print('   Difference: ${(calculatedHeight - baseHeight).toStringAsFixed(1)}px');
+      print('   Scale: ${(calculatedHeight / baseHeight * 100).toStringAsFixed(1)}%');
+      print('═══════════════════════════════════════════════════════════');
+    }
+    
+    return calculatedHeight;
+  }
+  
+  /// Print button height debug information without affecting the UI
+  /// Call this method to debug button heights in any widget
+  /// @param context - BuildContext to access screen dimensions
+  /// @param baseHeight - Base button height to check
+  /// @param label - Label to identify the button
+  static void printButtonHeightDebug(
+    BuildContext context, {
+    double baseHeight = 52.0,
+    String label = 'Button',
+  }) {
+    getResponsiveButtonHeight(
+      context,
+      baseHeight: baseHeight,
+      debugPrint: true,
+      debugLabel: label,
     );
   }
 

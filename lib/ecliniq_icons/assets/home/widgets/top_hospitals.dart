@@ -723,7 +723,12 @@ class _TopHospitalsWidgetState extends State<TopHospitalsWidget>
                       children: [
                         Expanded(
                           child: SizedBox(
-                            height: EcliniqTextStyles.getResponsiveButtonHeight(context, baseHeight: 52.0),
+                            height: EcliniqTextStyles.getResponsiveButtonHeight(
+                              context, 
+                              baseHeight: 52.0,
+                              debugPrint: true,
+                              debugLabel: 'TopHospitals - Book Clinic Visit',
+                            ),
                             child: Container(
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context,  4.0)),
