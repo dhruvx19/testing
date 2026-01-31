@@ -437,19 +437,24 @@ class PatientInfo {
           overflow: TextOverflow.ellipsis,
         ),
         if (isSelf) ...[
-          const SizedBox(width: 4),
+          SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 4.0)),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+              context,
+              horizontal: 4.0,
+              vertical: 2.0,
+            ),
             decoration: BoxDecoration(
               color: const Color(0xFFF8FAFF),
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(
+                EcliniqTextStyles.getResponsiveBorderRadius(context, 6.0),
+              ),
             ),
             child: Text(
               'You',
-              style: TextStyle(
+              style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
                 color: Color(0xff2372EC),
                 fontWeight: FontWeight.w400,
-                fontSize: 16,
               ),
             ),
           ),
@@ -611,12 +616,20 @@ class StatusHeader extends StatelessWidget {
       children: [
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+            context,
+            horizontal: 12.0,
+            vertical: 12.0,
+          ),
           decoration: BoxDecoration(
             color: config.backgroundColor,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(12),
-              topRight: Radius.circular(12),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(
+                EcliniqTextStyles.getResponsiveBorderRadius(context, 12.0),
+              ),
+              topRight: Radius.circular(
+                EcliniqTextStyles.getResponsiveBorderRadius(context, 12.0),
+              ),
             ),
           ),
           child: _buildContent(config, context),
@@ -624,10 +637,16 @@ class StatusHeader extends StatelessWidget {
         if (currentTokenNumber != null) ...[
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+            padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+              context,
+              horizontal: 18.0,
+              vertical: 12.0,
+            ),
             decoration: BoxDecoration(
               color: Color(0xffF8FAFF),
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(
+                EcliniqTextStyles.getResponsiveBorderRadius(context, 6.0),
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -638,9 +657,9 @@ class StatusHeader extends StatelessWidget {
                     context,
                   ).copyWith(color: Color(0xff626060)),
                 ),
-                SizedBox(width: 14),
+                SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 14.0)),
                 _AnimatedDot(),
-                SizedBox(width: 4),
+                SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 4.0)),
                 Text(
                   currentTokenNumber!,
                   style: EcliniqTextStyles.responsiveHeadlineLargeBold(context)
@@ -652,7 +671,7 @@ class StatusHeader extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 8.0)),
         ],
       ],
     );
@@ -669,14 +688,14 @@ class StatusHeader extends StatelessWidget {
             ).copyWith(color: config.textColor),
           ),
           if (tokenNumber != null) ...[
-            const SizedBox(height: 4),
+            SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 4.0)),
             Text(
               'Your Token Number',
               style: EcliniqTextStyles.responsiveHeadlineXLMedium(
                 context,
               ).copyWith(color: Color(0xff424242)),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 4.0)),
             Text(
               tokenNumber!,
               style: EcliniqTextStyles.responsiveHeadlineXXLarge(
@@ -684,14 +703,16 @@ class StatusHeader extends StatelessWidget {
               ).copyWith(color: config.textColor, fontWeight: FontWeight.w700),
             ),
             if (expectedTime != null && expectedTime!.isNotEmpty) ...[
-              const SizedBox(height: 4),
+              SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 4.0)),
               Padding(
-                padding: const EdgeInsets.all(6.0),
+                padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 6.0),
                 child: Container(
-                  padding: const EdgeInsets.all(4),
+                  padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 4.0),
                   decoration: BoxDecoration(
                     color: const Color(0xffF9F9F9),
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(
+                      EcliniqTextStyles.getResponsiveBorderRadius(context, 6.0),
+                    ),
                     border: Border.all(
                       color: const Color(0xFFB8B8B8),
                       width: 0.5,
@@ -706,11 +727,11 @@ class StatusHeader extends StatelessWidget {
                           context,
                         ).copyWith(color: const Color(0xff424242)),
                       ),
-                      const SizedBox(width: 6),
+                      SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 6.0)),
                       SvgPicture.asset(
                         EcliniqIcons.infoCircleBlack.assetPath,
-                        width: 18,
-                        height: 18,
+                        width: EcliniqTextStyles.getResponsiveIconSize(context, 18.0),
+                        height: EcliniqTextStyles.getResponsiveIconSize(context, 18.0),
                       ),
                     ],
                   ),
@@ -899,7 +920,7 @@ class DoctorInfoCard extends StatelessWidget {
                   context,
                 ).copyWith(color: Color(0xff424242)),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 4.0)),
               Text(
                 doctor.specialization.isEmpty
                     ? 'General Physician'
@@ -908,7 +929,7 @@ class DoctorInfoCard extends StatelessWidget {
                   context,
                 ).copyWith(color: Color(0xff424242)),
               ),
-              const SizedBox(height: 2),
+              SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 2.0)),
               Text(
                 doctor.qualification,
                 style: EcliniqTextStyles.responsiveTitleXLarge(
@@ -932,8 +953,8 @@ class DoctorInfoCard extends StatelessWidget {
                 Stack(
                   children: [
                     Container(
-                      width: 80,
-                      height: 80,
+                      width: EcliniqTextStyles.getResponsiveSize(context, 80.0),
+                      height: EcliniqTextStyles.getResponsiveSize(context, 80.0),
                       decoration: BoxDecoration(
                         color: const Color(0xFFE3F2FD),
                         shape: BoxShape.circle,
@@ -942,9 +963,9 @@ class DoctorInfoCard extends StatelessWidget {
                       child: Center(
                         child: Text(
                           doctor.initials,
-                          style: const TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w600,
+                          style: EcliniqTextStyles.responsiveHeadlineXXLargeBold(
+                            context,
+                          ).copyWith(
                             color: Color(0xFF1565C0),
                           ),
                         ),
@@ -955,13 +976,13 @@ class DoctorInfoCard extends StatelessWidget {
                       top: 0,
                       child: SvgPicture.asset(
                         EcliniqIcons.verified.assetPath,
-                        width: 24,
-                        height: 24,
+                        width: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
+                        height: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 16.0)),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -972,14 +993,14 @@ class DoctorInfoCard extends StatelessWidget {
                           context,
                         ).copyWith(color: Color(0xff424242)),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 4.0)),
                       Text(
                         doctor.specialization,
                         style: EcliniqTextStyles.responsiveTitleXLarge(
                           context,
                         ).copyWith(color: Color(0xff424242)),
                       ),
-                      const SizedBox(height: 2),
+                      SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 2.0)),
                       Text(
                         doctor.qualification,
                         style: EcliniqTextStyles.responsiveTitleXLarge(
@@ -991,49 +1012,52 @@ class DoctorInfoCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 16.0)),
             Row(
               children: [
                 SvgPicture.asset(
                   EcliniqIcons.medicalKit.assetPath,
-                  width: 24,
-                  height: 24,
+                  width: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
+                  height: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
                 ),
-                const SizedBox(width: 4),
+                SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 4.0)),
                 Text(
                   _getExperienceText(doctor.yearsOfExperience),
                   style: EcliniqTextStyles.responsiveTitleXLarge(
                     context,
                   ).copyWith(color: Color(0xff626060)),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 8.0)),
                 Container(
-                  width: 6,
-                  height: 6,
+                  width: EcliniqTextStyles.getResponsiveSize(context, 6.0),
+                  height: EcliniqTextStyles.getResponsiveSize(context, 6.0),
                   decoration: const BoxDecoration(
                     color: Color(0xff8E8E8E),
                     shape: BoxShape.circle,
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 8.0)),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
+                  padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                    context,
+                    horizontal: 8.0,
+                    vertical: 4.0,
                   ),
                   decoration: BoxDecoration(
                     color: Color(0xffFEF9E6),
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(
+                      EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       SvgPicture.asset(
                         EcliniqIcons.star.assetPath,
-                        width: 18,
-                        height: 18,
+                        width: EcliniqTextStyles.getResponsiveIconSize(context, 18.0),
+                        height: EcliniqTextStyles.getResponsiveIconSize(context, 18.0),
                       ),
-                      const SizedBox(width: 2),
+                      SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 2.0)),
                       Text(
                         doctor.rating.toStringAsFixed(1),
                         style: EcliniqTextStyles.responsiveTitleXBLarge(
@@ -1043,16 +1067,16 @@ class DoctorInfoCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 8.0)),
                 Container(
-                  width: 6,
-                  height: 6,
+                  width: EcliniqTextStyles.getResponsiveSize(context, 6.0),
+                  height: EcliniqTextStyles.getResponsiveSize(context, 6.0),
                   decoration: const BoxDecoration(
                     color: Color(0xff8E8E8E),
                     shape: BoxShape.circle,
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 8.0)),
                 Text(
                   '₹500',
                   style: EcliniqTextStyles.responsiveTitleXLarge(
