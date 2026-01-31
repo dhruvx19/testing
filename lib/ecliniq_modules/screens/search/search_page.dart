@@ -728,8 +728,14 @@ Widget _buildShimmerLoading() {
     final data = _searchResults!['data'];
     final doctors = data['doctors'] as List<dynamic>? ?? [];
     final hospitals = data['hospitals'] as List<dynamic>? ?? [];
+    // Add parsing for specialities and symptoms
+    final specialities = data['specialities'] as List<dynamic>? ?? [];
+    final symptoms = data['symptoms'] as List<dynamic>? ?? [];
 
-    if (doctors.isEmpty && hospitals.isEmpty) {
+    if (doctors.isEmpty &&
+        hospitals.isEmpty &&
+        specialities.isEmpty &&
+        symptoms.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -758,6 +764,19 @@ Widget _buildShimmerLoading() {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        if (specialities.isNotEmpty) ...[
+          _buildSectionHeader('Specialities', specialities.length),
+          const SizedBox(height: 12),
+          ...specialities.map((s) => _buildSimpleResultCard(s, 'Speciality')),
+          const SizedBox(height: 24),
+        ],
+        if (symptoms.isNotEmpty) ...[
+          _buildSectionHeader('Symptoms', symptoms.length),
+          const SizedBox(height: 12),
+          // map symptom to formatted card
+          ...symptoms.map((s) => _buildSimpleResultCard(s, 'Symptom')),
+          const SizedBox(height: 24),
+        ],
         if (doctors.isNotEmpty) ...[
           _buildSectionHeader('Doctors', doctors.length),
           const SizedBox(height: 12),
@@ -770,6 +789,60 @@ Widget _buildShimmerLoading() {
           ...hospitals.map((hospital) => _buildHospitalCard(hospital)),
         ],
       ],
+    );
+  }
+
+  Widget _buildSimpleResultCard(dynamic item, String type) {
+    // Expect item to be a String or Map. If simple string list from API:
+    final name = item is Map ? (item['name'] ?? item['title'] ?? '') : item.toString();
+    
+    return Card(
+      elevation: 0,
+      color: Colors.white,
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Color(0xFFE0E0E0), width: 1),
+      ),
+      child: InkWell(
+        onTap: () {
+           // Navigate to speciality/symptom doctor list
+           // If it's a symptom, we might need a mapping or just pass it as speciality filter
+           // Assuming SpecialityDoctorsList can handle a filter string
+           EcliniqRouter.push(SpecialityDoctorsList(initialSpeciality: name));
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+               Container(
+                 padding: const EdgeInsets.all(8),
+                 decoration: BoxDecoration(
+                   color: type == 'Speciality' ? Colors.blue.shade50 : Colors.orange.shade50,
+                   shape: BoxShape.circle,
+                 ),
+                 child: Icon(
+                   type == 'Speciality' ? Icons.local_hospital : Icons.sick,
+                   color: type == 'Speciality' ? const Color(0xff1C63D5) : Colors.orange,
+                   size: 20,
+                 ),
+               ),
+               const SizedBox(width: 16),
+               Expanded(
+                 child: Text(
+                   name,
+                   style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+                     fontWeight: FontWeight.w500,
+                     color: const Color(0xff424242),
+                   ),
+                 ),
+               ),
+               Icon(Icons.chevron_right, color: Colors.grey.shade400),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
