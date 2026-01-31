@@ -1153,6 +1153,7 @@ class SearchBarWidget extends StatefulWidget {
     this.controller,
     this.onTap,
     this.isListening = false,
+    this.rotatingHints,
   });
 
   final VoidCallback? onBack;
@@ -1165,25 +1166,50 @@ class SearchBarWidget extends StatefulWidget {
   final bool autofocus;
   final TextEditingController? controller;
   final bool isListening;
+  final List<String>? rotatingHints;
 
   @override
   State<SearchBarWidget> createState() => _SearchBarWidgetState();
 }
 
-class _SearchBarWidgetState extends State<SearchBarWidget> {
+class _SearchBarWidgetState extends State<SearchBarWidget> with SingleTickerProviderStateMixin {
   String query = '';
   late final TextEditingController _controller;
   final _focusNode = FocusNode();
   Timer? _timer;
+  Timer? _hintRotationTimer;
+  int _currentHintIndex = 0;
+  int _nextHintIndex = 1;
+  
+  late AnimationController _animationController;
+  late Animation<double> _slideAnimation;
 
   @override
   void initState() {
     super.initState();
     _controller = widget.controller ?? TextEditingController();
-    
     query = _controller.text;
-    
     _controller.addListener(_onControllerChanged);
+    
+    // Initialize animation controller
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    
+    _slideAnimation = Tween<double>(
+      begin: 0.0,
+      end: -1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+    
+    // Start rotating hints if provided
+    if (widget.rotatingHints != null && widget.rotatingHints!.length > 1) {
+      _startHintRotation();
+    }
+    
     if (widget.autofocus) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _focusNode.requestFocus();
@@ -1194,13 +1220,75 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
   @override
   void didUpdateWidget(SearchBarWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller?.removeListener(_onControllerChanged);
       _controller = widget.controller ?? TextEditingController();
       _controller.addListener(_onControllerChanged);
       query = _controller.text;
     }
+    
+    if (oldWidget.rotatingHints != widget.rotatingHints) {
+      _hintRotationTimer?.cancel();
+      if (widget.rotatingHints != null && widget.rotatingHints!.length > 1) {
+        _currentHintIndex = 0;
+        _nextHintIndex = 1;
+        _startHintRotation();
+      }
+    }
+  }
+
+  void _startHintRotation() {
+    _hintRotationTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (mounted && widget.rotatingHints != null && query.isEmpty) {
+        final nextIndex = (_currentHintIndex + 1) % widget.rotatingHints!.length;
+        
+        // Check if we're wrapping around (going from last to first)
+        if (nextIndex == 0 && _currentHintIndex == widget.rotatingHints!.length - 1) {
+          // Fast reverse animation through all hints
+          _performFastReverse();
+        } else {
+          // Normal forward animation
+          _nextHintIndex = nextIndex;
+          _animationController.forward(from: 0.0).then((_) {
+            if (mounted) {
+              setState(() {
+                _currentHintIndex = _nextHintIndex;
+              });
+              _animationController.reset();
+            }
+          });
+        }
+      }
+    });
+  }
+
+  void _performFastReverse() async {
+    // Temporarily speed up animation for reverse effect
+    _animationController.duration = const Duration(milliseconds: 150);
+    
+    // Cycle through all hints in reverse quickly
+    for (int i = widget.rotatingHints!.length - 1; i >= 0; i--) {
+      if (!mounted) break;
+      
+      _nextHintIndex = i == 0 ? widget.rotatingHints!.length - 1 : i - 1;
+      
+      await _animationController.forward(from: 0.0);
+      
+      if (mounted) {
+        setState(() {
+          _currentHintIndex = _nextHintIndex;
+        });
+        _animationController.reset();
+      }
+      
+      // Small delay between each hint during fast reverse
+      if (i > 0) {
+        await Future.delayed(const Duration(milliseconds: 50));
+      }
+    }
+    
+    // Restore normal animation speed
+    _animationController.duration = const Duration(milliseconds: 500);
   }
 
   void _onControllerChanged() {
@@ -1224,13 +1312,11 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
       widget.onVoiceSearch!();
     } else {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
-CustomErrorSnackBar.show(
-          context: context,
-          title: 'Coming Soon',
-          subtitle: 'Voice search feature coming soon!',
-          duration: const Duration(seconds: 3),
-       
+      CustomErrorSnackBar.show(
+        context: context,
+        title: 'Coming Soon',
+        subtitle: 'Voice search feature coming soon!',
+        duration: const Duration(seconds: 3),
       );
     }
   }
@@ -1246,7 +1332,8 @@ CustomErrorSnackBar.show(
   @override
   void dispose() {
     _timer?.cancel();
-    
+    _hintRotationTimer?.cancel();
+    _animationController.dispose();
     _controller.removeListener(_onControllerChanged);
     if (widget.controller == null) {
       _controller.dispose();
@@ -1255,10 +1342,62 @@ CustomErrorSnackBar.show(
     super.dispose();
   }
 
+  Widget _buildRotatingHint() {
+    if (widget.rotatingHints == null || widget.rotatingHints!.isEmpty) {
+      return Text(
+        widget.hintText,
+        style: EcliniqTextStyles.responsiveHeadlineXMedium(context)
+            .copyWith(color: Color(0xFF8E8E8E)),
+      );
+    }
+
+    return AnimatedBuilder(
+      animation: _slideAnimation,
+      builder: (context, child) {
+        return ClipRect(
+          child: SizedBox(
+            height: 24,
+            child: Stack(
+              children: [
+                // Current hint sliding up
+                Transform.translate(
+                  offset: Offset(0, _slideAnimation.value * 16),
+                  child: Opacity(
+                    opacity: 1.0 + _slideAnimation.value,
+                    child: Text(
+                      widget.rotatingHints![_currentHintIndex],
+                      style: EcliniqTextStyles.responsiveHeadlineXMedium(context)
+                          .copyWith(color: Color(0xFF8E8E8E)),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+                // Next hint sliding up from bottom
+                Transform.translate(
+                  offset: Offset(0, (1.0 + _slideAnimation.value) * 16),
+                  child: Opacity(
+                    opacity: -_slideAnimation.value,
+                    child: Text(
+                      widget.rotatingHints![_nextHintIndex],
+                      style: EcliniqTextStyles.responsiveHeadlineXMedium(context)
+                          .copyWith(color: Color(0xFF8E8E8E)),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      
       height: 48,
       decoration: BoxDecoration(
         color: Colors.white,
@@ -1272,34 +1411,45 @@ CustomErrorSnackBar.show(
               onTap: widget.onTap,
               child: AbsorbPointer(
                 absorbing: widget.onTap != null,
-                child: TextField(
-                  controller: _controller,
-                  focusNode: _focusNode,
-                  onChanged: search,
-                  textInputAction: TextInputAction.search,
-                  style: EcliniqTextStyles.responsiveTitleXLarge(
-                    context,
-                  ).copyWith(color: Color(0xFF424242)),
-                  decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                    hintText: widget.hintText,
-                    hintStyle: EcliniqTextStyles.responsiveHeadlineXMedium(
-                      context,
-                    ).copyWith(color: Color(0xFF8E8E8E)),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-
-                    isDense: true,
-                  ),
-                  cursorColor: Color(0xFF2372EC),
-                  onTapOutside: (_) =>
-                      FocusManager.instance.primaryFocus?.unfocus(),
+                child: Stack(
+                  children: [
+                    // Show rotating hint only when field is empty
+                    if (query.isEmpty)
+                      Positioned.fill(
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 12),
+                            child: _buildRotatingHint(),
+                          ),
+                        ),
+                      ),
+                    // TextField
+                    TextField(
+                      controller: _controller,
+                      focusNode: _focusNode,
+                      onChanged: search,
+                      textInputAction: TextInputAction.search,
+                      style: EcliniqTextStyles.responsiveTitleXLarge(
+                        context,
+                      ).copyWith(color: Color(0xFF424242)),
+                      decoration: InputDecoration(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 6),
+                        hintText: null, 
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        isDense: true,
+                      ),
+                      cursorColor: Color(0xFF2372EC),
+                      onTapOutside: (_) =>
+                          FocusManager.instance.primaryFocus?.unfocus(),
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
-          
           if (query.isNotEmpty)
             GestureDetector(
               onTap: _clearSearch,
@@ -1319,18 +1469,6 @@ CustomErrorSnackBar.show(
                 padding: const EdgeInsets.only(right: 12),
                 child: Container(
                   padding: const EdgeInsets.all(4),
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
                   child: SvgPicture.asset(
                     EcliniqIcons.microphone.assetPath,
                     width: 32,
