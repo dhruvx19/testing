@@ -368,8 +368,8 @@ CustomErrorSnackBar.show(
       
       searches.insert(0, query.trim());
       
-      if (searches.length > 4) {
-        searches = searches.sublist(0, 4);
+      if (searches.length > 3) {
+        searches = searches.sublist(0, 3);
       }
 
       await prefs.setStringList(_recentSearchesKey, searches);
@@ -395,15 +395,27 @@ CustomErrorSnackBar.show(
 
     setState(() {
       _isSearching = true;
-      _isLoading = true;
       _errorMessage = null;
-      // Filter local
+      // Always filter local specialities and symptoms
       _filteredSpecialities = _allSpecialities
           .where((s) => s.toLowerCase().contains(query.toLowerCase()))
           .toList();
       _filteredSymptoms = _allSymptoms
           .where((s) => s.toLowerCase().contains(query.toLowerCase()))
           .toList();
+    });
+
+    // Only call API if query is 3+ characters
+    if (query.length < 3) {
+      setState(() {
+        _isLoading = false;
+        _searchResults = null; // Clear API results for short queries
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
     });
 
     
@@ -424,8 +436,9 @@ CustomErrorSnackBar.show(
           });
         } else {
           setState(() {
-            _errorMessage = response['message'] ?? 'Search failed';
+            _searchResults = null;
             _isLoading = false;
+            // Don't set error message - just show local results
           });
         }
       }
@@ -433,8 +446,9 @@ CustomErrorSnackBar.show(
       developer.log('Error performing search: $e');
       if (mounted) {
         setState(() {
-          _errorMessage = 'Network error: $e';
+          _searchResults = null;
           _isLoading = false;
+          // Don't set error message - just show local results
         });
       }
     }
@@ -549,7 +563,7 @@ CustomErrorSnackBar.show(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           
-          if (_recentSearches.isNotEmpty || _randomSuggestions.isNotEmpty) ...[
+          if (_recentSearches.isNotEmpty) ...[ 
             Padding(
               padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
                 context,
@@ -567,22 +581,21 @@ CustomErrorSnackBar.show(
                       context,
                     ).copyWith(color: Color(0xFF8E8E8E)),
                   ),
-                  if (_recentSearches.isNotEmpty)
-                    InkWell(
-                      onTap: _clearHistory,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                        child: Text(
-                          'Clear',
-                          style: EcliniqTextStyles.responsiveBodySmall(
-                            context,
-                          ).copyWith(
-                            color: Color(0xff1C63D5),
-                            fontWeight: FontWeight.w600,
-                          ),
+                  InkWell(
+                    onTap: _clearHistory,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: Text(
+                        'Clear',
+                        style: EcliniqTextStyles.responsiveBodySmall(
+                          context,
+                        ).copyWith(
+                          color: Color(0xff1C63D5),
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
+                  ),
                 ],
               ),
             ),
@@ -598,12 +611,9 @@ CustomErrorSnackBar.show(
               child: Wrap(
                 spacing: 10,
                 runSpacing: 10,
-                children:
-                    (_recentSearches.isNotEmpty
-                            ? _recentSearches
-                            : _randomSuggestions)
-                        .map((search) => _buildSearchChip(search))
-                        .toList(),
+                children: _recentSearches
+                    .map((search) => _buildSearchChip(search))
+                    .toList(),
               ),
             ),
             SizedBox(
@@ -770,59 +780,20 @@ Widget _buildShimmerLoading() {
   }
   Widget _buildSearchResults() {
     if (_isLoading) {
+      // Show shimmer only for API results section
+      // Local results will still be visible below
       return _buildShimmerLoading();
     }
 
-    if (_errorMessage != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: EcliniqTextStyles.getResponsiveIconSize(context, 64),
-              color: Colors.red.shade300,
-            ),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Text(
-                _errorMessage!,
-                style: EcliniqTextStyles.responsiveTitleXLarge(
-                  context,
-                ).copyWith(color: Colors.red.shade700),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => _performSearch(_searchController.text),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xff1C63D5),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
-      );
-    }
+    // Parse API results if available
+    final doctors = _searchResults != null && _searchResults!['data'] != null
+        ? (_searchResults!['data']['doctors'] as List<dynamic>? ?? [])
+        : <dynamic>[];
+    final hospitals = _searchResults != null && _searchResults!['data'] != null
+        ? (_searchResults!['data']['hospitals'] as List<dynamic>? ?? [])
+        : <dynamic>[];
 
-    if (_searchResults == null || _searchResults!['data'] == null) {
-      return const Center(child: Text('No results found'));
-    }
-
-    final data = _searchResults!['data'];
-    final doctors = data['doctors'] as List<dynamic>? ?? [];
-    final hospitals = data['hospitals'] as List<dynamic>? ?? [];
-
+    // Check if we have any results at all (local + API)
     if (doctors.isEmpty &&
         hospitals.isEmpty &&
         _filteredSpecialities.isEmpty &&
