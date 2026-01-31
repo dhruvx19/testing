@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer' as developer;
 
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
@@ -37,7 +36,7 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
       distanceRange = 50;
       selectedTab = 'Specialities';
     });
-    
+
     widget.onFilterChanged({
       'specialities': <String>[],
       'availability': null,
@@ -62,7 +61,7 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
     'Availability',
     'Gender',
     'Distance',
-    
+
     'Experience',
     'Languages',
     'Meet at',
@@ -106,8 +105,8 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,
-        decoration: BoxDecoration(
-        color: Colors.white,  
+      decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(
             EcliniqTextStyles.getResponsiveBorderRadius(context, 20),
@@ -126,7 +125,6 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
-          
           Padding(
             padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
               context,
@@ -152,8 +150,10 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
                     onTap: _resetFilters,
                     child: Text(
                       'Reset',
-                      style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
-                          .copyWith(
+                      style:
+                          EcliniqTextStyles.responsiveHeadlineBMedium(
+                            context,
+                          ).copyWith(
                             fontWeight: FontWeight.w400,
                             color: Color(0xff2372EC),
                           ),
@@ -170,23 +170,16 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
               });
             },
           ),
-          SizedBox(
-            height: EcliniqTextStyles.getResponsiveSpacing(context, 22),
-          ),
-          Container(
-            height: 0.5,
-            color: Color(0xffD6D6D6),
-          ),
-          SizedBox(
-            height: EcliniqTextStyles.getResponsiveSpacing(context, 8),
-          ),
-          
+          SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 22)),
+          Container(height: 0.5, color: Color(0xffD6D6D6)),
+          SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 8)),
+
           Expanded(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(
-                  width: 130,
+                  width: EcliniqTextStyles.getResponsiveSpacing(context, 136),
                   child: ListView.builder(
                     itemCount: filterTabs.length,
                     itemBuilder: (context, index) {
@@ -199,11 +192,12 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
                           });
                         },
                         child: Container(
-                          padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
-                            context,
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
+                          padding:
+                              EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                                context,
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
                           decoration: BoxDecoration(
                             color: isSelected
                                 ? Color(0xffF8FAFF)
@@ -289,7 +283,6 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
   }
 
   Widget _buildSpecialitiesList() {
-    
     final filteredSpecialities = _searchQuery.isEmpty
         ? specialities
         : specialities.where((speciality) {
@@ -302,9 +295,9 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
           padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 32.0),
           child: Text(
             'No specialities found matching "$_searchQuery"',
-            style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
-              color: Colors.grey[600],
-            ),
+            style: EcliniqTextStyles.responsiveTitleXLarge(
+              context,
+            ).copyWith(color: Colors.grey[600]),
             textAlign: TextAlign.center,
           ),
         ),
@@ -369,7 +362,10 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
                   child: isSelected
                       ? Icon(
                           Icons.check,
-                          size: EcliniqTextStyles.getResponsiveIconSize(context, 18),
+                          size: EcliniqTextStyles.getResponsiveIconSize(
+                            context,
+                            18,
+                          ),
                           color: Colors.white,
                         )
                       : null,
@@ -501,7 +497,10 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
                   child: isSelected
                       ? Icon(
                           Icons.check,
-                          size: EcliniqTextStyles.getResponsiveIconSize(context, 16),
+                          size: EcliniqTextStyles.getResponsiveIconSize(
+                            context,
+                            16,
+                          ),
                           color: Colors.white,
                         )
                       : null,
@@ -941,19 +940,7 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
                           child: IconButton(
                             icon: Container(
                               padding: const EdgeInsets.all(4),
-                              
-                              
-                              
-                              
-                              
-                              
-                              
-                              
-                              
-                              
-                              
-                              
-                              
+
                               child: SvgPicture.asset(
                                 EcliniqIcons.microphone.assetPath,
                                 width: 24,

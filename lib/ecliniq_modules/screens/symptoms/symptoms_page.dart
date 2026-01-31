@@ -20,16 +20,22 @@ class _SymptomsPageState extends State<SymptomsPage> {
   final Map<String, bool> _expandedCategories = {};
 
   final List<Map<String, dynamic>> _commonSymptoms = [
-    {'title': 'Fever / Chills', 'icon': EcliniqIcons.fever},
-    {'title': 'Cold & Cough', 'icon': EcliniqIcons.coughCold},
-    {'title': 'Sore Throat', 'icon': EcliniqIcons.coughCold}, // Fallback icon
-    {'title': 'Body Pain', 'icon': EcliniqIcons.bodyPain},
-    {'title': 'Weakness / Fatigue', 'icon': EcliniqIcons.bodyPain}, // Fallback icon
+     {'title': 'Fever/Chills', 'icon': EcliniqIcons.fever},
     {'title': 'Headache', 'icon': EcliniqIcons.headache},
-    {'title': 'Dizziness / Fainting', 'icon': EcliniqIcons.headache}, // Fallback icon
-    {'title': 'Viral Infection Symptoms', 'icon': EcliniqIcons.fever}, // Fallback icon
-    {'title': 'High or Low Blood Pressure', 'icon': EcliniqIcons.bloodPressure},
-    {'title': 'General Health Check-up', 'icon': EcliniqIcons.fever}, // Placeholder icon
+    {'title': 'Stomach Pain', 'icon': EcliniqIcons.stomachPain},
+    {'title': 'Cold & Cough', 'icon': EcliniqIcons.coughCold},
+    {'title': 'Body Pain', 'icon': EcliniqIcons.bodyPain},
+    {'title': 'Back Pain', 'icon': EcliniqIcons.backPain},
+    {'title': 'Breathing Difficulty', 'icon': EcliniqIcons.breathingProblem},
+    {'title': 'Skin Rash /Itching', 'icon': EcliniqIcons.itchingOrSkinProblem},
+    {'title': 'Periods Problem', 'icon': EcliniqIcons.periodsProblem},
+    {'title': 'Sleep Problem', 'icon': EcliniqIcons.sleepProblem},
+    {'title': 'Hair Related Problem', 'icon': EcliniqIcons.hairCare},
+    {'title': 'Pregnancy Related', 'icon': EcliniqIcons.pregnancyCare},
+    {'title': 'Dental Care', 'icon': EcliniqIcons.dentalCare},
+    {'title': 'Joint Pain', 'icon': EcliniqIcons.jointCare},
+    {'title': 'Blood Pressure', 'icon': EcliniqIcons.bloodPressure},
+
   ];
 
   final Map<String, String> _symptomSpecialtyMap = {

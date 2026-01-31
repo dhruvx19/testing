@@ -50,7 +50,6 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
   bool _speechEnabled = false;
   bool _isListening = false;
 
-  
   final List<String> _categories = [
     'All',
     'General Physician',
@@ -66,20 +65,19 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
     'Dentistry',
   ];
 
-  
   final Map<String, GlobalKey> _categoryKeys = {};
 
   @override
   void initState() {
     super.initState();
-    
+
     for (var category in _categories) {
       _categoryKeys[category] = GlobalKey();
     }
 
     if (widget.initialSpeciality != null) {
       _selectedCategory = widget.initialSpeciality!;
-      
+
       if (!_categories.contains(widget.initialSpeciality)) {
         _categories.insert(1, widget.initialSpeciality!);
         _categoryKeys[widget.initialSpeciality!] = GlobalKey();
@@ -89,7 +87,6 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
     _searchController.addListener(_onSearchChanged);
     _initSpeech();
 
-    
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToCategory(_selectedCategory);
     });
@@ -276,7 +273,6 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
       'Speech result: ${result.recognizedWords}, final: ${result.finalResult}',
     );
 
-    
     _searchController.text = result.recognizedWords;
     _searchController.selection = TextSelection.fromPosition(
       TextPosition(offset: result.recognizedWords.length),
@@ -300,7 +296,6 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
   }
 
   Future<void> _loadLocationAndFetch() async {
-    
     setState(() {
       _latitude = 12.9173;
       _longitude = 77.6377;
@@ -334,7 +329,6 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
       final screenWidth = MediaQuery.of(context).size.width;
       final boxWidth = renderBox.size.width;
 
-      
       final scrollOffset =
           _categoryScrollController.offset +
           position.dx -
@@ -388,14 +382,13 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
       child: DoctorFilterBottomSheet(
         onFilterChanged: (params) {
           setState(() {
-            
             if (!_hasActiveFiltersInParams(params)) {
               _filterParams = {};
-              
+
               _fetchDoctorsInitial();
             } else {
               _filterParams = params;
-              
+
               _fetchDoctors();
             }
           });
@@ -411,7 +404,6 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
     });
 
     try {
-      
       List<String>? specialityFilter;
       if (_selectedCategory != 'All') {
         specialityFilter = [_selectedCategory];
@@ -559,7 +551,6 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
           break;
         case 'Relevance':
         default:
-          
           break;
       }
     });
@@ -574,7 +565,6 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
     try {
       List<String>? specialityFilter;
 
-      
       if (_filterParams['specialities'] != null &&
           (_filterParams['specialities'] as List).isNotEmpty) {
         specialityFilter = (_filterParams['specialities'] as List)
@@ -584,8 +574,8 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
       }
 
       final request = api_doctor.FilterDoctorsRequest(
-        latitude: 12.9173, 
-        longitude: 77.6377, 
+        latitude: 12.9173,
+        longitude: 77.6377,
         speciality: specialityFilter,
         gender: _filterParams['gender']?.toString().toUpperCase(),
         distance: (_filterParams['distance'] is num)
@@ -707,14 +697,8 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
         leading: IconButton(
           icon: SvgPicture.asset(
             EcliniqIcons.backArrow.assetPath,
-            width: EcliniqTextStyles.getResponsiveIconSize(
-                        context,
-                        32.0,
-                      ),
-                      height: EcliniqTextStyles.getResponsiveIconSize(
-                        context,
-                        32.0,
-                      ),
+            width: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
+            height: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -735,13 +719,13 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                 icon: SvgPicture.asset(
                   EcliniqIcons.sortAlt.assetPath,
                   width: EcliniqTextStyles.getResponsiveIconSize(context, 32),
-                      height: EcliniqTextStyles.getResponsiveIconSize(context, 32),
+                  height: EcliniqTextStyles.getResponsiveIconSize(context, 32),
                 ),
               ),
 
-            SizedBox(
-              width: EcliniqTextStyles.getResponsiveSpacing(context, 1.5),
-            ),
+              SizedBox(
+                width: EcliniqTextStyles.getResponsiveSpacing(context, 1.5),
+              ),
               VerticalDivider(
                 color: Color(0xffD6D6D6),
                 thickness: 1,
@@ -760,8 +744,14 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                     onPressed: _openFilter,
                     icon: SvgPicture.asset(
                       EcliniqIcons.filter.assetPath,
-                      width: EcliniqTextStyles.getResponsiveIconSize(context, 32),
-                      height: EcliniqTextStyles.getResponsiveIconSize(context, 32),
+                      width: EcliniqTextStyles.getResponsiveIconSize(
+                        context,
+                        32,
+                      ),
+                      height: EcliniqTextStyles.getResponsiveIconSize(
+                        context,
+                        32,
+                      ),
                     ),
                   ),
                   if (_hasActiveFilters())
@@ -829,9 +819,7 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
               width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
               height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
             ),
-            SizedBox(
-              width: EcliniqTextStyles.getResponsiveSpacing(context, 8),
-            ),
+            SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 8)),
             Text(
               _currentLocation,
               style: EcliniqTextStyles.responsiveHeadlineXMedium(
@@ -931,19 +919,11 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                 left: 0,
               ),
               child: Container(
-                padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 4),
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
+                padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(
+                  context,
+                  4,
+                ),
+
                 child: SvgPicture.asset(
                   EcliniqIcons.microphone.assetPath,
                   width: 32,
@@ -1162,7 +1142,7 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                 children: [
                   Container(
                     width: EcliniqTextStyles.getResponsiveWidth(context, 80),
-                  height: EcliniqTextStyles.getResponsiveHeight(context, 80),
+                    height: EcliniqTextStyles.getResponsiveHeight(context, 80),
                     decoration: BoxDecoration(
                       color: Color(0xffF8FAFF),
                       shape: BoxShape.circle,
@@ -1185,9 +1165,12 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                                     errorBuilder: (context, error, stackTrace) {
                                       return Text(
                                         _getInitials(doctor.name),
-                                        style: EcliniqTextStyles.responsiveHeadlineXXXLarge(
-                                          context,
-                                        ).copyWith(color: Colors.blue.shade700),
+                                        style:
+                                            EcliniqTextStyles.responsiveHeadlineXXXLarge(
+                                              context,
+                                            ).copyWith(
+                                              color: Colors.blue.shade700,
+                                            ),
                                       );
                                     },
                                   ),
@@ -1195,9 +1178,10 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                               }
                               return Text(
                                 _getInitials(doctor.name),
-                                style: EcliniqTextStyles.responsiveHeadlineXXXLarge(
-                                  context,
-                                ).copyWith(color: Colors.blue.shade700),
+                                style:
+                                    EcliniqTextStyles.responsiveHeadlineXXXLarge(
+                                      context,
+                                    ).copyWith(color: Colors.blue.shade700),
                               );
                             },
                           ),
@@ -1504,11 +1488,12 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
     if (doctor.profilePhoto == null || doctor.profilePhoto!.isEmpty) {
       return null;
     }
-    
-    if (doctor.profilePhoto!.startsWith('http://') || doctor.profilePhoto!.startsWith('https://')) {
+
+    if (doctor.profilePhoto!.startsWith('http://') ||
+        doctor.profilePhoto!.startsWith('https://')) {
       return doctor.profilePhoto;
     }
-    
+
     if (doctor.profilePhoto!.startsWith('public/')) {
       return await _storageService.getPublicUrl(doctor.profilePhoto);
     }
@@ -1618,40 +1603,51 @@ class _SortByBottomSheetState extends State<SortByBottomSheet> {
     setState(() {
       selectedSortOption = null;
     });
-    
+
     widget.onChanged('');
   }
 
   final List<String> sortOptions = [
     'Relevance',
     'Price: Low - High',
-    
+
     'Experience - Most Experience first',
     'Distance - Nearest First',
-    
-    
+
     'Rating High - low',
-    
   ];
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.40,
-      decoration: const BoxDecoration(
+      height: MediaQuery.of(context).size.height * 0.35,
+      decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-          bottomLeft: Radius.circular(16),
-          bottomRight: Radius.circular(16),
+          topLeft: Radius.circular(
+            EcliniqTextStyles.getResponsiveBorderRadius(context, 16),
+          ),
+          topRight: Radius.circular(
+            EcliniqTextStyles.getResponsiveBorderRadius(context, 16),
+          ),
+          bottomLeft: Radius.circular(
+            EcliniqTextStyles.getResponsiveBorderRadius(context, 16),
+          ),
+          bottomRight: Radius.circular(
+            EcliniqTextStyles.getResponsiveBorderRadius(context, 16),
+          ),
         ),
       ),
       child: Column(
         children: [
-          
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
+            padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+              context,
+              left: 16,
+              right: 16,
+              top: 22,
+              bottom: 0,
+            ),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Row(
@@ -1668,7 +1664,7 @@ class _SortByBottomSheetState extends State<SortByBottomSheet> {
                   GestureDetector(
                     onTap: _resetSort,
                     child: Text(
-                      'Reset',
+                      'Clear',
                       style:
                           EcliniqTextStyles.responsiveHeadlineBMedium(
                             context,
@@ -1683,12 +1679,15 @@ class _SortByBottomSheetState extends State<SortByBottomSheet> {
             ),
           ),
 
-          const SizedBox(height: 4),
-
-          
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+                context,
+                left: 16,
+                right: 16,
+                top: 0,
+                bottom: 0,
+              ),
               itemCount: sortOptions.length,
               itemBuilder: (context, index) {
                 final option = sortOptions[index];
@@ -1697,8 +1696,6 @@ class _SortByBottomSheetState extends State<SortByBottomSheet> {
               },
             ),
           ),
-
-          
         ],
       ),
     );
@@ -1713,12 +1710,15 @@ class _SortByBottomSheetState extends State<SortByBottomSheet> {
         widget.onChanged(option);
       },
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: EdgeInsets.only(
+          top: EcliniqTextStyles.getResponsiveSpacing(context, 16),
+          bottom: EcliniqTextStyles.getResponsiveSpacing(context, 4),
+        ),
         child: Row(
           children: [
             Container(
-              width: 24,
-              height: 24,
+              height: EcliniqTextStyles.getResponsiveSpacing(context, 24),
+              width: EcliniqTextStyles.getResponsiveSpacing(context, 24),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
@@ -1727,19 +1727,20 @@ class _SortByBottomSheetState extends State<SortByBottomSheet> {
                 ),
               ),
               child: isSelected
-                  ? Center(
-                      child: Container(
-                        width: 12,
-                        height: 12,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Color(0xff2372EC),
-                        ),
+                  ? Container(
+                      margin: EdgeInsets.all(
+                        EcliniqTextStyles.getResponsiveSpacing(context, 5),
+                      ),
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
                       ),
                     )
                   : null,
             ),
-            const SizedBox(width: 12),
+            SizedBox(
+              width: EcliniqTextStyles.getResponsiveSpacing(context, 10),
+            ),
             Expanded(
               child: Text(
                 option,

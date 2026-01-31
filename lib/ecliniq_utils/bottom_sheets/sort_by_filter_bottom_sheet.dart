@@ -39,7 +39,7 @@ class _SortByBottomSheetState extends State<SortByBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.55,
+      height: MediaQuery.of(context).size.height * 0.45,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
@@ -143,7 +143,7 @@ class _SortByBottomSheetState extends State<SortByBottomSheet> {
       child: Padding(
         padding: EdgeInsets.only(
           top: EcliniqTextStyles.getResponsiveSpacing(context, 16),
-          bottom: EcliniqTextStyles.getResponsiveSpacing(context, 2),
+          bottom: EcliniqTextStyles.getResponsiveSpacing(context, 4),
         ),
         child: Row(
           children: [
