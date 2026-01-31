@@ -1371,7 +1371,7 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         surfaceTintColor: Colors.transparent,
-        leadingWidth: 54,
+        leadingWidth: 58,
         titleSpacing: 0,
         backgroundColor: Colors.white,
         elevation: 0,
@@ -1429,7 +1429,7 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
           child: Transform.translate(
             offset: Offset(
               0,
-              -EcliniqTextStyles.getResponsiveSize(context, 6.0),
+              -EcliniqTextStyles.getResponsiveSize(context, 8.0),
             ),
             child: Container(
               color: Color(0xFFB8B8B8),

@@ -766,18 +766,19 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
         leadingWidth: 58,
         titleSpacing: 0,
         backgroundColor: Colors.white,
+        elevation: 0,
         leading: IconButton(
           icon: SvgPicture.asset(
             EcliniqIcons.backArrow.assetPath,
-            width: 32,
-            height: 32,
+            width: EcliniqTextStyles.getResponsiveSize(context, 32.0),
+            height: EcliniqTextStyles.getResponsiveSize(context, 32.0),
           ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Align(
           alignment: Alignment.centerLeft,
           child: Text(
-            'Review Details',
+          'Review Details',
             style: EcliniqTextStyles.responsiveHeadlineMedium(
               context,
             ).copyWith(color: Color(0xff424242)),
@@ -792,25 +793,41 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
               children: [
                 SvgPicture.asset(
                   EcliniqIcons.questionCircleFilled.assetPath,
-                  width: 24,
-                  height: 24,
-                  
+                  width: EcliniqTextStyles.getResponsiveSize(context, 24.0),
+                  height: EcliniqTextStyles.getResponsiveSize(context, 24.0),
                 ),
-                const SizedBox(width: 4),
+                SizedBox(
+                  width: EcliniqTextStyles.getResponsiveSize(context, 4.0),
+                ),
                 Text(
                   'Help',
-                  style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
-                    color: const Color(0xFF424242),
-                  ),
+                  style: EcliniqTextStyles.responsiveHeadlineXMedium(context)
+                      .copyWith(
+                        color: const Color(0xFF424242),
+                        fontWeight: FontWeight.w400,
+                      ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(
+                  width: EcliniqTextStyles.getResponsiveSize(context, 16.0),
+                ),
               ],
             ),
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.2),
-          child: Container(color: Color(0xFFB8B8B8), height: 1.0),
+          preferredSize: Size.fromHeight(
+            EcliniqTextStyles.getResponsiveSize(context, 1.0),
+          ),
+          child: Transform.translate(
+            offset: Offset(
+              0,
+              -EcliniqTextStyles.getResponsiveSize(context, 8.0),
+            ),
+            child: Container(
+              color: Color(0xFFB8B8B8),
+              height: EcliniqTextStyles.getResponsiveSize(context, 1.0),
+            ),
+          ),
         ),
       ),
       body: Column(
