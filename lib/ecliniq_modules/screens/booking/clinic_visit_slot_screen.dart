@@ -71,8 +71,7 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
 
   List<Slot> _slots = [];
   Map<String, List<Slot>> _groupedSlots = {};
-  final Map<DateTime, int> _weeklyTokenCounts =
-      {}; 
+  final Map<DateTime, int> _weeklyTokenCounts = {};
 
   String? _selectedHospitalId;
   String? _selectedClinicId;
@@ -96,19 +95,15 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
     _selectedClinicId = widget.clinicId;
     _initializeDates();
 
-    
     if (widget.doctor != null) {
       _doctor = widget.doctor;
       _updateCurrentLocationDetails();
       _isLoadingDoctorDetails = false;
     }
 
-    
     _fetchWeeklySlots();
     _fetchSlots();
 
-    
-    
     if (widget.doctor == null) {
       _fetchDoctorDetails();
     }
@@ -172,9 +167,7 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
           _currentTokenNumber = response.data!.currentTokenNumber?.toString();
         });
       }
-    } catch (e) {
-      
-    }
+    } catch (e) {}
   }
 
   Future<void> _fetchWeeklySlots() async {
@@ -195,7 +188,6 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
           if (response.success) {
             _weeklyTokenCounts.clear();
             for (final weeklySlot in response.data) {
-              
               final dateOnly = DateTime(
                 weeklySlot.date.year,
                 weeklySlot.date.month,
@@ -207,12 +199,10 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
         });
       }
     } catch (e) {
-      
       if (mounted) {
         setState(() {
           _isLoadingWeeklySlots = false;
         });
-        
       }
     }
   }
@@ -460,7 +450,6 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
   bool _isSlotDisabled(List<Slot> slots) {
     if (slots.isEmpty) return true;
 
-    
     final hasAvailableSlot = slots.any(
       (slot) =>
           slot.availableTokens > 0 &&
@@ -468,7 +457,6 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
           slot.slotStatus != 'CANCELLED',
     );
 
-    
     return !hasAvailableSlot;
   }
 
@@ -497,7 +485,6 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
     });
 
     try {
-      
       _cachedPrefs ??= await SharedPreferences.getInstance();
       _cachedAuthToken ??= _cachedPrefs!.getString('auth_token');
 
@@ -512,7 +499,6 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
         return;
       }
 
-      
       final holdTokenResponse = await _slotService.holdToken(
         slotId: slot.id,
         authToken: _cachedAuthToken!,
@@ -520,8 +506,6 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
 
       if (mounted) {
         if (holdTokenResponse.success && holdTokenResponse.data != null) {
-          
-          
           final hospitalIdFromSlot = slot.hospitalId.isNotEmpty
               ? slot.hospitalId
               : _selectedHospitalId;
@@ -547,18 +531,17 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
                 appointmentId: widget.appointmentId,
                 previousAppointment: widget.previousAppointment,
                 isReschedule: widget.isReschedule,
-                
+
                 doctor: _doctor,
                 locationName: _currentLocationName,
                 locationAddress: _currentLocationAddress,
                 locationDistance: _currentDistance,
-                
+
                 currentUserDetails: _currentUserDetails,
               ),
             ),
           );
         } else {
-          
           final errorMsg = holdTokenResponse.message.isNotEmpty
               ? holdTokenResponse.message
               : 'Failed to reserve slot. Please try again.';
@@ -598,7 +581,6 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
     });
 
     try {
-      
       _cachedPrefs ??= await SharedPreferences.getInstance();
       _cachedAuthToken ??= _cachedPrefs!.getString('auth_token');
 
@@ -618,7 +600,6 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
           setState(() {
             _isLoadingDoctorDetails = false;
           });
-          
         }
       }
     } catch (e) {
@@ -627,7 +608,6 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
           _isLoadingDoctorDetails = false;
         });
       }
-      
     }
   }
 
@@ -635,7 +615,6 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
     setState(() {});
 
     try {
-      
       _cachedPrefs ??= await SharedPreferences.getInstance();
       _cachedAuthToken ??= _cachedPrefs!.getString('auth_token');
 
@@ -659,7 +638,6 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
       if (mounted) {
         setState(() {});
       }
-      
     }
   }
 
@@ -695,10 +673,8 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
   }
 
   void _onChangeLocation() async {
-    
     if (_doctor == null) {
       if (_isLoadingDoctorDetails) {
-        
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Loading doctor details...'),
@@ -707,7 +683,7 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
         );
         return;
       }
-      
+
       await _fetchDoctorDetails();
       if (_doctor == null || !mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -722,7 +698,6 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
 
     final List<DoctorLocationOption> options = [];
 
-    
     for (var clinic in _doctor!.clinics) {
       options.add(
         DoctorLocationOption(
@@ -735,7 +710,6 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
       );
     }
 
-    
     for (var hospital in _doctor!.hospitals) {
       options.add(
         DoctorLocationOption(
@@ -778,13 +752,11 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
         }
         _updateCurrentLocationDetails();
 
-        
         selectedSlot = null;
         _isLoading = true;
         _isLoadingWeeklySlots = true;
       });
 
-      
       _fetchSlots();
       _fetchWeeklySlots();
     }
@@ -792,7 +764,9 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
 
   Widget _buildShimmerSlots() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(
+        horizontal: EcliniqTextStyles.getResponsiveSize(context, 16),
+      ),
       child: Column(
         children: List.generate(4, (index) {
           return Padding(
@@ -824,7 +798,6 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
             children: [
               Row(
                 children: [
-                  
                   ShimmerLoading(
                     width: 70,
                     height: 70,
@@ -835,21 +808,20 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        
                         ShimmerLoading(
                           width: 200,
                           height: 20,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         const SizedBox(height: 8),
-                        
+
                         ShimmerLoading(
                           width: 150,
                           height: 16,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         const SizedBox(height: 6),
-                        
+
                         ShimmerLoading(
                           width: 180,
                           height: 16,
@@ -861,7 +833,7 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-              
+
               Row(
                 children: [
                   ShimmerLoading(
@@ -878,7 +850,7 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-              
+
               Row(
                 children: [
                   ShimmerLoading(
@@ -889,7 +861,7 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
                 ],
               ),
               const SizedBox(height: 8),
-              
+
               Row(
                 children: [
                   ShimmerLoading(
@@ -902,7 +874,7 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
             ],
           ),
         ),
-        
+
         Container(
           width: double.infinity,
           color: const Color(0xffF8FAFF),
@@ -1043,11 +1015,11 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
     if (selectedDate == null) return const SizedBox.shrink();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding:  EdgeInsets.symmetric(horizontal: EcliniqTextStyles.getResponsiveSize(context, 16)),
       child: ListView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        itemCount: periods.length, 
+        itemCount: periods.length,
         itemBuilder: (context, index) {
           final period = periods[index];
           final slots = _groupedSlots[period] ?? [];
@@ -1057,12 +1029,10 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
           bool isDisabled = false;
 
           if (slots.isEmpty) {
-            
             timeRange = _getDefaultTimeRange(period);
             totalAvailable = 0;
             isDisabled = true;
           } else {
-            
             slots.sort((a, b) => a.startTime.compareTo(b.startTime));
 
             final earliestStartUTC = slots
@@ -1077,12 +1047,12 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
               0,
               (sum, slot) => sum + slot.availableTokens,
             );
-            
+
             isDisabled = totalAvailable == 0;
           }
 
           return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+            padding:  EdgeInsets.only(bottom: EcliniqTextStyles.getResponsiveSize(context, 12)),
             child: TimeSlotCard(
               title: period,
               time: timeRange,
@@ -1108,20 +1078,16 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
   Widget _buildPreviousAppointmentBanner() {
     final appointment = widget.previousAppointment!;
 
-    
     String dateLabel = 'Today';
     String dateDisplay = '';
 
     try {
-      
       final dateStr = appointment.timeInfo.date;
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
 
-      
       DateTime? appointmentDate;
       try {
-        
         final parts = dateStr.split(',');
         if (parts.length == 2) {
           final datePart = parts[0].trim();
@@ -1152,11 +1118,9 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
           }
         }
       } catch (e) {
-        
         try {
           appointmentDate = DateTime.parse(dateStr);
         } catch (e2) {
-          
           appointmentDate = today;
         }
       }
@@ -1178,7 +1142,6 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
           dateLabel = weekdays[dateOnly.weekday - 1];
         }
 
-        
         final monthNames = [
           'Jan',
           'Feb',
@@ -1213,7 +1176,6 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
         dateDisplay = '${today.day} ${monthNames[today.month - 1]}';
       }
     } catch (e) {
-      
       final now = DateTime.now();
       dateLabel = 'Today';
       final monthNames = [
@@ -1233,7 +1195,6 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
       dateDisplay = '${now.day} ${monthNames[now.month - 1]}';
     }
 
-    
     final tokenText = appointment.tokenNumber != null
         ? 'Your Token #${appointment.tokenNumber}'
         : 'Your booking';
@@ -1304,60 +1265,6 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
         ],
       ),
     );
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
   }
 
   Widget _buildBannerRow(String label, String value, IconData icon) {
@@ -1464,15 +1371,15 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         surfaceTintColor: Colors.transparent,
-
-        leadingWidth: 58,
+        leadingWidth: 54,
         titleSpacing: 0,
         backgroundColor: Colors.white,
+        elevation: 0,
         leading: IconButton(
           icon: SvgPicture.asset(
             EcliniqIcons.backArrow.assetPath,
-            width: 32,
-            height: 32,
+            width: EcliniqTextStyles.getResponsiveSize(context, 32.0),
+            height: EcliniqTextStyles.getResponsiveSize(context, 32.0),
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -1494,24 +1401,41 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
               children: [
                 SvgPicture.asset(
                   EcliniqIcons.questionCircleFilled.assetPath,
-                  width: 24,
-                  height: 24,
+                  width: EcliniqTextStyles.getResponsiveSize(context, 24.0),
+                  height: EcliniqTextStyles.getResponsiveSize(context, 24.0),
                 ),
-                const SizedBox(width: 4),
+                SizedBox(
+                  width: EcliniqTextStyles.getResponsiveSize(context, 4.0),
+                ),
                 Text(
                   'Help',
-                  style: EcliniqTextStyles.responsiveHeadlineXMedium(
-                    context,
-                  ).copyWith(color: const Color(0xFF424242)),
+                  style: EcliniqTextStyles.responsiveHeadlineXMedium(context)
+                      .copyWith(
+                        color: const Color(0xFF424242),
+                        fontWeight: FontWeight.w400,
+                      ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(
+                  width: EcliniqTextStyles.getResponsiveSize(context, 16.0),
+                ),
               ],
             ),
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.2),
-          child: Container(color: Color(0xFFB8B8B8), height: 1.0),
+          preferredSize: Size.fromHeight(
+            EcliniqTextStyles.getResponsiveSize(context, 1.0),
+          ),
+          child: Transform.translate(
+            offset: Offset(
+              0,
+              -EcliniqTextStyles.getResponsiveSize(context, 6.0),
+            ),
+            child: Container(
+              color: Color(0xFFB8B8B8),
+              height: EcliniqTextStyles.getResponsiveSize(context, 1.0),
+            ),
+          ),
         ),
       ),
       body: Column(
@@ -1538,7 +1462,7 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
                   if (_currentTokenNumber != null) ...[
                     const SizedBox(height: 12),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding:  EdgeInsets.symmetric(horizontal: EcliniqTextStyles.getResponsiveSize(context, 16)),
                       child: Container(
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(
@@ -1564,14 +1488,12 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
                             Text(
                               _currentTokenNumber!,
                               style:
-                                  EcliniqTextStyles
-                                      .responsiveHeadlineLargeBold(
-                                        context,
-                                      )
-                                      .copyWith(
-                                        color: Color(0xFF3EAF3F),
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                                  EcliniqTextStyles.responsiveHeadlineLargeBold(
+                                    context,
+                                  ).copyWith(
+                                    color: Color(0xFF3EAF3F),
+                                    fontWeight: FontWeight.w700,
+                                  ),
                             ),
                           ],
                         ),
@@ -1579,7 +1501,7 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
                     ),
                   ],
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding:  EdgeInsets.symmetric(horizontal: EcliniqTextStyles.getResponsiveSize(context, 16)),
                     child: DateSelector(
                       selectedDate: selectedDateLabel,
                       selectedDateValue: selectedDate,
@@ -1588,15 +1510,15 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
                       isLoading: _isLoadingWeeklySlots,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                   SizedBox(height: EcliniqTextStyles.getResponsiveHeight(context, 12)),
                   const Divider(
                     height: 0.5,
                     thickness: 0.5,
                     color: Color(0xffD6D6D6),
                   ),
-                  const SizedBox(height: 24),
+                   SizedBox(height: EcliniqTextStyles.getResponsiveHeight(context, 24)),
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    padding: EdgeInsets.symmetric(horizontal: EcliniqTextStyles.getResponsiveSize(context, 16)),
                     child: Text(
                       'Select Below Slots',
                       style: EcliniqTextStyles.responsiveHeadlineLarge(
@@ -1605,7 +1527,7 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   if (_isLoading)
                     _buildShimmerSlots()
                   else if (_errorMessage != null)
@@ -1615,7 +1537,7 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
                   else if (_groupedSlots.isNotEmpty)
                     _buildSlotsList()
                   else
-                    _buildShimmerSlots(), 
+                    _buildShimmerSlots(),
                   const SizedBox(height: 100),
                 ],
               ),
@@ -1623,7 +1545,7 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
           ),
           if (selectedSlot != null)
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(EcliniqTextStyles.getResponsiveSize(context, 16)),
               decoration: BoxDecoration(
                 boxShadow: [
                   BoxShadow(
@@ -1663,9 +1585,10 @@ class _AnimatedDotState extends State<_AnimatedDot>
       vsync: this,
     )..repeat(reverse: true);
 
-    _animation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _animation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -1689,4 +1612,3 @@ class _AnimatedDotState extends State<_AnimatedDot>
     );
   }
 }
-

@@ -80,7 +80,7 @@ class DoctorInfoCard extends StatelessWidget {
     return Column(
       children: [
         Padding(
-          padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16.0),
+          padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 14.0),
           child: Column(
             children: [
               Row(
@@ -327,9 +327,9 @@ class DoctorInfoCard extends StatelessWidget {
                   SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 8)),
                   Expanded(
                     child: Text(
-                      doctor?.consultationFee != null
-                          ? '₹${doctor!.consultationFee!.toStringAsFixed(0)}'
-                          : '₹500',
+                      doctor?.fee != null
+                          ? '₹${doctor!.fee!.toStringAsFixed(0)}'
+                          : 'N.A.',
                       style: EcliniqTextStyles.responsiveTitleXLarge(
                         context,
                       ).copyWith(color: Color(0xff424242)),
@@ -363,12 +363,13 @@ class DoctorInfoCard extends StatelessWidget {
                   SizedBox(
                     width: EcliniqTextStyles.getResponsiveSpacing(context, 8),
                   ),
+                    if (shouldShowChange) ...[
                   Container(
                     width: 0.5,
                     height: EcliniqTextStyles.getResponsiveHeight(context, 20),
                     color: Color(0xffD6D6D6),
                   ),
-                  if (shouldShowChange) ...[
+                
                     SizedBox(
                       width: EcliniqTextStyles.getResponsiveSpacing(context, 8),
                     ),
