@@ -14,6 +14,7 @@ import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/error_snackbar.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/action_snackbar.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
 import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -587,11 +588,11 @@ CustomErrorSnackBar.show(
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
                       child: Text(
                         'Clear',
-                        style: EcliniqTextStyles.responsiveBodySmall(
+                        style: EcliniqTextStyles.responsiveHeadlineBMedium(
                           context,
                         ).copyWith(
-                          color: Color(0xff1C63D5),
-                          fontWeight: FontWeight.w600,
+                          color: Color(0xff2372EC),
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
                     ),
