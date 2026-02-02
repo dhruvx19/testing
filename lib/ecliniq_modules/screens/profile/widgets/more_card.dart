@@ -42,7 +42,7 @@ class MoreSettingsMenuWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(2),
             child: Text(
               'More',
               style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
@@ -54,7 +54,7 @@ class MoreSettingsMenuWidget extends StatelessWidget {
           _ReferEarnMenuItem(
             icon: EcliniqIcons.whatsapp.assetPath,
             title: 'Refer & Earn',
-            subtitle: 'Invite Friends and Family',
+            subtitle: 'Invite and Care for Friends and Family',
             onTap: onReferEarnPressed,
           ),
 
@@ -63,7 +63,7 @@ class MoreSettingsMenuWidget extends StatelessWidget {
           _MoreMenuItem(
             icon: EcliniqIcons.questionMark.assetPath,
             title: 'Help & Support',
-            subtitle: 'Send us Email on : $supportEmail',
+            subtitle: 'Send us Email on : Support@upcharq.com',
             onTap: onHelpSupportPressed,
           ),
 

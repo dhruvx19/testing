@@ -192,9 +192,9 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
               });
             },
           ),
-          SizedBox(height: 6),
-          Container(height: 0.5, color: Color(0xffD6D6D6)),
-          SizedBox(height: 8),
+         SizedBox(height: EcliniqTextStyles.getResponsiveSize(context, 18)),
+       Container(height: 0.5, color: Color(0xffD6D6D6)),
+          SizedBox(height: EcliniqTextStyles.getResponsiveSize(context, 8)),
           
           Expanded(
             child: Row(
@@ -841,9 +841,9 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
     );
 
     return Container(
-      margin: EdgeInsets.only(top: 6, left: 16, right: 16, bottom: 16),
+           margin: EdgeInsets.only(top: 10, left: 16, right: 16,),
 
-      height: 52,
+    height: EcliniqTextStyles.getResponsiveSize(context, 52.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8.0),
@@ -877,63 +877,7 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
                   filled: true,
                   fillColor: Colors.white,
                   isDense: true,
-                  suffixIcon: query.isNotEmpty
-                      ? Animate(
-                          effects: const [
-                            FadeEffect(
-                              duration: Duration(milliseconds: 500),
-                              curve: Curves.easeInOut,
-                            ),
-                          ],
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.close,
-                              color: Colors.grey[600],
-                              size: 20,
-                            ),
-                            onPressed: () {
-                              if (widget.onClear != null) {
-                                widget.onClear!();
-                              }
-                              setState(() => query = '');
-                              _controller.clear();
-                              widget.onSearch('');
-                            },
-                          ),
-                        )
-                      : Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: IconButton(
-                            icon: Container(
-                              padding: const EdgeInsets.all(4),
-                              
-                              
-                              
-                              
-                              
-                              
-                              
-                              
-                              
-                              
-                              
-                              
-                              
-                              child: SvgPicture.asset(
-                                EcliniqIcons.microphone.assetPath,
-                                width: 24,
-                                height: 24,
-                                colorFilter: _isListening
-                                    ? const ColorFilter.mode(
-                                        Color(0xFF2372EC),
-                                        BlendMode.srcIn,
-                                      )
-                                    : null,
-                              ),
-                            ),
-                            onPressed: _handleVoiceSearch,
-                          ),
-                        ),
+                 
                   hintText: widget.hintText,
                   hintStyle: EcliniqTextStyles.responsiveHeadlineXMedium(
                     context,

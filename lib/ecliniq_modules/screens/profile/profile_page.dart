@@ -91,10 +91,8 @@ class _ProfilePageState extends State<ProfilePage>
       );
 
       if (response.success && response.data != null) {
-        
         _profilePhotoUrl = null;
 
-        
         final user = response.data!.user;
         if (user?.firstName != null || user?.lastName != null) {
           final firstName = user?.firstName ?? '';
@@ -128,7 +126,6 @@ class _ProfilePageState extends State<ProfilePage>
     String key, {
     required String token,
   }) async {
-    
     try {
       final publicUri = Uri.parse(
         '${Endpoints.storagePublicUrl}?key=${Uri.encodeComponent(key)}',
@@ -147,7 +144,6 @@ class _ProfilePageState extends State<ProfilePage>
       }
     } catch (_) {}
 
-    
     try {
       final downloadUri = Uri.parse(
         '${Endpoints.storageDownloadUrl}?key=${Uri.encodeComponent(key)}',
@@ -217,9 +213,7 @@ class _ProfilePageState extends State<ProfilePage>
     });
   }
 
-  void _handleDependentTap(Dependent dependent) {
-    
-  }
+  void _handleDependentTap(Dependent dependent) {}
 
   void _onTabTapped(int index) {
     NavigationHelper.navigateToTab(context, index, 3);
@@ -300,7 +294,6 @@ class _ProfilePageState extends State<ProfilePage>
                       ),
                     ),
 
-                    
                     Positioned(
                       top: 0,
                       left: 0,
@@ -317,7 +310,6 @@ class _ProfilePageState extends State<ProfilePage>
                       ),
                     ),
 
-                    
                     ProfileHeader(onSettingsPressed: _handleSettings),
 
                     Positioned(
@@ -345,7 +337,6 @@ class _ProfilePageState extends State<ProfilePage>
                       ),
                     ),
 
-                    
                     Positioned(
                       top: topMargin - 13,
                       left: MediaQuery.of(context).size.width / 2 - 43,
@@ -430,7 +421,6 @@ class _ProfileAvatarIcon extends StatelessWidget {
   }
 }
 
-
 extension _ProfilePageContent on _ProfilePageState {
   String _uiBloodGroup(String? backendValue) {
     if (backendValue == null) return 'N/A';
@@ -453,7 +443,6 @@ extension _ProfilePageContent on _ProfilePageState {
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          
           Column(
             children: [
               ShimmerLoading(
@@ -476,7 +465,7 @@ extension _ProfilePageContent on _ProfilePageState {
             ],
           ),
           const SizedBox(height: 30),
-          
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -554,10 +543,10 @@ extension _ProfilePageContent on _ProfilePageState {
             ],
           ),
           const SizedBox(height: 30),
-          
+
           ShimmerLoading(height: 200, borderRadius: BorderRadius.circular(16)),
           const SizedBox(height: 30),
-          
+
           ShimmerLoading(height: 100, borderRadius: BorderRadius.circular(16)),
         ],
       ),
@@ -579,7 +568,9 @@ extension _ProfilePageContent on _ProfilePageState {
             const SizedBox(height: 16),
             Text(
               _errorMessage ?? 'Failed to load patient details',
-              style:  EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(color: Colors.red),
+              style: EcliniqTextStyles.responsiveTitleXLarge(
+                context,
+              ).copyWith(color: Colors.red),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -604,7 +595,7 @@ extension _ProfilePageContent on _ProfilePageState {
     final userEmail = patient.displayEmail;
     final isPhoneVerified = patient.user?.phone != null;
     final age = patient.age ?? 'N/A';
-    final gender = 'Male'; 
+    final gender = 'Male';
     final bloodGroup = _uiBloodGroup(patient.bloodGroup);
     final healthStatus = patient.healthStatus;
     final bmi = patient.bmi ?? 0.0;
@@ -707,9 +698,6 @@ extension _ProfilePageContent on _ProfilePageState {
             },
           ),
           const SizedBox(height: 24),
-          
-          
-          
         ],
       ),
     );

@@ -377,8 +377,8 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
   void _openFilter() {
     EcliniqBottomSheet.show(
       context: context,
-      borderRadius: 0,
-      backgroundColor: Colors.transparent,
+      borderRadius: 16,
+ 
       child: DoctorFilterBottomSheet(
         onFilterChanged: (params) {
           setState(() {

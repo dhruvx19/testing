@@ -23,7 +23,7 @@ class AccountSettingsMenu extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(10.0),
+            padding: const EdgeInsets.all(2.0),
             child: Text(
               'Account',
               style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
@@ -31,6 +31,7 @@ class AccountSettingsMenu extends StatelessWidget {
               ),
             ),
           ),
+          SizedBox(height: 2,),
           _buildMenuItem(
              context:   context,
             iconPath: 'lib/ecliniq_icons/assets/user_circle.svg',
@@ -69,7 +70,7 @@ class AccountSettingsMenu extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
         child: Row(
           children: [
             SizedBox(
@@ -105,7 +106,7 @@ class AccountSettingsMenu extends StatelessWidget {
 
   Widget _buildDivider() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Divider(height: 1, thickness: 0.5, color: Color(0xffD6D6D6)),
     );
   }

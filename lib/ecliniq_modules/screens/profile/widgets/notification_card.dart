@@ -1,5 +1,6 @@
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -33,6 +34,13 @@ class _NotificationsSettingsWidgetState
   late bool inAppEnabled;
   late bool emailEnabled;
   late bool promotionalEnabled;
+  bool _isWhatsAppEnabled = true;
+
+  void _toggleWhatsAppUpdates(bool value) {
+    setState(() {
+      _isWhatsAppEnabled = value;
+    });
+  }
 
   @override
   void initState() {
@@ -67,12 +75,12 @@ class _NotificationsSettingsWidgetState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(2),
             child: Text(
               'Notifications',
-              style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
-                color: Color(0xff8E8E8E),
-              ),
+              style: EcliniqTextStyles.responsiveHeadlineLarge(
+                context,
+              ).copyWith(color: Color(0xff8E8E8E)),
             ),
           ),
 
@@ -138,32 +146,91 @@ class _NotificationsSettingsWidgetState
             },
           ),
 
-          _buildDivider(),
+          Padding(
+            padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 8.0),
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () => _toggleWhatsAppUpdates(!_isWhatsAppEnabled),
+                  child: Container(
+                    width: EcliniqTextStyles.getResponsiveSize(context, 20.0),
+                    height: EcliniqTextStyles.getResponsiveSize(context, 20.0),
+                    decoration: BoxDecoration(
+                      color: _isWhatsAppEnabled
+                          ? const Color(0xff2372EC)
+                          : Colors.white,
+                      borderRadius: BorderRadius.circular(
+                        EcliniqTextStyles.getResponsiveBorderRadius(
+                          context,
+                          4.0,
+                        ),
+                      ),
+                      border: Border.all(
+                        color: _isWhatsAppEnabled
+                            ? const Color(0xff2372EC)
+                            : Colors.grey.shade400,
+                        width: 2,
+                      ),
+                    ),
+                    child: _isWhatsAppEnabled
+                        ? SvgPicture.asset(
+                            EcliniqIcons.checkWhite.assetPath,
+                            width: EcliniqTextStyles.getResponsiveIconSize(
+                              context,
+                              8.0,
+                            ),
+                            height: EcliniqTextStyles.getResponsiveIconSize(
+                              context,
+                              8.0,
+                            ),
+                          )
+                        : null,
+                  ),
+                ),
+                SizedBox(
+                  width: EcliniqTextStyles.getResponsiveSpacing(context, 10.0),
+                ),
 
-          _NotificationToggleItem(
-            icon: 'bell',
-            title: 'Promotional Messages',
-            subtitle: 'Get Promotional Messages and Updates',
-            value: promotionalEnabled,
-            onChanged: (value) {
-              setState(() {
-                promotionalEnabled = value;
-              });
-              _updateSettings();
-            },
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => _toggleWhatsAppUpdates(!_isWhatsAppEnabled),
+                    behavior: HitTestBehavior.opaque,
+                    child: EcliniqText(
+                      'Get Promotional Messages and Updates',
+                      style:
+                          EcliniqTextStyles.responsiveBodySmallProminent(
+                            context,
+                          ).copyWith(
+                            color: Color(0xff626060),
+                            fontWeight: FontWeight.w400,
+                          ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
+          // _NotificationToggleItem(
+          //   icon: 'bell',
+          //   title: 'Promotional Messages',
+          //   subtitle: 'Get Promotional Messages and Updates',
+          //   value: promotionalEnabled,
+          //   onChanged: (value) {
+          //     setState(() {
+          //       promotionalEnabled = value;
+          //     });
+          //     _updateSettings();
+          //   },
+          // ),
         ],
       ),
     );
   }
 
   Widget _buildDivider() {
-    return Divider(
-      height: 1,
-      thickness: 0.5,
-      color: Color(0xffD6D6D6),
-      indent: 8,
-      endIndent: 8,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Divider(height: 1, thickness: 0.5, color: Color(0xffD6D6D6)),
     );
   }
 }
@@ -222,16 +289,16 @@ class _NotificationToggleItem extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
-                    color: Color(0xff424242),
-                  ),
+                  style: EcliniqTextStyles.responsiveHeadlineXMedium(
+                    context,
+                  ).copyWith(color: Color(0xff424242)),
                 ),
-                const SizedBox(height: 4),
+             
                 Text(
                   subtitle,
-                  style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
-                    color: Color(0xff8E8E8E),
-                  ),
+                  style: EcliniqTextStyles.responsiveBodySmall(
+                    context,
+                  ).copyWith(color: Color(0xff8E8E8E)),
                 ),
               ],
             ),

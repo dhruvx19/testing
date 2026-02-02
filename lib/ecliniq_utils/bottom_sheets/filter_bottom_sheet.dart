@@ -133,34 +133,31 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
               top: 22,
               bottom: 0,
             ),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Filters',
-                    style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
-                        .copyWith(
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xff424242),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Filters',
+                  style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                      .copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xff424242),
+                      ),
+                ),
+                GestureDetector(
+                  onTap: _resetFilters,
+                  child: Text(
+                    'Reset',
+                    style:
+                        EcliniqTextStyles.responsiveHeadlineBMedium(
+                          context,
+                        ).copyWith(
+                          fontWeight: FontWeight.w400,
+                          color: Color(0xff2372EC),
                         ),
                   ),
-                  GestureDetector(
-                    onTap: _resetFilters,
-                    child: Text(
-                      'Reset',
-                      style:
-                          EcliniqTextStyles.responsiveHeadlineBMedium(
-                            context,
-                          ).copyWith(
-                            fontWeight: FontWeight.w400,
-                            color: Color(0xff2372EC),
-                          ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
           SearchBarWidget(
@@ -170,16 +167,16 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
               });
             },
           ),
-          SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 22)),
+          SizedBox(height: EcliniqTextStyles.getResponsiveSize(context, 18)),
           Container(height: 0.5, color: Color(0xffD6D6D6)),
-          SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 8)),
+          SizedBox(height: EcliniqTextStyles.getResponsiveSize(context, 8)),
 
           Expanded(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(
-                  width: EcliniqTextStyles.getResponsiveSpacing(context, 136),
+                  width: EcliniqTextStyles.getResponsiveSize(context, 136),
                   child: ListView.builder(
                     itemCount: filterTabs.length,
                     itemBuilder: (context, index) {
@@ -875,9 +872,9 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
     );
 
     return Container(
-      margin: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 16),
+      margin: EdgeInsets.only(top: 10, left: 16, right: 16,),
 
-      height: 52,
+      height: EcliniqTextStyles.getResponsiveSize(context, 52.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8.0),
@@ -911,51 +908,7 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
                   filled: true,
                   fillColor: Colors.white,
                   isDense: true,
-                  suffixIcon: query.isNotEmpty
-                      ? Animate(
-                          effects: const [
-                            FadeEffect(
-                              duration: Duration(milliseconds: 500),
-                              curve: Curves.easeInOut,
-                            ),
-                          ],
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.close,
-                              color: Colors.grey[600],
-                              size: 20,
-                            ),
-                            onPressed: () {
-                              if (widget.onClear != null) {
-                                widget.onClear!();
-                              }
-                              setState(() => query = '');
-                              _controller.clear();
-                              widget.onSearch('');
-                            },
-                          ),
-                        )
-                      : Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: IconButton(
-                            icon: Container(
-                              padding: const EdgeInsets.all(4),
-
-                              child: SvgPicture.asset(
-                                EcliniqIcons.microphone.assetPath,
-                                width: 24,
-                                height: 24,
-                                colorFilter: _isListening
-                                    ? const ColorFilter.mode(
-                                        Color(0xFF2372EC),
-                                        BlendMode.srcIn,
-                                      )
-                                    : null,
-                              ),
-                            ),
-                            onPressed: _handleVoiceSearch,
-                          ),
-                        ),
+                  
                   hintText: widget.hintText,
                   hintStyle:
                       EcliniqTextStyles.responsiveHeadlineBMedium(
