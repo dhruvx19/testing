@@ -271,17 +271,30 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
       return Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          leading: IconButton(
-            icon: SvgPicture.asset(
-              EcliniqIcons.arrowLeft.assetPath,
-              width: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
-              height: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
-            ),
-            onPressed: () => EcliniqRouter.pop(),
+        surfaceTintColor: Colors.transparent,
+        leadingWidth: 58,
+        titleSpacing: 0,
+        toolbarHeight: 38,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: SvgPicture.asset(
+            EcliniqIcons.backArrow.assetPath,
+            width: EcliniqTextStyles.getResponsiveSize(context, 32.0),
+            height: EcliniqTextStyles.getResponsiveSize(context, 32.0),
+          ),
+          onPressed: () => EcliniqRouter.pop(),
+        ),
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(
+            EcliniqTextStyles.getResponsiveSize(context, 1.0),
+          ),
+          child: Container(
+            color: Color(0xFFB8B8B8),
+            height: EcliniqTextStyles.getResponsiveSize(context, 1.0),
           ),
         ),
+      ),
         body: _buildShimmerLoading(),
       );
     }
@@ -290,11 +303,30 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
       return Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: () => EcliniqRouter.pop(),
+        surfaceTintColor: Colors.transparent,
+        leadingWidth: 58,
+        titleSpacing: 0,
+        toolbarHeight: 38,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: SvgPicture.asset(
+            EcliniqIcons.backArrow.assetPath,
+            width: EcliniqTextStyles.getResponsiveSize(context, 32.0),
+            height: EcliniqTextStyles.getResponsiveSize(context, 32.0),
+          ),
+          onPressed: () => EcliniqRouter.pop(),
+        ),
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(
+            EcliniqTextStyles.getResponsiveSize(context, 1.0),
+          ),
+          child: Container(
+            color: Color(0xFFB8B8B8),
+            height: EcliniqTextStyles.getResponsiveSize(context, 1.0),
           ),
         ),
+      ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

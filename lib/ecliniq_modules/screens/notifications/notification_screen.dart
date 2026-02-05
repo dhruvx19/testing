@@ -411,14 +411,17 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
+      surfaceTintColor: Colors.transparent,
+      leadingWidth: 58,
+      titleSpacing: 0,
+      toolbarHeight: 38,
       backgroundColor: Colors.white,
-      surfaceTintColor: Colors.white,
       elevation: 0,
       leading: IconButton(
         icon: SvgPicture.asset(
           EcliniqIcons.backArrow.assetPath,
-          width: 32,
-          height: 32,
+          width: EcliniqTextStyles.getResponsiveSize(context, 32.0),
+          height: EcliniqTextStyles.getResponsiveSize(context, 32.0),
         ),
         onPressed: () => Navigator.pop(context),
       ),
@@ -426,9 +429,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
         alignment: Alignment.centerLeft,
         child: Text(
           'Notifications',
-          style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
-            color: const Color(0xff424242),
-          ),
+          style: EcliniqTextStyles.responsiveHeadlineMedium(
+            context,
+          ).copyWith(color: Color(0xff424242)),
         ),
       ),
       actions: [
@@ -444,8 +447,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
         ),
       ],
       bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(0.5),
-        child: Container(color: const Color(0xFFB8B8B8), height: 0.5),
+        preferredSize: Size.fromHeight(
+          EcliniqTextStyles.getResponsiveSize(context, 1.0),
+        ),
+        child: Container(
+          color: Color(0xFFB8B8B8),
+          height: EcliniqTextStyles.getResponsiveSize(context, 1.0),
+        ),
       ),
     );
   }

@@ -248,28 +248,37 @@ class _VerifyNewMobileNumberState extends State<VerifyNewMobileNumber> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
         leadingWidth: 58,
         titleSpacing: 0,
+        toolbarHeight: 38,
+        backgroundColor: Colors.white,
+        elevation: 0,
         leading: IconButton(
-          padding: EdgeInsets.zero,
           icon: SvgPicture.asset(
-            EcliniqIcons.arrowLeft.assetPath,
-            width: 32,
-            height: 32,
+            EcliniqIcons.backArrow.assetPath,
+            width: EcliniqTextStyles.getResponsiveSize(context, 32.0),
+            height: EcliniqTextStyles.getResponsiveSize(context, 32.0),
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
-          'Verify Existing Account',
-          style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
-            color: Color(0xff424242),
+        title: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'Verify Existing Account',
+            style: EcliniqTextStyles.responsiveHeadlineMedium(
+              context,
+            ).copyWith(color: Color(0xff424242)),
           ),
         ),
-        centerTitle: false,
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.2),
-          child: Container(color: Color(0xFFB8B8B8), height: 1.0),
+          preferredSize: Size.fromHeight(
+            EcliniqTextStyles.getResponsiveSize(context, 1.0),
+          ),
+          child: Container(
+            color: Color(0xFFB8B8B8),
+            height: EcliniqTextStyles.getResponsiveSize(context, 1.0),
+          ),
         ),
       ),
       body: Padding(

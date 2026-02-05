@@ -1018,6 +1018,7 @@ class _FileViewerScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(file.fileName),
+        toolbarHeight: 38,
         backgroundColor: EcliniqScaffold.primaryBlue,
       ),
       body: file.isImage && File(file.filePath).existsSync()
