@@ -13,6 +13,7 @@ class PrescriptionCardTimeline extends StatelessWidget {
   final bool showShadow;
   final double headingFontSize;
   final double subheadingFontSize;
+  final bool showTimeline;
 
   const PrescriptionCardTimeline({
     super.key,
@@ -21,6 +22,7 @@ class PrescriptionCardTimeline extends StatelessWidget {
     this.showShadow = true,
     this.headingFontSize = 18,
     this.subheadingFontSize = 14,
+    this.showTimeline = true,
   });
 
   String _formatDay(DateTime date) {
@@ -136,31 +138,33 @@ class PrescriptionCardTimeline extends StatelessWidget {
       ),
       child: Row(
         children: [
-          SizedBox(
-            width: 40,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  day,
-                  style: EcliniqTextStyles.responsiveHeadlineMedium(context)
-                      .copyWith(
-                        color: isOlder
-                            ? Colors.grey[400]
-                            : const Color(0xff424242),
-                      ),
-                ),
-                Text(
-                  month,
-                  style: EcliniqTextStyles.responsiveBodySmallProminent(context)
-                      .copyWith(
-                        color: isOlder ? Colors.grey[400] : Colors.grey[600],
-                      ),
-                ),
-              ],
+          if (showTimeline) ...[
+            SizedBox(
+              width: 40,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    day,
+                    style: EcliniqTextStyles.responsiveHeadlineMedium(context)
+                        .copyWith(
+                          color: isOlder
+                              ? Colors.grey[400]
+                              : const Color(0xff424242),
+                        ),
+                  ),
+                  Text(
+                    month,
+                    style: EcliniqTextStyles.responsiveBodySmallProminent(context)
+                        .copyWith(
+                          color: isOlder ? Colors.grey[400] : Colors.grey[600],
+                        ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 2),
+            const SizedBox(width: 2),
+          ],
           _buildThumbnail(context),
           const SizedBox(width: 16),
           Expanded(

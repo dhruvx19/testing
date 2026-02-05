@@ -2,24 +2,23 @@ import 'package:ecliniq/ecliniq_api/appointment_service.dart';
 import 'package:ecliniq/ecliniq_api/models/appointment.dart';
 import 'package:ecliniq/ecliniq_api/storage_service.dart';
 import 'package:ecliniq/ecliniq_core/router/navigation_helper.dart';
+import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/cancelled.dart';
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/completed.dart';
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/confirmed.dart';
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/requested.dart';
-import 'package:ecliniq/ecliniq_icons/assets/home/widgets/quick_actions.dart';
+import 'package:ecliniq/ecliniq_modules/screens/notifications/notification_screen.dart';
+import 'package:ecliniq/ecliniq_modules/screens/notifications/provider/notification_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/search_specialities/speciality_doctors_list.dart';
 import 'package:ecliniq/ecliniq_modules/screens/search_specialities/speciality_hospital_list.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
-import 'package:ecliniq/ecliniq_modules/screens/notifications/notification_screen.dart';
-import 'package:ecliniq/ecliniq_modules/screens/notifications/provider/notification_provider.dart';
-import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_navigation/bottom_navigation.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
-import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/error_snackbar.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
 import 'package:ecliniq/ecliniq_ui/scripts/ecliniq_ui.dart';
 import 'package:ecliniq/ecliniq_utils/bottom_sheets/ratings/rate_your_exp_bottom_sheet.dart';
 import 'package:flutter/material.dart';
@@ -73,7 +72,6 @@ class _MyVisitsState extends State<MyVisits>
   final _appointmentService = AppointmentService();
   final _storageService = StorageService();
   bool _isLoadingAppointments = false;
-  
 
   List<AppointmentData> _scheduledAppointments = [];
   List<AppointmentData> _historyAppointments = [];
@@ -91,12 +89,10 @@ class _MyVisitsState extends State<MyVisits>
   }
 
   void _onTabTapped(int index) {
-    
     if (index == _currentIndex) {
       return;
     }
 
-    
     NavigationHelper.navigateToTab(context, index, _currentIndex);
   }
 
@@ -119,10 +115,8 @@ class _MyVisitsState extends State<MyVisits>
     });
 
     try {
-      
       final type = _selectedFilterIndex == 0 ? 'doctor' : 'hospital';
 
-      
       final results = await Future.wait([
         _appointmentService.getScheduledAppointments(
           authToken: authToken,
@@ -175,7 +169,6 @@ class _MyVisitsState extends State<MyVisits>
   }
 
   AppointmentData _mapToAppointmentData(AppointmentListItem item) {
-    
     AppointmentStatus status;
     switch (item.status.toUpperCase()) {
       case 'CONFIRMED':
@@ -199,25 +192,20 @@ class _MyVisitsState extends State<MyVisits>
         status = AppointmentStatus.requested;
     }
 
-    
     final dateFormat = DateFormat('dd MMM, yyyy');
     final date = dateFormat.format(item.appointmentDate);
 
-    
     final timeFormat = DateFormat('hh:mm a');
     final time = timeFormat.format(item.appointmentTime.startTime);
 
-    
     final specialization = item.speciality.isNotEmpty
         ? item.speciality.join(', ')
         : 'General Physician';
 
-    
     final qualification = item.degrees.isNotEmpty
         ? item.degrees.join(', ')
         : 'MBBS';
 
-    
     final patientName = item.bookedFor == 'SELF'
         ? '${item.patientName} (You)'
         : item.patientName;
@@ -238,11 +226,8 @@ class _MyVisitsState extends State<MyVisits>
   }
 
   Future<void> _navigateToDetailPage(AppointmentData appointment) async {
-    
-    
     Widget detailPage;
 
-    
     String status = appointment.status.name;
     if (status == 'served') {
       status = 'completed';
@@ -265,7 +250,6 @@ class _MyVisitsState extends State<MyVisits>
         detailPage = BookingCompletedDetail(appointmentId: appointment.id);
         break;
       default:
-        
         if (appointment.status == AppointmentStatus.confirmed) {
           detailPage = BookingConfirmedDetail(appointmentId: appointment.id);
         } else if (appointment.status == AppointmentStatus.requested) {
@@ -302,19 +286,13 @@ class _MyVisitsState extends State<MyVisits>
   }
 
   Future<void> _refreshAppointments() async {
-    
     await _loadAppointments();
-    setState(() {
-      
-    });
+    setState(() {});
   }
 
   Widget _buildTopTabs() {
     return Container(
-      margin: const EdgeInsets.only(
-        top: 8,
-        bottom: 12,
-      ), 
+      margin: const EdgeInsets.only(bottom: 8, top: 2),
       child: Row(
         children: [
           Expanded(child: _buildTabButton('Scheduled', 0)),
@@ -331,11 +309,11 @@ class _MyVisitsState extends State<MyVisits>
         setState(() {
           _selectedTabIndex = index;
         });
-        
+
         _loadAppointments();
       },
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
@@ -361,14 +339,9 @@ class _MyVisitsState extends State<MyVisits>
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Container(
-      
-      height: screenWidth * 0.13,
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        bottom: 2,
-        top: 6,
-      ), 
+      margin: const EdgeInsets.only(top: 2),
+      height: screenWidth * 0.12,
+      padding: EdgeInsets.only(left: 16, right: 16, bottom: 6, top: 6),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: filters.length,
@@ -383,7 +356,7 @@ class _MyVisitsState extends State<MyVisits>
             },
             child: Container(
               margin: EdgeInsets.only(right: screenWidth * 0.03),
-              padding: EdgeInsets.all(screenWidth * 0.02),
+              padding: EdgeInsets.only(left: 8, right: 8),
               decoration: BoxDecoration(
                 color: isSelected ? Color(0xffF8FAFF) : Colors.white,
                 borderRadius: BorderRadius.circular(8),
@@ -516,7 +489,7 @@ class _MyVisitsState extends State<MyVisits>
                   statusText,
                   style: EcliniqTextStyles.responsiveHeadlineBMedium(
                     context,
-                  ).copyWith(fontWeight: FontWeight.w400, color: textColor),
+                  ).copyWith(fontWeight: FontWeight.w500, color: textColor),
                 ),
                 const Spacer(),
                 if (appointment.tokenNumber != null)
@@ -574,7 +547,6 @@ class _MyVisitsState extends State<MyVisits>
   }
 
   Widget _buildDoctorInfo(AppointmentData appointment) {
-    
     final doctorInitial = appointment.doctorName.isNotEmpty
         ? appointment.doctorName[0].toUpperCase()
         : 'D';
@@ -594,7 +566,8 @@ class _MyVisitsState extends State<MyVisits>
                     shape: BoxShape.circle,
                     border: Border.all(color: Color(0xFF96BFFF), width: 0.5),
                   ),
-                  child: appointment.doctorPhoto != null &&
+                  child:
+                      appointment.doctorPhoto != null &&
                           appointment.doctorPhoto!.isNotEmpty
                       ? FutureBuilder<String>(
                           future: _storageService.getImageUrl(
@@ -622,50 +595,52 @@ class _MyVisitsState extends State<MyVisits>
                                   height: 70,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) {
-                                    
                                     return Center(
                                       child: Text(
                                         doctorInitial,
-                                        style: EcliniqTextStyles
-                                            .responsiveHeadlineXXLargeBold(
-                                          context,
-                                        ).copyWith(color: Color(0xFF2196F3)),
+                                        style:
+                                            EcliniqTextStyles.responsiveHeadlineXXLargeBold(
+                                              context,
+                                            ).copyWith(
+                                              color: Color(0xFF2196F3),
+                                            ),
                                       ),
                                     );
                                   },
                                   loadingBuilder:
                                       (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Center(
-                                      child: CircularProgressIndicator(
-                                        value: loadingProgress
-                                                    .expectedTotalBytes !=
-                                                null
-                                            ? loadingProgress
-                                                    .cumulativeBytesLoaded /
+                                        if (loadingProgress == null)
+                                          return child;
+                                        return Center(
+                                          child: CircularProgressIndicator(
+                                            value:
                                                 loadingProgress
-                                                    .expectedTotalBytes!
-                                            : null,
-                                        strokeWidth: 2,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                          Color(0xFF2196F3),
-                                        ),
-                                      ),
-                                    );
-                                  },
+                                                        .expectedTotalBytes !=
+                                                    null
+                                                ? loadingProgress
+                                                          .cumulativeBytesLoaded /
+                                                      loadingProgress
+                                                          .expectedTotalBytes!
+                                                : null,
+                                            strokeWidth: 2,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                  Color(0xFF2196F3),
+                                                ),
+                                          ),
+                                        );
+                                      },
                                 ),
                               );
                             }
 
-                            
                             return Center(
                               child: Text(
                                 doctorInitial,
-                                style: EcliniqTextStyles
-                                    .responsiveHeadlineXXLargeBold(
-                                  context,
-                                ).copyWith(color: Color(0xFF2196F3)),
+                                style:
+                                    EcliniqTextStyles.responsiveHeadlineXXLargeBold(
+                                      context,
+                                    ).copyWith(color: Color(0xFF2196F3)),
                               ),
                             );
                           },
@@ -673,10 +648,10 @@ class _MyVisitsState extends State<MyVisits>
                       : Center(
                           child: Text(
                             doctorInitial,
-                            style: EcliniqTextStyles
-                                .responsiveHeadlineXXLargeBold(
-                              context,
-                            ).copyWith(color: Color(0xFF2196F3)),
+                            style:
+                                EcliniqTextStyles.responsiveHeadlineXXLargeBold(
+                                  context,
+                                ).copyWith(color: Color(0xFF2196F3)),
                           ),
                         ),
                 ),
@@ -776,7 +751,9 @@ class _MyVisitsState extends State<MyVisits>
   }
 
   String _getInitial(String name) {
-    final cleaned = name.replaceAll(RegExp(r"\s*\(You\)", caseSensitive: false), '').trim();
+    final cleaned = name
+        .replaceAll(RegExp(r"\s*\(You\)", caseSensitive: false), '')
+        .trim();
     if (cleaned.isEmpty) return '?';
     return cleaned.substring(0, 1).toUpperCase();
   }
@@ -815,7 +792,7 @@ class _MyVisitsState extends State<MyVisits>
                         .copyWith(
                           color: Color(0xFF424242),
                           fontWeight: FontWeight.w500,
-                          height: 1.0, 
+                          height: 1.0,
                         ),
                   ),
                   const SizedBox(width: 4),
@@ -928,7 +905,6 @@ class _MyVisitsState extends State<MyVisits>
   }
 
   Future<void> _openRatingSheet(AppointmentData appointment) async {
-    
     if (appointment.rating != null && appointment.rating! > 0) {
       return;
     }
@@ -939,11 +915,9 @@ class _MyVisitsState extends State<MyVisits>
       doctorName: appointment.doctorName,
       appointmentId: appointment.id,
       onRatingSubmitted: (rating) {
-        
         _refreshAppointments();
       },
       onRefetch: () {
-        
         _refreshAppointments();
       },
     );
@@ -1056,38 +1030,36 @@ class _MyVisitsState extends State<MyVisits>
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: [
-                                        
                                             SvgPicture.asset(
-                                              EcliniqIcons
-                                                  .noSchedule
-                                                  .assetPath,
-                                              width: EcliniqTextStyles
-                                                  .getResponsiveWidth(
-                                                context,
-                                                130,
-                                              ),
-                                              height: EcliniqTextStyles
-                                                  .getResponsiveHeight(
-                                                context,
-                                                140,
-                                              ),
+                                              EcliniqIcons.noSchedule.assetPath,
+                                              width:
+                                                  EcliniqTextStyles.getResponsiveWidth(
+                                                    context,
+                                                    130,
+                                                  ),
+                                              height:
+                                                  EcliniqTextStyles.getResponsiveHeight(
+                                                    context,
+                                                    140,
+                                                  ),
                                             ),
                                             SizedBox(
                                               height:
-                                                  EcliniqTextStyles
-                                                      .getResponsiveSpacing(
-                                                context,
-                                                16,
-                                              ),
+                                                  EcliniqTextStyles.getResponsiveSpacing(
+                                                    context,
+                                                    16,
+                                                  ),
                                             ),
-                                            Text('No Schedule yet!',
-                                                style: EcliniqTextStyles
-                                                    .responsiveBodyLarge(
-                                                  context,
-                                                ).copyWith(
-                                                  color: Color(0xFF424242),
-                                                  fontWeight: FontWeight.w400,
-                                                )),
+                                            Text(
+                                              'No Schedule yet!',
+                                              style:
+                                                  EcliniqTextStyles.responsiveBodyLarge(
+                                                    context,
+                                                  ).copyWith(
+                                                    color: Color(0xFF424242),
+                                                    fontWeight: FontWeight.w400,
+                                                  ),
+                                            ),
                                             Text(
                                               'You didn’t scheduled any appointment.',
                                               style:
@@ -1095,7 +1067,7 @@ class _MyVisitsState extends State<MyVisits>
                                                     context,
                                                   ).copyWith(
                                                     color: Color(0xFF8E8E8E),
-                                                      fontWeight: FontWeight.w400,
+                                                    fontWeight: FontWeight.w400,
                                                   ),
                                             ),
                                             const SizedBox(height: 8),
@@ -1111,7 +1083,7 @@ class _MyVisitsState extends State<MyVisits>
                                     )
                                   : ListView.builder(
                                       padding: EdgeInsets.only(
-                                        top: 20,
+                                        top: 4,
                                         bottom: 50,
                                       ),
                                       itemCount: currentAppointments.length,
@@ -1154,10 +1126,7 @@ class QuickActionsWidget extends StatelessWidget {
       return _buildShimmer(context);
     }
 
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 360;
-    final itemWidth = isSmallScreen ? 195.0 : 195.0;
-    final itemHeight = isSmallScreen ? 192.0 : 90.0;
+    const double itemHeight = 90.0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1166,7 +1135,7 @@ class QuickActionsWidget extends StatelessWidget {
         Padding(
           padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
             context,
-           
+
             bottom: 16.0,
             top: 12.0,
           ),
@@ -1175,7 +1144,6 @@ class QuickActionsWidget extends StatelessWidget {
               Expanded(
                 child: _buildQuickActionItem(
                   context,
-                  width: itemWidth,
                   height: itemHeight,
                   assetPath: EcliniqIcons.quick1.assetPath,
                   title: 'Consult Doctors',
@@ -1188,7 +1156,6 @@ class QuickActionsWidget extends StatelessWidget {
               Expanded(
                 child: _buildQuickActionItem(
                   context,
-                  width: itemWidth,
                   height: itemHeight,
                   assetPath: EcliniqIcons.hospitalBuilding.assetPath,
                   title: 'Visit Hospitals',
@@ -1204,7 +1171,6 @@ class QuickActionsWidget extends StatelessWidget {
 
   Widget _buildQuickActionItem(
     BuildContext context, {
-    required double width,
     required double height,
     required String assetPath,
     required String title,
@@ -1218,7 +1184,6 @@ class QuickActionsWidget extends StatelessWidget {
           EcliniqTextStyles.getResponsiveBorderRadius(context, 16.0),
         ),
         child: Container(
-          width: width,
           height: height,
           padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 6.0),
           decoration: BoxDecoration(

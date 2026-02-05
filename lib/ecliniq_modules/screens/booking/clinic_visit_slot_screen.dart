@@ -1373,6 +1373,7 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
         surfaceTintColor: Colors.transparent,
         leadingWidth: 58,
         titleSpacing: 0,
+        toolbarHeight: 38,
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
@@ -1426,15 +1427,9 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
           preferredSize: Size.fromHeight(
             EcliniqTextStyles.getResponsiveSize(context, 1.0),
           ),
-          child: Transform.translate(
-            offset: Offset(
-              0,
-              -EcliniqTextStyles.getResponsiveSize(context, 8.0),
-            ),
-            child: Container(
-              color: Color(0xFFB8B8B8),
-              height: EcliniqTextStyles.getResponsiveSize(context, 1.0),
-            ),
+          child: Container(
+            color: Color(0xFFB8B8B8),
+            height: EcliniqTextStyles.getResponsiveSize(context, 1.0),
           ),
         ),
       ),

@@ -1,6 +1,4 @@
-import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
-import 'package:ecliniq/ecliniq_modules/screens/health_files/file_type_screen.dart';
 import 'package:ecliniq/ecliniq_modules/screens/health_files/providers/health_files_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/health_files/widgets/prescription_card_timeline.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
@@ -10,29 +8,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 
-class UploadTimeline extends StatelessWidget {
+class UploadTimeline extends StatefulWidget {
   const UploadTimeline({super.key});
 
-  
-  
+  @override
+  State<UploadTimeline> createState() => _UploadTimelineState();
+}
+
+class _UploadTimelineState extends State<UploadTimeline> {
+  bool _isExpanded = false;
+
   double _getExpandTimelineTopPadding(int fileCount) {
-    
     return 16.0;
   }
-  
-  
-  
+
   double _getStackHeight(int fileCount) {
     switch (fileCount) {
       case 1:
-        
-        return 100.0; 
+        return 100.0;
       case 2:
-        
-        return 165.0; 
+        return 165.0;
       case 3:
-        
-        return 230.0; 
+        return 230.0;
       default:
         return 100.0;
     }
@@ -42,11 +39,16 @@ class UploadTimeline extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<HealthFilesProvider>(
       builder: (context, provider, child) {
-        final recentFiles = provider.getRecentlyUploadedFiles(limit: 3);
+        final recentFiles = provider.getRecentlyUploadedFiles(limit: 10);
 
         if (recentFiles.isEmpty) {
           return const SizedBox.shrink();
         }
+
+        final displayFiles = _isExpanded
+            ? recentFiles
+            : recentFiles.take(3).toList();
+        final showExpandButton = recentFiles.length >= 3;
 
         return Container(
           padding: const EdgeInsets.only(
@@ -58,107 +60,300 @@ class UploadTimeline extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-               Text(
-                'Upload Timeline',
-                style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
-         
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xff424242),
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Upload Timeline',
+                    style: EcliniqTextStyles.responsiveHeadlineLarge(context)
+                        .copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xff424242),
+                        ),
+                  ),
+                  if (_isExpanded)
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _isExpanded = false;
+                        });
+                      },
+                      child: Row(
+                        children: [
+                          Text(
+                            'Collapse',
+                            style: EcliniqTextStyles.responsiveHeadlineXMedium(
+                              context,
+                            ).copyWith(color: Color(0xff2372EC)),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            width: 0.5,
+                            height: 20,
+                            color: Color(0xff96BFFF),
+                          ),
+                          const SizedBox(width: 8),
+                          SvgPicture.asset(
+                            EcliniqIcons.arrowUp.assetPath,
+                            width: 20,
+                            height: 20,
+                            color: Color(0xff2372EC),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
               ),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: _getStackHeight(recentFiles.length),
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    
-                    if (recentFiles.length >= 3)
-                      Positioned(
-                        top: 130,
-                        left: 20,
-                        right: 20,
-                        child: Opacity(
-                          opacity: 0.65,
-                          child: Transform.scale(
-                            scale: 0.95,
-                            child: PrescriptionCardTimeline(
-                              file: recentFiles[2],
-                              isOlder: true,
-                              showShadow: false,
-                              headingFontSize: 16,
-                              subheadingFontSize: 12,
+              const SizedBox(height: 18),
+
+              // Show stacked cards or timeline list based on expansion state
+              if (!_isExpanded)
+                // Stacked cards view (original design)
+                SizedBox(
+                  height: _getStackHeight(displayFiles.length),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      if (displayFiles.length >= 3)
+                        Positioned(
+                          top: 130,
+                          left: 20,
+                          right: 20,
+                          child: Opacity(
+                            opacity: 0.65,
+                            child: Transform.scale(
+                              scale: 0.95,
+                              child: PrescriptionCardTimeline(
+                                file: displayFiles[2],
+                                isOlder: true,
+                                showShadow: false,
+                                headingFontSize: 16,
+                                subheadingFontSize: 12,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    
-                    if (recentFiles.length >= 2)
-                      Positioned(
-                        top: 65,
-                        left: 12,
-                        right: 12,
-                        child: Transform.scale(
-                          scale: 0.97,
-                          child: PrescriptionCardTimeline(
-                            file: recentFiles[1],
-                            headingFontSize: 17,
-                            subheadingFontSize: 13,
+                      if (displayFiles.length >= 2)
+                        Positioned(
+                          top: 65,
+                          left: 12,
+                          right: 12,
+                          child: Transform.scale(
+                            scale: 0.97,
+                            child: PrescriptionCardTimeline(
+                              file: displayFiles[1],
+                              headingFontSize: 17,
+                              subheadingFontSize: 13,
+                            ),
                           ),
                         ),
-                      ),
-                    
-                    if (recentFiles.isNotEmpty)
-                      Positioned(
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        child: PrescriptionCardTimeline(
-                          file: recentFiles[0],
-                          headingFontSize: 18,
-                          subheadingFontSize: 14,
+                      if (displayFiles.isNotEmpty)
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          child: PrescriptionCardTimeline(
+                            file: displayFiles[0],
+                            headingFontSize: 18,
+                            subheadingFontSize: 14,
+                          ),
                         ),
+                    ],
+                  ),
+                )
+              else
+                // Expanded timeline view with vertical line
+                Column(
+                  children: [
+                    for (int i = 0; i < displayFiles.length; i++)
+                      TimelineItemWithLine(
+                        file: displayFiles[i],
+                        isFirst: i == 0,
+                        isLast: i == displayFiles.length - 1,
                       ),
                   ],
                 ),
-              ),
-              
-              SizedBox(
-                height: _getExpandTimelineTopPadding(recentFiles.length),
-              ),
-              GestureDetector(
-                onTap: () {
-                  EcliniqRouter.push(const FileTypeScreen(fileType: null));
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Expand Timeline',
-                      style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
+
+              if (!_isExpanded && showExpandButton) ...[
+                SizedBox(
+                  height: _getExpandTimelineTopPadding(displayFiles.length),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isExpanded = true;
+                    });
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Expand Timeline',
+                        style: EcliniqTextStyles.responsiveHeadlineXMedium(
+                          context,
+                        ).copyWith(color: EcliniqScaffold.darkBlue),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        width: 1,
+                        height: 20,
                         color: EcliniqScaffold.darkBlue,
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 1,
-                      height: 20,
-                      color: EcliniqScaffold.darkBlue,
-                    ),
-                    const SizedBox(width: 8),
-                    SvgPicture.asset(
-                      EcliniqIcons.arrowDown.assetPath,
-                      width: 20,
-                      height: 20,
-                      color: EcliniqScaffold.darkBlue,
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      SvgPicture.asset(
+                        EcliniqIcons.arrowDown.assetPath,
+                        width: 20,
+                        height: 20,
+                        color: EcliniqScaffold.darkBlue,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+              ],
+
+              if (_isExpanded && recentFiles.length > 10) ...[
+                const SizedBox(height: 16),
+                GestureDetector(
+                  onTap: () {
+                    // Load more functionality
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Load More',
+                        style: EcliniqTextStyles.responsiveHeadlineXMedium(
+                          context,
+                        ).copyWith(color: EcliniqScaffold.darkBlue),
+                      ),
+                      const SizedBox(width: 8),
+                      SvgPicture.asset(
+                        EcliniqIcons.arrowDown.assetPath,
+                        width: 20,
+                        height: 20,
+                        color: EcliniqScaffold.darkBlue,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
         );
       },
+    );
+  }
+}
+
+class TimelineItemWithLine extends StatelessWidget {
+  final dynamic file;
+  final bool isFirst;
+  final bool isLast;
+
+  const TimelineItemWithLine({
+    super.key,
+    required this.file,
+    this.isFirst = false,
+    this.isLast = false,
+  });
+
+  String _formatDay(DateTime date) {
+    return date.day.toString().padLeft(2, '0');
+  }
+
+  String _formatMonth(DateTime date) {
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return months[date.month - 1];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final displayDate = file.fileDate ?? file.createdAt;
+    final day = _formatDay(displayDate);
+    final month = _formatMonth(displayDate);
+
+    return IntrinsicHeight(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Date column (left side)
+          SizedBox(
+            width: 40,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    day,
+                    style: EcliniqTextStyles.responsiveHeadlineMedium(context)
+                        .copyWith(
+                          color: Color(0xff424242),
+                          fontWeight: FontWeight.w500,
+                        ),
+                  ),
+                  Text(
+                    month,
+                    style: EcliniqTextStyles.responsiveBodySmallProminent(
+                      context,
+                    ).copyWith(color: Color(0xff8E8E8E)),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          Column(
+            children: [
+              // Top line (always show, including for first item)
+              Container(width: 1, height: 32, color: Color(0xffD6D6D6)),
+              
+              // Dot
+              Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: Color(0xffD6D6D6),
+                  shape: BoxShape.circle,
+                ),
+              ),
+              SizedBox(height: 4),
+              
+              // Bottom line (always show, including for last item)
+              Expanded(child: Container(width: 1, color: Color(0xffD6D6D6))),
+            ],
+          ),
+
+          const SizedBox(width: 8),
+
+          // Card (right side)
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 12.0),
+              child: PrescriptionCardTimeline(
+                file: file,
+                headingFontSize: 18,
+                subheadingFontSize: 14,
+                showTimeline: false,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

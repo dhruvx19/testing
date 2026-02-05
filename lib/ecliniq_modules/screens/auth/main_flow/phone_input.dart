@@ -376,7 +376,8 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: EcliniqScaffold.primaryBlue,
-        toolbarHeight: 40,
+        toolbarHeight: 38,
+        
         leading: IconButton(
           onPressed: widget.onClose,
           icon: SvgPicture.asset(
