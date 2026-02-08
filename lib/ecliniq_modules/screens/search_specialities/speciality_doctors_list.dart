@@ -364,7 +364,7 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
         initialSortOption: _selectedSortOption,
         onChanged: (option) {
           setState(() {
-            if (option.isEmpty || option == 'Relevance') {
+            if (option.isEmpty) {
               _selectedSortOption = null;
             } else {
               _selectedSortOption = option;
@@ -576,10 +576,54 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
           _doctors.sort((a, b) => safeCompare(a.rating, b.rating));
           break;
         case 'Relevance':
+          _doctors.sort((a, b) {
+            double scoreA = _computeRelevanceScore(a);
+            double scoreB = _computeRelevanceScore(b);
+            return scoreB.compareTo(scoreA);
+          });
+          break;
         default:
           break;
       }
     });
+  }
+
+  double _computeRelevanceScore(Doctor doctor) {
+    double score = 0;
+
+    // Rating contributes up to 30 points (rating is typically 0-5)
+    if (doctor.rating != null) {
+      score += (doctor.rating! / 5.0) * 30;
+    }
+
+    // Distance contributes up to 40 points (closer is better)
+    double? minDist;
+    for (final h in doctor.hospitals) {
+      if (h.distanceKm != null) {
+        if (minDist == null || h.distanceKm! < minDist) {
+          minDist = h.distanceKm;
+        }
+      }
+    }
+    for (final c in doctor.clinics) {
+      final dist = c['distance'];
+      if (dist is num) {
+        if (minDist == null || dist.toDouble() < minDist) {
+          minDist = dist.toDouble();
+        }
+      }
+    }
+    if (minDist != null) {
+      // Cap at 50 km; closer doctors score higher
+      score += (1 - (minDist.clamp(0, 50) / 50)) * 40;
+    }
+
+    // Experience contributes up to 30 points (more is better, cap at 30 years)
+    if (doctor.experience != null) {
+      score += (doctor.experience!.clamp(0, 30) / 30) * 30;
+    }
+
+    return score;
   }
 
   Future<void> _fetchDoctors() async {

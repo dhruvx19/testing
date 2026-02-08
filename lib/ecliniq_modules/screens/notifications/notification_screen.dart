@@ -412,9 +412,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       surfaceTintColor: Colors.transparent,
-      leadingWidth: 58,
+      leadingWidth: EcliniqTextStyles.getResponsiveWidth(context, 54.0),
       titleSpacing: 0,
-      toolbarHeight: 38,
+      toolbarHeight: EcliniqTextStyles.getResponsiveHeight(context, 46.0),
       backgroundColor: Colors.white,
       elevation: 0,
       leading: IconButton(

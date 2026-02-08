@@ -23,6 +23,9 @@ class AppointmentRequestScreen extends StatefulWidget {
   final double? walletAmount;
   final double? gatewayAmount;
 
+  final String? appointmentId;
+  final String? bookingStatus;
+
   const AppointmentRequestScreen({
     super.key,
     this.doctorName,
@@ -39,6 +42,8 @@ class AppointmentRequestScreen extends StatefulWidget {
     this.totalAmount,
     this.walletAmount,
     this.gatewayAmount,
+    this.appointmentId,
+    this.bookingStatus,
   });
 
   @override
@@ -54,7 +59,7 @@ class _AppointmentRequestScreenState extends State<AppointmentRequestScreen> {
   }
 
   Future<void> _makeApiCall() async {
-    await Future.delayed(const Duration(seconds: 30000000));
+    await Future.delayed(const Duration(seconds: 3));
 
     if (mounted) {
       Navigator.pushReplacement(
@@ -75,6 +80,8 @@ class _AppointmentRequestScreenState extends State<AppointmentRequestScreen> {
             totalAmount: widget.totalAmount,
             walletAmount: widget.walletAmount,
             gatewayAmount: widget.gatewayAmount,
+            appointmentId: widget.appointmentId,
+            bookingStatus: widget.bookingStatus,
           ),
         ),
       );
@@ -96,18 +103,18 @@ class _AppointmentRequestScreenState extends State<AppointmentRequestScreen> {
             
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SizedBox(height: MediaQuery.of(context).size.height * 0.1),
 
                     SvgPicture.asset(EcliniqIcons.appointment1.assetPath, 
-                      width: EcliniqTextStyles.getResponsiveIconSize(context, 240.0),
-                      height: EcliniqTextStyles.getResponsiveIconSize(context, 185.0),
+                      width: EcliniqTextStyles.getResponsiveIconSize(context, 230.0),
+                      height: EcliniqTextStyles.getResponsiveIconSize(context, 175.0),
                     ),
 
-                    const SizedBox(height: 24),
+                    SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 24.0)),
 
                     Text(
                       'Appointment Request',
@@ -136,13 +143,13 @@ class _AppointmentRequestScreenState extends State<AppointmentRequestScreen> {
 
   SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 24.0)),
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 12.0),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFEF9E6),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0)),
                         border: Border.all(
                           color: const Color(0xFFBE8B00),
-                          width: 0.5,
+                          width: EcliniqTextStyles.getResponsiveSize(context, 0.5),
                         ),
                       ),
                       child: Row(
@@ -150,10 +157,10 @@ class _AppointmentRequestScreenState extends State<AppointmentRequestScreen> {
                         children: [
                           SvgPicture.asset(
                             EcliniqIcons.requestedIcon.assetPath,
-                            width: 32,
-                            height: 32,
+                            width: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
+                            height: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
                           ),
-                          const SizedBox(width: 6),
+                          SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 6.0)),
                           Expanded(
                             child: Text(
                               'Your booking request will be confirmed once the doctor approves it. You will receive your token number details via WhatsApp and SMS.',
@@ -166,19 +173,19 @@ class _AppointmentRequestScreenState extends State<AppointmentRequestScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 24),
+                    SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 24.0)),
 
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 12.0)),
                         border: Border.all(
                           color: Color(0xffB8B8B8),
-                          width: 0.5,
+                          width: EcliniqTextStyles.getResponsiveSize(context, 0.5),
                         ),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.only(top: 6.0),
+                        padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(context, top: 6.0),
                         child: Column(
                           children: [
                             AppointmentDetailItem(
@@ -189,10 +196,10 @@ class _AppointmentRequestScreenState extends State<AppointmentRequestScreen> {
                               showEdit: false,
                             ),
                             Divider(
-                              thickness: 0.5,
+                              thickness: EcliniqTextStyles.getResponsiveSize(context, 0.5),
                               color: Color(0xffB8B8B8),
-                              indent: 15,
-                              endIndent: 15,
+                              indent: EcliniqTextStyles.getResponsiveSpacing(context, 15.0),
+                              endIndent: EcliniqTextStyles.getResponsiveSpacing(context, 15.0),
                             ),
                             AppointmentDetailItem(
                               iconAssetPath: EcliniqIcons.calendar.assetPath,
@@ -201,10 +208,10 @@ class _AppointmentRequestScreenState extends State<AppointmentRequestScreen> {
                               showEdit: false,
                             ),
                             Divider(
-                              thickness: 0.5,
+                              thickness: EcliniqTextStyles.getResponsiveSize(context, 0.5),
                               color: Color(0xffB8B8B8),
-                              indent: 15,
-                              endIndent: 15,
+                              indent: EcliniqTextStyles.getResponsiveSpacing(context, 15.0),
+                              endIndent: EcliniqTextStyles.getResponsiveSpacing(context, 15.0),
                             ),
                             AppointmentDetailItem(
                               iconAssetPath:
@@ -215,7 +222,7 @@ class _AppointmentRequestScreenState extends State<AppointmentRequestScreen> {
                                   'Address not available',
                               showEdit: false,
                             ),
-                             const SizedBox(height: 4),
+                             SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 4.0)),
                           ],
                         ),
                       ),
@@ -229,8 +236,12 @@ class _AppointmentRequestScreenState extends State<AppointmentRequestScreen> {
 
             
             Container(
-              padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
-              decoration: BoxDecoration(color: Colors.white),
+              padding: EdgeInsets.all(
+                EcliniqTextStyles.getResponsiveSize(context, 16),
+              ),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+              ),
               child: SafeArea(
                 top: false,
                 child: SizedBox(
@@ -243,8 +254,7 @@ class _AppointmentRequestScreenState extends State<AppointmentRequestScreen> {
                     onPressed: _handleOkPressed,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
-
-                      side: BorderSide(color: Color(0xff8E8E8E), width: 0.5),
+                      side: BorderSide(color: Color(0xff8E8E8E), width: EcliniqTextStyles.getResponsiveSize(context, 0.5)),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(
                           EcliniqTextStyles.getResponsiveBorderRadius(context, 4),

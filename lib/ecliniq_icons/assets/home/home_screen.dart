@@ -705,9 +705,6 @@ CustomErrorSnackBar.show(
                         if (_banners.isNotEmpty)
                           AppointmentBannersList(
                             banners: _banners,
-                            onBannerTap: (appointmentId) {
-                              
-                            },
                             onBannerClose: (appointmentId) async {
                               setState(() {
                                 _banners = _banners

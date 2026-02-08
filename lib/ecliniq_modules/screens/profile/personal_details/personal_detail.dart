@@ -8,6 +8,7 @@ import 'package:ecliniq/ecliniq_core/auth/secure_storage.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/details/widgets/add_profile_sheet.dart';
+import 'package:ecliniq/ecliniq_modules/screens/details/widgets/date_picker_sheet.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/personal_details/provider/personal_details_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/security_settings/security_settings.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/colors.g.dart';
@@ -103,6 +104,10 @@ class _PersonalDetailsState extends State<PersonalDetails> {
       _heightController.text = widget.height?.toString() ?? '';
       _weightController.text = widget.weight?.toString() ?? '';
       _dob = widget.dob;
+      _profilePhotoKey = widget.profilePhoto;
+      if (widget.profilePhoto != null && widget.profilePhoto!.isNotEmpty) {
+        _resolveDependentProfilePhoto(widget.profilePhoto!);
+      }
       setState(() {
         _isLoading = false;
       });
@@ -427,6 +432,14 @@ class _PersonalDetailsState extends State<PersonalDetails> {
     } catch (_) {}
   }
 
+  Future<void> _resolveDependentProfilePhoto(String key) async {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final token = auth.authToken;
+    if (token == null) return;
+    await _resolveImageUrl(key, token: token);
+    if (mounted) setState(() {});
+  }
+
   Future<void> _selectProfilePhoto() async {
     final String? action = await EcliniqBottomSheet.show<String>(
       context: context,
@@ -563,8 +576,12 @@ class _PersonalDetailsState extends State<PersonalDetails> {
             backgroundColor: Colors.white,
             appBar: AppBar(
               backgroundColor: Colors.white,
-              leadingWidth: 58,
+              leadingWidth: EcliniqTextStyles.getResponsiveWidth(context, 54.0),
               titleSpacing: 0,
+              toolbarHeight: EcliniqTextStyles.getResponsiveHeight(
+                context,
+                46.0,
+              ),
               leading: IconButton(
                 icon: SvgPicture.asset(
                   EcliniqIcons.arrowLeft.assetPath,
@@ -666,38 +683,40 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                                         color: Color(0xff96BFFF),
                                         width: 1.5,
                                       ),
-                                      image: () {
-                                        if (_selectedProfilePhoto != null) {
-                                          return DecorationImage(
-                                            fit: BoxFit.cover,
-                                            image: FileImage(
-                                              _selectedProfilePhoto!,
-                                            ),
-                                          );
-                                        }
-                                        if (_profilePhotoUrl != null &&
-                                            _profilePhotoUrl!.isNotEmpty) {
-                                          return DecorationImage(
-                                            fit: BoxFit.cover,
-                                            image: NetworkImage(
-                                              _profilePhotoUrl!,
-                                            ),
-                                          );
-                                        }
-                                        return null;
-                                      }(),
+                                      image: _selectedProfilePhoto != null
+                                          ? DecorationImage(
+                                              fit: BoxFit.cover,
+                                              image: FileImage(
+                                                _selectedProfilePhoto!,
+                                              ),
+                                            )
+                                          : null,
                                     ),
-                                    child:
-                                        (_selectedProfilePhoto == null &&
-                                            (_profilePhotoUrl == null ||
-                                                _profilePhotoUrl!.isEmpty))
+                                    child: _selectedProfilePhoto != null
+                                        ? null
+                                        : (_profilePhotoUrl != null &&
+                                              _profilePhotoUrl!.isNotEmpty)
                                         ? ClipOval(
+                                            child: Image.network(
+                                              _profilePhotoUrl!,
+                                              fit: BoxFit.cover,
+                                              width: double.infinity,
+                                              height: double.infinity,
+                                              errorBuilder:
+                                                  (context, error, stackTrace) {
+                                                    return SvgPicture.asset(
+                                                      'lib/ecliniq_icons/assets/Group.svg',
+                                                      fit: BoxFit.contain,
+                                                    );
+                                                  },
+                                            ),
+                                          )
+                                        : ClipOval(
                                             child: SvgPicture.asset(
                                               'lib/ecliniq_icons/assets/Group.svg',
                                               fit: BoxFit.contain,
                                             ),
-                                          )
-                                        : null,
+                                          ),
                                   ),
                                 ),
                                 Positioned(
@@ -852,16 +871,17 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                                 ? '${_dob!.day.toString().padLeft(2, '0')}/${_dob!.month.toString().padLeft(2, '0')}/${_dob!.year}'
                                 : null,
                             onTap: () async {
-                              final picked = await showDatePicker(
-                                context: context,
-                                initialDate:
-                                    _dob ??
-                                    DateTime.now().subtract(
-                                      const Duration(days: 365 * 25),
-                                    ),
-                                firstDate: DateTime(1900),
-                                lastDate: DateTime.now(),
-                              );
+                              final picked =
+                                  await EcliniqDatePicker.showDatePicker(
+                                    context: context,
+                                    initialDateTime:
+                                        _dob ??
+                                        DateTime.now().subtract(
+                                          const Duration(days: 365 * 25),
+                                        ),
+                                    minimumDateTime: DateTime(1900),
+                                    maximumDateTime: DateTime.now(),
+                                  );
                               if (picked != null) {
                                 setState(() {
                                   _dob = picked;
@@ -904,9 +924,10 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => SecuritySettingsOptions(
-                                      patientData: _data,
-                                    ),
+                                    builder: (context) =>
+                                        SecuritySettingsOptions(
+                                          patientData: _data,
+                                        ),
                                   ),
                                 );
                               },
@@ -937,9 +958,10 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => SecuritySettingsOptions(
-                                      patientData: _data,
-                                    ),
+                                    builder: (context) =>
+                                        SecuritySettingsOptions(
+                                          patientData: _data,
+                                        ),
                                   ),
                                 );
                               },
@@ -1059,7 +1081,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                   padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
                     context,
                     horizontal: 16,
-                    vertical: 12,
+                    vertical: 24,
                   ),
                   decoration: BoxDecoration(
                     color: Colors.white,

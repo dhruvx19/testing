@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
@@ -45,9 +46,9 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
   void initState() {
     super.initState();
     _controller = widget.controller ?? TextEditingController();
-    
+
     query = _controller.text;
-    
+
     _controller.addListener(_onControllerChanged);
     if (widget.autofocus) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -59,7 +60,7 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
   @override
   void didUpdateWidget(SearchBarWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller?.removeListener(_onControllerChanged);
       _controller = widget.controller ?? TextEditingController();
@@ -89,7 +90,7 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
       widget.onVoiceSearch!();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(
+        SnackBar(
           content: EcliniqText('Voice search feature coming soon!'),
           duration: Duration(seconds: 2),
         ),
@@ -108,7 +109,7 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
   @override
   void dispose() {
     _timer?.cancel();
-    
+
     _controller.removeListener(_onControllerChanged);
     if (widget.controller == null) {
       _controller.dispose();
@@ -138,7 +139,6 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
       ),
       child: Row(
         children: [
-          
           Padding(
             padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
               context,
@@ -153,7 +153,7 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
               height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
             ),
           ),
-          
+
           Expanded(
             child: GestureDetector(
               onTap: widget.onTap,
@@ -164,14 +164,14 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
                   focusNode: _focusNode,
                   onChanged: search,
                   textInputAction: TextInputAction.search,
-                  style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
-                    color: Color(0xFF424242),
-                  ),
+                  style: EcliniqTextStyles.responsiveTitleXLarge(
+                    context,
+                  ).copyWith(color: Color(0xFF424242)),
                   decoration: InputDecoration(
                     hintText: widget.hintText,
-                    hintStyle: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
-                      color: Color(0xFF8E8E8E),
-                    ),
+                    hintStyle: EcliniqTextStyles.responsiveHeadlineXMedium(
+                      context,
+                    ).copyWith(color: Color(0xFF8E8E8E)),
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
@@ -185,7 +185,7 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
               ),
             ),
           ),
-          
+
           if (query.isNotEmpty)
             GestureDetector(
               onTap: _clearSearch,
@@ -208,36 +208,21 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
               child: Padding(
                 padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
                   context,
-                  right: 12,
+                  right: 8,
                   top: 0,
                   bottom: 0,
                   left: 0,
                 ),
-                child: Container(
-                  padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 4),
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  child: SvgPicture.asset(
-                    EcliniqIcons.microphone.assetPath,
-                    width: EcliniqTextStyles.getResponsiveIconSize(context, 32),
-                    height: EcliniqTextStyles.getResponsiveIconSize(context, 32),
-                    colorFilter: widget.isListening
-                        ? const ColorFilter.mode(
-                            Color(0xFF2372EC),
-                            BlendMode.srcIn,
-                          )
-                        : null,
-                  ),
+                child: SvgPicture.asset(
+                  EcliniqIcons.microphone.assetPath,
+                  width: EcliniqTextStyles.getResponsiveIconSize(context, 32),
+                  height: EcliniqTextStyles.getResponsiveIconSize(context, 32),
+                  colorFilter: widget.isListening
+                      ? const ColorFilter.mode(
+                          Color(0xFF2372EC),
+                          BlendMode.srcIn,
+                        )
+                      : null,
                 ),
               ),
             ),

@@ -332,6 +332,8 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
                 totalAmount: widget.totalAmount,
                 walletAmount: widget.walletAmount,
                 gatewayAmount: widget.gatewayAmount,
+                appointmentId: response.data!.id,
+                bookingStatus: response.data!.status,
               ),
             ),
           );

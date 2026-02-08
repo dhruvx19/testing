@@ -24,7 +24,6 @@ import 'package:shimmer/shimmer.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
-
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key, this.shouldStartVoiceSearch = false});
 
@@ -66,7 +65,7 @@ class _SearchPageState extends State<SearchPage> {
     'Urologist',
     'Gastroenterologist',
     'Dietitian',
-    'Physiotherapist'
+    'Physiotherapist',
   ];
 
   final List<String> _allSymptoms = [
@@ -90,12 +89,12 @@ class _SearchPageState extends State<SearchPage> {
     'Anxiety',
     'Depression',
     'Weakness',
-    'Fatigue'
+    'Fatigue',
   ];
 
   List<String> _filteredSpecialities = [];
   List<String> _filteredSymptoms = [];
-  
+
   final List<String> _randomSuggestions = [
     'Cardiologist',
     'Dermatologist',
@@ -107,7 +106,6 @@ class _SearchPageState extends State<SearchPage> {
     super.initState();
     _loadRecentSearches();
     _initSpeech().then((_) {
-      
       if (widget.shouldStartVoiceSearch && mounted) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
@@ -182,7 +180,8 @@ class _SearchPageState extends State<SearchPage> {
           CustomErrorSnackBar.show(
             context: context,
             title: 'Permission Required',
-            subtitle: 'Speech recognition is not available. Please check your permissions.',
+            subtitle:
+                'Speech recognition is not available. Please check your permissions.',
             duration: const Duration(seconds: 3),
           );
         }
@@ -241,13 +240,13 @@ class _SearchPageState extends State<SearchPage> {
     if (!isAvailable) {
       if (mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
-   
-CustomErrorSnackBar.show(
-            context: context,
-            title: 'Permission Required',
-            subtitle: 'Speech recognition is not available. Please check your permissions.',
-            duration: const Duration(seconds: 3),
-      
+
+        CustomErrorSnackBar.show(
+          context: context,
+          title: 'Permission Required',
+          subtitle:
+              'Speech recognition is not available. Please check your permissions.',
+          duration: const Duration(seconds: 3),
         );
       }
       return;
@@ -307,7 +306,6 @@ CustomErrorSnackBar.show(
       'Speech result: ${result.recognizedWords}, final: ${result.finalResult}',
     );
 
-    
     _searchController.text = result.recognizedWords;
     _searchController.selection = TextSelection.fromPosition(
       TextPosition(offset: result.recognizedWords.length),
@@ -332,7 +330,6 @@ CustomErrorSnackBar.show(
     }
   }
 
-  
   Future<void> _loadRecentSearches() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -356,7 +353,7 @@ CustomErrorSnackBar.show(
       developer.log('Error clearing history: $e');
     }
   }
-  
+
   Future<void> _saveRecentSearch(String query) async {
     if (query.trim().isEmpty) return;
 
@@ -364,11 +361,10 @@ CustomErrorSnackBar.show(
       final prefs = await SharedPreferences.getInstance();
       List<String> searches = prefs.getStringList(_recentSearchesKey) ?? [];
 
-      
       searches.remove(query.trim());
-      
+
       searches.insert(0, query.trim());
-      
+
       if (searches.length > 3) {
         searches = searches.sublist(0, 3);
       }
@@ -382,7 +378,6 @@ CustomErrorSnackBar.show(
     }
   }
 
-  
   Future<void> _performSearch(String query) async {
     if (query.isEmpty) {
       setState(() {
@@ -419,7 +414,6 @@ CustomErrorSnackBar.show(
       _isLoading = true;
     });
 
-    
     await _saveRecentSearch(query);
 
     try {
@@ -455,7 +449,6 @@ CustomErrorSnackBar.show(
     }
   }
 
-  
   void _clearSearch() {
     _searchController.clear();
     setState(() {
@@ -468,12 +461,10 @@ CustomErrorSnackBar.show(
     _searchFocusNode.requestFocus();
   }
 
-  
   void _navigateToDoctor(String doctorId) {
     EcliniqRouter.push(DoctorDetailScreen(doctorId: doctorId));
   }
 
-  
   void _navigateToHospital(String hospitalId) {
     EcliniqRouter.push(HospitalDetailScreen(hospitalId: hospitalId));
   }
@@ -484,8 +475,10 @@ CustomErrorSnackBar.show(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        leadingWidth: 58,
+        leadingWidth: EcliniqTextStyles.getResponsiveWidth(context, 54.0),
         titleSpacing: 0,
+        surfaceTintColor: Colors.transparent,
+        toolbarHeight: EcliniqTextStyles.getResponsiveHeight(context, 46.0),
         leading: IconButton(
           padding: EdgeInsets.zero,
           icon: SvgPicture.asset(
@@ -509,9 +502,8 @@ CustomErrorSnackBar.show(
       ),
       body: Column(
         children: [
-          
           _buildSearchBar(),
-          
+
           Expanded(
             child: _isSearching
                 ? _buildSearchResults()
@@ -563,8 +555,7 @@ CustomErrorSnackBar.show(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          
-          if (_recentSearches.isNotEmpty) ...[ 
+          if (_recentSearches.isNotEmpty) ...[
             Padding(
               padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
                 context,
@@ -588,12 +579,13 @@ CustomErrorSnackBar.show(
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
                       child: Text(
                         'Clear',
-                        style: EcliniqTextStyles.responsiveHeadlineBMedium(
-                          context,
-                        ).copyWith(
-                          color: Color(0xff2372EC),
-                          fontWeight: FontWeight.w400,
-                        ),
+                        style:
+                            EcliniqTextStyles.responsiveHeadlineBMedium(
+                              context,
+                            ).copyWith(
+                              color: Color(0xff2372EC),
+                              fontWeight: FontWeight.w400,
+                            ),
                       ),
                     ),
                   ),
@@ -621,7 +613,7 @@ CustomErrorSnackBar.show(
               height: EcliniqTextStyles.getResponsiveSpacing(context, 12),
             ),
           ],
-          
+
           const MostSearchedSpecialities(),
         ],
       ),
@@ -656,9 +648,7 @@ CustomErrorSnackBar.show(
               width: EcliniqTextStyles.getResponsiveIconSize(context, 18),
               height: EcliniqTextStyles.getResponsiveIconSize(context, 18),
             ),
-            SizedBox(
-              width: EcliniqTextStyles.getResponsiveSpacing(context, 4),
-            ),
+            SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 4)),
             Text(
               text,
               style: EcliniqTextStyles.responsiveTitleXLarge(
@@ -670,7 +660,8 @@ CustomErrorSnackBar.show(
       ),
     );
   }
-Widget _buildShimmerLoading() {
+
+  Widget _buildShimmerLoading() {
     return ListView(
       padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16),
       children: [
@@ -681,13 +672,9 @@ Widget _buildShimmerLoading() {
             EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
           ),
         ),
-        SizedBox(
-          height: EcliniqTextStyles.getResponsiveSpacing(context, 12),
-        ),
+        SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 12)),
         ...List.generate(3, (index) => _buildDoctorCardShimmer()),
-        SizedBox(
-          height: EcliniqTextStyles.getResponsiveSpacing(context, 24),
-        ),
+        SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 24)),
         ShimmerLoading(
           width: EcliniqTextStyles.getResponsiveWidth(context, 120),
           height: EcliniqTextStyles.getResponsiveHeight(context, 20),
@@ -695,9 +682,7 @@ Widget _buildShimmerLoading() {
             EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
           ),
         ),
-        SizedBox(
-          height: EcliniqTextStyles.getResponsiveSpacing(context, 12),
-        ),
+        SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 12)),
         ...List.generate(2, (index) => _buildHospitalCardShimmer()),
       ],
     );
@@ -779,6 +764,7 @@ Widget _buildShimmerLoading() {
       ),
     );
   }
+
   Widget _buildSearchResults() {
     if (_isLoading) {
       // Show shimmer only for API results section
@@ -855,7 +841,7 @@ Widget _buildShimmerLoading() {
               final screenWidth = constraints.maxWidth;
               final isSmallScreen = screenWidth < 360;
               final cardSpacing = isSmallScreen ? 8.0 : 18.0;
-              
+
               // Create rows of 3 cards each
               final rows = <Widget>[];
               for (int i = 0; i < _filteredSpecialities.length; i += 3) {
@@ -864,25 +850,34 @@ Widget _buildShimmerLoading() {
                   if (i + j < _filteredSpecialities.length) {
                     rowItems.add(
                       Expanded(
-                        child: _buildSpecialityCard(_filteredSpecialities[i + j]),
+                        child: _buildSpecialityCard(
+                          _filteredSpecialities[i + j],
+                        ),
                       ),
                     );
                   } else {
                     // Empty placeholder to maintain grid
                     rowItems.add(Expanded(child: SizedBox.shrink()));
                   }
-                  
+
                   if (j < 2) {
                     rowItems.add(SizedBox(width: cardSpacing));
                   }
                 }
-                
+
                 rows.add(Row(children: rowItems));
                 if (i + 3 < _filteredSpecialities.length) {
-                  rows.add(SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 16.0)));
+                  rows.add(
+                    SizedBox(
+                      height: EcliniqTextStyles.getResponsiveSpacing(
+                        context,
+                        16.0,
+                      ),
+                    ),
+                  );
                 }
               }
-              
+
               return Column(children: rows);
             },
           ),
@@ -1023,13 +1018,16 @@ Widget _buildShimmerLoading() {
       'Physiotherapist': EcliniqIcons.physiotherapist.assetPath,
     };
 
-    final iconPath = iconMap[speciality] ?? EcliniqIcons.generalPhysician.assetPath;
-    
+    final iconPath =
+        iconMap[speciality] ?? EcliniqIcons.generalPhysician.assetPath;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          EcliniqRouter.push(SpecialityDoctorsList(initialSpeciality: speciality));
+          EcliniqRouter.push(
+            SpecialityDoctorsList(initialSpeciality: speciality),
+          );
         },
         borderRadius: BorderRadius.circular(
           EcliniqTextStyles.getResponsiveBorderRadius(context, 12.0),
@@ -1061,8 +1059,14 @@ Widget _buildShimmerLoading() {
                 child: Center(
                   child: Image.asset(
                     iconPath,
-                    width: EcliniqTextStyles.getResponsiveIconSize(context, 52.0),
-                    height: EcliniqTextStyles.getResponsiveIconSize(context, 52.0),
+                    width: EcliniqTextStyles.getResponsiveIconSize(
+                      context,
+                      52.0,
+                    ),
+                    height: EcliniqTextStyles.getResponsiveIconSize(
+                      context,
+                      52.0,
+                    ),
                   ),
                 ),
               ),
@@ -1073,10 +1077,9 @@ Widget _buildShimmerLoading() {
                 child: EcliniqText(
                   speciality,
                   textAlign: TextAlign.center,
-                  style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
-                    color: Color(0xff424242),
-                    height: 1.2,
-                  ),
+                  style: EcliniqTextStyles.responsiveTitleXLarge(
+                    context,
+                  ).copyWith(color: Color(0xff424242), height: 1.2),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -1097,21 +1100,16 @@ Widget _buildShimmerLoading() {
     );
   }
 
-  
-  
-  
-  
-  
   Future<String?> _getImageUrl(String? imagePath) async {
     if (imagePath == null || imagePath.isEmpty) return null;
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
       return imagePath;
     }
-    
+
     if (imagePath.startsWith('public/')) {
       return await _storageService.getPublicUrl(imagePath);
     }
-    
+
     return '${Endpoints.localhost}/$imagePath';
   }
 
@@ -1135,9 +1133,7 @@ Widget _buildShimmerLoading() {
               future: _getImageUrl(doctor['image'] as String?),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: EcliniqLoader(size: 20),
-                  );
+                  return const Center(child: EcliniqLoader(size: 20));
                 }
                 final imageUrl = snapshot.data;
                 return imageUrl != null
@@ -1149,20 +1145,24 @@ Widget _buildShimmerLoading() {
                         errorBuilder: (context, error, stackTrace) {
                           return Icon(
                             Icons.person,
-                            size: EcliniqTextStyles.getResponsiveIconSize(context, 30),
+                            size: EcliniqTextStyles.getResponsiveIconSize(
+                              context,
+                              30,
+                            ),
                             color: Color(0xFF8E8E8E),
                           );
                         },
                         loadingBuilder: (context, child, loadingProgress) {
                           if (loadingProgress == null) return child;
-                          return const Center(
-                            child: EcliniqLoader(size: 20),
-                          );
+                          return const Center(child: EcliniqLoader(size: 20));
                         },
                       )
                     : Icon(
                         Icons.person,
-                        size: EcliniqTextStyles.getResponsiveIconSize(context, 30),
+                        size: EcliniqTextStyles.getResponsiveIconSize(
+                          context,
+                          30,
+                        ),
                         color: Color(0xFF8E8E8E),
                       );
               },
@@ -1212,7 +1212,7 @@ Widget _buildShimmerLoading() {
       margin: const EdgeInsets.only(bottom: 12),
       color: Colors.white,
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 6, ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 6),
         leading: ClipOval(
           child: Container(
             width: 60,
@@ -1222,9 +1222,7 @@ Widget _buildShimmerLoading() {
               future: _getImageUrl(hospital['image'] as String?),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: EcliniqLoader(size: 20),
-                  );
+                  return const Center(child: EcliniqLoader(size: 20));
                 }
                 final imageUrl = snapshot.data;
                 return imageUrl != null
@@ -1236,20 +1234,24 @@ Widget _buildShimmerLoading() {
                         errorBuilder: (context, error, stackTrace) {
                           return Icon(
                             Icons.local_hospital,
-                            size: EcliniqTextStyles.getResponsiveIconSize(context, 30),
+                            size: EcliniqTextStyles.getResponsiveIconSize(
+                              context,
+                              30,
+                            ),
                             color: Color(0xFF8E8E8E),
                           );
                         },
                         loadingBuilder: (context, child, loadingProgress) {
                           if (loadingProgress == null) return child;
-                          return const Center(
-                            child: EcliniqLoader(size: 20),
-                          );
+                          return const Center(child: EcliniqLoader(size: 20));
                         },
                       )
                     : Icon(
                         Icons.local_hospital,
-                        size: EcliniqTextStyles.getResponsiveIconSize(context, 30),
+                        size: EcliniqTextStyles.getResponsiveIconSize(
+                          context,
+                          30,
+                        ),
                         color: Color(0xFF8E8E8E),
                       );
               },
@@ -1322,7 +1324,8 @@ class SearchBarWidget extends StatefulWidget {
   State<SearchBarWidget> createState() => _SearchBarWidgetState();
 }
 
-class _SearchBarWidgetState extends State<SearchBarWidget> with SingleTickerProviderStateMixin {
+class _SearchBarWidgetState extends State<SearchBarWidget>
+    with SingleTickerProviderStateMixin {
   String query = '';
   late final TextEditingController _controller;
   final _focusNode = FocusNode();
@@ -1330,7 +1333,7 @@ class _SearchBarWidgetState extends State<SearchBarWidget> with SingleTickerProv
   Timer? _hintRotationTimer;
   int _currentHintIndex = 0;
   int _nextHintIndex = 1;
-  
+
   late AnimationController _animationController;
   late Animation<double> _slideAnimation;
 
@@ -1340,26 +1343,22 @@ class _SearchBarWidgetState extends State<SearchBarWidget> with SingleTickerProv
     _controller = widget.controller ?? TextEditingController();
     query = _controller.text;
     _controller.addListener(_onControllerChanged);
-    
+
     // Initialize animation controller
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
-    
-    _slideAnimation = Tween<double>(
-      begin: 0.0,
-      end: -1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-    
+
+    _slideAnimation = Tween<double>(begin: 0.0, end: -1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+
     // Start rotating hints if provided
     if (widget.rotatingHints != null && widget.rotatingHints!.length > 1) {
       _startHintRotation();
     }
-    
+
     if (widget.autofocus) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _focusNode.requestFocus();
@@ -1376,7 +1375,7 @@ class _SearchBarWidgetState extends State<SearchBarWidget> with SingleTickerProv
       _controller.addListener(_onControllerChanged);
       query = _controller.text;
     }
-    
+
     if (oldWidget.rotatingHints != widget.rotatingHints) {
       _hintRotationTimer?.cancel();
       if (widget.rotatingHints != null && widget.rotatingHints!.length > 1) {
@@ -1390,10 +1389,12 @@ class _SearchBarWidgetState extends State<SearchBarWidget> with SingleTickerProv
   void _startHintRotation() {
     _hintRotationTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
       if (mounted && widget.rotatingHints != null && query.isEmpty) {
-        final nextIndex = (_currentHintIndex + 1) % widget.rotatingHints!.length;
-        
+        final nextIndex =
+            (_currentHintIndex + 1) % widget.rotatingHints!.length;
+
         // Check if we're wrapping around (going from last to first)
-        if (nextIndex == 0 && _currentHintIndex == widget.rotatingHints!.length - 1) {
+        if (nextIndex == 0 &&
+            _currentHintIndex == widget.rotatingHints!.length - 1) {
           // Fast reverse animation through all hints
           _performFastReverse();
         } else {
@@ -1414,31 +1415,31 @@ class _SearchBarWidgetState extends State<SearchBarWidget> with SingleTickerProv
 
   void _performFastReverse() async {
     // Temporarily speed up animation for reverse effect
-    _animationController.duration = const Duration(milliseconds: 150);
-    
+    _animationController.duration = const Duration(milliseconds: 1000);
+
     // Cycle through all hints in reverse quickly
     for (int i = widget.rotatingHints!.length - 1; i >= 0; i--) {
       if (!mounted) break;
-      
+
       _nextHintIndex = i == 0 ? widget.rotatingHints!.length - 1 : i - 1;
-      
+
       await _animationController.forward(from: 0.0);
-      
+
       if (mounted) {
         setState(() {
           _currentHintIndex = _nextHintIndex;
         });
         _animationController.reset();
       }
-      
+
       // Small delay between each hint during fast reverse
       if (i > 0) {
-        await Future.delayed(const Duration(milliseconds: 50));
+        await Future.delayed(const Duration(milliseconds: 100));
       }
     }
-    
+
     // Restore normal animation speed
-    _animationController.duration = const Duration(milliseconds: 500);
+    _animationController.duration = const Duration(milliseconds: 1000);
   }
 
   void _onControllerChanged() {
@@ -1496,8 +1497,9 @@ class _SearchBarWidgetState extends State<SearchBarWidget> with SingleTickerProv
     if (widget.rotatingHints == null || widget.rotatingHints!.isEmpty) {
       return Text(
         widget.hintText,
-        style: EcliniqTextStyles.responsiveHeadlineXMedium(context)
-            .copyWith(color: Color(0xFF8E8E8E)),
+        style: EcliniqTextStyles.responsiveHeadlineXMedium(
+          context,
+        ).copyWith(color: Color(0xFF8E8E8E)),
       );
     }
 
@@ -1516,8 +1518,9 @@ class _SearchBarWidgetState extends State<SearchBarWidget> with SingleTickerProv
                     opacity: 1.0 + _slideAnimation.value,
                     child: Text(
                       widget.rotatingHints![_currentHintIndex],
-                      style: EcliniqTextStyles.responsiveHeadlineXMedium(context)
-                          .copyWith(color: Color(0xFF8E8E8E)),
+                      style: EcliniqTextStyles.responsiveHeadlineXMedium(
+                        context,
+                      ).copyWith(color: Color(0xFF8E8E8E)),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -1530,8 +1533,9 @@ class _SearchBarWidgetState extends State<SearchBarWidget> with SingleTickerProv
                     opacity: -_slideAnimation.value,
                     child: Text(
                       widget.rotatingHints![_nextHintIndex],
-                      style: EcliniqTextStyles.responsiveHeadlineXMedium(context)
-                          .copyWith(color: Color(0xFF8E8E8E)),
+                      style: EcliniqTextStyles.responsiveHeadlineXMedium(
+                        context,
+                      ).copyWith(color: Color(0xFF8E8E8E)),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -1584,8 +1588,10 @@ class _SearchBarWidgetState extends State<SearchBarWidget> with SingleTickerProv
                         context,
                       ).copyWith(color: Color(0xFF424242)),
                       decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                        hintText: null, 
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                        ),
+                        hintText: null,
                         border: InputBorder.none,
                         enabledBorder: InputBorder.none,
                         focusedBorder: InputBorder.none,
@@ -1964,35 +1970,32 @@ class MostSearchedSpecialities extends StatelessWidget {
     );
   }
 
-  
   Widget _buildShimmerLoading() {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        
         ShimmerLoading(
           width: 120,
           height: 20,
           borderRadius: BorderRadius.circular(4),
         ),
         const SizedBox(height: 12),
-        
+
         ...List.generate(3, (index) => _buildDoctorCardShimmer()),
         const SizedBox(height: 24),
-        
+
         ShimmerLoading(
           width: 120,
           height: 20,
           borderRadius: BorderRadius.circular(4),
         ),
         const SizedBox(height: 12),
-        
+
         ...List.generate(2, (index) => _buildHospitalCardShimmer()),
       ],
     );
   }
 
-  
   Widget _buildDoctorCardShimmer() {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -2026,7 +2029,6 @@ class MostSearchedSpecialities extends StatelessWidget {
     );
   }
 
-  
   Widget _buildHospitalCardShimmer() {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),

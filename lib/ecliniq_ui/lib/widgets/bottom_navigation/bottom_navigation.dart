@@ -131,11 +131,11 @@ class EcliniqBottomNavigationBar extends StatelessWidget {
                 isSelected ? selectedIconPath : iconPath,
                 width: EcliniqTextStyles.getResponsiveIconSize(
                   context,
-                  isSelected ? 28.0 : 30.0,
+                  isSelected ? 26.0 : 30.0,
                 ),
                 height: EcliniqTextStyles.getResponsiveIconSize(
                   context,
-                  isSelected ? 28.0 : 30.0,
+                  isSelected ? 26.0 : 30.0,
                 ),
               ),
             ),

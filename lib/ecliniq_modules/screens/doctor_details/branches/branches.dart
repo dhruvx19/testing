@@ -19,11 +19,12 @@ class Branches extends StatelessWidget {
         titleSpacing: 0,
         toolbarHeight: EcliniqTextStyles.getResponsiveHeight(context, 46.0),
         backgroundColor: Colors.white,
+        elevation: 0,
         leading: IconButton(
           icon: SvgPicture.asset(
-            EcliniqIcons.arrowLeft.assetPath,
-            width: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
-            height: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
+            EcliniqIcons.backArrow.assetPath, // Use backArrow instead of arrowLeft
+            width: EcliniqTextStyles.getResponsiveSize(context, 32.0),
+            height: EcliniqTextStyles.getResponsiveSize(context, 32.0),
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -38,11 +39,11 @@ class Branches extends StatelessWidget {
         ),
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(
-            EcliniqTextStyles.getResponsiveHeight(context, 1.0),
+            EcliniqTextStyles.getResponsiveSize(context, 1.0),
           ),
           child: Container(
             color: Color(0xFFB8B8B8),
-            height: EcliniqTextStyles.getResponsiveHeight(context, 1.0),
+            height: EcliniqTextStyles.getResponsiveSize(context, 1.0),
           ),
         ),
       ),

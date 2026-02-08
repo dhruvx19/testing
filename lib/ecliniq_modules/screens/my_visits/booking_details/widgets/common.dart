@@ -189,7 +189,7 @@ class AppointmentDetailModel {
     }
 
     String consultationType = apiData.type == 'ONLINE'
-        ? 'Online Consultation'
+        ? 'In-Clinic Consultation'
         : 'In-Clinic Consultation';
 
     final consultationFee =

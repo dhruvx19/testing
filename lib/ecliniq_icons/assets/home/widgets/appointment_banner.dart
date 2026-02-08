@@ -9,9 +9,8 @@ import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-
 class AppointmentBanner {
-  final String type; 
+  final String type;
   final String appointmentId;
   final String doctorName;
   final String doctorSpecialization;
@@ -20,11 +19,10 @@ class AppointmentBanner {
   final String appointmentDateFormatted;
   final String appointmentTime;
   final String hospitalName;
-  final String bookedFor; 
+  final String bookedFor;
   final String patientName;
   final String status;
-  final bool?
-  isInQueue; 
+  final bool? isInQueue;
 
   AppointmentBanner({
     required this.type,
@@ -61,7 +59,6 @@ class AppointmentBanner {
   }
 }
 
-
 class AppointmentBannerWidget extends StatelessWidget {
   final AppointmentBanner banner;
   final VoidCallback? onTap;
@@ -90,11 +87,10 @@ class AppointmentBannerWidget extends StatelessWidget {
       case 'RESCHEDULE':
         return _buildRescheduleBanner(context);
       default:
-        return _buildUpcomingBanner(context); 
+        return _buildUpcomingBanner(context);
     }
   }
 
-  
   Widget _buildRequestedBanner(BuildContext context) {
     return GestureDetector(
       onTap: onTap ?? () => _navigateToAppointmentDetails(context),
@@ -111,7 +107,9 @@ class AppointmentBannerWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               _buildGifIcon(context),
-              SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 8.0)),
+              SizedBox(
+                width: EcliniqTextStyles.getResponsiveSpacing(context, 8.0),
+              ),
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -123,20 +121,25 @@ class AppointmentBannerWidget extends StatelessWidget {
                       alignment: Alignment.centerLeft,
                       child: EcliniqText(
                         'Your Appointment Requested!',
-                        style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
-                          color: const Color(0xFF424242),
-                        ),
+                        style: EcliniqTextStyles.responsiveBodySmall(
+                          context,
+                        ).copyWith(color: const Color(0xFF424242)),
                       ),
                     ),
-                    SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 2.0)),
+                    SizedBox(
+                      height: EcliniqTextStyles.getResponsiveSpacing(
+                        context,
+                        2.0,
+                      ),
+                    ),
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerLeft,
                       child: EcliniqText(
                         'Waiting For Doctor to Confirm...',
-                        style: EcliniqTextStyles.responsiveBodySmallProminent(context).copyWith(
-                          color: const Color(0xFFBE8B00),
-                        ),
+                        style: EcliniqTextStyles.responsiveBodySmallProminent(
+                          context,
+                        ).copyWith(color: const Color(0xFFBE8B00)),
                       ),
                     ),
                   ],
@@ -158,8 +161,14 @@ class AppointmentBannerWidget extends StatelessWidget {
                     angle: 90 * 3.14159 / 180,
                     child: SvgPicture.asset(
                       EcliniqIcons.arrowUp.assetPath,
-                      width: EcliniqTextStyles.getResponsiveIconSize(context, 20.0),
-                      height: EcliniqTextStyles.getResponsiveIconSize(context, 20.0),
+                      width: EcliniqTextStyles.getResponsiveIconSize(
+                        context,
+                        20.0,
+                      ),
+                      height: EcliniqTextStyles.getResponsiveIconSize(
+                        context,
+                        20.0,
+                      ),
                       color: const Color(0xff424242),
                     ),
                   ),
@@ -172,18 +181,28 @@ class AppointmentBannerWidget extends StatelessWidget {
     );
   }
 
-  
   Widget _buildActiveBanner(BuildContext context) {
+    String subtitle = '';
+    if (banner.tokenNumber != null) {
+      subtitle = 'Your Token #${banner.tokenNumber}';
+      if (banner.isInQueue == true) {
+        subtitle += ' (In Queue)';
+      } else {
+        subtitle += ' (Queue Not Started)';
+      }
+    } else {
+      subtitle = banner.appointmentTime;
+    }
+
     return _buildBannerContainer(
       context,
       backgroundColor: const Color(0xFFF2FFF3),
       iconColor: const Color(0xFF3EAF3F),
-      title: 'Appointment Confirmed With Dr. Milind Chauhan',
-      subtitle: 'Your Token #24 (Queue Not Started)',
+      title: 'Appointment Confirmed With ${banner.doctorName}',
+      subtitle: subtitle,
     );
   }
 
-  
   Widget _buildUpcomingBanner(BuildContext context) {
     String subtitle = '';
     if (banner.doctorName.isNotEmpty) {
@@ -226,22 +245,25 @@ class AppointmentBannerWidget extends StatelessWidget {
                       alignment: Alignment.centerLeft,
                       child: EcliniqText(
                         'Upcoming Appointment',
-                        style: EcliniqTextStyles.responsiveBodyLarge(context).copyWith(
-                          color: const Color(0xFF3EAF3F),
-                        ),
+                        style: EcliniqTextStyles.responsiveBodyLarge(
+                          context,
+                        ).copyWith(color: const Color(0xFF3EAF3F)),
                       ),
                     ),
                     SizedBox(
-                      height: EcliniqTextStyles.getResponsiveSpacing(context, 2),
+                      height: EcliniqTextStyles.getResponsiveSpacing(
+                        context,
+                        2,
+                      ),
                     ),
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerLeft,
                       child: EcliniqText(
                         subtitle,
-                        style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
-                          color: const Color(0xFF424242),
-                        ),
+                        style: EcliniqTextStyles.responsiveBodySmall(
+                          context,
+                        ).copyWith(color: const Color(0xFF424242)),
                       ),
                     ),
                   ],
@@ -264,7 +286,10 @@ class AppointmentBannerWidget extends StatelessWidget {
                   child: Center(
                     child: Icon(
                       Icons.close,
-                      size: EcliniqTextStyles.getResponsiveIconSize(context, 20),
+                      size: EcliniqTextStyles.getResponsiveIconSize(
+                        context,
+                        20,
+                      ),
                       color: Color(0xFF424242),
                     ),
                   ),
@@ -277,14 +302,13 @@ class AppointmentBannerWidget extends StatelessWidget {
     );
   }
 
-  
   Widget _buildRescheduleBanner(BuildContext context) {
     return _buildBannerContainer(
       context,
       backgroundColor: const Color(0xFFFFEBEE),
-      iconColor: const Color(0xFFD32F2F),
-      title: 'Reschedule Required',
-      subtitle: 'Please reschedule your appointment',
+      iconColor: const Color(0xFFFFF8F8),
+      title: 'Your Appointment Requested!',
+      subtitle: 'Doctor Asked to Rescheduled the Appointment',
     );
   }
 
@@ -319,30 +343,32 @@ class AppointmentBannerWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    EcliniqText(
+                      title,
+                      style: EcliniqTextStyles.responsiveBodySmall(context)
+                          .copyWith(
+                            color: const Color(0xFF424242),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                    ),
+                    SizedBox(
+                      height: EcliniqTextStyles.getResponsiveSpacing(
+                        context,
+                        2.0,
+                      ),
+                    ),
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerLeft,
                       child: EcliniqText(
-                        title,
-                        style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
-                          color: const Color(0xFF424242),
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        subtitle,
+                        style: EcliniqTextStyles.responsiveBodySmallProminent(
+                          context,
+                        ).copyWith(color: iconColor),
                       ),
                     ),
-                      SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 2.0)),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: EcliniqText(
-                          subtitle,
-                          style: EcliniqTextStyles.responsiveBodySmallProminent(context).copyWith(
-                            color: iconColor,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                  ],
+                ),
               ),
               Container(
                 width: EcliniqTextStyles.getResponsiveSize(context, 28.0),
@@ -360,8 +386,14 @@ class AppointmentBannerWidget extends StatelessWidget {
                     angle: 90 * 3.14159 / 180,
                     child: SvgPicture.asset(
                       EcliniqIcons.arrowUp.assetPath,
-                      width: EcliniqTextStyles.getResponsiveIconSize(context, 20.0),
-                      height: EcliniqTextStyles.getResponsiveIconSize(context, 20.0),
+                      width: EcliniqTextStyles.getResponsiveIconSize(
+                        context,
+                        20.0,
+                      ),
+                      height: EcliniqTextStyles.getResponsiveIconSize(
+                        context,
+                        20.0,
+                      ),
                       color: const Color(0xff424242),
                     ),
                   ),
@@ -374,7 +406,6 @@ class AppointmentBannerWidget extends StatelessWidget {
     );
   }
 
-  
   Widget _buildBannerIcon(Color iconColor, BuildContext context) {
     final type = banner.type.toUpperCase();
     final status = banner.status.toUpperCase();
@@ -397,7 +428,7 @@ class AppointmentBannerWidget extends StatelessWidget {
         return _buildUpcomingIconContainer(context, iconColor);
 
       case 'RESCHEDULE':
-        return _buildSvgIcon();
+        return _buildGifIcon(context);
 
       default:
         return Icon(
@@ -408,7 +439,6 @@ class AppointmentBannerWidget extends StatelessWidget {
     }
   }
 
-  
   Widget _buildGifIcon(BuildContext context) {
     return Image.asset(
       EcliniqIcons.bannerRequested.assetPath,
@@ -417,12 +447,10 @@ class AppointmentBannerWidget extends StatelessWidget {
     );
   }
 
-  
   Widget _buildSvgIcon() {
     return SvgPicture.asset(EcliniqIcons.bannerConfirmed.assetPath);
   }
 
-  
   Widget _buildUpcomingIconContainer(BuildContext context, Color iconColor) {
     return Container(
       padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
@@ -432,33 +460,42 @@ class AppointmentBannerWidget extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: Color(0xff3EAF3F),
-        borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0)),
+        borderRadius: BorderRadius.circular(
+          EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+        ),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          EcliniqText(
-            'Date',
-            style: EcliniqTextStyles.responsiveBody2xSmallRegular(context).copyWith(
-              color: Colors.white,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            EcliniqText(
+              banner.appointmentTime.isNotEmpty
+                  ? banner.appointmentTime
+                  : 'Date',
+              style: EcliniqTextStyles.responsiveBody2xSmallRegular(
+                context,
+              ).copyWith(color: Colors.white),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          SizedBox(
-            height: EcliniqTextStyles.getResponsiveSpacing(context, 2.0),
-          ),
-          EcliniqText(
-            '12 Nov',
-            style: EcliniqTextStyles.responsiveHeadlineLargeBold(context).copyWith(
-              color: Colors.white,
+            SizedBox(
+              height: EcliniqTextStyles.getResponsiveSpacing(context, 2.0),
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+            EcliniqText(
+              banner.appointmentDateFormatted.isNotEmpty
+                  ? banner.appointmentDateFormatted
+                  : 'N/A',
+              style: EcliniqTextStyles.responsiveHeadlineLargeBold(
+                context,
+              ).copyWith(color: Colors.white),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -466,7 +503,6 @@ class AppointmentBannerWidget extends StatelessWidget {
   void _navigateToAppointmentDetails(BuildContext context) {
     Widget detailScreen;
 
-    
     final status = banner.status.toUpperCase();
     final type = banner.type.toUpperCase();
 
@@ -489,7 +525,6 @@ class AppointmentBannerWidget extends StatelessWidget {
         appointmentId: banner.appointmentId,
       );
     } else if (type == 'UPCOMING') {
-      
       if (status == 'CONFIRMED') {
         detailScreen = BookingConfirmedDetail(
           appointmentId: banner.appointmentId,
@@ -500,7 +535,6 @@ class AppointmentBannerWidget extends StatelessWidget {
         );
       }
     } else {
-      
       detailScreen = BookingRequestedDetail(
         appointmentId: banner.appointmentId,
       );
@@ -510,9 +544,7 @@ class AppointmentBannerWidget extends StatelessWidget {
   }
 }
 
-
-
-class AppointmentBannersList extends StatelessWidget {
+class AppointmentBannersList extends StatefulWidget {
   final List<AppointmentBanner> banners;
   final Function(String)? onBannerTap;
   final Function(String)? onBannerClose;
@@ -525,55 +557,143 @@ class AppointmentBannersList extends StatelessWidget {
   });
 
   @override
+  State<AppointmentBannersList> createState() => _AppointmentBannersListState();
+}
+
+class _AppointmentBannersListState extends State<AppointmentBannersList> {
+  int _currentPage = 0;
+  final PageController _pageController = PageController();
+
+  @override
+  void didUpdateWidget(covariant AppointmentBannersList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.banners.length != oldWidget.banners.length) {
+      if (_currentPage >= widget.banners.length) {
+        _currentPage = widget.banners.isEmpty ? 0 : widget.banners.length - 1;
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (banners.isEmpty) {
+    if (widget.banners.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    
-    if (banners.length > 1) {
-      return LayoutBuilder(
-        builder: (context, constraints) {
-          return SizedBox(
-            height: EcliniqTextStyles.getResponsiveHeight(context, 76.0),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: banners.map((banner) {
-                  return SizedBox(
-                    width: constraints.maxWidth > 0 ? constraints.maxWidth : MediaQuery.of(context).size.width,
-                    height: EcliniqTextStyles.getResponsiveHeight(context, 68.0),
-                    child: AppointmentBannerWidget(
-                      banner: banner,
-                      onTap: onBannerTap != null
-                          ? () => onBannerTap!(banner.appointmentId)
-                          : null,
-                      onClose: onBannerClose != null
-                          ? () => onBannerClose!(banner.appointmentId)
-                          : null,
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-          );
-        },
+    if (widget.banners.length == 1) {
+      return SizedBox(
+        height: EcliniqTextStyles.getResponsiveHeight(context, 76.0),
+        child: AppointmentBannerWidget(
+          banner: widget.banners.first,
+          onTap: widget.onBannerTap != null
+              ? () => widget.onBannerTap!(widget.banners.first.appointmentId)
+              : null,
+          onClose: widget.onBannerClose != null
+              ? () => widget.onBannerClose!(widget.banners.first.appointmentId)
+              : null,
+        ),
       );
     }
 
-    
     return SizedBox(
       height: EcliniqTextStyles.getResponsiveHeight(context, 76.0),
-      child: AppointmentBannerWidget(
-        banner: banners.first,
-        onTap: onBannerTap != null
-            ? () => onBannerTap!(banners.first.appointmentId)
-            : null,
-        onClose: onBannerClose != null
-            ? () => onBannerClose!(banners.first.appointmentId)
-            : null,
+      child: Stack(
+        children: [
+          PageView.builder(
+            controller: _pageController,
+            itemCount: widget.banners.length,
+            onPageChanged: (index) {
+              setState(() {
+                _currentPage = index;
+              });
+            },
+            itemBuilder: (context, index) {
+              final banner = widget.banners[index];
+              return AppointmentBannerWidget(
+                banner: banner,
+                onTap: widget.onBannerTap != null
+                    ? () => widget.onBannerTap!(banner.appointmentId)
+                    : null,
+                onClose: widget.onBannerClose != null
+                    ? () => widget.onBannerClose!(banner.appointmentId)
+                    : null,
+              );
+            },
+          ),
+          // Carousel indicators - centered with the arrow icon
+          Positioned(
+            bottom: EcliniqTextStyles.getResponsiveSpacing(context, 14.0),
+            right: EcliniqTextStyles.getResponsiveSpacing(context, 10.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: _buildCarouselIndicators(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Build carousel indicators with max 3 dots display
+  List<Widget> _buildCarouselIndicators(BuildContext context) {
+    final totalBanners = widget.banners.length;
+
+    // Don't show indicators if only 1 banner
+    if (totalBanners <= 1) {
+      return [];
+    }
+
+    // If 3 or fewer banners, show all dots
+    if (totalBanners <= 3) {
+      return List.generate(
+        totalBanners,
+        (index) => _buildDot(context, index == _currentPage),
+      );
+    }
+
+    // For more than 3 banners, show max 3 dots with logic
+    List<Widget> dots = [];
+
+    if (_currentPage == 0) {
+      // First page: show [active, inactive, inactive]
+      dots.add(_buildDot(context, true));
+      dots.add(_buildDot(context, false));
+      dots.add(_buildDot(context, false));
+    } else if (_currentPage == totalBanners - 1) {
+      // Last page: show [inactive, inactive, active]
+      dots.add(_buildDot(context, false));
+      dots.add(_buildDot(context, false));
+      dots.add(_buildDot(context, true));
+    } else {
+      // Middle pages: show [inactive, active, inactive]
+      dots.add(_buildDot(context, false));
+      dots.add(_buildDot(context, true));
+      dots.add(_buildDot(context, false));
+    }
+
+    return dots;
+  }
+
+  Widget _buildDot(BuildContext context, bool isActive) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      margin: EdgeInsets.symmetric(
+        horizontal: EcliniqTextStyles.getResponsiveSpacing(context, 2.0),
+      ),
+      width: EcliniqTextStyles.getResponsiveSize(context, 8.0),
+      height: EcliniqTextStyles.getResponsiveSize(context, 2.0),
+      decoration: BoxDecoration(
+        color: isActive ? Color(0xff2372EC) : Color(0xff96BFFF),
+        borderRadius: BorderRadius.circular(
+          EcliniqTextStyles.getResponsiveBorderRadius(context, 13.0),
+        ),
       ),
     );
   }

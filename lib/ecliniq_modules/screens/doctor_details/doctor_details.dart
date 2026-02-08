@@ -671,7 +671,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen>
                   ),
                 ),
                 // Branches Tab
-                HospitalBranchDetail(
+                Branches(
                   aboutDescription:
                       _doctorDetails?.about ??
                       _doctorDetails?.clinicDetails?.about,

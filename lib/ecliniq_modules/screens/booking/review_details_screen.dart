@@ -1283,6 +1283,8 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                   patientName: _getCurrentUserName(),
                   patientSubtitle: _getCurrentUserSubtitle(),
                   patientBadge: _selectedDependent?.formattedRelation ?? 'You',
+                  appointmentId: response.data!.id,
+                  bookingStatus: response.data!.status,
                 ),
               ),
             );
@@ -1378,6 +1380,8 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                       totalAmount: paymentData.totalAmount,
                       walletAmount: paymentData.walletAmount,
                       gatewayAmount: paymentData.gatewayAmount,
+                      appointmentId: appointmentData?.id,
+                      bookingStatus: appointmentData?.status,
                     ),
                   ),
                 );
@@ -1456,6 +1460,8 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                           totalAmount: paymentData.totalAmount,
                           walletAmount: paymentData.walletAmount,
                           gatewayAmount: paymentData.gatewayAmount,
+                          appointmentId: appointmentData?.id,
+                          bookingStatus: appointmentData?.status,
                         ),
                       ),
                     );
@@ -1505,6 +1511,8 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                       totalAmount: paymentData.totalAmount,
                       walletAmount: paymentData.walletAmount,
                       gatewayAmount: paymentData.gatewayAmount,
+                      appointmentId: appointmentData?.id,
+                      bookingStatus: appointmentData?.status,
                     ),
                   ),
                 );
@@ -1544,6 +1552,8 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                     patientSubtitle: _getCurrentUserSubtitle(),
                     patientBadge:
                         _selectedDependent?.formattedRelation ?? 'You',
+                    appointmentId: appointmentId is String ? appointmentId : null,
+                    bookingStatus: appointmentData?.status,
                   ),
                 ),
               );
@@ -2148,6 +2158,8 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                     totalAmount: paymentData.totalAmount,
                     walletAmount: paymentData.walletAmount,
                     gatewayAmount: paymentData.gatewayAmount,
+                    appointmentId: verifyResponse.data!.id,
+                    bookingStatus: verifyResponse.data!.status,
                   ),
                 ),
               );

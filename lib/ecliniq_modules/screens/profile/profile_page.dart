@@ -27,7 +27,6 @@ import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_navigation/bottom_navigati
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
-import 'package:ecliniq/ecliniq_core/notifications/test_notification_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
@@ -102,6 +101,26 @@ class _ProfilePageState extends State<ProfilePage>
             await SecureStorageService.storeUserName(fullName);
           }
         }
+
+        try {
+          final rawResp = await http.get(
+            Uri.parse(Endpoints.getPatientDetails),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $authToken',
+              'x-access-token': authToken,
+            },
+          );
+          if (rawResp.statusCode == 200) {
+            final body = jsonDecode(rawResp.body) as Map<String, dynamic>;
+            final data = body['data'] as Map<String, dynamic>?;
+            final key =
+                data?['profilePhoto'] ?? (data?['user']?['profilePhoto']);
+            if (key is String && key.isNotEmpty) {
+              await _resolveProfileImageUrl(key, token: authToken);
+            }
+          }
+        } catch (_) {}
 
         setState(() {
           _patientData = response.data;
@@ -381,10 +400,24 @@ class _ProfilePageState extends State<ProfilePage>
                             ),
                           ],
                         ),
-                        child: const CircleAvatar(
-                          radius: 50,
-                          backgroundColor: Color(0xFFDFE8FF),
-                          child: _ProfileAvatarIcon(),
+                        child: ClipOval(
+                          child: Container(
+                            width: 86,
+                            height: 86,
+                            color: const Color(0xFFDFE8FF),
+                            child: _profilePhotoUrl != null &&
+                                    _profilePhotoUrl!.isNotEmpty
+                                ? Image.network(
+                                    _profilePhotoUrl!,
+                                    width: 86,
+                                    height: 86,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const _ProfileAvatarIcon();
+                                    },
+                                  )
+                                : const _ProfileAvatarIcon(),
+                          ),
                         ),
                       ),
                     ),
