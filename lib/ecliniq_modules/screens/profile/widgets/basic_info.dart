@@ -22,24 +22,29 @@ class BasicInfoCards extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        _InfoCard(
-          path: EcliniqIcons.userHeartRounded.assetPath,
-          label: "Age",
-          value: age,
+        Expanded(
+          child: _InfoCard(
+            path: EcliniqIcons.userHeartRounded.assetPath,
+            label: "Age",
+            value: age,
+          ),
         ),
         DashedVerticalDivider(height: 80, color: Color(0xffB8B8B8)),
-        _InfoCard(
-          path: EcliniqIcons.gender.assetPath,
-          label: "Gender",
-          value: gender,
+        Expanded(
+          child: _InfoCard(
+            path: EcliniqIcons.gender.assetPath,
+            label: "Gender",
+            value: gender,
+          ),
         ),
         DashedVerticalDivider(height: 80, color: Color(0xffB8B8B8)),
-        _InfoCard(
-          path: EcliniqIcons.dropperMinimalistic.assetPath,
-          label: "Blood Group",
-          value: bloodGroup,
+        Expanded(
+          child: _InfoCard(
+            path: EcliniqIcons.dropperMinimalistic.assetPath,
+            label: "Blood Group",
+            value: bloodGroup,
+          ),
         ),
       ],
     );
@@ -60,6 +65,8 @@ class _InfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SvgPicture.asset(
           path,
@@ -67,11 +74,16 @@ class _InfoCard extends StatelessWidget {
           width: EcliniqTextStyles.getResponsiveIconSize(context, 26),
         ),
         const SizedBox(height: 8),
-        Text(label, style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith( color: Colors.grey[600])),
+        Text(
+          label,
+          style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(color: Colors.grey[600]),
+          textAlign: TextAlign.center,
+        ),
         const SizedBox(height: 4),
         Text(
           value,
-          style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith( fontWeight: FontWeight.bold),
+          style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
         ),
       ],
     );

@@ -49,7 +49,11 @@ class Endpoints {
   static String get getPatientDetails =>
       '$localhost/api/patients/get-patient-details';
   static String get addDependent => '$localhost/api/patients/add-dependent';
+  static String deleteDependent(String dependentId) =>
+      '$localhost/api/patients/delete-dependent/$dependentId';
   static String get getDependents => '$localhost/api/patients/get-dependents';
+  static String updateDependent(String dependentId) =>
+      '$localhost/api/patients/update-dependent/$dependentId';
   static String get getFavouriteDoctors =>
       '$localhost/api/patients/get-favourite-doctors';
   static String doctorDetailsById(String doctorId) =>
@@ -121,4 +125,8 @@ class Endpoints {
   
   static String etaStatus(String appointmentId) =>
       '$localhost/api/eta/appointment/$appointmentId/status';
+
+  // Auth endpoints
+  static String get logout => '$localhost/api/auth/logout';
+  static String get deleteAccount => '$localhost/api/auth/patient/delete-account';
 }

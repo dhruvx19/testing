@@ -1,15 +1,21 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:ecliniq/ecliniq_api/auth_service.dart';
 import 'package:ecliniq/ecliniq_api/models/patient.dart';
 import 'package:ecliniq/ecliniq_api/patient_service.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:ecliniq/ecliniq_core/auth/secure_storage.dart';
 import 'package:ecliniq/ecliniq_core/router/navigation_helper.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
+import 'package:ecliniq/ecliniq_modules/screens/login/login.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/login/terms_and_conditions.dart';
+import 'package:ecliniq/ecliniq_modules/screens/profile/about_upcharq/about_upcharq.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/add_dependent/add_dependent.dart';
+import 'package:ecliniq/ecliniq_modules/screens/profile/add_dependent/edit_dependent.dart';
+import 'package:ecliniq/ecliniq_modules/screens/profile/faq/faq.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/my_doctors/my_doctor.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/personal_details/personal_detail.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/security_settings/security_settings.dart';
@@ -17,6 +23,7 @@ import 'package:ecliniq/ecliniq_modules/screens/profile/widgets/account_card.dar
 import 'package:ecliniq/ecliniq_modules/screens/profile/widgets/basic_info.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/widgets/dependent.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/widgets/feedback_bottom_sheet.dart';
+import 'package:ecliniq/ecliniq_modules/screens/profile/widgets/logout_bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/widgets/more_card.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/widgets/notification_card.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/widgets/physical_card.dart';
@@ -27,10 +34,14 @@ import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_navigation/bottom_navigati
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/success_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -72,26 +83,30 @@ class _ProfilePageState extends State<ProfilePage>
     final authToken = authProvider.authToken;
 
     if (authToken == null) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Authentication required';
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Authentication required';
+        });
+      }
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
 
     try {
       final response = await _patientService.getPatientDetails(
         authToken: authToken,
       );
 
-      if (response.success && response.data != null) {
-        _profilePhotoUrl = null;
+      if (!mounted) return;
 
+      if (response.success && response.data != null) {
         final user = response.data!.user;
         if (user?.firstName != null || user?.lastName != null) {
           final firstName = user?.firstName ?? '';
@@ -102,42 +117,38 @@ class _ProfilePageState extends State<ProfilePage>
           }
         }
 
-        try {
-          final rawResp = await http.get(
-            Uri.parse(Endpoints.getPatientDetails),
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $authToken',
-              'x-access-token': authToken,
-            },
-          );
-          if (rawResp.statusCode == 200) {
-            final body = jsonDecode(rawResp.body) as Map<String, dynamic>;
-            final data = body['data'] as Map<String, dynamic>?;
-            final key =
-                data?['profilePhoto'] ?? (data?['user']?['profilePhoto']);
-            if (key is String && key.isNotEmpty) {
-              await _resolveProfileImageUrl(key, token: authToken);
-            }
-          }
-        } catch (_) {}
+        // Load profile photo asynchronously without blocking UI
+        final profilePhotoKey = user?.profilePhoto;
+        if (profilePhotoKey is String && profilePhotoKey.isNotEmpty) {
+          _resolveProfileImageUrl(profilePhotoKey, token: authToken).then((value) {
+            if (mounted) setState(() {});
+          });
+        } else {
+          _profilePhotoUrl = null;
+        }
 
-        setState(() {
-          _patientData = response.data;
-          _isLoading = false;
-          _errorMessage = null;
-        });
+        if (mounted) {
+          setState(() {
+            _patientData = response.data;
+            _isLoading = false;
+            _errorMessage = null;
+          });
+        }
       } else {
-        setState(() {
-          _isLoading = false;
-          _errorMessage = response.message;
-        });
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = response.message;
+          });
+        }
       }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Failed to load patient details: $e';
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Failed to load patient details: $e';
+        });
+      }
     }
   }
 
@@ -189,26 +200,29 @@ class _ProfilePageState extends State<ProfilePage>
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final authToken = authProvider.authToken;
 
-    if (authToken == null) {
+    if (authToken == null || !mounted) {
       return;
     }
-
-    setState(() {});
 
     try {
       final response = await _patientService.getDependents(
         authToken: authToken,
       );
 
+      if (!mounted) return;
+
       if (response.success) {
-        setState(() {
-          _dependents = response.data;
-        });
-      } else {
-        setState(() {});
+        // Only update if dependents actually changed
+        final newDependents = response.data;
+        if (_dependents.length != newDependents.length ||
+            !_dependents.every((d) => newDependents.any((nd) => nd.id == d.id))) {
+          setState(() {
+            _dependents = newDependents;
+          });
+        }
       }
     } catch (e) {
-      setState(() {});
+      // Handle error silently for dependents fetch
     }
   }
 
@@ -219,45 +233,48 @@ class _ProfilePageState extends State<ProfilePage>
       context: context,
       child: AddDependentBottomSheet(
         onDependentAdded: () {
-          _fetchDependents();
+          // Will fetch after sheet closes
         },
       ),
       horizontalPadding: 12,
       bottomPadding: 16,
       borderRadius: 16,
     ).then((result) {
-      if (result == true) {
+      // Only fetch once when sheet closes
+      if (result == true && mounted) {
         _fetchDependents();
       }
     });
   }
 
-  void _handleDependentTap(Dependent dependent) {
+  Future<void> _handleDependentTap(Dependent dependent) async {
     // Find the full dependent data
     final fullDependent = _dependents.firstWhere(
       (dep) => dep.id == dependent.id,
       orElse: () => throw Exception('Dependent not found'),
     );
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PersonalDetails(
-          isSelf: false,
-          dependentId: fullDependent.id,
-          firstName: fullDependent.firstName,
-          lastName: fullDependent.lastName,
-          email: fullDependent.emailId,
-          phone: fullDependent.phone,
-          gender: fullDependent.gender,
-          dob: fullDependent.dob,
-          relation: fullDependent.relation,
-          bloodGroup: fullDependent.bloodGroup,
-          height: fullDependent.height,
-          weight: fullDependent.weight,
-          profilePhoto: fullDependent.profilePhoto,
-        ),
+    // Show edit dependent bottom sheet
+    await EcliniqBottomSheet.show(
+      context: context,
+      child: EditDependentBottomSheet(
+        dependentData: fullDependent,
+        onDependentUpdated: () {
+          // Fetch dependents immediately when updated
+          if (mounted) {
+            _fetchDependents();
+          }
+        },
+        onDependentDeleted: () {
+          // Fetch dependents immediately when deleted
+          if (mounted) {
+            _fetchDependents();
+          }
+        },
       ),
+      horizontalPadding: 12,
+      bottomPadding: 16,
+      borderRadius: 16,
     );
   }
 
@@ -267,11 +284,16 @@ class _ProfilePageState extends State<ProfilePage>
 
   void _handleAppUpdate() {}
 
-  void _navigateToPersonalDetails() {
-    Navigator.push(
+  Future<void> _navigateToPersonalDetails() async {
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const PersonalDetails()),
     );
+
+    // Refresh patient details when returning from personal details page
+    if (mounted) {
+      await _fetchPatientDetails();
+    }
   }
 
   void _onMyDoctorsPressed() {
@@ -289,6 +311,124 @@ class _ProfilePageState extends State<ProfilePage>
             SecuritySettingsOptions(patientData: _patientData),
       ),
     );
+  }
+
+  void _navigateToAboutUpcharq() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AboutUpcharqPage()),
+    );
+  }
+
+  void _navigateTofaq() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const FaqPage()),
+    );
+  }
+
+  Future<void> _launchEmailSupport() async {
+    try {
+      // Get device information
+      final deviceInfo = DeviceInfoPlugin();
+      final packageInfo = await PackageInfo.fromPlatform();
+
+      String deviceType = '';
+      String osVersion = '';
+      String platform = '';
+
+      if (Platform.isIOS) {
+        final iosInfo = await deviceInfo.iosInfo;
+        deviceType = iosInfo.model;
+        osVersion = 'iOS ${iosInfo.systemVersion}';
+        platform = 'ios';
+      } else if (Platform.isAndroid) {
+        final androidInfo = await deviceInfo.androidInfo;
+        deviceType = androidInfo.model;
+        osVersion = 'Android ${androidInfo.version.release}';
+        platform = 'android';
+      }
+
+      // Get app version
+      final appVersion = packageInfo.version;
+
+      // Get user information
+      final phoneNumber = _patientData?.user?.phone ?? '';
+      final userName = _patientData?.fullName ?? '';
+
+      // Get region/locale
+      final locale = Platform.localeName;
+      final regionParts = locale.split('_');
+      final region = regionParts.length > 1
+          ? '${regionParts[1]}, ${regionParts[0]}'
+          : locale;
+
+      // Construct email subject
+      final subject = '[upcharq-$platform]: Issue in logging in upcharq app';
+
+      // Construct email body
+      final body =
+          '''
+Issue:
+
+Phone Number: $phoneNumber
+
+Name: $userName
+
+App Version: $appVersion
+Device Type: $deviceType
+os Details: $osVersion
+Region: $region
+
+
+Sent from my ${Platform.isIOS ? 'iPhone' : 'Android device'}''';
+
+      // Create mailto URL
+      final Uri emailUri = Uri(
+        scheme: 'mailto',
+        path: 'support@upcharq.com',
+        query: _encodeQueryParameters(<String, String>{
+          'subject': subject,
+          'body': body,
+        }),
+      );
+
+      // Try launching directly without canLaunchUrl check
+      final launched = await launchUrl(
+        emailUri,
+        mode: LaunchMode.externalApplication,
+      );
+
+      if (!launched && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Could not open email app. Please ensure you have an email app installed.',
+            ),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error opening email: $e'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  String? _encodeQueryParameters(Map<String, String> params) {
+    return params.entries
+        .map(
+          (MapEntry<String, String> e) =>
+              '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}',
+        )
+        .join('&');
   }
 
   Future<void> _onNotificationSettingsChanged(
@@ -311,124 +451,138 @@ class _ProfilePageState extends State<ProfilePage>
       prefs: prefs,
     );
 
-    if (resp.success && resp.data != null) {
-      setState(() {
-        _patientData = resp.data;
-      });
+    if (resp.success && resp.data != null && mounted) {
+      // Only update if data actually changed
+      if (_patientData != resp.data) {
+        setState(() {
+          _patientData = resp.data;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AuthProvider>(
-      builder: (context, authProvider, child) {
-        double topMargin = MediaQuery.of(context).size.height * 0.19;
-        return EcliniqScaffold(
-          body: Column(
-            children: [
-              Expanded(
-                child: Stack(
-                  children: [
-                    Container(
-                      height: topMargin * 1.8,
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Color(0xFF2372EC), Color(0xFFF3F5FF)],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
+    double topMargin = MediaQuery.of(context).size.height * 0.19;
+    return EcliniqScaffold(
+      body: Column(
+        children: [
+          Expanded(
+            child: Stack(
+              children: [
+                RepaintBoundary(
+                  child: Container(
+                    height: topMargin * 1.8,
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF2372EC), Color(0xFFF3F5FF)],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
                       ),
                     ),
-
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: (MediaQuery.of(context).size.height / 3),
-                      child: Opacity(
-                        opacity: 0.3,
-                        child: Image.asset(
-                          EcliniqIcons.lottie.assetPath,
-                          width: double.infinity,
-                          height: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-
-                    ProfileHeader(onSettingsPressed: _handleSettings),
-
-                    Positioned(
-                      top: topMargin,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      child: ClipPath(
-                        clipper: TopCircleCutClipper(radius: 50, topCut: 30),
-                        child: Container(
-                          padding: const EdgeInsets.only(top: 90),
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(25),
-                              topRight: Radius.circular(25),
-                            ),
-                          ),
-                          child: _isLoading
-                              ? _buildShimmerLoading()
-                              : _errorMessage != null
-                              ? _buildErrorWidget()
-                              : _buildProfileContent(),
-                        ),
-                      ),
-                    ),
-
-                    Positioned(
-                      top: topMargin - 13,
-                      left: MediaQuery.of(context).size.width / 2 - 43,
-                      child: Container(
-                        height: 86,
-                        width: 86,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 15,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: ClipOval(
-                          child: Container(
-                            width: 86,
-                            height: 86,
-                            color: const Color(0xFFDFE8FF),
-                            child: _profilePhotoUrl != null &&
-                                    _profilePhotoUrl!.isNotEmpty
-                                ? Image.network(
-                                    _profilePhotoUrl!,
-                                    width: 86,
-                                    height: 86,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return const _ProfileAvatarIcon();
-                                    },
-                                  )
-                                : const _ProfileAvatarIcon(),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-              EcliniqBottomNavigationBar(currentIndex: 3, onTap: _onTabTapped),
-            ],
+
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: (MediaQuery.of(context).size.height / 3),
+                  child: RepaintBoundary(
+                    child: Opacity(
+                      opacity: 0.3,
+                      child: Image.asset(
+                        EcliniqIcons.lottie.assetPath,
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
+                        cacheWidth: (MediaQuery.of(context).size.width * 2).toInt(),
+                        cacheHeight: ((MediaQuery.of(context).size.height / 3) * 2).toInt(),
+                      ),
+                    ),
+                  ),
+                ),
+
+                RepaintBoundary(
+                  child: ProfileHeader(onSettingsPressed: _handleSettings),
+                ),
+
+                Positioned(
+                  top: topMargin,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: RepaintBoundary(
+                    child: ClipPath(
+                      clipper: TopCircleCutClipper(radius: 50, topCut: 30),
+                      child: Container(
+                        padding: const EdgeInsets.only(top: 90),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(25),
+                            topRight: Radius.circular(25),
+                          ),
+                        ),
+                        child: _isLoading
+                            ? _buildShimmerLoading()
+                            : _errorMessage != null
+                            ? _buildErrorWidget()
+                            : _buildProfileContent(),
+                      ),
+                    ),
+                  ),
+                ),
+
+                Positioned(
+                  top: topMargin - 13,
+                  left: MediaQuery.of(context).size.width / 2 - 43,
+                  child: RepaintBoundary(
+                    child: Container(
+                      height: 86,
+                      width: 86,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 15,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: ClipOval(
+                        child: Container(
+                          width: 86,
+                          height: 86,
+                          color: const Color(0xFFDFE8FF),
+                          child:
+                              _profilePhotoUrl != null &&
+                                  _profilePhotoUrl!.isNotEmpty
+                              ? Image.network(
+                                  _profilePhotoUrl!,
+                                  width: 86,
+                                  height: 86,
+                                  fit: BoxFit.cover,
+                                  cacheWidth: 172,
+                                  cacheHeight: 172,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const _ProfileAvatarIcon();
+                                  },
+                                )
+                              : const _ProfileAvatarIcon(),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        );
-      },
+          EcliniqBottomNavigationBar(currentIndex: 3, onTap: _onTabTapped),
+        ],
+      ),
     );
   }
 }
@@ -465,7 +619,10 @@ class TopCircleCutClipper extends CustomClipper<Path> {
   }
 
   @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => true;
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) {
+    if (oldClipper is! TopCircleCutClipper) return true;
+    return oldClipper.radius != radius || oldClipper.topCut != topCut;
+  }
 }
 
 class _ProfileAvatarIcon extends StatelessWidget {
@@ -499,9 +656,11 @@ extension _ProfilePageContent on _ProfilePageState {
   }
 
   Widget _buildShimmerLoading() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
+    return RepaintBoundary(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        physics: const NeverScrollableScrollPhysics(),
+        child: Column(
         children: [
           Column(
             children: [
@@ -609,6 +768,7 @@ extension _ProfilePageContent on _ProfilePageState {
 
           ShimmerLoading(height: 100, borderRadius: BorderRadius.circular(16)),
         ],
+        ),
       ),
     );
   }
@@ -655,7 +815,7 @@ extension _ProfilePageContent on _ProfilePageState {
     final userEmail = patient.displayEmail;
     final isPhoneVerified = patient.user?.phone != null;
     final age = patient.age ?? 'N/A';
-    final gender = 'Male';
+    final gender = patient.displayGender ?? 'N/A';
     final bloodGroup = _uiBloodGroup(patient.bloodGroup);
     final healthStatus = patient.healthStatus;
     final bmi = patient.bmi ?? 0.0;
@@ -672,92 +832,174 @@ extension _ProfilePageContent on _ProfilePageState {
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
+      physics: const BouncingScrollPhysics(
+        parent: AlwaysScrollableScrollPhysics(),
+      ),
       child: Column(
         children: [
-          UserInfoSection(
-            name: userName,
-            phone: userPhone,
-            email: userEmail,
-            isPhoneVerified: isPhoneVerified,
+          RepaintBoundary(
+            key: ValueKey('user_info_$userName'),
+            child: UserInfoSection(
+              name: userName,
+              phone: userPhone,
+              email: userEmail,
+              isPhoneVerified: isPhoneVerified,
+            ),
           ),
           const SizedBox(height: 12),
-          BasicInfoCards(age: age, gender: gender, bloodGroup: bloodGroup),
+          RepaintBoundary(
+            key: ValueKey('basic_info_$age$gender$bloodGroup'),
+            child: BasicInfoCards(age: age, gender: gender, bloodGroup: bloodGroup),
+          ),
           const SizedBox(height: 16),
-          PhysicalHealthCard(
-            status: healthStatus,
-            bmi: bmi,
-            height: height,
-            weight: weight,
+          RepaintBoundary(
+            key: ValueKey('physical_$healthStatus$bmi'),
+            child: PhysicalHealthCard(
+              status: healthStatus,
+              bmi: bmi,
+              height: height,
+              weight: weight,
+            ),
           ),
-          Divider(color: Color(0xffD6D6D6), thickness: 0.5, height: 40),
-          DependentsSection(
-            dependents: dependents,
-            onAddDependent: _handleAddDependent,
-            onDependentTap: _handleDependentTap,
+          const Divider(color: Color(0xffD6D6D6), thickness: 0.5, height: 40),
+          RepaintBoundary(
+            key: ValueKey('dependents_${dependents.length}'),
+            child: DependentsSection(
+              dependents: dependents,
+              onAddDependent: _handleAddDependent,
+              onDependentTap: _handleDependentTap,
+            ),
           ),
-          Divider(color: Color(0xffD6D6D6), thickness: 0.5, height: 40),
+          const Divider(color: Color(0xffD6D6D6), thickness: 0.5, height: 40),
           const SizedBox(height: 14),
-          AppUpdateBanner(
-            currentVersion: currentVersion,
-            newVersion: newVersion,
-            onUpdate: _handleAppUpdate,
+          RepaintBoundary(
+            child: AppUpdateBanner(
+              currentVersion: currentVersion,
+              newVersion: newVersion,
+              onUpdate: _handleAppUpdate,
+            ),
           ),
           const SizedBox(height: 24),
-          AccountSettingsMenu(
-            onPersonalDetailsPressed: _navigateToPersonalDetails,
-            onMyDoctorsPressed: _onMyDoctorsPressed,
-            onSecuritySettingsPressed: _navigateToSecuritySettings,
+          RepaintBoundary(
+            child: AccountSettingsMenu(
+              onPersonalDetailsPressed: _navigateToPersonalDetails,
+              onMyDoctorsPressed: _onMyDoctorsPressed,
+              onSecuritySettingsPressed: _navigateToSecuritySettings,
+            ),
           ),
           const SizedBox(height: 24),
-          NotificationsSettingsWidget(
-            initialWhatsAppEnabled: patient.getWhatsAppNotifications,
-            initialSmsEnabled: patient.getPhoneNotifications,
-            initialInAppEnabled: patient.getInAppNotifications,
-            initialEmailEnabled: patient.getEmailNotifications,
-            initialPromotionalEnabled: patient.getPromotionalMessages,
-            onSettingsChanged: _onNotificationSettingsChanged,
+          RepaintBoundary(
+            key: ValueKey('notifications_${patient.getWhatsAppNotifications}${patient.getPhoneNotifications}'),
+            child: NotificationsSettingsWidget(
+              initialWhatsAppEnabled: patient.getWhatsAppNotifications,
+              initialSmsEnabled: patient.getPhoneNotifications,
+              initialInAppEnabled: patient.getInAppNotifications,
+              initialEmailEnabled: patient.getEmailNotifications,
+              initialPromotionalEnabled: patient.getPromotionalMessages,
+              onSettingsChanged: _onNotificationSettingsChanged,
+            ),
           ),
           const SizedBox(height: 24),
-          MoreSettingsMenuWidget(
+          RepaintBoundary(
+            child: MoreSettingsMenuWidget(
             appVersion: 'v1.0.0',
             supportEmail: 'Support@eclinicq.com',
             onReferEarnPressed: () {},
-            onHelpSupportPressed: () {},
+            onHelpSupportPressed: _launchEmailSupport,
             onTermsPressed: () {
               EcliniqRouter.push(TermsAndConditionsPage());
             },
             onPrivacyPressed: () {},
-            onFaqPressed: () {},
-            onAboutPressed: () {},
+            onFaqPressed: () {
+              _navigateTofaq();
+            },
+            onAboutPressed: _navigateToAboutUpcharq,
             onFeedbackPressed: () {
               EcliniqBottomSheet.show(
                 context: context,
                 child: FeedbackBottomSheet(),
               );
             },
-            onLogoutPressed: () {
-              showDialog(
+            onLogoutPressed: () async {
+              final result = await EcliniqBottomSheet.show(
                 context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Logout'),
-                  content: const Text('Are you sure you want to logout?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancel'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: const Text('Logout'),
-                    ),
-                  ],
-                ),
+                child: const LogoutBottomSheet(),
               );
+
+              if (result == true && mounted) {
+                // User confirmed logout
+                try {
+                  final authProvider = Provider.of<AuthProvider>(
+                    context,
+                    listen: false,
+                  );
+                  final authToken = authProvider.authToken;
+
+                  // Call logout API
+                  final authService = AuthService();
+                  final logoutResponse = await authService.logout(
+                    authToken: authToken,
+                  );
+
+                  // Clear local data regardless of API response
+                  await authProvider.logout();
+
+                  // Navigate to login page
+                  if (mounted) {
+                    EcliniqRouter.pushAndRemoveUntil(
+                      const LoginPage(),
+                      (route) => false,
+                    );
+
+                    // Show success message after navigation completes
+                    Future.delayed(const Duration(milliseconds: 500), () {
+                      if (mounted) {
+                        CustomSuccessSnackBar.show(
+                          context: context,
+                          title: 'Logged Out',
+                          subtitle: logoutResponse['message'] ??
+                              'Logged out successfully',
+                          duration: const Duration(seconds: 3),
+                        );
+                      }
+                    });
+                  }
+                } catch (e) {
+                  // Even if API fails, clear local data and logout
+                  if (mounted) {
+                    final authProvider = Provider.of<AuthProvider>(
+                      context,
+                      listen: false,
+                    );
+                    await authProvider.logout();
+                    EcliniqRouter.pushAndRemoveUntil(
+                      const LoginPage(),
+                      (route) => false,
+                    );
+                  }
+                }
+              }
             },
           ),
-          const SizedBox(height: 24),
+          ),
+          RepaintBoundary(
+            child: Image.asset(
+              EcliniqIcons.profileLogo.assetPath,
+              width: 128,
+              height: 30,
+              cacheWidth: 256,
+              cacheHeight: 60,
+            ),
+          ),
+          const SizedBox(height: 4),
+          RepaintBoundary(
+            child: Text(
+              'v1.0.0',
+              style: EcliniqTextStyles.responsiveBodySmallProminent(
+                context,
+              ).copyWith(color: Color(0xffB8B8B8), fontWeight: FontWeight.w400),
+            ),
+          ),
         ],
       ),
     );

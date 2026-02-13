@@ -2,6 +2,7 @@ import 'package:ecliniq/ecliniq_api/doctor_service.dart';
 import 'package:ecliniq/ecliniq_api/models/doctor.dart';
 import 'package:ecliniq/ecliniq_api/patient_service.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
+import 'package:ecliniq/ecliniq_core/auth/session_service.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/widgets/easy_to_book.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
@@ -70,8 +71,8 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen>
     });
 
     try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final authToken = authProvider.authToken;
+      // Get auth token from SessionService for reliability
+      final authToken = await SessionService.getAuthToken();
 
       final response = await _doctorService.getDoctorDetailsById(
         doctorId: widget.doctorId,

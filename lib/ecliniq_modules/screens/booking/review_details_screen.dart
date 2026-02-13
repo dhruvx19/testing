@@ -103,15 +103,13 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
   PatientDetailsData? _currentUserDetails;
   bool _isLoadingUserDetails = false;
 
-  
   bool _useWallet = false;
   double _walletBalance = 0.0;
   double _consultationFee = 500.0;
   double _serviceFee = 0.0;
   bool _isProcessingPayment = false;
   String? _selectedPaymentMethod;
-  String?
-  _selectedPaymentMethodPackage; 
+  String? _selectedPaymentMethodPackage;
 
   @override
   void initState() {
@@ -119,7 +117,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
     _loadPatientId();
     _fetchHospitalAddress();
 
-    
     if (widget.currentUserDetails != null) {
       _currentUserDetails = widget.currentUserDetails;
       _patientId = widget.currentUserDetails!.userId;
@@ -130,19 +127,17 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
 
     if (widget.doctor != null) {
       _doctor = widget.doctor;
-      
-      
-      
-      
 
-      if (_doctor?.serviceFee != null && _doctor!.serviceFee! > 0) {
+      // For reschedule, always set fees to 0
+      if (widget.isReschedule) {
+        _serviceFee = 0.0;
+        _consultationFee = 0.0;
+      } else if (_doctor?.serviceFee != null && _doctor!.serviceFee! > 0) {
         _serviceFee = _doctor!.serviceFee!;
-        
       } else {
         _serviceFee = 0.0;
-        
       }
-      
+
       _currentLocationName = widget.locationName;
       _currentLocationAddress = widget.locationAddress;
       _currentDistance = widget.locationDistance;
@@ -155,9 +150,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
       setState(() {});
     });
 
-    if (widget.isReschedule && widget.previousAppointment != null) {
-      
-    }
+    if (widget.isReschedule && widget.previousAppointment != null) {}
   }
 
   Future<void> _fetchHospitalAddress() async {
@@ -195,9 +188,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
               : parts.join(', ');
         });
       }
-    } catch (e) {
-      
-    }
+    } catch (e) {}
   }
 
   @override
@@ -248,7 +239,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
           _walletBalance = 0.0;
         });
       }
-      
     }
   }
 
@@ -268,12 +258,10 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
         return;
       }
 
-      
       final response = await _patientService.getPatientDetails(
         authToken: authToken,
       );
 
-      
       final dependentsResponse = await _patientService.getDependents(
         authToken: authToken,
       );
@@ -285,7 +273,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
             _patientId = response.data!.userId;
           }
 
-          
           if (dependentsResponse.success && dependentsResponse.self != null) {
             _selectedDependent = dependentsResponse.self;
           }
@@ -299,7 +286,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
           _isLoadingUserDetails = false;
         });
       }
-      
     }
   }
 
@@ -340,20 +326,16 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
     return _formatUserSubtitle();
   }
 
-  
-  
   String _extractErrorMessage(dynamic errors, String defaultMessage) {
     if (errors == null) {
       return defaultMessage;
     }
 
-    
     if (errors is List) {
       if (errors.isEmpty) {
         return defaultMessage;
       }
 
-      
       final messages = errors
           .where((error) => error is Map && error['message'] != null)
           .map((error) => error['message'].toString())
@@ -364,21 +346,17 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
         return messages.join(', ');
       }
 
-      
       return errors.first.toString();
     }
 
-    
     if (errors is Map && errors['message'] != null) {
       return errors['message'].toString();
     }
 
-    
     if (errors is String) {
       return errors;
     }
 
-    
     return errors.toString();
   }
 
@@ -391,19 +369,14 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
     );
 
     if (selectedDependent != null && mounted) {
-      
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           setState(() {
-            
-            
             if (selectedDependent.isSelf) {
               _selectedDependent = null;
             } else {
               _selectedDependent = selectedDependent;
             }
-            
-            
           });
         }
       });
@@ -429,41 +402,37 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
           setState(() {
             _doctor = response.data;
 
-            
-            
-            
-            
-
-            if (_doctor?.serviceFee != null && _doctor!.serviceFee! > 0) {
-              _serviceFee = _doctor!.serviceFee!;
-              
-            } else {
+            // For reschedule, always set fees to 0
+            if (widget.isReschedule) {
               _serviceFee = 0.0;
-              
-            }
-            
-            
-
-            
-            if (widget.hospitalId != null && _doctor != null) {
-              final hospital = _doctor!.hospitals.firstWhere(
-                (h) => h.id == widget.hospitalId,
-                orElse: () => _doctor!.hospitals.isNotEmpty
-                    ? _doctor!.hospitals.first
-                    : DoctorHospital(id: '', name: ''),
-              );
-              if (hospital.consultationFee != null) {
-                _consultationFee = hospital.consultationFee!;
+              _consultationFee = 0.0;
+            } else {
+              if (_doctor?.serviceFee != null && _doctor!.serviceFee! > 0) {
+                _serviceFee = _doctor!.serviceFee!;
+              } else {
+                _serviceFee = 0.0;
               }
-            } else if (widget.clinicId != null && _doctor != null) {
-              final clinic = _doctor!.clinics.firstWhere(
-                (c) => c.id == widget.clinicId,
-                orElse: () => _doctor!.clinics.isNotEmpty
-                    ? _doctor!.clinics.first
-                    : DoctorClinic(id: '', name: ''),
-              );
-              if (clinic.consultationFee != null) {
-                _consultationFee = clinic.consultationFee!;
+
+              if (widget.hospitalId != null && _doctor != null) {
+                final hospital = _doctor!.hospitals.firstWhere(
+                  (h) => h.id == widget.hospitalId,
+                  orElse: () => _doctor!.hospitals.isNotEmpty
+                      ? _doctor!.hospitals.first
+                      : DoctorHospital(id: '', name: ''),
+                );
+                if (hospital.consultationFee != null) {
+                  _consultationFee = hospital.consultationFee!;
+                }
+              } else if (widget.clinicId != null && _doctor != null) {
+                final clinic = _doctor!.clinics.firstWhere(
+                  (c) => c.id == widget.clinicId,
+                  orElse: () => _doctor!.clinics.isNotEmpty
+                      ? _doctor!.clinics.first
+                      : DoctorClinic(id: '', name: ''),
+                );
+                if (clinic.consultationFee != null) {
+                  _consultationFee = clinic.consultationFee!;
+                }
               }
             }
             _updateCurrentLocationDetails();
@@ -473,7 +442,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
           setState(() {
             _isLoadingDoctorDetails = false;
           });
-          
         }
       }
     } catch (e) {
@@ -482,7 +450,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
           _isLoadingDoctorDetails = false;
         });
       }
-      
     }
   }
 
@@ -500,7 +467,9 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
         _currentLocationName = hospital.name;
         _currentLocationAddress =
             '${hospital.city ?? ""}, ${hospital.state ?? ""}';
-        _currentDistance = hospital.distance?.toStringAsFixed(1);
+        _currentDistance = ((hospital.distance ?? 0.0) / 1000).toStringAsFixed(
+          1,
+        );
       }
     } else if (widget.clinicId != null) {
       final clinic = _doctor!.clinics.firstWhere(
@@ -512,7 +481,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
       if (clinic.id.isNotEmpty) {
         _currentLocationName = clinic.name;
         _currentLocationAddress = '${clinic.city ?? ""}, ${clinic.state ?? ""}';
-        _currentDistance = clinic.distance?.toStringAsFixed(1);
+        _currentDistance = ((clinic.distance ?? 0.0) / 1000).toStringAsFixed(1);
       }
     }
   }
@@ -678,7 +647,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
 
       final age = _calculateAgeFromDob(_selectedDependent!.dob);
 
-      
       final gender = capitalize(_selectedDependent!.gender);
 
       return PatientInfo(
@@ -701,7 +669,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
 
       return PatientInfo(
         name: _currentUserDetails?.fullName ?? 'User',
-        gender: 'Male', 
+        gender: 'Male',
         dateOfBirth: dobStr,
         age: age,
         isSelf: true,
@@ -727,7 +695,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
         ? double.tryParse(_currentDistance!) ?? 0.0
         : 0.0;
 
-    
     String city = '';
     String pincode = '';
     if (locationAddress.isNotEmpty) {
@@ -754,8 +721,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
     );
   }
 
-  
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -778,7 +743,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
         title: Align(
           alignment: Alignment.centerLeft,
           child: Text(
-          'Review Details',
+            'Review Details',
             style: EcliniqTextStyles.responsiveHeadlineMedium(
               context,
             ).copyWith(color: Color(0xff424242)),
@@ -832,7 +797,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
       ),
       body: Column(
         children: [
-          
           RepaintBoundary(
             child: _isLoadingDoctorDetails
                 ? _buildDoctorInfoShimmer()
@@ -1028,7 +992,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  
                   RepaintBoundary(
                     child: Container(
                       padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(
@@ -1048,12 +1011,22 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                'Consultation Fee',
-                                style:
-                                    EcliniqTextStyles.responsiveHeadlineXMedium(
-                                      context,
-                                    ).copyWith(color: Color(0xff626060)),
+                              Row(
+                                children: [
+                                  Text(
+                                    'Consultation Fee',
+                                    style:
+                                        EcliniqTextStyles.responsiveHeadlineXMedium(
+                                          context,
+                                        ).copyWith(color: Color(0xff626060)),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  SvgPicture.asset(
+                                    EcliniqIcons.infoCircleBlack.assetPath,
+                                    width: 20,
+                                    height: 20,
+                                  ),
+                                ],
                               ),
                               Text(
                                 'Pay at Clinic',
@@ -1079,10 +1052,10 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                                           ).copyWith(color: Color(0xff626060)),
                                     ),
                                     const SizedBox(width: 6),
-                                    Icon(
-                                      Icons.info_outline,
-                                      size: 20,
-                                      color: Color(0xff424242),
+                                    SvgPicture.asset(
+                                      EcliniqIcons.infoCircleBlack.assetPath,
+                                      width: 20,
+                                      height: 20,
                                     ),
                                   ],
                                 ),
@@ -1110,10 +1083,10 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                                           ).copyWith(color: Color(0xff626060)),
                                     ),
                                     const SizedBox(width: 6),
-                                    Icon(
-                                      Icons.info_outline,
-                                      size: 20,
-                                      color: Color(0xff424242),
+                                     SvgPicture.asset(
+                                      EcliniqIcons.infoCircleBlack.assetPath,
+                                      width: 20,
+                                      height: 20,
                                     ),
                                   ],
                                 ),
@@ -1124,7 +1097,12 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                                       style:
                                           EcliniqTextStyles.responsiveHeadlineXLMedium(
                                             context,
-                                          ).copyWith(color: Color(0xff8E8E8E)),
+                                          ).copyWith(
+                                            color: Color(0xff8E8E8E),
+                                            decoration:
+                                                TextDecoration.lineThrough,
+                                            decorationColor: Color(0xff8E8E8E),
+                                          ),
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
@@ -1191,7 +1169,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
             ),
           ),
 
-          
           if (_serviceFee > 0)
             _buildPaymentBottomBar()
           else
@@ -1221,9 +1198,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
   Future<void> _onConfirmVisit() async {
     if (_isBooking) return;
 
-    
-
-    
     if (_serviceFee > 0 &&
         !_useWallet &&
         _selectedPaymentMethodPackage == null) {
@@ -1231,6 +1205,28 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
         context: context,
         title: 'Payment Method Required',
         subtitle: 'Please select a payment method',
+        duration: const Duration(seconds: 4),
+      );
+      return;
+    }
+
+    if (_useWallet && _walletBalance <= 0) {
+      CustomErrorSnackBar.show(
+        context: context,
+        title: 'Insufficient Balance',
+        subtitle:
+            'Your Upchar-Q Coin balance is zero. Please top up to use wallet.',
+        duration: const Duration(seconds: 4),
+      );
+      return;
+    }
+
+    if (_useWallet && _serviceFee > 0 && _walletBalance < _serviceFee) {
+      CustomErrorSnackBar.show(
+        context: context,
+        title: 'Insufficient Balance',
+        subtitle:
+            'Your Upchar-Q Coin balance (₹${_walletBalance.toStringAsFixed(2)}) is less than the required amount (₹${_serviceFee.toStringAsFixed(2)}).',
         duration: const Duration(seconds: 4),
       );
       return;
@@ -1312,8 +1308,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
           }
         }
       } else {
-        
-        
         final isDependent =
             _selectedDependent != null && !_selectedDependent!.isSelf;
         final request = BookAppointmentRequest(
@@ -1340,22 +1334,17 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                 ? response.data as Map<String, dynamic>
                 : null;
 
-            
             if (responseDataJson != null) {}
 
-            
             if (responseDataJson != null &&
                 responseDataJson.containsKey('paymentRequired') &&
                 responseDataJson['paymentRequired'] == true) {
               final paymentData = BookingPaymentData.fromJson(responseDataJson);
 
-              
-              
               if (paymentData.totalAmount == 0 ||
                   paymentData.gatewayAmount == 0 ||
                   _serviceFee == 0 ||
-                  _useWallet) {
-                
+                  (_useWallet && _walletBalance >= paymentData.totalAmount)) {
                 final appointmentData = response.data is AppointmentData
                     ? response.data as AppointmentData
                     : null;
@@ -1389,7 +1378,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
               }
 
               if (paymentData.requiresGateway) {
-                
                 if (paymentData.requestPayload == null ||
                     paymentData.requestPayload!.isEmpty) {
                   if (paymentData.token == null || paymentData.token!.isEmpty) {
@@ -1424,16 +1412,13 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                   }
                 }
 
-                
                 String? paymentPackage = _selectedPaymentMethodPackage;
                 if (paymentPackage == null && _serviceFee == 0) {
-                  
                   paymentPackage = 'com.google.android.apps.nbu.paisa.user';
                 }
 
                 if (paymentPackage != null) {
                   if (paymentPackage == 'WALLET') {
-                    
                     final appointmentData = response.data is AppointmentData
                         ? response.data as AppointmentData
                         : null;
@@ -1466,14 +1451,12 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                       ),
                     );
                   } else {
-                    
                     await _processUPIPayment(
                       paymentData: paymentData,
                       selectedUPIPackage: paymentPackage,
                     );
                   }
                 } else {
-                  
                   setState(() {
                     _isBooking = false;
                   });
@@ -1486,7 +1469,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                   );
                 }
               } else {
-                
                 final appointmentData = response.data is AppointmentData
                     ? response.data as AppointmentData
                     : null;
@@ -1518,7 +1500,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                 );
               }
             } else {
-              
               final appointmentData = response.data is AppointmentData
                   ? response.data as AppointmentData
                   : null;
@@ -1552,7 +1533,9 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                     patientSubtitle: _getCurrentUserSubtitle(),
                     patientBadge:
                         _selectedDependent?.formattedRelation ?? 'You',
-                    appointmentId: appointmentId is String ? appointmentId : null,
+                    appointmentId: appointmentId is String
+                        ? appointmentId
+                        : null,
                     bookingStatus: appointmentData?.status,
                   ),
                 ),
@@ -1616,7 +1599,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
           ),
           decoration: BoxDecoration(
             boxShadow: _isBooking
-                ? [] 
+                ? []
                 : [
                     BoxShadow(
                       color: Color(0x4D2372EC),
@@ -1676,7 +1659,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                         ),
                       ),
 
-                      
                       Row(
                         children: [
                           Text(
@@ -1739,7 +1721,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          
           Row(
             children: [
               Image.asset(
@@ -1758,6 +1739,16 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
               ),
               GestureDetector(
                 onTap: () {
+                  if (!_useWallet && _walletBalance <= 0) {
+                    CustomErrorSnackBar.show(
+                      context: context,
+                      title: 'Insufficient Balance',
+                      subtitle:
+                          'Your Upchar-Q Coin balance is zero. Please top up to use wallet.',
+                      duration: const Duration(seconds: 4),
+                    );
+                    return;
+                  }
                   setState(() {
                     _useWallet = !_useWallet;
                   });
@@ -1794,11 +1785,10 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
           const SizedBox(height: 8),
           Container(height: 0.5, color: const Color(0xffB8B8B8)),
           const SizedBox(height: 8),
-          
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              
               Expanded(
                 child: GestureDetector(
                   onTap: _isBooking
@@ -1808,7 +1798,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      
                       Row(
                         children: [
                           if (_selectedPaymentMethodPackage != null)
@@ -1856,7 +1845,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                         ],
                       ),
                       const SizedBox(height: 2),
-                      
+
                       Text(
                         _selectedPaymentMethod ?? 'Google Pay UPI',
                         style: EcliniqTextStyles.responsiveBodyMedium(context)
@@ -1874,7 +1863,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
               ),
               const SizedBox(width: 12),
 
-              
               GestureDetector(
                 onTap: _isBooking ? null : () => _onConfirmVisit(),
                 child: Container(
@@ -1906,7 +1894,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                     ),
                     child: _isBooking
                         ? SizedBox(
-                            width: 180, 
+                            width: 180,
                             child: const Center(
                               child: EcliniqLoader(
                                 size: 24,
@@ -1917,7 +1905,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                         : Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              
                               Flexible(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -1951,7 +1938,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                                 ),
                               ),
                               const SizedBox(width: 34),
-                              
+
                               Expanded(
                                 child: Text(
                                   'Pay & Confirm',
@@ -2030,10 +2017,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
             _useWallet = value;
           });
         },
-        onConfirm: () {
-          
-          
-        },
+        onConfirm: () {},
       ),
     );
 
@@ -2047,7 +2031,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
             _useWallet = selectedMethod['useWallet'] as bool;
           }
         } else {
-          
           if (_selectedPaymentMethodPackage == null) {
             _selectedPaymentMethod = 'Gpay';
             _selectedPaymentMethodPackage =
@@ -2067,7 +2050,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
     });
 
     try {
-      
       if (!_phonePeService.isInitialized) {
         final prefs = await SharedPreferences.getInstance();
         final userId =
@@ -2075,8 +2057,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
             'user_${DateTime.now().millisecondsSinceEpoch}';
 
         const merchantId = 'M237OHQ3YCVAO_2511191950';
-        const isProduction =
-            false; 
+        const isProduction = false;
 
         final initialized = await _phonePeService.initialize(
           isProduction: isProduction,
@@ -2090,7 +2071,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
         }
       }
 
-      
       if (selectedUPIPackage != 'com.phonepe.app' &&
           selectedUPIPackage != 'com.phonepe.simulator') {
         try {
@@ -2099,12 +2079,9 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
             await launchUrl(uri, mode: LaunchMode.externalApplication);
             await Future.delayed(const Duration(milliseconds: 300));
           }
-        } catch (e) {
-          
-        }
+        } catch (e) {}
       }
 
-      
       final result = await _phonePeService.startPayment(
         requestPayload: paymentData.requestPayload,
         token: paymentData.token,
@@ -2113,16 +2090,12 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
       );
 
       if (result.success || result.status != 'INCOMPLETE') {
-        
         final statusData = await _paymentService.pollPaymentUntilComplete(
           paymentData.merchantTransactionId,
-          onStatusUpdate: (status) {
-            
-          },
+          onStatusUpdate: (status) {},
         );
 
         if (statusData != null && statusData.isSuccess) {
-          
           final verifyRequest = VerifyAppointmentRequest(
             appointmentId: paymentData.appointmentId,
             merchantTransactionId: paymentData.merchantTransactionId,
@@ -2229,9 +2202,7 @@ class EasyWayToBookWidget extends StatefulWidget {
 class _EasyWayToBookWidgetState extends State<EasyWayToBookWidget> {
   bool _isWhatsAppEnabled = true;
 
-  void _callUs() {
-    
-  }
+  void _callUs() {}
 
   void _toggleWhatsAppUpdates(bool value) {
     setState(() {

@@ -124,7 +124,7 @@ CustomErrorSnackBar.show(
 
     return SizedBox(
       width: double.infinity,
-      height: 52,
+      height: EcliniqTextStyles.getResponsiveButtonHeight(context, baseHeight: 52.0),
       child: GestureDetector(
         onTapDown: isButtonEnabled
             ? (_) => setState(() => _isButtonPressed = true)

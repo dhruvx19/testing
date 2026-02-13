@@ -262,25 +262,29 @@ class _LocationDetails extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            SizedBox(width: 4),
-            
-            Container(
-              height: 24,
-              width: 44,
-              decoration: BoxDecoration(
-                color: Color(0xffF9F9F9),
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: Color(0xffB8B8B8), width: 0.5),
-              ),
-              child: Center(
+            if (location.distance != null) ...[
+              SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 8.0)),
+              Container(
+                padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                  context,
+                  horizontal: 8.0,
+                  vertical: 4.0,
+                ),
+                decoration: BoxDecoration(
+                  color: Color(0xffF9F9F9),
+                  borderRadius: BorderRadius.circular(
+                    EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+                  ),
+                  border: Border.all(color: Color(0xffB8B8B8), width: 0.5),
+                ),
                 child: Text(
-                  '4 Km',
+                  '${location.distance} Km',
                   style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                     color: Color(0xff424242),
                   ),
                 ),
               ),
-            ),
+            ],
           ],
           
         ),

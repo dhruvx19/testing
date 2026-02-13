@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:ecliniq/ecliniq_api/health_file_model.dart';
 import 'package:ecliniq/ecliniq_api/models/patient.dart';
+import 'package:ecliniq/ecliniq_api/patient_service.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/details/widgets/date_picker_sheet.dart';
 import 'package:ecliniq/ecliniq_modules/screens/health_files/providers/health_files_provider.dart';
@@ -11,6 +12,7 @@ import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/success_snackbar.dart';
 import 'package:ecliniq/ecliniq_utils/bottom_sheets/select_member_bottom_sheet.dart';
+import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
@@ -38,36 +40,75 @@ class EditDocumentDetailsPage extends StatefulWidget {
 class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
   late TextEditingController _fileNameController;
   late HealthFileType _selectedFileType;
-  String _selectedRecordFor = '';
+  String _selectedRecordFor = 'Self';
+  String? _selectedRecordForId;
+  String? _selectedRecordForRelation;
   DateTime? _selectedDate;
   bool _isSaving = false;
   bool _isButtonPressed = false;
   bool get isButtonEnabled => !_isSaving;
 
-  final List<String> _recordForOptions = [
-    'Ketan Patni',
-    'Jane Doe',
-    'John Smith',
-  ];
-
   final LocalFileStorageService _storageService = LocalFileStorageService();
+  final PatientService _patientService = PatientService();
+  
+  bool _isLoadingMembers = true;
+  DependentData? _selfData;
 
   @override
   void initState() {
     super.initState();
+    _fetchSelfData();
 
     if (widget.healthFile != null) {
       _fileNameController = TextEditingController(
         text: widget.healthFile!.fileName,
       );
       _selectedFileType = widget.healthFile!.fileType;
-      _selectedRecordFor = widget.healthFile!.recordFor ?? _recordForOptions[0];
+      _selectedRecordFor = widget.healthFile!.recordFor ?? 'Self';
       _selectedDate = widget.healthFile!.fileDate;
     } else {
       _fileNameController = TextEditingController(text: widget.fileName ?? '');
       _selectedFileType = HealthFileType.others;
-      _selectedRecordFor = _recordForOptions[0];
+      _selectedRecordFor = 'Self';
       _selectedDate = null;
+    }
+  }
+
+  Future<void> _fetchSelfData() async {
+    setState(() {
+      _isLoadingMembers = true;
+    });
+
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final authToken = authProvider.authToken;
+
+      if (authToken != null && authToken.isNotEmpty) {
+        final response = await _patientService.getDependents(
+          authToken: authToken,
+        );
+
+        if (response.success && response.self != null) {
+          setState(() {
+            _selfData = response.self;
+            // If no record is selected yet, auto-select self
+            if (_selectedRecordFor == 'Self' && _selfData != null) {
+              _selectedRecordFor = _selfData!.fullName;
+              _selectedRecordForId = _selfData!.id;
+              _selectedRecordForRelation = _selfData!.relation;
+            }
+            _isLoadingMembers = false;
+          });
+        } else {
+          setState(() {
+            _isLoadingMembers = false;
+          });
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _isLoadingMembers = false;
+      });
     }
   }
 
@@ -80,6 +121,17 @@ class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
   bool _isImageFile(String filePath) {
     final extension = filePath.split('.').last.toLowerCase();
     return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic'].contains(extension);
+  }
+
+  String get _displayRecordFor {
+    if (_selectedRecordForRelation == null || 
+        _selectedRecordForRelation!.toUpperCase() == 'SELF') {
+      return _selectedRecordFor;
+    }
+    // Format the relation text
+    final formattedRelation = _selectedRecordForRelation![0].toUpperCase() + 
+                              _selectedRecordForRelation!.substring(1).toLowerCase();
+    return '$_selectedRecordFor - $formattedRelation';
   }
 
   String _getFileTypeString(HealthFileType type) {
@@ -331,7 +383,7 @@ class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      _selectedRecordFor,
+                                      _displayRecordFor,
                                       textAlign: TextAlign.right,
                                       style:
                                           EcliniqTextStyles.responsiveTitleXLarge(
@@ -339,31 +391,13 @@ class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
                                           ).copyWith(color: Colors.black87),
                                     ),
                                   ),
-                                  SizedBox(
-                                    width:
-                                        EcliniqTextStyles.getResponsiveSpacing(
-                                          context,
-                                          8.0,
-                                        ),
-                                  ),
+                                    SizedBox(width: 8),
                                   Container(
-                                    width: EcliniqTextStyles.getResponsiveSize(
-                                      context,
-                                      0.5,
-                                    ),
-                                    height: EcliniqTextStyles.getResponsiveSize(
-                                      context,
-                                      22.0,
-                                    ),
+                                    width: 0.5,
+                                    height: 22,
                                     color: const Color(0xFFD6D6D6),
                                   ),
-                                  SizedBox(
-                                    width:
-                                        EcliniqTextStyles.getResponsiveSpacing(
-                                          context,
-                                          8.0,
-                                        ),
-                                  ),
+                                  SizedBox(width: 8),
                                   SvgPicture.asset(
                                     EcliniqIcons.arrowDown.assetPath,
                                     width:
@@ -686,6 +720,7 @@ class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
       child: DatePickerBottomSheet(
         initialDate: _selectedDate ?? DateTime.now(),
         title: 'Select Date of File',
+        maximumDate: DateTime.now(), // Prevent future dates
       ),
     );
     if (picked != null && picked != _selectedDate) {
@@ -711,18 +746,54 @@ class _EditDocumentDetailsPageState extends State<EditDocumentDetailsPage> {
   }
 
   Future<void> _showRecordForBottomSheet(BuildContext context) async {
+    // Find currently selected dependent data for pre-selection in bottom sheet
+    DependentData? currentlySelected;
+    if (_selectedRecordForId != null) {
+      // Try to match by ID if we have it
+      try {
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        final authToken = authProvider.authToken;
+        if (authToken != null) {
+          final response = await _patientService.getDependents(
+            authToken: authToken,
+          );
+          if (response.success) {
+            final allMembers = <DependentData>[];
+            if (response.self != null) allMembers.add(response.self!);
+            allMembers.addAll(response.dependents);
+            
+            currentlySelected = allMembers.firstWhere(
+              (member) => member.id == _selectedRecordForId,
+              orElse: () => allMembers.firstWhere(
+                (member) => member.fullName == _selectedRecordFor,
+                orElse: () => response.self!,
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        // If error, proceed without pre-selection
+      }
+    }
+
     final DependentData? selected =
         await EcliniqBottomSheet.show<DependentData>(
           context: context,
-          child: const SelectMemberBottomSheet(),
+          child: SelectMemberBottomSheet(
+            currentlySelectedDependent: currentlySelected,
+          ),
         );
     if (selected != null && mounted) {
       final selectedName = selected.fullName;
+      final selectedId = selected.id;
+      final selectedRelation = selected.relation;
       if (selectedName != _selectedRecordFor) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
             setState(() {
               _selectedRecordFor = selectedName;
+              _selectedRecordForId = selectedId;
+              _selectedRecordForRelation = selectedRelation;
             });
           }
         });

@@ -77,7 +77,9 @@ class _PhysicalInfoCardState extends State<PhysicalInfoCard> {
       ),
       decoration: BoxDecoration(
         color: Color(0xffF9F9F9),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(
+          EcliniqTextStyles.getResponsiveBorderRadius(context, 12.0),
+        ),
       ),
       child: Padding(
         padding: EdgeInsets.all(
@@ -123,7 +125,11 @@ class _PhysicalInfoCardState extends State<PhysicalInfoCard> {
               ),
             ),
 
-            Divider(color: Color(0xffD6D6D6), thickness: 0.5, height: 0),
+            Divider(
+              color: Color(0xffD6D6D6),
+              thickness: EcliniqTextStyles.getResponsiveSize(context, 0.5),
+              height: 0,
+            ),
             Container(
               margin: EdgeInsets.symmetric(
                 vertical: screenSize.getResponsiveValue(
@@ -156,7 +162,11 @@ class _PhysicalInfoCardState extends State<PhysicalInfoCard> {
               ),
             ),
 
-            Divider(color: Color(0xffD6D6D6), thickness: 0.5, height: 0),
+            Divider(
+              color: Color(0xffD6D6D6),
+              thickness: EcliniqTextStyles.getResponsiveSize(context, 0.5),
+              height: 0,
+            ),
             Consumer<AddDependentProvider>(
               builder: (context, provider, child) {
                 return Row(

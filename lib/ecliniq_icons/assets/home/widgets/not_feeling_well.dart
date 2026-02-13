@@ -1,6 +1,7 @@
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/search_specialities/search_specialities_page.dart';
+import 'package:ecliniq/ecliniq_modules/screens/search_specialities/speciality_doctors_list.dart';
 import 'package:ecliniq/ecliniq_modules/screens/symptoms/symptoms_page.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
@@ -12,6 +13,34 @@ class NotFeelingWell extends StatelessWidget {
   final bool showShimmer;
 
   const NotFeelingWell({super.key, this.showShimmer = false});
+
+  // Symptom to Specialty mapping - same as in symptoms_page.dart
+  static const Map<String, String> _symptomSpecialtyMap = {
+    // General & Common
+    'Fever/Chills': 'General Physician',
+    'Headache': 'General Physician',
+    'Stomach Pain': 'Gastroenterologist',
+    'Cold & Cough': 'General Physician',
+    'Body Pain': 'General Physician',
+    'Back Pain': 'Orthopedic',
+    'Breathing Difficulty': 'Pulmonologist',
+    'Skin Rash /Itching': 'Dermatologist',
+    'Periods Problem': 'Gynaecologist',
+    'Sleep Problem': 'Psychiatrist',
+  };
+
+  void _handleSymptomTap(BuildContext context, String symptom) {
+    // Get specialty from map
+    final specialtiesStr = _symptomSpecialtyMap[symptom];
+    if (specialtiesStr != null) {
+      // Pick first specialty
+      final firstSpecialty = specialtiesStr.split(',').first.trim();
+      // Navigate to specialty doctors list
+      EcliniqRouter.push(
+        SpecialityDoctorsList(initialSpeciality: firstSpecialty),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -152,7 +181,7 @@ class NotFeelingWell extends StatelessWidget {
                       context,
                       'Fever/Chills',
                       EcliniqIcons.fever,
-                      () {},
+                      () => _handleSymptomTap(context, 'Fever/Chills'),
                     ),
                     SizedBox(
                       width: EcliniqTextStyles.getResponsiveSpacing(
@@ -164,7 +193,7 @@ class NotFeelingWell extends StatelessWidget {
                       context,
                       'Headache',
                       EcliniqIcons.headache,
-                      () {},
+                      () => _handleSymptomTap(context, 'Headache'),
                     ),
                     SizedBox(
                       width: EcliniqTextStyles.getResponsiveSpacing(
@@ -176,7 +205,7 @@ class NotFeelingWell extends StatelessWidget {
                       context,
                       'Stomach Pain',
                       EcliniqIcons.stomachPain,
-                      () {},
+                      () => _handleSymptomTap(context, 'Stomach Pain'),
                     ),
                     SizedBox(
                       width: EcliniqTextStyles.getResponsiveSpacing(
@@ -188,7 +217,7 @@ class NotFeelingWell extends StatelessWidget {
                       context,
                       'Cold & Cough',
                       EcliniqIcons.coughCold,
-                      () {},
+                      () => _handleSymptomTap(context, 'Cold & Cough'),
                     ),
                     SizedBox(
                       width: EcliniqTextStyles.getResponsiveSpacing(
@@ -200,7 +229,7 @@ class NotFeelingWell extends StatelessWidget {
                       context,
                       'Body Pain',
                       EcliniqIcons.bodyPain,
-                      () {},
+                      () => _handleSymptomTap(context, 'Body Pain'),
                     ),
                     SizedBox(
                       width: EcliniqTextStyles.getResponsiveSpacing(
@@ -212,7 +241,7 @@ class NotFeelingWell extends StatelessWidget {
                       context,
                       'Back Pain',
                       EcliniqIcons.backPain,
-                      () {},
+                      () => _handleSymptomTap(context, 'Back Pain'),
                     ),
                     SizedBox(
                       width: EcliniqTextStyles.getResponsiveSpacing(
@@ -224,7 +253,7 @@ class NotFeelingWell extends StatelessWidget {
                       context,
                       'Breathing Difficulty',
                       EcliniqIcons.breathingProblem,
-                      () {},
+                      () => _handleSymptomTap(context, 'Breathing Difficulty'),
                     ),
                     SizedBox(
                       width: EcliniqTextStyles.getResponsiveSpacing(
@@ -236,7 +265,7 @@ class NotFeelingWell extends StatelessWidget {
                       context,
                       'Skin Rash /Itching',
                       EcliniqIcons.itchingOrSkinProblem,
-                      () {},
+                      () => _handleSymptomTap(context, 'Skin Rash /Itching'),
                     ),
                     SizedBox(
                       width: EcliniqTextStyles.getResponsiveSpacing(
@@ -248,7 +277,7 @@ class NotFeelingWell extends StatelessWidget {
                       context,
                       'Periods Problem',
                       EcliniqIcons.periodsProblem,
-                      () {},
+                      () => _handleSymptomTap(context, 'Periods Problem'),
                     ),
                     SizedBox(
                       width: EcliniqTextStyles.getResponsiveSpacing(
@@ -260,7 +289,7 @@ class NotFeelingWell extends StatelessWidget {
                       context,
                       'Sleep Problem',
                       EcliniqIcons.sleepProblem,
-                      () {},
+                      () => _handleSymptomTap(context, 'Sleep Problem'),
                     ),
                     SizedBox(
                       width: EcliniqTextStyles.getResponsiveSpacing(

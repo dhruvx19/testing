@@ -5,8 +5,9 @@ import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
-import 'package:speech_to_text/speech_to_text.dart';
+import 'package:ecliniq/ecliniq_utils/speech_helper.dart';
 
 class DoctorFilterBottomSheet extends StatefulWidget {
   const DoctorFilterBottomSheet({
@@ -26,6 +27,7 @@ class DoctorFilterBottomSheet extends StatefulWidget {
 class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
   String selectedTab = 'Specialities';
   Set<String> selectedSpecialities = {};
+  Set<String> selectedSymptoms = {};
   String? selectedAvailability;
   String? selectedGender;
   String? selectedExperience;
@@ -43,6 +45,12 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
       if (filters['specialities'] != null) {
         selectedSpecialities = Set<String>.from(
           filters['specialities'] as List,
+        );
+      }
+
+      if (filters['symptoms'] != null) {
+        selectedSymptoms = Set<String>.from(
+          filters['symptoms'] as List,
         );
       }
 
@@ -67,6 +75,7 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
   void _resetFilters() {
     setState(() {
       selectedSpecialities.clear();
+      selectedSymptoms.clear();
       selectedAvailability = null;
       selectedGender = null;
       selectedExperience = null;
@@ -76,6 +85,7 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
 
     widget.onFilterChanged({
       'specialities': <String>[],
+      'symptoms': <String>[],
       'availability': null,
       'gender': null,
       'experience': null,
@@ -84,8 +94,21 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
   }
 
   void _emitFilterChange() {
+    // Extract specialities from selected symptoms and combine with manually selected specialities
+    final Set<String> allSpecialities = Set<String>.from(selectedSpecialities);
+    
+    // Add specialities from selected symptoms
+    for (final symptom in selectedSymptoms) {
+      if (_symptomSpecialtyMap.containsKey(symptom)) {
+        final specialtiesStr = _symptomSpecialtyMap[symptom]!;
+        final specialitiesList = specialtiesStr.split(',').map((e) => e.trim()).toList();
+        allSpecialities.addAll(specialitiesList);
+      }
+    }
+    
     widget.onFilterChanged({
-      'specialities': selectedSpecialities.toList(),
+      'specialities': allSpecialities.toList(),
+      'symptoms': selectedSymptoms.toList(),
       'availability': selectedAvailability,
       'gender': selectedGender,
       'experience': selectedExperience,
@@ -98,10 +121,8 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
     'Availability',
     'Gender',
     'Distance',
-
+    'Symptoms',
     'Experience',
-    'Languages',
-    'Meet at',
   ];
 
   final List<String> specialities = [
@@ -117,17 +138,64 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
     'Diabetologist (Sugar Specialist)',
   ];
 
-  final List<String> availabilityOptions = [
-    'Anytime',
-    'Available Now',
-    'Today',
-    'Tomorrow',
-    'Saturday, 01 Nov',
-    'Sunday, 02 Nov',
-    'Monday, 03 Nov',
-    'Tuesday, 04 Nov',
-    'Wednesday, 05 Nov',
+  // Common symptoms from symptoms_page.dart
+  final List<String> commonSymptoms = [
+    'Fever/Chills',
+    'Headache',
+    'Stomach Pain',
+    'Cold & Cough',
+    'Body Pain',
+    'Back Pain',
+    'Breathing Difficulty',
+    'Skin Rash /Itching',
+    'Periods Problem',
+    'Sleep Problem',
+    'Hair Related Problem',
+    'Pregnancy Related',
+    'Dental Care',
+    'Joint Pain',
+    'Blood Pressure',
   ];
+
+  // Symptom to specialty mapping from symptoms_page.dart
+  final Map<String, String> _symptomSpecialtyMap = {
+    // General & Common
+    'Fever / Chills': 'General Physician, Pediatrician',
+    'Fever/Chills': 'General Physician, Pediatrician',
+    'Cold & Cough': 'General Physician, Pediatrician, Pulmonologist',
+    'Sore Throat': 'General Physician, ENT',
+    'Body Pain': 'General Physician, Orthopedic',
+    'Weakness / Fatigue': 'General Physician, Diabetologist, Endocrinologist',
+    'Headache': 'General Physician, Neurologist',
+    'Stomach Pain': 'Gastroenterologist',
+    'Back Pain': 'Orthopedic',
+    'Dizziness / Fainting': 'General Physician, Cardiologist, Neurologist',
+    'Viral Infection Symptoms': 'General Physician',
+    'High or Low Blood Pressure': 'General Physician, Cardiologist',
+    'Blood Pressure': 'General Physician, Cardiologist',
+    'General Health Check-up': 'General Physician',
+    'Periods Problem': 'Gynaecologist',
+    'Pregnancy Related': 'Gynaecologist',
+    'Dental Care': 'Dentist',
+    'Skin Rash /Itching': 'Dermatologist',
+    'Hair Related Problem': 'Dermatologist',
+    'Breathing Difficulty': 'Pulmonologist',
+    'Joint Pain': 'Orthopedic',
+    'Sleep Problem': 'Psychiatrist',
+  };
+
+  List<String> get availabilityOptions {
+    final now = DateTime.now();
+    final dateFormat = DateFormat('EEEE, dd MMM');
+    return [
+      'Anytime',
+      'Available Now',
+      'Today',
+      'Tomorrow',
+      for (int i = 2; i <= 6; i++)
+        dateFormat.format(now.add(Duration(days: i))),
+    ];
+  }
 
   final List<String> genderOptions = ['Male', 'Female', 'Others'];
 
@@ -296,6 +364,8 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
 
   Widget _buildFilterContent() {
     switch (selectedTab) {
+      case 'Symptoms':
+        return _buildSymptomsList();
       case 'Specialities':
         return _buildSpecialitiesList();
       case 'Availability':
@@ -370,6 +440,102 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
                 Expanded(
                   child: Text(
                     speciality,
+                    style: EcliniqTextStyles.responsiveTitleXLarge(context)
+                        .copyWith(
+                          color: Color(0xff424242),
+                          fontWeight: FontWeight.w400,
+                        ),
+                  ),
+                ),
+                SizedBox(
+                  width: EcliniqTextStyles.getResponsiveSpacing(context, 16),
+                ),
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: isSelected ? Color(0xff2372EC) : Color(0xff8E8E8E),
+                      width: 1,
+                    ),
+                    borderRadius: BorderRadius.circular(
+                      EcliniqTextStyles.getResponsiveBorderRadius(context, 6),
+                    ),
+                    color: isSelected ? Color(0xff2372EC) : Colors.transparent,
+                  ),
+                  child: isSelected
+                      ? Icon(
+                          Icons.check,
+                          size: EcliniqTextStyles.getResponsiveIconSize(
+                            context,
+                            18,
+                          ),
+                          color: Colors.white,
+                        )
+                      : null,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSymptomsList() {
+    final filteredSymptoms = _searchQuery.isEmpty
+        ? commonSymptoms
+        : commonSymptoms.where((symptom) {
+            return symptom.toLowerCase().contains(_searchQuery);
+          }).toList();
+
+    if (filteredSymptoms.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 32.0),
+          child: Text(
+            'No symptoms found matching "$_searchQuery"',
+            style: EcliniqTextStyles.responsiveTitleXLarge(
+              context,
+            ).copyWith(color: Colors.grey[600]),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+        context,
+        horizontal: 0,
+        vertical: 8,
+      ),
+      itemCount: filteredSymptoms.length,
+      itemBuilder: (context, index) {
+        final symptom = filteredSymptoms[index];
+        final isSelected = selectedSymptoms.contains(symptom);
+        return InkWell(
+          onTap: () {
+            setState(() {
+              if (isSelected) {
+                selectedSymptoms.remove(symptom);
+              } else {
+                selectedSymptoms.add(symptom);
+              }
+            });
+            _emitFilterChange();
+          },
+          child: Padding(
+            padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+              context,
+              horizontal: 16,
+              vertical: 8,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    symptom,
                     style: EcliniqTextStyles.responsiveTitleXLarge(context)
                         .copyWith(
                           color: Color(0xff424242),
@@ -766,9 +932,8 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
   String query = '';
   final _controller = TextEditingController();
   Timer? _timer;
-  final SpeechToText _speechToText = SpeechToText();
-  bool _speechEnabled = false;
-  bool _isListening = false;
+  final SpeechHelper _speechHelper = SpeechHelper();
+  bool get _isListening => _speechHelper.isListening;
 
   @override
   void initState() {
@@ -780,89 +945,42 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
   void dispose() {
     _timer?.cancel();
     _controller.dispose();
-    _speechToText.cancel();
+    _speechHelper.cancel();
     super.dispose();
   }
 
   Future<void> _initSpeech() async {
-    try {
-      _speechEnabled = await _speechToText.initialize(
-        onError: (error) {
-          if (mounted) {
-            setState(() => _isListening = false);
-          }
-        },
-        onStatus: (status) {
-          if (mounted) {
-            if (status == 'notListening' ||
-                status == 'done' ||
-                status == 'doneNoResult') {
-              setState(() => _isListening = false);
-            } else if (status == 'listening') {
-              setState(() => _isListening = true);
-            }
-          }
-        },
-      );
-    } catch (e) {
-      _speechEnabled = false;
-    }
+    await _speechHelper.initSpeech(
+      onListeningChanged: () {
+        if (mounted) setState(() {});
+      },
+      mounted: () => mounted,
+    );
   }
 
   void _startListening() async {
-    if (_isListening) return;
-
-    if (!_speechEnabled) {
-      await _initSpeech();
-      if (!_speechEnabled) {
+    await _speechHelper.startListening(
+      onResult: _onSpeechResult,
+      onError: (message) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Speech recognition is not available. Please check your permissions.',
-              ),
-              duration: Duration(seconds: 2),
-            ),
+            SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
           );
         }
-        return;
-      }
-    }
-
-    try {
-      await _speechToText.listen(
-        onResult: _onSpeechResult,
-        listenFor: const Duration(seconds: 30),
-        pauseFor: const Duration(seconds: 3),
-        partialResults: true,
-        localeId: 'en_US',
-        cancelOnError: false,
-        listenMode: ListenMode.confirmation,
-      );
-
-      if (mounted) {
-        setState(() {
-          _isListening = true;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isListening = false);
-      }
-    }
+      },
+      mounted: () => mounted,
+      onListeningChanged: () {
+        if (mounted) setState(() {});
+      },
+    );
   }
 
   void _stopListening() async {
-    try {
-      await _speechToText.stop();
-      if (mounted) {
-        setState(() => _isListening = false);
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isListening = false);
-      }
-    }
+    await _speechHelper.stopListening(
+      onListeningChanged: () {
+        if (mounted) setState(() {});
+      },
+    );
   }
 
   void _onSpeechResult(SpeechRecognitionResult result) {

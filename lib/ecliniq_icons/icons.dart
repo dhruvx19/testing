@@ -272,6 +272,10 @@ enum EcliniqIcons {
   hairCare('$_base/Hair Fall.svg'),
   jointCare('$_base/Joint pain.svg'),
   pregnancyCare('$_base/Pregency.svg'),
+  deleteImage('$_base/Clip path group.png'),
+  aboutLogo('$_base/Layer_x0020_1.png'),
+  logoutImage('$_base/Group (4).png'),
+  profileLogo('$_base/UpcharQ_horizontal 1.png'),
   noNotifications('$_base/no_notif.svg');
 
   

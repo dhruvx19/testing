@@ -73,39 +73,25 @@ class LocationPermissionManager {
   
   static Future<LocationPermissionStatus> requestPermissionIfNeeded() async {
     try {
+      // Check if permission is already granted
+      final currentPermission = await Geolocator.checkPermission();
       
-      final isGranted = await isPermissionGranted();
-      if (isGranted) {
+      if (currentPermission == LocationPermission.whileInUse || 
+          currentPermission == LocationPermission.always) {
+        // Already granted, update storage
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool(_keyLocationPermissionGranted, true);
         return LocationPermissionStatus.granted;
       }
 
-      
-      final isDeniedForever = await isPermissionDeniedForever();
-      if (isDeniedForever) {
+      // Check if permanently denied
+      if (currentPermission == LocationPermission.deniedForever) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool(_keyLocationPermissionDeniedForever, true);
         return LocationPermissionStatus.deniedForever;
       }
 
-      
-      final hasAsked = await hasAskedForPermission();
-      if (hasAsked) {
-        
-        final permission = await Geolocator.checkPermission();
-        if (permission == LocationPermission.denied) {
-          
-          return LocationPermissionStatus.denied;
-        }
-        
-        final isGrantedNow = permission == LocationPermission.whileInUse || 
-                            permission == LocationPermission.always;
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool(_keyLocationPermissionGranted, isGrantedNow);
-        if (isGrantedNow) {
-          return LocationPermissionStatus.granted;
-        }
-        return LocationPermissionStatus.denied;
-      }
-      
-      
+      // Request permission (will prompt user)
       final permission = await Geolocator.requestPermission();
       final prefs = await SharedPreferences.getInstance();
       
@@ -126,6 +112,7 @@ class LocationPermissionManager {
         return LocationPermissionStatus.denied;
       }
     } catch (e) {
+      print('❌ Error requesting location permission: $e');
       return LocationPermissionStatus.error;
     }
   }

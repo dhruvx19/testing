@@ -21,8 +21,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:ecliniq/ecliniq_utils/speech_helper.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
-import 'package:speech_to_text/speech_to_text.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key, this.shouldStartVoiceSearch = false});
@@ -38,7 +38,8 @@ class _SearchPageState extends State<SearchPage> {
   final StorageService _storageService = StorageService();
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
-  final SpeechToText _speechToText = SpeechToText();
+  final SpeechHelper _speechHelper = SpeechHelper();
+  bool get _isListening => _speechHelper.isListening;
 
   bool _isSearching = false;
   bool _isLoading = false;
@@ -46,8 +47,6 @@ class _SearchPageState extends State<SearchPage> {
   String? _errorMessage;
   List<String> _recentSearches = [];
   static const String _recentSearchesKey = 'recent_searches';
-  bool _speechEnabled = false;
-  bool _isListening = false;
 
   final List<String> _allSpecialities = [
     'General Physician',
@@ -123,182 +122,45 @@ class _SearchPageState extends State<SearchPage> {
   void dispose() {
     _searchController.dispose();
     _searchFocusNode.dispose();
-    _speechToText.cancel();
+    _speechHelper.cancel();
     super.dispose();
   }
 
   Future<void> _initSpeech() async {
-    try {
-      _speechEnabled = await _speechToText.initialize(
-        onError: (error) {
-          if (mounted) {
-            setState(() => _isListening = false);
-          }
-          final errorMsg = error.errorMsg.toLowerCase();
-          if (!errorMsg.contains('no_match') &&
-              !errorMsg.contains('listen_failed')) {
-            developer.log(
-              'Speech recognition initialization error: ${error.errorMsg}',
-            );
-          }
-        },
-        onStatus: (status) {
-          developer.log('Speech recognition status: $status');
-          if (mounted) {
-            if (status == 'notListening' ||
-                status == 'done' ||
-                status == 'doneNoResult') {
-              setState(() => _isListening = false);
-            } else if (status == 'listening') {
-              setState(() => _isListening = true);
-            }
-          }
-        },
-      );
-      if (mounted) {
-        setState(() {});
-      }
-      developer.log('Speech recognition initialized: $_speechEnabled');
-    } catch (e) {
-      developer.log('Error initializing speech recognition: $e');
-      _speechEnabled = false;
-      if (mounted) {
-        setState(() {});
-      }
-    }
+    await _speechHelper.initSpeech(
+      onListeningChanged: () {
+        if (mounted) setState(() {});
+      },
+      mounted: () => mounted,
+    );
   }
 
   void _startListening() async {
-    if (_isListening) {
-      return;
-    }
-
-    if (!_speechEnabled) {
-      await _initSpeech();
-      if (!_speechEnabled) {
+    await _speechHelper.startListening(
+      onResult: _onSpeechResult,
+      onError: (message) {
         if (mounted) {
           CustomErrorSnackBar.show(
             context: context,
-            title: 'Permission Required',
-            subtitle:
-                'Speech recognition is not available. Please check your permissions.',
+            title: 'Voice Search Error',
+            subtitle: message,
             duration: const Duration(seconds: 3),
           );
         }
-        return;
-      }
-    }
-
-    final isAvailable = await _speechToText.initialize(
-      onError: (error) {
-        developer.log('Speech recognition error: ${error.errorMsg}');
-        final errorMsg = error.errorMsg.toLowerCase();
-        if (errorMsg.contains('no_match') ||
-            errorMsg.contains('listen_failed') ||
-            errorMsg.contains('error_network_error')) {
-          developer.log('Expected speech recognition error: ${error.errorMsg}');
-          if (mounted) {
-            setState(() => _isListening = false);
-          }
-          return;
-        }
-
-        if (mounted) {
-          setState(() => _isListening = false);
-          if (errorMsg.contains('error_permission') ||
-              errorMsg.contains('permission')) {
-            CustomErrorSnackBar.show(
-              context: context,
-              title: 'Permission Required',
-              subtitle: 'Microphone permission is required for voice search.',
-              duration: const Duration(seconds: 3),
-            );
-          } else {
-            CustomErrorSnackBar.show(
-              context: context,
-              title: 'Speech Recognition Error',
-              subtitle: 'Speech recognition error: ${error.errorMsg}',
-              duration: const Duration(seconds: 3),
-            );
-          }
-        }
       },
-      onStatus: (status) {
-        developer.log('Speech recognition status: $status');
-        if (mounted) {
-          if (status == 'notListening' ||
-              status == 'done' ||
-              status == 'doneNoResult') {
-            setState(() => _isListening = false);
-          } else if (status == 'listening') {
-            setState(() => _isListening = true);
-          }
-        }
+      mounted: () => mounted,
+      onListeningChanged: () {
+        if (mounted) setState(() {});
       },
     );
-
-    if (!isAvailable) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
-        CustomErrorSnackBar.show(
-          context: context,
-          title: 'Permission Required',
-          subtitle:
-              'Speech recognition is not available. Please check your permissions.',
-          duration: const Duration(seconds: 3),
-        );
-      }
-      return;
-    }
-
-    try {
-      await _speechToText.listen(
-        onResult: _onSpeechResult,
-        listenFor: const Duration(seconds: 30),
-        pauseFor: const Duration(seconds: 3),
-        partialResults: true,
-        localeId: 'en_US',
-        cancelOnError: false,
-        listenMode: ListenMode.confirmation,
-      );
-
-      if (mounted) {
-        setState(() {
-          _isListening = true;
-        });
-      }
-    } catch (e) {
-      developer.log('Error starting speech recognition: $e');
-      if (mounted) {
-        setState(() => _isListening = false);
-        CustomErrorSnackBar.show(
-          context: context,
-          title: 'Error',
-          subtitle: 'Error starting voice search: ${e.toString()}',
-          duration: const Duration(seconds: 3),
-        );
-      }
-    }
   }
 
   void _stopListening() async {
-    try {
-      await _speechToText.stop();
-      if (mounted) {
-        setState(() {
-          _isListening = false;
-        });
-      }
-      developer.log('Speech recognition stopped');
-    } catch (e) {
-      developer.log('Error stopping speech recognition: $e');
-      if (mounted) {
-        setState(() {
-          _isListening = false;
-        });
-      }
-    }
+    await _speechHelper.stopListening(
+      onListeningChanged: () {
+        if (mounted) setState(() {});
+      },
+    );
   }
 
   void _onSpeechResult(SpeechRecognitionResult result) {

@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
-import 'package:speech_to_text/speech_to_text.dart';
+import 'package:ecliniq/ecliniq_utils/speech_helper.dart';
 
 import '../../../../ecliniq_icons/icons.dart';
 
@@ -25,13 +25,12 @@ class MyDoctors extends StatefulWidget {
 class _MyDoctorsState extends State<MyDoctors> {
   final PatientService _patientService = PatientService();
   final TextEditingController _searchController = TextEditingController();
-  final SpeechToText _speechToText = SpeechToText();
+  final SpeechHelper _speechHelper = SpeechHelper();
   List<FavouriteDoctor> _doctors = [];
   List<FavouriteDoctor> _filteredDoctors = [];
   bool _isLoading = true;
   String? _errorMessage;
-  bool _speechEnabled = false;
-  bool _isListening = false;
+  bool get _isListening => _speechHelper.isListening;
   String _searchQuery = '';
 
   @override
@@ -46,89 +45,42 @@ class _MyDoctorsState extends State<MyDoctors> {
   void dispose() {
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
-    _speechToText.cancel();
+    _speechHelper.cancel();
     super.dispose();
   }
 
   Future<void> _initSpeech() async {
-    try {
-      _speechEnabled = await _speechToText.initialize(
-        onError: (error) {
-          if (mounted) {
-            setState(() => _isListening = false);
-          }
-        },
-        onStatus: (status) {
-          if (mounted) {
-            if (status == 'notListening' ||
-                status == 'done' ||
-                status == 'doneNoResult') {
-              setState(() => _isListening = false);
-            } else if (status == 'listening') {
-              setState(() => _isListening = true);
-            }
-          }
-        },
-      );
-    } catch (e) {
-      _speechEnabled = false;
-    }
+    await _speechHelper.initSpeech(
+      onListeningChanged: () {
+        if (mounted) setState(() {});
+      },
+      mounted: () => mounted,
+    );
   }
 
   void _startListening() async {
-    if (_isListening) return;
-
-    if (!_speechEnabled) {
-      await _initSpeech();
-      if (!_speechEnabled) {
+    await _speechHelper.startListening(
+      onResult: _onSpeechResult,
+      onError: (message) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Speech recognition is not available. Please check your permissions.',
-              ),
-              duration: Duration(seconds: 2),
-            ),
+            SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
           );
         }
-        return;
-      }
-    }
-
-    try {
-      await _speechToText.listen(
-        onResult: _onSpeechResult,
-        listenFor: const Duration(seconds: 30),
-        pauseFor: const Duration(seconds: 3),
-        partialResults: true,
-        localeId: 'en_US',
-        cancelOnError: false,
-        listenMode: ListenMode.confirmation,
-      );
-
-      if (mounted) {
-        setState(() {
-          _isListening = true;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isListening = false);
-      }
-    }
+      },
+      mounted: () => mounted,
+      onListeningChanged: () {
+        if (mounted) setState(() {});
+      },
+    );
   }
 
   void _stopListening() async {
-    try {
-      await _speechToText.stop();
-      if (mounted) {
-        setState(() => _isListening = false);
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isListening = false);
-      }
-    }
+    await _speechHelper.stopListening(
+      onListeningChanged: () {
+        if (mounted) setState(() {});
+      },
+    );
   }
 
   void _onSpeechResult(SpeechRecognitionResult result) {

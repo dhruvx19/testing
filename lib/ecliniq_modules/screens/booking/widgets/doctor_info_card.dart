@@ -419,15 +419,13 @@ class DoctorInfoCard extends StatelessWidget {
                     SizedBox(
                       width: EcliniqTextStyles.getResponsiveSpacing(context, 8),
                     ),
-                    Expanded(
-                      child: Text(
-                        locationAddress!,
-                        style: EcliniqTextStyles.responsiveTitleXLarge(
-                          context,
-                        ).copyWith(color: Color(0xff626060)),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                    Text(
+                      locationAddress!,
+                      style: EcliniqTextStyles.responsiveTitleXLarge(
+                        context,
+                      ).copyWith(color: Color(0xff626060)),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     if (locationDistance != null) ...[
                       SizedBox(
@@ -438,20 +436,17 @@ class DoctorInfoCard extends StatelessWidget {
                       ),
 
                       Container(
-                        height: EcliniqTextStyles.getResponsiveHeight(
+                        padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
                           context,
-                          24,
-                        ),
-                        width: EcliniqTextStyles.getResponsiveWidth(
-                          context,
-                          44,
+                          horizontal: 6.0,
+                          vertical: 4.0,
                         ),
                         decoration: BoxDecoration(
                           color: Color(0xffF9F9F9),
                           borderRadius: BorderRadius.circular(
                             EcliniqTextStyles.getResponsiveBorderRadius(
                               context,
-                              6,
+                              6.0,
                             ),
                           ),
                           border: Border.all(
@@ -459,13 +454,11 @@ class DoctorInfoCard extends StatelessWidget {
                             width: 0.5,
                           ),
                         ),
-                        child: Center(
-                          child: Text(
-                            '$locationDistance Km',
-                            style: EcliniqTextStyles.responsiveBodySmall(
-                              context,
-                            ).copyWith(color: Color(0xff424242)),
-                          ),
+                        child: Text(
+                          '$locationDistance Km',
+                          style: EcliniqTextStyles.responsiveBodySmall(
+                            context,
+                          ).copyWith(color: Color(0xff424242)),
                         ),
                       ),
                     ],

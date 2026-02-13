@@ -19,7 +19,7 @@ class _UploadTimelineState extends State<UploadTimeline> {
   bool _isExpanded = false;
 
   double _getExpandTimelineTopPadding(int fileCount) {
-    return 16.0;
+    return 8.0;
   }
 
   double _getStackHeight(int fileCount) {

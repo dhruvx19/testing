@@ -43,6 +43,7 @@ class AppointmentData {
   final String? doctorId;
   final String? hospitalId;
   final String? clinicId;
+  final DateTime appointmentDate;
 
   AppointmentData({
     required this.id,
@@ -59,6 +60,7 @@ class AppointmentData {
     this.doctorId,
     this.hospitalId,
     this.clinicId,
+    required this.appointmentDate,
   });
 }
 
@@ -146,6 +148,8 @@ class _MyVisitsState extends State<MyVisits>
           _scheduledAppointments = scheduledResponse.data
               .map((item) => _mapToAppointmentData(item))
               .toList();
+          // Sort scheduled appointments by date (earliest first)
+          _scheduledAppointments.sort((a, b) => a.appointmentDate.compareTo(b.appointmentDate));
         } else {
           if (mounted) {
             _showErrorSnackBar(scheduledResponse.message);
@@ -156,6 +160,8 @@ class _MyVisitsState extends State<MyVisits>
           _historyAppointments = historyResponse.data
               .map((item) => _mapToAppointmentData(item))
               .toList();
+          // Sort history appointments by date (most recent first)
+          _historyAppointments.sort((a, b) => b.appointmentDate.compareTo(a.appointmentDate));
         } else {
           if (mounted) {
             _showErrorSnackBar(historyResponse.message);
@@ -233,6 +239,7 @@ class _MyVisitsState extends State<MyVisits>
       doctorId: item.doctorId,
       hospitalId: item.hospitalId,
       clinicId: item.clinicId,
+      appointmentDate: item.appointmentDate,
     );
   }
 

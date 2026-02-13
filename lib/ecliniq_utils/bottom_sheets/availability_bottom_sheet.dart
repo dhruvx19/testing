@@ -1,5 +1,6 @@
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class AvailabilityFilterBottomSheet extends StatefulWidget {
   const AvailabilityFilterBottomSheet({super.key});
@@ -12,17 +13,31 @@ class AvailabilityFilterBottomSheet extends StatefulWidget {
 class _AvailabilityFilterBottomSheetState
     extends State<AvailabilityFilterBottomSheet> {
   String? selectedAvailability;
+  late List<String> availabilityOptions;
 
-  final List<String> availabilityOptions = [
-    'Now',
-    'Today',
-    'Tomorrow',
-    'Tuesday, 19 Aug',
-    'Wednesday, 20 Aug',
-    'Thursday, 21 Aug',
-    'Friday, 22 Aug',
-    'Saturday, 23 Aug',
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _generateAvailabilityOptions();
+  }
+
+  void _generateAvailabilityOptions() {
+    final now = DateTime.now();
+    final dateFormat = DateFormat('EEEE, dd MMM');
+    
+    availabilityOptions = [
+      'Now',
+      'Today',
+      'Tomorrow',
+    ];
+
+    // Add next 5 days dynamically
+    for (int i = 2; i <= 6; i++) {
+      final date = now.add(Duration(days: i));
+      final dateLabel = dateFormat.format(date);
+      availabilityOptions.add(dateLabel);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

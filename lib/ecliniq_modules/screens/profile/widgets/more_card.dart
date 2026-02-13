@@ -45,9 +45,9 @@ class MoreSettingsMenuWidget extends StatelessWidget {
             padding: const EdgeInsets.all(2),
             child: Text(
               'More',
-              style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
-                color: Color(0xff8E8E8E),
-              ),
+              style: EcliniqTextStyles.responsiveHeadlineLarge(
+                context,
+              ).copyWith(color: Color(0xff8E8E8E)),
             ),
           ),
 
@@ -114,30 +114,7 @@ class MoreSettingsMenuWidget extends StatelessWidget {
             onTap: onLogoutPressed,
           ),
 
-          const SizedBox(height: 20),
-
-          const SizedBox(height: 30),
-
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-          
-
-          const SizedBox(height: 20),
+          const SizedBox(height: 26),
         ],
       ),
     );
@@ -153,7 +130,6 @@ class MoreSettingsMenuWidget extends StatelessWidget {
     );
   }
 }
-
 
 class _ReferEarnMenuItem extends StatelessWidget {
   final String icon;
@@ -192,23 +168,23 @@ class _ReferEarnMenuItem extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
-                      color: Color(0xff424242),
-                    ),
+                    style: EcliniqTextStyles.responsiveHeadlineXMedium(
+                      context,
+                    ).copyWith(color: Color(0xff424242)),
                   ),
                   if (subtitle != null) ...[
                     const SizedBox(height: 2),
                     Text(
                       subtitle!,
-                      style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
-                        color: Color(0xff8E8E8E),
-                      ),
+                      style: EcliniqTextStyles.responsiveBodySmall(
+                        context,
+                      ).copyWith(color: Color(0xff8E8E8E)),
                     ),
                   ],
                 ],
               ),
             ),
-            
+
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -241,7 +217,6 @@ class _ReferEarnMenuItem extends StatelessWidget {
     );
   }
 }
-
 
 class _MoreMenuItem extends StatelessWidget {
   final String icon;
@@ -280,17 +255,17 @@ class _MoreMenuItem extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
-                      color: Color(0xff424242),
-                    ),
+                    style: EcliniqTextStyles.responsiveHeadlineXMedium(
+                      context,
+                    ).copyWith(color: Color(0xff424242)),
                   ),
                   if (subtitle != null) ...[
                     const SizedBox(height: 2),
                     Text(
                       subtitle!,
-                      style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
-                        color: Color(0xff8E8E8E),
-                      ),
+                      style: EcliniqTextStyles.responsiveBodySmall(
+                        context,
+                      ).copyWith(color: Color(0xff8E8E8E)),
                     ),
                   ],
                 ],

@@ -76,6 +76,10 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- Required for speech_to_text on Android 11+ (API 30+) -->
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
         <!-- Query for PhonePe and other UPI apps -->
         <package android:name="com.phonepe.app" />
         <package android:name="com.phonepe.simulator" />

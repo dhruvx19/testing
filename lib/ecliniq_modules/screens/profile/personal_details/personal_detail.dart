@@ -22,8 +22,13 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
+
 import '../add_dependent/provider/dependent_provider.dart';
 import '../add_dependent/widgets/blood_group_selection.dart';
+import '../add_dependent/widgets/gender_selection.dart';
+import '../add_dependent/widgets/relation_selection.dart';
 
 class PersonalDetails extends StatefulWidget {
   final bool isSelf;
@@ -64,6 +69,7 @@ class PersonalDetails extends StatefulWidget {
 class _PersonalDetailsState extends State<PersonalDetails> {
   final PatientService _patientService = PatientService();
   bool _isLoading = true;
+  bool _isSaving = false;
   String? _errorMessage;
   patient_models.PatientDetailsData? _data;
 
@@ -93,24 +99,8 @@ class _PersonalDetailsState extends State<PersonalDetails> {
     if (widget.isSelf) {
       _fetchPatientDetails();
     } else {
-      // Populate fields from passed dependent data
-      _firstNameController.text = widget.firstName ?? '';
-      _lastNameController.text = widget.lastName ?? '';
-      _emailController.text = widget.email ?? '';
-      _contactNumberController.text = widget.phone ?? '';
-      _genderController.text = widget.gender ?? '';
-      _relationController.text = widget.relation ?? '';
-      _bloodGroupController.text = _uiBloodGroup(widget.bloodGroup);
-      _heightController.text = widget.height?.toString() ?? '';
-      _weightController.text = widget.weight?.toString() ?? '';
-      _dob = widget.dob;
-      _profilePhotoKey = widget.profilePhoto;
-      if (widget.profilePhoto != null && widget.profilePhoto!.isNotEmpty) {
-        _resolveDependentProfilePhoto(widget.profilePhoto!);
-      }
-      setState(() {
-        _isLoading = false;
-      });
+      // For dependents, always fetch fresh data from server
+      _fetchDependentDetails();
     }
   }
 
@@ -299,6 +289,12 @@ class _PersonalDetailsState extends State<PersonalDetails> {
     return map[v] ?? v;
   }
 
+  String _formatGenderForDisplay(String? gender) {
+    if (gender == null || gender.isEmpty) return '';
+    // Gender is already formatted by displayGender getter (Male, Female, Other)
+    return gender;
+  }
+
   @override
   void dispose() {
     _firstNameController.dispose();
@@ -339,7 +335,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
         _lastNameController.text = d.user?.lastName ?? '';
         _emailController.text = d.user?.emailId ?? '';
         _contactNumberController.text = d.user?.phone ?? '';
-        // _genderController.text = d.user? ?? '';
+        _genderController.text = _formatGenderForDisplay(d.displayGender);
         _bloodGroupController.text = _uiBloodGroup(d.bloodGroup);
         _heightController.text = d.height != null ? d.height.toString() : '';
         _weightController.text = d.weight != null ? d.weight.toString() : '';
@@ -432,6 +428,74 @@ class _PersonalDetailsState extends State<PersonalDetails> {
     } catch (_) {}
   }
 
+  Future<void> _fetchDependentDetails() async {
+    if (widget.dependentId == null) return;
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final token = auth.authToken;
+    if (token == null || token.isEmpty) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Authentication required';
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final resp = await _patientService.getDependents(authToken: token);
+      if (!mounted) return;
+
+      if (resp.success) {
+        final allMembers = <patient_models.DependentData>[];
+        if (resp.self != null) allMembers.add(resp.self!);
+        allMembers.addAll(resp.dependents);
+
+        final dep = allMembers.where((d) => d.id == widget.dependentId).firstOrNull;
+        if (dep != null) {
+          _firstNameController.text = dep.firstName;
+          _lastNameController.text = dep.lastName;
+          _emailController.text = dep.emailId ?? '';
+          _contactNumberController.text = dep.phone ?? '';
+          _genderController.text = dep.gender;
+          _relationController.text = dep.formattedRelation;
+          _bloodGroupController.text = _uiBloodGroup(dep.bloodGroup);
+          _heightController.text = dep.height?.toString() ?? '';
+          _weightController.text = dep.weight?.toString() ?? '';
+          _dob = dep.dob;
+          _profilePhotoKey = dep.profilePhoto;
+          _profilePhotoUrl = null;
+          _selectedProfilePhoto = null;
+          if (dep.profilePhoto != null && dep.profilePhoto!.isNotEmpty) {
+            await _resolveImageUrl(dep.profilePhoto!, token: token);
+          }
+          setState(() {
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = 'Dependent not found';
+          });
+        }
+      } else {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = resp.message;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Failed to load dependent details: $e';
+      });
+    }
+  }
+
   Future<void> _resolveDependentProfilePhoto(String key) async {
     final auth = Provider.of<AuthProvider>(context, listen: false);
     final token = auth.authToken;
@@ -485,6 +549,88 @@ class _PersonalDetailsState extends State<PersonalDetails> {
     }
   }
 
+  Widget _buildShimmerLoading() {
+    return SingleChildScrollView(
+      padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+        context,
+        horizontal: 16,
+        vertical: 12,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Profile photo shimmer
+          Center(
+            child: ShimmerLoading(
+              width: EcliniqTextStyles.getResponsiveWidth(context, 150),
+              height: EcliniqTextStyles.getResponsiveHeight(context, 150),
+              borderRadius: BorderRadius.circular(75),
+            ),
+          ),
+          SizedBox(height: EcliniqTextStyles.getResponsiveHeight(context, 24)),
+
+          // Personal Details Section Title
+          Align(
+            alignment: Alignment.centerLeft,
+            child: ShimmerLoading(
+              width: EcliniqTextStyles.getResponsiveWidth(context, 150),
+              height: 20,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Form fields shimmer (8 fields)
+          ...List.generate(8, (index) {
+            return Column(
+              children: [
+                ShimmerLoading(
+                  height: EcliniqTextStyles.getResponsiveHeight(context, 56),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                if (index < 7) const SizedBox(height: 8),
+              ],
+            );
+          }),
+
+          SizedBox(height: EcliniqTextStyles.getResponsiveHeight(context, 24)),
+
+          // Physical Info Section Title
+          Align(
+            alignment: Alignment.centerLeft,
+            child: ShimmerLoading(
+              width: EcliniqTextStyles.getResponsiveWidth(context, 120),
+              height: 20,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Physical info fields shimmer (2 fields)
+          ...List.generate(2, (index) {
+            return Column(
+              children: [
+                ShimmerLoading(
+                  height: EcliniqTextStyles.getResponsiveHeight(context, 56),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                if (index < 1) const SizedBox(height: 8),
+              ],
+            );
+          }),
+
+          SizedBox(height: EcliniqTextStyles.getResponsiveHeight(context, 24)),
+
+          // Save button shimmer
+          ShimmerLoading(
+            height: EcliniqTextStyles.getResponsiveSize(context, 52),
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _save() async {
     final auth = Provider.of<AuthProvider>(context, listen: false);
     final token = auth.authToken;
@@ -499,11 +645,11 @@ class _PersonalDetailsState extends State<PersonalDetails> {
     }
 
     setState(() {
-      _isLoading = true;
+      _isSaving = true;
     });
 
     try {
-      String? photoKey = _profilePhotoKey;
+      String? photoKey;
       if (_selectedProfilePhoto != null) {
         final key = await auth.uploadProfileImage(_selectedProfilePhoto!);
         if (key == null) throw Exception('Failed to upload profile photo');
@@ -512,38 +658,84 @@ class _PersonalDetailsState extends State<PersonalDetails> {
 
       final firstName = _firstNameController.text.trim();
       final lastName = _lastNameController.text.trim();
-
-      final success = await auth.updatePatientProfile(
-        firstName: firstName,
-        lastName: lastName,
-        bloodGroup: _backendBloodGroup(
-          _bloodGroupController.text.trim().isEmpty
-              ? null
-              : _bloodGroupController.text.trim(),
-        ),
-        height: int.tryParse(_heightController.text.trim()),
-        weight: int.tryParse(_weightController.text.trim()),
-        dob: _dob != null
-            ? '${_dob!.year.toString().padLeft(4, '0')}-${_dob!.month.toString().padLeft(2, '0')}-${_dob!.day.toString().padLeft(2, '0')}'
-            : null,
-        profilePhoto: photoKey,
+      final formattedDob = _dob != null
+          ? '${_dob!.year.toString().padLeft(4, '0')}-${_dob!.month.toString().padLeft(2, '0')}-${_dob!.day.toString().padLeft(2, '0')}'
+          : null;
+      final bloodGroup = _backendBloodGroup(
+        _bloodGroupController.text.trim().isEmpty
+            ? null
+            : _bloodGroupController.text.trim(),
       );
 
+      bool success;
+
+      if (widget.isSelf) {
+        success = await auth.updatePatientProfile(
+          firstName: firstName,
+          lastName: lastName,
+          gender: _genderController.text.trim().isNotEmpty
+              ? _genderController.text.trim().toLowerCase()
+              : null,
+          bloodGroup: bloodGroup,
+          height: int.tryParse(_heightController.text.trim()),
+          weight: int.tryParse(_weightController.text.trim()),
+          dob: formattedDob,
+          profilePhoto: photoKey,
+        );
+      } else {
+        if (widget.dependentId == null) {
+          throw Exception('Dependent ID is missing');
+        }
+        success = await auth.updateDependentProfile(
+          dependentId: widget.dependentId!,
+          firstName: firstName,
+          lastName: lastName,
+          gender: _genderController.text.trim().isNotEmpty
+              ? _genderController.text.trim().toLowerCase()
+              : null,
+          relation: _relationController.text.trim().isNotEmpty
+              ? _relationController.text.trim().toLowerCase()
+              : null,
+          phone: _contactNumberController.text.trim().isNotEmpty
+              ? _contactNumberController.text.trim()
+              : null,
+          emailId: _emailController.text.trim().isNotEmpty
+              ? _emailController.text.trim()
+              : null,
+          bloodGroup: bloodGroup,
+          height: int.tryParse(_heightController.text.trim()),
+          weight: int.tryParse(_weightController.text.trim()),
+          dob: formattedDob,
+          profilePhoto: photoKey,
+        );
+      }
+
       if (success) {
-        final fullName = '$firstName $lastName'.trim();
-        if (fullName.isNotEmpty) {
-          await SecureStorageService.storeUserName(fullName);
+        if (widget.isSelf) {
+          final fullName = '$firstName $lastName'.trim();
+          if (fullName.isNotEmpty) {
+            await SecureStorageService.storeUserName(fullName);
+          }
         }
 
         if (!mounted) return;
         CustomSuccessSnackBar.show(
           context: context,
           title: 'Success',
-          subtitle: 'Profile updated',
+          subtitle: widget.isSelf ? 'Profile updated' : 'Dependent updated',
           duration: const Duration(seconds: 3),
         );
-        _selectedProfilePhoto = null;
-        await _fetchPatientDetails();
+        setState(() {
+          _selectedProfilePhoto = null;
+          _isSaving = false;
+        });
+        
+        // Refresh data after successful update
+        if (widget.isSelf) {
+          await _fetchPatientDetails();
+        } else {
+          await _fetchDependentDetails();
+        }
       } else {
         final msg = auth.errorMessage ?? 'Failed to update';
         throw Exception(msg);
@@ -557,7 +749,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
           duration: const Duration(seconds: 3),
         );
         setState(() {
-          _isLoading = false;
+          _isSaving = false;
         });
       }
     }
@@ -588,7 +780,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                   width: EcliniqTextStyles.getResponsiveIconSize(context, 32),
                   height: EcliniqTextStyles.getResponsiveIconSize(context, 32),
                 ),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.pop(context, true), // Return true to indicate data may have changed
               ),
               title: Align(
                 alignment: Alignment.centerLeft,
@@ -634,7 +826,46 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                 ),
               ],
             ),
-            body: Column(
+            body: _isLoading
+                ? _buildShimmerLoading()
+                : _errorMessage != null
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.error_outline,
+                                size: EcliniqTextStyles.getResponsiveIconSize(context, 64),
+                                color: Colors.red,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                _errorMessage!,
+                                style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
+                                  color: Colors.red,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 24),
+                              ElevatedButton(
+                                onPressed: widget.isSelf ? _fetchPatientDetails : _fetchDependentDetails,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Color(0xff2372EC),
+                                ),
+                                child: Text(
+                                  'Retry',
+                                  style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : Column(
               children: [
                 // Scrollable content
                 Expanded(
@@ -855,7 +1086,15 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                                 ? _genderController.text
                                 : null,
                             onTap: () async {
-                              // Implement gender selection bottom sheet
+                              final selected = await EcliniqBottomSheet.show<String>(
+                                context: context,
+                                child: const GenderSelectionSheet(),
+                              );
+                              if (selected != null && mounted) {
+                                setState(() {
+                                  _genderController.text = selected;
+                                });
+                              }
                             },
                           ),
                           Divider(
@@ -903,7 +1142,15 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                                   ? _relationController.text
                                   : null,
                               onTap: () async {
-                                // Implement relation selection bottom sheet
+                                final selected = await EcliniqBottomSheet.show<String>(
+                                  context: context,
+                                  child: const RelationSelectionSheet(),
+                                );
+                                if (selected != null && mounted) {
+                                  setState(() {
+                                    _relationController.text = selected;
+                                  });
+                                }
                               },
                             ),
                             Divider(
@@ -920,8 +1167,9 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                               value: _contactNumberController.text.isNotEmpty
                                   ? _contactNumberController.text
                                   : null,
-                              onTap: () {
-                                Navigator.push(
+                              onTap: () async {
+                                // Navigate to security settings and wait for result
+                                final result = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
@@ -930,6 +1178,11 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                                         ),
                                   ),
                                 );
+                                
+                                // Reload data if user potentially changed phone/email
+                                if (result == true && mounted) {
+                                  await _fetchPatientDetails();
+                                }
                               },
                             )
                           else
@@ -954,8 +1207,9 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                               value: _emailController.text.isNotEmpty
                                   ? _emailController.text
                                   : null,
-                              onTap: () {
-                                Navigator.push(
+                              onTap: () async {
+                                // Navigate to security settings and wait for result
+                                final result = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
@@ -964,6 +1218,11 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                                         ),
                                   ),
                                 );
+                                
+                                // Reload data if user potentially changed phone/email
+                                if (result == true && mounted) {
+                                  await _fetchPatientDetails();
+                                }
                               },
                             )
                           else
@@ -982,7 +1241,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                           ),
                           _buildSelectField(
                             label: 'Blood Group',
-                            isRequired: false,
+                            isRequired: true,
                             hint: 'Select Blood Group',
                             value: _bloodGroupController.text.isNotEmpty
                                 ? _bloodGroupController.text
@@ -1097,13 +1356,15 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                     width: double.infinity,
                     height: EcliniqTextStyles.getResponsiveSize(context, 52),
                     child: ElevatedButton(
-                      onPressed: _isLoading ? null : _save,
+                      onPressed: (_isLoading || _isSaving) ? null : _save,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xff2372EC),
-                        disabledBackgroundColor: EcliniqColors
-                            .light
-                            .strokeNeutralSubtle
-                            .withOpacity(0.5),
+                        disabledBackgroundColor: _isSaving
+                            ? Color(0xff2372EC)
+                            : EcliniqColors
+                                .light
+                                .strokeNeutralSubtle
+                                .withOpacity(0.5),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(
                             EcliniqTextStyles.getResponsiveBorderRadius(
@@ -1114,17 +1375,22 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                         ),
                       ),
                       child: Center(
-                        child: Text(
-                          'Save',
-                          textAlign: TextAlign.center,
-                          style:
-                              EcliniqTextStyles.responsiveHeadlineMedium(
-                                context,
-                              ).copyWith(
+                        child: _isSaving
+                            ? EcliniqLoader(
+                                size: EcliniqTextStyles.getResponsiveIconSize(context, 24),
                                 color: Colors.white,
-                                fontWeight: FontWeight.w500,
+                              )
+                            : Text(
+                                'Save',
+                                textAlign: TextAlign.center,
+                                style:
+                                    EcliniqTextStyles.responsiveHeadlineMedium(
+                                      context,
+                                    ).copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                               ),
-                        ),
                       ),
                     ),
                   ),

@@ -34,6 +34,7 @@ class PatientDetailsData {
   final String patientCode;
   final DateTime? dob;
   final String? bloodGroup;
+   final String? gender;
   final int? height;
   final int? weight;
   final String? abhaId;
@@ -59,6 +60,7 @@ class PatientDetailsData {
     required this.patientCode,
     this.dob,
     this.bloodGroup,
+    this.gender,
     this.height,
     this.weight,
     this.abhaId,
@@ -106,6 +108,7 @@ class PatientDetailsData {
       patientCode: json['patientCode']?.toString() ?? '',
       dob: parseDateTime(json['dob']),
       bloodGroup: json['bloodGroup']?.toString(),
+      gender: json['gender']?.toString(),
       height: json['height'] is int
           ? json['height']
           : json['height'] != null
@@ -199,6 +202,33 @@ class PatientDetailsData {
     if (bmiValue < 30) return 'Overweight';
     return 'Obese';
   }
+
+  /// Get gender from either direct field or user object
+  String? get displayGender {
+    // Try direct gender field first
+    if (gender != null && gender!.isNotEmpty) {
+      return _formatGender(gender!);
+    }
+    // Fallback to user.gender
+    if (user?.gender != null && user!.gender!.isNotEmpty) {
+      return _formatGender(user!.gender!);
+    }
+    return null;
+  }
+
+  /// Format gender from backend format (MALE, FEMALE, OTHER) to display format
+  String _formatGender(String genderValue) {
+    switch (genderValue.toUpperCase()) {
+      case 'MALE':
+        return 'Male';
+      case 'FEMALE':
+        return 'Female';
+      case 'OTHER':
+        return 'Other';
+      default:
+        return genderValue;
+    }
+  }
 }
 
 class PatientUser {
@@ -208,6 +238,7 @@ class PatientUser {
   final String? emailId;
   final String? phone;
   final String? profilePhoto;
+  final String? gender;
 
   PatientUser({
     required this.id,
@@ -216,6 +247,7 @@ class PatientUser {
     this.emailId,
     this.phone,
     this.profilePhoto,
+    this.gender,
   });
 
   factory PatientUser.fromJson(Map<String, dynamic> json) {
@@ -226,6 +258,7 @@ class PatientUser {
       emailId: json['emailId']?.toString(),
       phone: json['phone']?.toString(),
       profilePhoto: json['profilePhoto']?.toString(),
+      gender: json['gender']?.toString(),
     );
   }
 }
@@ -267,12 +300,24 @@ class AddDependentRequest {
       'relation': relation,
       if (phone != null && phone!.isNotEmpty) 'phone': phone,
       if (emailId != null && emailId!.isNotEmpty) 'emailId': emailId,
-      if (bloodGroup != null && bloodGroup!.isNotEmpty) 'bloodGroup': bloodGroup,
+      'bloodGroup': bloodGroup,
       if (height != null) 'height': height,
       if (weight != null) 'weight': weight,
       if (profilePhoto != null && profilePhoto!.isNotEmpty) 'profilePhoto': profilePhoto,
     };
   }
+}
+
+class DeleteDependentResponse {
+  final bool success;
+  final String message;
+  final String timestamp;
+
+  DeleteDependentResponse({
+    required this.success,
+    required this.message,
+    required this.timestamp,
+  });
 }
 
 class AddDependentResponse {

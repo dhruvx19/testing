@@ -358,7 +358,7 @@ CustomErrorSnackBar.show(
 
     return SizedBox(
       width: double.infinity,
-      height: 52,
+      height: EcliniqTextStyles.getResponsiveButtonHeight(context, baseHeight: 52.0),
       child: GestureDetector(
         onTapDown: isButtonEnabled
             ? (_) => setState(() => _isButtonPressed = true)
@@ -402,11 +402,11 @@ CustomErrorSnackBar.show(
                               : const Color(0xffD6D6D6),
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 4.0)),
                       SvgPicture.asset(
                         EcliniqIcons.arrowRight.assetPath,
-                        width: 24,
-                        height: 24,
+                        width: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
+                        height: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
                         colorFilter: ColorFilter.mode(
                           _isOtpValid ? Colors.white : const Color(0xff8E8E8E),
                           BlendMode.srcIn,
@@ -459,7 +459,11 @@ CustomErrorSnackBar.show(
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
+        padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+          context,
+          horizontal: 18.0,
+          vertical: 24.0,
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -473,20 +477,26 @@ CustomErrorSnackBar.show(
             
             if (_isLoading)
               Padding(
-                padding: const EdgeInsets.only(top: 24.0),
+                padding: EdgeInsets.only(
+                  top: EcliniqTextStyles.getResponsiveSpacing(context, 24.0),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     ShimmerLoading(
-                      width: 200,
-                      height: 20,
-                      borderRadius: BorderRadius.circular(4),
+                      width: EcliniqTextStyles.getResponsiveSize(context, 200.0),
+                      height: EcliniqTextStyles.getResponsiveSize(context, 20.0),
+                      borderRadius: BorderRadius.circular(
+                        EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+                      ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 8.0)),
                     ShimmerLoading(
-                      width: 150,
-                      height: 20,
-                      borderRadius: BorderRadius.circular(4),
+                      width: EcliniqTextStyles.getResponsiveSize(context, 150.0),
+                      height: EcliniqTextStyles.getResponsiveSize(context, 20.0),
+                      borderRadius: BorderRadius.circular(
+                        EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+                      ),
                     ),
                   ],
                 ),
@@ -514,7 +524,9 @@ CustomErrorSnackBar.show(
               ),
               if (_errorMessage != null)
                 Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
+                  padding: EdgeInsets.only(
+                    top: EcliniqTextStyles.getResponsiveSpacing(context, 8.0),
+                  ),
                   child: Text(
                     _errorMessage!,
                     style: EcliniqTextStyles.responsiveBodyMedium(context).copyWith(
@@ -522,7 +534,7 @@ CustomErrorSnackBar.show(
                     ),
                   ),
                 ),
-              const SizedBox(height: 24),
+              SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 24.0)),
               PinCodeTextField(
                 appContext: context,
                 length: 6,
@@ -572,7 +584,7 @@ CustomErrorSnackBar.show(
                   
                 },
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 12.0)),
               Row(
                 children: [
                   Text(
@@ -582,14 +594,14 @@ CustomErrorSnackBar.show(
                     ),
                   ),
                   const Spacer(),
-                  Row(
+                    Row(
                     children: [
                       SvgPicture.asset(
                         EcliniqIcons.clockCircle.assetPath,
-                        width: 16,
-                        height: 16,
+                        width: EcliniqTextStyles.getResponsiveIconSize(context, 16.0),
+                        height: EcliniqTextStyles.getResponsiveIconSize(context, 16.0),
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 4.0)),
                       Text(
                         _formatTimer(_resendTimer),
                         style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
@@ -614,9 +626,11 @@ CustomErrorSnackBar.show(
               _buildVerifyButton(),
             ] else if (_errorMessage != null) ...[
               Padding(
-                padding: const EdgeInsets.only(top: 16.0),
+                padding: EdgeInsets.only(
+                  top: EcliniqTextStyles.getResponsiveSpacing(context, 16.0),
+                ),
                 child: Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 12.0),
                   decoration: BoxDecoration(
                     color: Colors.red.shade50,
                     borderRadius: BorderRadius.circular(8),
@@ -628,9 +642,9 @@ CustomErrorSnackBar.show(
                       Icon(
                         Icons.error_outline,
                         color: Colors.red.shade600,
-                        size: 20,
+                        size: EcliniqTextStyles.getResponsiveIconSize(context, 20.0),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 8.0)),
                       Expanded(
                         child: Text(
                           _errorMessage!,
@@ -643,10 +657,10 @@ CustomErrorSnackBar.show(
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 16.0)),
               SizedBox(
                 width: double.infinity,
-                height: 46,
+                height: EcliniqTextStyles.getResponsiveButtonHeight(context, baseHeight: 46.0),
                 child: ElevatedButton(
                   onPressed: _loadPhoneNumberAndSendOTP,
                   style: ElevatedButton.styleFrom(

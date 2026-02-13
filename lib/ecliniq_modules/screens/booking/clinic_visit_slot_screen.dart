@@ -4,6 +4,7 @@ import 'package:ecliniq/ecliniq_api/models/patient.dart';
 import 'package:ecliniq/ecliniq_api/models/slot.dart';
 import 'package:ecliniq/ecliniq_api/patient_service.dart';
 import 'package:ecliniq/ecliniq_api/slot_service.dart';
+import 'package:ecliniq/ecliniq_core/location/location_storage_service.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/booking/review_details_screen.dart';
@@ -21,6 +22,7 @@ import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
 import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -97,8 +99,13 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
 
     if (widget.doctor != null) {
       _doctor = widget.doctor;
-      _updateCurrentLocationDetails();
-      _isLoadingDoctorDetails = false;
+      _updateCurrentLocationDetails().then((_) {
+        if (mounted) {
+          setState(() {
+            _isLoadingDoctorDetails = false;
+          });
+        }
+      });
     }
 
     _fetchWeeklySlots();
@@ -157,6 +164,10 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
 
   Future<void> _fetchCurrentTokenNumber() async {
     try {
+      // Ensure auth token is retrieved
+      _cachedPrefs ??= await SharedPreferences.getInstance();
+      _cachedAuthToken ??= _cachedPrefs!.getString('auth_token');
+
       final response = await _doctorService.getDoctorDetailsById(
         doctorId: widget.doctorId,
         authToken: _cachedAuthToken,
@@ -589,13 +600,24 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
         authToken: _cachedAuthToken,
       );
 
+      print('🔍 API Response - Success: ${response.success}');
+      if (response.data != null) {
+        print('🔍 Doctor: ${response.data!.name}');
+        print('🔍 Hospitals count: ${response.data!.hospitals.length}');
+        print('🔍 Clinics count: ${response.data!.clinics.length}');
+      }
+
       if (mounted) {
         if (response.success && response.data != null) {
           setState(() {
             _doctor = response.data;
-            _updateCurrentLocationDetails();
             _isLoadingDoctorDetails = false;
           });
+          // Update location details after state is set
+          await _updateCurrentLocationDetails();
+          if (mounted) {
+            setState(() {});
+          }
         } else {
           setState(() {
             _isLoadingDoctorDetails = false;
@@ -641,8 +663,25 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
     }
   }
 
-  void _updateCurrentLocationDetails() {
+  Future<void> _updateCurrentLocationDetails() async {
     if (_doctor == null) return;
+
+    // Debug logging
+    print('🏥 Doctor has ${_doctor!.hospitals.length} hospitals and ${_doctor!.clinics.length} clinics');
+
+    // Get user's current location for distance calculation
+    final storedLocation = await LocationStorageService.getStoredLocation();
+    double? userLat = storedLocation?['latitude'] as double?;
+    double? userLng = storedLocation?['longitude'] as double?;
+
+    // Fallback to Bangalore coordinates if user location not available
+    if (userLat == null || userLng == null) {
+      userLat = 12.9716;
+      userLng = 77.5946;
+      print('📍 User location (fallback): lat=$userLat, lng=$userLng');
+    } else {
+      print('📍 User location (stored): lat=$userLat, lng=$userLng');
+    }
 
     if (_selectedHospitalId != null) {
       final hospital = _doctor!.hospitals.firstWhere(
@@ -651,11 +690,40 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
             ? _doctor!.hospitals.first
             : DoctorHospital(id: '', name: ''),
       );
+      
+      print('🏥 Hospital: ${hospital.name}, lat=${hospital.latitude}, lng=${hospital.longitude}, distance=${hospital.distance}');
+      
       if (hospital.id.isNotEmpty) {
         _currentLocationName = hospital.name;
         _currentLocationAddress =
             '${hospital.city ?? ""}, ${hospital.state ?? ""}';
-        _currentDistance = hospital.distance?.toStringAsFixed(1);
+        
+        // Calculate distance dynamically using user's location and hospital coordinates
+        if (userLat != null && userLng != null && 
+            hospital.latitude != null && hospital.longitude != null) {
+          final distanceInMeters = Geolocator.distanceBetween(
+            userLat,
+            userLng,
+            hospital.latitude!,
+            hospital.longitude!,
+          );
+          final distanceInKm = distanceInMeters / 1000;
+          print('📏 Calculated distance: ${distanceInKm.toStringAsFixed(1)} Km');
+          // Show minimum 0.2 Km if too close (better UX than showing 0.0)
+          _currentDistance = distanceInKm < 0.2 ? '0.2' : distanceInKm.toStringAsFixed(1);
+        } else if (hospital.distance != null && hospital.distance! > 0) {
+          // Fallback to API distance if available
+          final distanceInKm = hospital.distance! / 1000;
+          print('📏 API distance: ${distanceInKm.toStringAsFixed(1)} Km');
+          // Show minimum 0.2 Km if too close
+          _currentDistance = distanceInKm < 0.2 ? '0.2' : distanceInKm.toStringAsFixed(1);
+        } else {
+          print('❌ No distance data available');
+          // Don't show distance if location data is unavailable
+          _currentDistance = null;
+        }
+        
+        print('✅ Final distance to display: $_currentDistance');
       }
     } else if (_selectedClinicId != null) {
       final clinic = _doctor!.clinics.firstWhere(
@@ -664,10 +732,38 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
             ? _doctor!.clinics.first
             : DoctorClinic(id: '', name: ''),
       );
+      print('🏥 Clinic: ${clinic.name}, lat=${clinic.latitude}, lng=${clinic.longitude}, distance=${clinic.distance}');
+      
       if (clinic.id.isNotEmpty) {
         _currentLocationName = clinic.name;
         _currentLocationAddress = '${clinic.city ?? ""}, ${clinic.state ?? ""}';
-        _currentDistance = clinic.distance?.toStringAsFixed(1);
+        
+        // Calculate distance dynamically using user's location and clinic coordinates
+        if (userLat != null && userLng != null && 
+            clinic.latitude != null && clinic.longitude != null) {
+          final distanceInMeters = Geolocator.distanceBetween(
+            userLat,
+            userLng,
+            clinic.latitude!,
+            clinic.longitude!,
+          );
+          final distanceInKm = distanceInMeters / 1000;
+          print('📏 Calculated distance: ${distanceInKm.toStringAsFixed(1)} Km');
+          // Show minimum 0.2 Km if too close
+          _currentDistance = distanceInKm < 0.2 ? '0.2' : distanceInKm.toStringAsFixed(1);
+        } else if (clinic.distance != null && clinic.distance! > 0) {
+          // Fallback to API distance if available
+          final distanceInKm = clinic.distance! / 1000;
+          print('📏 API distance: ${distanceInKm.toStringAsFixed(1)} Km');
+          // Show minimum 0.2 Km if too close
+          _currentDistance = distanceInKm < 0.2 ? '0.2' : distanceInKm.toStringAsFixed(1);
+        } else {
+          print('❌ No distance data available');
+          // Don't show distance if location data is unavailable
+          _currentDistance = null;
+        }
+        
+        print('✅ Final distance to display: $_currentDistance');
       }
     }
   }
@@ -698,26 +794,77 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
 
     final List<DoctorLocationOption> options = [];
 
+    // Get user's location for distance calculation
+    final storedLocation = await LocationStorageService.getStoredLocation();
+    double? userLat = storedLocation?['latitude'] as double?;
+    double? userLng = storedLocation?['longitude'] as double?;
+
+    // Fallback to Bangalore coordinates if user location not available
+    if (userLat == null || userLng == null) {
+      userLat = 12.9716;
+      userLng = 77.5946;
+    }
+
     for (var clinic in _doctor!.clinics) {
+      String? distanceStr;
+      
+      // Calculate distance dynamically
+      if (userLat != null && userLng != null && 
+          clinic.latitude != null && clinic.longitude != null) {
+        final distanceInMeters = Geolocator.distanceBetween(
+          userLat,
+          userLng,
+          clinic.latitude!,
+          clinic.longitude!,
+        );
+        final distanceInKm = distanceInMeters / 1000;
+        // Show minimum 0.2 Km if too close
+        distanceStr = distanceInKm < 0.2 ? '0.2' : distanceInKm.toStringAsFixed(1);
+      } else if (clinic.distance != null && clinic.distance! > 0) {
+        final distanceInKm = clinic.distance! / 1000;
+        // Show minimum 0.2 Km if too close
+        distanceStr = distanceInKm < 0.2 ? '0.2' : distanceInKm.toStringAsFixed(1);
+      }
+      
       options.add(
         DoctorLocationOption(
           id: clinic.id,
           name: clinic.name,
           address: '${clinic.city ?? ""}, ${clinic.state ?? ""}',
           type: 'Clinic',
-          distance: clinic.distance?.toStringAsFixed(1),
+          distance: distanceStr,
         ),
       );
     }
 
     for (var hospital in _doctor!.hospitals) {
+      String? distanceStr;
+      
+      // Calculate distance dynamically
+      if (userLat != null && userLng != null && 
+          hospital.latitude != null && hospital.longitude != null) {
+        final distanceInMeters = Geolocator.distanceBetween(
+          userLat,
+          userLng,
+          hospital.latitude!,
+          hospital.longitude!,
+        );
+        final distanceInKm = distanceInMeters / 1000;
+        // Show minimum 0.2 Km if too close
+        distanceStr = distanceInKm < 0.2 ? '0.2' : distanceInKm.toStringAsFixed(1);
+      } else if (hospital.distance != null && hospital.distance! > 0) {
+        final distanceInKm = hospital.distance! / 1000;
+        // Show minimum 0.2 Km if too close
+        distanceStr = distanceInKm < 0.2 ? '0.2' : distanceInKm.toStringAsFixed(1);
+      }
+      
       options.add(
         DoctorLocationOption(
           id: hospital.id,
           name: hospital.name,
           address: '${hospital.city ?? ""}, ${hospital.state ?? ""}',
           type: 'Hospital',
-          distance: hospital.distance?.toStringAsFixed(1),
+          distance: distanceStr,
         ),
       );
     }
@@ -750,12 +897,17 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
           _selectedClinicId = selected.id;
           _selectedHospitalId = null;
         }
-        _updateCurrentLocationDetails();
 
         selectedSlot = null;
         _isLoading = true;
         _isLoadingWeeklySlots = true;
       });
+
+      // Update location details with calculated distance
+      await _updateCurrentLocationDetails();
+      if (mounted) {
+        setState(() {});
+      }
 
       _fetchSlots();
       _fetchWeeklySlots();

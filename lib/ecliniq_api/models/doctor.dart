@@ -108,11 +108,16 @@ class Doctor {
       hospitals: (json['hospitals'] as List<dynamic>?)
               ?.map((item) => DoctorHospital.fromJson(item))
               .toList() ??
+          (json['doctorHospitals'] as List<dynamic>?)
+              ?.map((item) => DoctorHospital.fromJson(item))
+              .toList() ??
           [],
       clinics: (json['clinics'] as List<dynamic>?)
               ?.map((item) => DoctorClinic.fromJson(item))
               .toList() ??
-          [],
+          (json['clinicDetails'] != null && json['clinicDetails'] is Map
+              ? [DoctorClinic.fromJson(json['clinicDetails'])]
+              : []),
       isFavourite: json['isFavourite'] ?? false,
       serviceFee: parseNumeric(json['serviceFee']),
     );

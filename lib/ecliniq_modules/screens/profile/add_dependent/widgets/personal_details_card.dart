@@ -75,6 +75,43 @@ class _PersonalDetailsWidgetState extends State<PersonalDetailsWidget> {
     }
   }
 
+  String? _backendBloodGroup(String? uiValue) {
+    if (uiValue == null || uiValue.isEmpty) return null;
+    const map = {
+      'A+': 'A_POSITIVE',
+      'A-': 'A_NEGATIVE',
+      'B+': 'B_POSITIVE',
+      'B-': 'B_NEGATIVE',
+      'AB+': 'AB_POSITIVE',
+      'AB-': 'AB_NEGATIVE',
+      'O+': 'O_POSITIVE',
+      'O-': 'O_NEGATIVE',
+      'Others': 'OTHERS',
+    };
+    return map[uiValue] ?? uiValue;
+  }
+
+  String _backendGender(String? uiValue) {
+    if (uiValue == null || uiValue.isEmpty) return '';
+    // Convert UI format (Male, Female, Others) to backend format (MALE, FEMALE, OTHER)
+    switch (uiValue) {
+      case 'Male':
+        return 'MALE';
+      case 'Female':
+        return 'FEMALE';
+      case 'Others':
+        return 'OTHER';
+      default:
+        return uiValue.toUpperCase();
+    }
+  }
+
+  String _backendRelation(String? uiValue) {
+    if (uiValue == null || uiValue.isEmpty) return '';
+    // Convert UI format (Father, Mother, Son) to backend format (FATHER, MOTHER, SON)
+    return uiValue.toUpperCase();
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenSize = ResponsiveHelper.getScreenSize(context);
@@ -112,7 +149,9 @@ class _PersonalDetailsWidgetState extends State<PersonalDetailsWidget> {
       ),
       decoration: BoxDecoration(
         color: Color(0xffF9F9F9),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(
+          EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0),
+        ),
       ),
       child: Padding(
         padding: EdgeInsets.all(
@@ -156,7 +195,7 @@ class _PersonalDetailsWidgetState extends State<PersonalDetailsWidget> {
             ),
             Divider(
               color: Color(0xffD6D6D6),
-              thickness: 0.5,
+              thickness: EcliniqTextStyles.getResponsiveSize(context, 0.5),
               height: 0,
             ),
 
@@ -215,7 +254,7 @@ class _PersonalDetailsWidgetState extends State<PersonalDetailsWidget> {
                 label: 'Gender',
                 isRequired: true,
                 hint: 'Select Gender',
-                value: provider.gender ?? provider.selectedGender,
+                value: provider.selectedGender,
                 onTap: () async {
                   
                   final selected = await EcliniqBottomSheet.show(
@@ -230,9 +269,11 @@ class _PersonalDetailsWidgetState extends State<PersonalDetailsWidget> {
                   
                   
                   if (selected != null) {
-                    
-                    provider.setGender(selected);
-                    provider.selectGender(selected); 
+                    // selected is UI format like "Male", "Female", "Others"
+                    // Convert to backend format for API
+                    final backendGender = _backendGender(selected);
+                    provider.selectGender(selected); // UI format for display
+                    provider.setGender(backendGender); // Backend format for API
                     
                   } else {
                     
@@ -243,7 +284,7 @@ class _PersonalDetailsWidgetState extends State<PersonalDetailsWidget> {
 
             Divider(
               color: Color(0xffD6D6D6),
-              thickness: 0.5,
+              thickness: EcliniqTextStyles.getResponsiveSize(context, 0.5),
               height: 0,
             ),
             
@@ -299,7 +340,7 @@ class _PersonalDetailsWidgetState extends State<PersonalDetailsWidget> {
                 label: 'Relation',
                 isRequired: true,
                 hint: 'Select Relation',
-                value: provider.relation ?? provider.selectedRelation,
+                value: provider.selectedRelation,
                 onTap: () async {
                   
                   final selected = await EcliniqBottomSheet.show(
@@ -309,9 +350,11 @@ class _PersonalDetailsWidgetState extends State<PersonalDetailsWidget> {
 
                   
                   if (selected != null) {
-                    
-                    provider.setRelation(selected);
-                    provider.selectRelation(selected); 
+                    // selected is UI format like "Father", "Mother", "Son"
+                    // Convert to backend format for API
+                    final backendRelation = _backendRelation(selected);
+                    provider.selectRelation(selected); // UI format for display
+                    provider.setRelation(backendRelation); // Backend format for API
                     
                   } else {
                     
@@ -322,7 +365,7 @@ class _PersonalDetailsWidgetState extends State<PersonalDetailsWidget> {
 
             Divider(
               color: Color(0xffD6D6D6),
-              thickness: 0.5,
+              thickness: EcliniqTextStyles.getResponsiveSize(context, 0.5),
               height: 0,
             ),
             Container(
@@ -361,7 +404,7 @@ class _PersonalDetailsWidgetState extends State<PersonalDetailsWidget> {
 
             Divider(
               color: Color(0xffD6D6D6),
-              thickness: 0.5,
+              thickness: EcliniqTextStyles.getResponsiveSize(context, 0.5),
               height: 0,
             ),
             Container(
@@ -396,7 +439,7 @@ class _PersonalDetailsWidgetState extends State<PersonalDetailsWidget> {
 
             Divider(
               color: Color(0xffD6D6D6),
-              thickness: 0.5,
+              thickness: EcliniqTextStyles.getResponsiveSize(context, 0.5),
               height: 0,
             ),
             Container(
@@ -417,16 +460,23 @@ class _PersonalDetailsWidgetState extends State<PersonalDetailsWidget> {
               child: _buildSelectField(
                  context:   context,
                 label: 'Blood Group',
-                isRequired: false,
+                isRequired: true,
                 hint: 'Select Blood Group',
-                value: provider.bloodGroup,
+                value: provider.selectedBloodGroup?.isNotEmpty == true 
+                    ? provider.selectedBloodGroup 
+                    : null,
                 onTap: () async {
                   final selected = await EcliniqBottomSheet.show(
                     context: context,
                     child: BloodGroupSelectionSheet(),
                   );
                   if (selected != null) {
-                    provider.setBloodGroup(selected);
+                    // Convert UI format (A+) to backend format (A_POSITIVE)
+                    final backendFormat = _backendBloodGroup(selected);
+                    provider.selectBloodGroup(selected); // UI format
+                    if (backendFormat != null) {
+                      provider.setBloodGroup(backendFormat); // Backend format
+                    }
                   }
                 },
               ),

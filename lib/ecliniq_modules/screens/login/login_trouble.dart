@@ -1,11 +1,112 @@
+import 'dart:io';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class LoginTroublePage extends StatelessWidget {
+class LoginTroublePage extends StatefulWidget {
   const LoginTroublePage({super.key});
+
+  @override
+  State<LoginTroublePage> createState() => _LoginTroublePageState();
+}
+
+class _LoginTroublePageState extends State<LoginTroublePage> {
+  Future<void> _launchEmailSupport() async {
+    try {
+      // Get device information
+      final deviceInfo = DeviceInfoPlugin();
+      String deviceType = 'Unknown';
+      String osVersion = 'Unknown';
+
+      if (Platform.isIOS) {
+        final iosInfo = await deviceInfo.iosInfo;
+        deviceType = iosInfo.utsname.machine ?? 'iPhone';
+        osVersion = 'iOS ${iosInfo.systemVersion}';
+      } else if (Platform.isAndroid) {
+        final androidInfo = await deviceInfo.androidInfo;
+        deviceType = '${androidInfo.manufacturer} ${androidInfo.model}';
+        osVersion = 'Android ${androidInfo.version.release}';
+      }
+
+      // Get app version
+      final packageInfo = await PackageInfo.fromPlatform();
+      final appVersion = packageInfo.version;
+
+      // Get user info from SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final phoneNumber = prefs.getString('phone_number') ?? '';
+      final userName = prefs.getString('user_name') ?? '';
+
+      // Get locale/region
+      final locale = Platform.localeName;
+
+      // Platform identifier
+      final platform = Platform.isIOS ? 'ios' : 'android';
+
+      // Email subject and body
+      final subject = '[upcharq-$platform]: Issue in logging in upcharq app';
+      final body = '''
+Issue:
+
+Phone Number: $phoneNumber
+
+Name: $userName
+
+App Version: $appVersion
+Device Type: $deviceType
+os Details: $osVersion
+Region: $locale
+
+
+Sent from my ${Platform.isIOS ? 'iPhone' : 'Android device'}''';
+
+      final Uri emailUri = Uri(
+        scheme: 'mailto',
+        path: 'support@upcharq.com',
+        query: _encodeQueryParameters(<String, String>{
+          'subject': subject,
+          'body': body,
+        }),
+      );
+
+      // Try launching directly without canLaunchUrl check
+      final launched = await launchUrl(
+        emailUri,
+        mode: LaunchMode.externalApplication,
+      );
+
+      if (!launched && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not open email app. Please ensure you have an email app installed.'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  String? _encodeQueryParameters(Map<String, String> params) {
+    return params.entries
+        .map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+        .join('&');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -182,9 +283,7 @@ class LoginTroublePage extends StatelessWidget {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: GestureDetector(
-                          onTap: () {
-                            
-                          },
+                          onTap: _launchEmailSupport,
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 6,

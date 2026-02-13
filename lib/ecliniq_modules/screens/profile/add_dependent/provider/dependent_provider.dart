@@ -92,7 +92,8 @@ class AddDependentProvider extends ChangeNotifier {
         _gender != null &&
         _dateOfBirth != null &&
         _relation != null &&
-        _contactNumber.trim().isNotEmpty;
+        _contactNumber.trim().isNotEmpty &&
+        _bloodGroup != null && _bloodGroup!.isNotEmpty;
     
     
     if (!isValid) {
@@ -130,7 +131,10 @@ class AddDependentProvider extends ChangeNotifier {
     if (_contactNumber.trim().isEmpty) {
       errors.add('Contact number is required');
     }
-    
+    if (_bloodGroup == null || _bloodGroup!.isEmpty) {
+      errors.add('Blood group is required');
+    }
+
     return errors.isEmpty ? 'Please fill all required fields' : errors.join(', ');
   }
 
@@ -222,6 +226,11 @@ class AddDependentProvider extends ChangeNotifier {
     }
     if (_contactNumber.trim().isEmpty) {
       _errorMessage = 'Contact number is required';
+      notifyListeners();
+      return false;
+    }
+    if (_bloodGroup == null || _bloodGroup!.isEmpty) {
+      _errorMessage = 'Blood group is required';
       notifyListeners();
       return false;
     }

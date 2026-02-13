@@ -257,6 +257,48 @@ class PatientService {
     }
   }
 
+  // Delete dependent
+  Future<DeleteDependentResponse> deleteDependent({
+    required String authToken,
+    required String dependentId,
+  }) async {
+    try {
+      final url = Uri.parse(Endpoints.deleteDependent(dependentId));
+
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $authToken',
+        'x-access-token': authToken,
+      };
+
+      final response = await http.delete(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        return DeleteDependentResponse(
+          success: true,
+          message: responseData['message'] ?? 'Dependent deleted successfully',
+          timestamp: DateTime.now().toIso8601String(),
+        );
+      } else {
+        final responseData = jsonDecode(response.body);
+        return DeleteDependentResponse(
+          success: false,
+          message:
+              responseData['message'] ??
+              'Failed to delete dependent: ${response.statusCode}',
+          timestamp: DateTime.now().toIso8601String(),
+        );
+      }
+    } catch (e) {
+      return DeleteDependentResponse(
+        success: false,
+        message: 'Network error: $e',
+        timestamp: DateTime.now().toIso8601String(),
+      );
+    }
+  }
+
   
   Future<Map<String, dynamic>> addFavouriteDoctor({
     required String authToken,

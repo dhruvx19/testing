@@ -19,7 +19,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
-import 'package:speech_to_text/speech_to_text.dart';
+import 'package:ecliniq/ecliniq_utils/speech_helper.dart';
 
 class HospitalDoctorsScreen extends StatefulWidget {
   final String hospitalId;
@@ -46,7 +46,7 @@ class _HospitalDoctorsScreenState extends State<HospitalDoctorsScreen> {
   final DoctorService _doctorService = DoctorService();
   final StorageService _storageService = StorageService();
   final TextEditingController _searchController = TextEditingController();
-  final SpeechToText _speechToText = SpeechToText();
+  final SpeechHelper _speechHelper = SpeechHelper();
 
   List<Doctor> _doctors = [];
   List<Doctor> _filteredDoctors = [];
@@ -55,8 +55,7 @@ class _HospitalDoctorsScreenState extends State<HospitalDoctorsScreen> {
   String _searchQuery = '';
   Timer? _filterDebounceTimer;
   String? _selectedSortOption;
-  bool _speechEnabled = false;
-  bool _isListening = false;
+  bool get _isListening => _speechHelper.isListening;
   int _retryCount = 0;
   static const int _maxRetries = 3;
 
@@ -73,84 +72,37 @@ class _HospitalDoctorsScreenState extends State<HospitalDoctorsScreen> {
   }
 
   Future<void> _initSpeech() async {
-    try {
-      _speechEnabled = await _speechToText.initialize(
-        onError: (error) {
-          if (mounted) {
-            setState(() => _isListening = false);
-          }
-        },
-        onStatus: (status) {
-          if (mounted) {
-            if (status == 'notListening' ||
-                status == 'done' ||
-                status == 'doneNoResult') {
-              setState(() => _isListening = false);
-            } else if (status == 'listening') {
-              setState(() => _isListening = true);
-            }
-          }
-        },
-      );
-    } catch (e) {
-      _speechEnabled = false;
-    }
+    await _speechHelper.initSpeech(
+      onListeningChanged: () {
+        if (mounted) setState(() {});
+      },
+      mounted: () => mounted,
+    );
   }
 
   void _startListening() async {
-    if (_isListening) return;
-
-    if (!_speechEnabled) {
-      await _initSpeech();
-      if (!_speechEnabled) {
+    await _speechHelper.startListening(
+      onResult: _onSpeechResult,
+      onError: (message) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Speech recognition is not available. Please check your permissions.',
-              ),
-              duration: Duration(seconds: 2),
-            ),
+            SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
           );
         }
-        return;
-      }
-    }
-
-    try {
-      await _speechToText.listen(
-        onResult: _onSpeechResult,
-        listenFor: const Duration(seconds: 30),
-        pauseFor: const Duration(seconds: 3),
-        partialResults: true,
-        localeId: 'en_US',
-        cancelOnError: false,
-        listenMode: ListenMode.confirmation,
-      );
-
-      if (mounted) {
-        setState(() {
-          _isListening = true;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isListening = false);
-      }
-    }
+      },
+      mounted: () => mounted,
+      onListeningChanged: () {
+        if (mounted) setState(() {});
+      },
+    );
   }
 
   void _stopListening() async {
-    try {
-      await _speechToText.stop();
-      if (mounted) {
-        setState(() => _isListening = false);
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isListening = false);
-      }
-    }
+    await _speechHelper.stopListening(
+      onListeningChanged: () {
+        if (mounted) setState(() {});
+      },
+    );
   }
 
   void _onSpeechResult(SpeechRecognitionResult result) {
@@ -280,7 +232,7 @@ class _HospitalDoctorsScreenState extends State<HospitalDoctorsScreen> {
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     _filterDebounceTimer?.cancel();
-    _speechToText.cancel();
+    _speechHelper.cancel();
     super.dispose();
   }
 

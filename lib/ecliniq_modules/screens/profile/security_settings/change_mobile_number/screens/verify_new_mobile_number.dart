@@ -181,7 +181,7 @@ class _VerifyNewMobileNumberState extends State<VerifyNewMobileNumber> {
 
     return SizedBox(
       width: double.infinity,
-      height: 52,
+      height: EcliniqTextStyles.getResponsiveButtonHeight(context, baseHeight: 52.0),
       child: GestureDetector(
         onTapDown: isButtonEnabled
             ? (_) => setState(() => _isButtonPressed = true)
@@ -225,11 +225,11 @@ class _VerifyNewMobileNumberState extends State<VerifyNewMobileNumber> {
                               : const Color(0xffD6D6D6),
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 4.0)),
                       SvgPicture.asset(
                         EcliniqIcons.arrowRight.assetPath,
-                        width: 24,
-                        height: 24,
+                        width: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
+                        height: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
                         colorFilter: ColorFilter.mode(
                           _isOtpValid ? Colors.white : const Color(0xff8E8E8E),
                           BlendMode.srcIn,
@@ -282,7 +282,11 @@ class _VerifyNewMobileNumberState extends State<VerifyNewMobileNumber> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
+        padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+          context,
+          horizontal: 18.0,
+          vertical: 24.0,
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -315,7 +319,9 @@ class _VerifyNewMobileNumberState extends State<VerifyNewMobileNumber> {
             ),
             if (_errorMessage != null)
               Padding(
-                padding: const EdgeInsets.only(top: 8.0),
+                padding: EdgeInsets.only(
+                  top: EcliniqTextStyles.getResponsiveSpacing(context, 8.0),
+                ),
                 child: Text(
                   _errorMessage!,
                   style: EcliniqTextStyles.responsiveBodyMedium(context).copyWith(
@@ -323,7 +329,7 @@ class _VerifyNewMobileNumberState extends State<VerifyNewMobileNumber> {
                   ),
                 ),
               ),
-            SizedBox(height: 24),
+            SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 24.0)),
             PinCodeTextField(
               appContext: context,
               length: 6,
@@ -364,7 +370,7 @@ class _VerifyNewMobileNumberState extends State<VerifyNewMobileNumber> {
                 }
               },
             ),
-            SizedBox(height: 12),
+            SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 12.0)),
             Row(
               children: [
                 Text(
@@ -378,10 +384,10 @@ class _VerifyNewMobileNumberState extends State<VerifyNewMobileNumber> {
                   children: [
                     SvgPicture.asset(
                       EcliniqIcons.clockCircle.assetPath,
-                      width: 16,
-                      height: 16,
+                      width: EcliniqTextStyles.getResponsiveIconSize(context, 16.0),
+                      height: EcliniqTextStyles.getResponsiveIconSize(context, 16.0),
                     ),
-                    SizedBox(width: 4),
+                    SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 4.0)),
                     Text(
                       _formatTimer(_resendTimer),
                       style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(

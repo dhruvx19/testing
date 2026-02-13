@@ -20,7 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
-import 'package:speech_to_text/speech_to_text.dart';
+import 'package:ecliniq/ecliniq_utils/speech_helper.dart';
 
 class SpecialityHospitalList extends StatefulWidget {
   final String? initialSpeciality;
@@ -36,7 +36,7 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
   final StorageService _storageService = StorageService();
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _categoryScrollController = ScrollController();
-  final SpeechToText _speechToText = SpeechToText();
+  final SpeechHelper _speechHelper = SpeechHelper();
 
   List<Hospital> _hospitals = [];
   bool _isLoading = true;
@@ -50,8 +50,7 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
 
   double _latitude = 12.9173;
   double _longitude = 77.6377;
-  bool _speechEnabled = false;
-  bool _isListening = false;
+  bool get _isListening => _speechHelper.isListening;
 
   List<String> _categories = [
     'All',
@@ -97,179 +96,37 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
   }
 
   Future<void> _initSpeech() async {
-    try {
-      _speechEnabled = await _speechToText.initialize(
-        onError: (error) {
-          if (mounted) {
-            setState(() => _isListening = false);
-          }
-          final errorMsg = error.errorMsg.toLowerCase();
-          if (!errorMsg.contains('no_match') &&
-              !errorMsg.contains('listen_failed')) {
-            developer.log(
-              'Speech recognition initialization error: ${error.errorMsg}',
-            );
-          }
-        },
-        onStatus: (status) {
-          developer.log('Speech recognition status: $status');
-          if (mounted) {
-            if (status == 'notListening' ||
-                status == 'done' ||
-                status == 'doneNoResult') {
-              setState(() => _isListening = false);
-            } else if (status == 'listening') {
-              setState(() => _isListening = true);
-            }
-          }
-        },
-      );
-      if (mounted) {
-        setState(() {});
-      }
-      developer.log('Speech recognition initialized: $_speechEnabled');
-    } catch (e) {
-      developer.log('Error initializing speech recognition: $e');
-      _speechEnabled = false;
-      if (mounted) {
-        setState(() {});
-      }
-    }
+    await _speechHelper.initSpeech(
+      onListeningChanged: () {
+        if (mounted) setState(() {});
+      },
+      mounted: () => mounted,
+    );
   }
 
   void _startListening() async {
-    if (_isListening) {
-      return;
-    }
-
-    if (!_speechEnabled) {
-      await _initSpeech();
-      if (!_speechEnabled) {
+    await _speechHelper.startListening(
+      onResult: _onSpeechResult,
+      onError: (message) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Speech recognition is not available. Please check your permissions.',
-              ),
-              duration: Duration(seconds: 2),
-            ),
+            SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
           );
         }
-        return;
-      }
-    }
-
-    final isAvailable = await _speechToText.initialize(
-      onError: (error) {
-        developer.log('Speech recognition error: ${error.errorMsg}');
-        final errorMsg = error.errorMsg.toLowerCase();
-        if (errorMsg.contains('no_match') ||
-            errorMsg.contains('listen_failed') ||
-            errorMsg.contains('error_network_error')) {
-          developer.log('Expected speech recognition error: ${error.errorMsg}');
-          if (mounted) {
-            setState(() => _isListening = false);
-          }
-          return;
-        }
-
-        if (mounted) {
-          setState(() => _isListening = false);
-          if (errorMsg.contains('error_permission') ||
-              errorMsg.contains('permission')) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Microphone permission is required for voice search.',
-                ),
-                duration: Duration(seconds: 2),
-              ),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Speech recognition error: ${error.errorMsg}'),
-                duration: const Duration(seconds: 2),
-              ),
-            );
-          }
-        }
       },
-      onStatus: (status) {
-        developer.log('Speech recognition status: $status');
-        if (mounted) {
-          if (status == 'notListening' ||
-              status == 'done' ||
-              status == 'doneNoResult') {
-            setState(() => _isListening = false);
-          } else if (status == 'listening') {
-            setState(() => _isListening = true);
-          }
-        }
+      mounted: () => mounted,
+      onListeningChanged: () {
+        if (mounted) setState(() {});
       },
     );
-
-    if (!isAvailable) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Speech recognition is not available. Please check your permissions.',
-            ),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-      return;
-    }
-
-    try {
-      await _speechToText.listen(
-        onResult: _onSpeechResult,
-        listenFor: const Duration(seconds: 30),
-        pauseFor: const Duration(seconds: 3),
-        partialResults: true,
-        localeId: 'en_US',
-        cancelOnError: false,
-        listenMode: ListenMode.confirmation,
-      );
-
-      if (mounted) {
-        setState(() {
-          _isListening = true;
-        });
-      }
-    } catch (e) {
-      developer.log('Error starting speech recognition: $e');
-      if (mounted) {
-        setState(() => _isListening = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error starting voice search: ${e.toString()}'),
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
-    }
   }
 
   void _stopListening() async {
-    try {
-      await _speechToText.stop();
-      if (mounted) {
-        setState(() {
-          _isListening = false;
-        });
-      }
-      developer.log('Speech recognition stopped');
-    } catch (e) {
-      developer.log('Error stopping speech recognition: $e');
-      if (mounted) {
-        setState(() {
-          _isListening = false;
-        });
-      }
-    }
+    await _speechHelper.stopListening(
+      onListeningChanged: () {
+        if (mounted) setState(() {});
+      },
+    );
   }
 
   void _onSpeechResult(SpeechRecognitionResult result) {
@@ -327,7 +184,7 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     _categoryScrollController.dispose();
-    _speechToText.cancel();
+    _speechHelper.cancel();
     super.dispose();
   }
 
@@ -1590,7 +1447,7 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
                               ),
                               child: Text(
                                 hospital.distance > 0
-                                    ? '${hospital.distance.toStringAsFixed(1)} Km'
+                                    ? '${(hospital.distance / 1000).toStringAsFixed(1)} Km'
                                     : 'Nearby',
                                 style:
                                     EcliniqTextStyles.responsiveBodySmall(

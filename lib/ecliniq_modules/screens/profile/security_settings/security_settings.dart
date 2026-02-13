@@ -1,6 +1,8 @@
 import 'package:ecliniq/ecliniq_modules/screens/profile/security_settings/change_email_id/verify_existing_email.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/security_settings/change_mpin/change_mpin_screen.dart';
+import 'package:ecliniq/ecliniq_modules/screens/profile/security_settings/widgets/delete_account_bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/error_snackbar.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/success_snackbar.dart';
 import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
@@ -38,6 +40,7 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
   String? _existingEmail;
   bool _isBiometricAvailable = false;
   bool _isBiometricEnabled = false;
+  bool _hasDataChanged = false; // Track if email or phone was changed
   final AuthService _authService = AuthService();
   final PatientService _patientService = PatientService();
 
@@ -196,6 +199,9 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
     
           );
         }
+        
+        // Return true to indicate data has changed
+        _hasDataChanged = true;
       }
     }
   }
@@ -248,6 +254,9 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
             
           );
         }
+        
+        // Return true to indicate data has changed
+        _hasDataChanged = true;
       }
     }
   }
@@ -413,9 +422,14 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
       }
     }
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pop(context, _hasDataChanged);
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
         surfaceTintColor: Colors.transparent,
         leadingWidth: 58,
         titleSpacing: 0,
@@ -428,7 +442,7 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
             width: EcliniqTextStyles.getResponsiveSize(context, 32.0),
             height: EcliniqTextStyles.getResponsiveSize(context, 32.0),
           ),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(context, _hasDataChanged),
         ),
         title: Align(
           alignment: Alignment.centerLeft,
@@ -452,7 +466,11 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
       body: _isInitialLoading
           ? Center(child: EcliniqLoader(size: 20))
           : Container(
-              padding: EdgeInsets.symmetric(horizontal: 20),
+              padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                context,
+                horizontal: 20.0,
+                vertical: 0.0,
+              ),
               child: Column(
                 children: [
                   _buildTile(
@@ -465,7 +483,7 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
                   Container(
                     color: Color(0xffD6D6D6),
                     width: double.infinity,
-                    height: 0.5,
+                    height: EcliniqTextStyles.getResponsiveSize(context, 0.5),
                   ),
                   _buildTile(
                     EcliniqIcons.mail.assetPath,
@@ -477,7 +495,7 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
                   Container(
                     color: Color(0xffD6D6D6),
                     width: double.infinity,
-                    height: 0.5,
+                    height: EcliniqTextStyles.getResponsiveSize(context, 0.5),
                   ),
                   _buildTile(
                     EcliniqIcons.password.assetPath,
@@ -489,7 +507,7 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
                   Container(
                     color: Color(0xffD6D6D6),
                     width: double.infinity,
-                    height: 0.5,
+                    height: EcliniqTextStyles.getResponsiveSize(context, 0.5),
                   ),
                   _buildTile(
                     EcliniqIcons.faceScanSquare.assetPath,
@@ -522,15 +540,82 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
                   
                   Spacer(),
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 30),
+                    padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                      context,
+                      horizontal: 0.0,
+                      vertical: 30.0,
+                    ),
                     child: GestureDetector(
-                      onTap: () {
-                          CustomSuccessSnackBar.show(
-                            title: 'OTP verified successfully!',
-                            subtitle: 'You can now reset your MPIN',
-                            context: context,
-                      
+                      onTap: () async {
+                        final result = await EcliniqBottomSheet.show(
+                          context: context,
+                          child: const DeleteAccountBottomSheet(),
                         );
+
+                        if (result == true && mounted) {
+                          // User confirmed account deletion
+                          try {
+                            // Show loading dialog
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              barrierColor: Colors.black.withOpacity(0.3),
+                              builder: (context) => Center(child: EcliniqLoader()),
+                            );
+
+                            final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                            final authToken = authProvider.authToken;
+
+                            // Call delete account API
+                            final deleteResponse = await _authService.deleteAccount(authToken: authToken);
+
+                            // Close loading dialog
+                            if (mounted) {
+                              Navigator.of(context, rootNavigator: true).pop();
+                            }
+
+                            if (deleteResponse['success'] == true) {
+                              // Clear local data
+                              await authProvider.logout();
+
+                              // Navigate to login page
+                              if (mounted) {
+                                EcliniqRouter.pushAndRemoveUntil(const LoginPage(), (route) => false);
+                                
+                                // Show success message on login page
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(deleteResponse['message'] ?? 'Account deleted successfully'),
+                                    backgroundColor: Colors.green,
+                                    duration: const Duration(seconds: 3),
+                                  ),
+                                );
+                              }
+                            } else {
+                              // Show error message
+                              if (mounted) {
+                                CustomErrorSnackBar.show(
+                                  context: context,
+                                  title: 'Failed to delete account',
+                                  subtitle: deleteResponse['message'] ?? 'Please try again',
+                                  duration: const Duration(seconds: 3),
+                                );
+                              }
+                            }
+                          } catch (e) {
+                            // Close loading dialog if open
+                            if (mounted) {
+                              Navigator.of(context, rootNavigator: true).pop();
+                              
+                              CustomErrorSnackBar.show(
+                                context: context,
+                                title: 'Error',
+                                subtitle: 'An error occurred: $e',
+                                duration: const Duration(seconds: 3),
+                              );
+                            }
+                          }
+                        }
                       },
                       child: Container(
                         width: double.infinity,
@@ -590,6 +675,7 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
                 ],
               ),
             ),
+      ),
     );
   }
 
@@ -651,7 +737,7 @@ Widget _buildTile(
                       ),
                     ),
                     if (subtitle != null) ...[
-                      SizedBox(height: 4),
+                      SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 4.0)),
                       Text(
                         subtitle,
                         style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
@@ -666,8 +752,8 @@ Widget _buildTile(
               (title != 'Change Biometric Permissions' && title != 'Enable Biometric Authentication')
                   ? SvgPicture.asset(
                       EcliniqIcons.angleRight.assetPath,
-                      width: 24,
-                      height: 24,
+                      width: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
+                      height: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
                       colorFilter: ColorFilter.mode(
                         Color(0xff424242),
                         BlendMode.srcIn,
@@ -676,8 +762,8 @@ Widget _buildTile(
                   : (!isExpanded)
                   ? SvgPicture.asset(
                       EcliniqIcons.angleRight.assetPath,
-                      width: 24,
-                      height: 24,
+                      width: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
+                      height: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
                       colorFilter: ColorFilter.mode(
                         Color(0xff424242),
                         BlendMode.srcIn,
@@ -685,8 +771,8 @@ Widget _buildTile(
                     )
                   : SvgPicture.asset(
                       EcliniqIcons.angleDown.assetPath,
-                      width: 24,
-                      height: 24,
+                      width: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
+                      height: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
                     ),
             ],
           ),
@@ -713,7 +799,7 @@ Widget _buildDropDown(bool isOn, Future<void> Function() onPressed,
                     color: Color(0xff424242),
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 4.0)),
                 Text(
                   isOn 
                       ? 'Biometric authentication is enabled. Toggle to disable.' 
@@ -729,19 +815,21 @@ Widget _buildDropDown(bool isOn, Future<void> Function() onPressed,
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 12.0)),
           SizedBox(
-            width: 40,
-            height: 23,
+            width: EcliniqTextStyles.getResponsiveSize(context, 40.0),
+            height: EcliniqTextStyles.getResponsiveSize(context, 23.0),
             child: GestureDetector(
               onTap: () async => await onPressed(),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
-                width: 60,
-                height: 30,
+                width: EcliniqTextStyles.getResponsiveSize(context, 60.0),
+                height: EcliniqTextStyles.getResponsiveSize(context, 30.0),
                 decoration: BoxDecoration(
                   color: isOn ? Color(0xff0D47A1) : Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(
+                    EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+                  ),
                 ),
                 child: AnimatedAlign(
                   duration: const Duration(milliseconds: 250),
@@ -750,12 +838,14 @@ Widget _buildDropDown(bool isOn, Future<void> Function() onPressed,
                       : Alignment.centerLeft,
                   curve: Curves.easeInOut,
                   child: Container(
-                    margin: const EdgeInsets.all(2),
-                    width: 20,
-                    height: 20,
+                    margin: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 2.0),
+                    width: EcliniqTextStyles.getResponsiveSize(context, 20.0),
+                    height: EcliniqTextStyles.getResponsiveSize(context, 20.0),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(3),
+                      borderRadius: BorderRadius.circular(
+                        EcliniqTextStyles.getResponsiveBorderRadius(context, 3.0),
+                      ),
                     ),
                   ),
                 ),

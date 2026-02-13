@@ -45,5 +45,27 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	
+	<!-- Location permissions -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need your location to find nearby hospitals and doctors.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We need your location to find nearby hospitals and doctors.</string>
+	
+	<!-- Microphone permission for speech recognition -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We need access to your microphone to enable voice search.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>We need access to speech recognition to enable voice search.</string>
+	
+	<!-- Camera permission -->
+	<key>NSCameraUsageDescription</key>
+	<string>We need access to your camera to take photos for your health records.</string>
+	
+	<!-- Photo library permissions -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library to upload documents and images for your health records.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need access to save images to your photo library.</string>
 </dict>
 </plist>

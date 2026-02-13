@@ -540,7 +540,7 @@ class _BranchesPageState extends State<BranchesPage> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          '${branch.distance.toStringAsFixed(0)} KM',
+                          '${(branch.distance / 1000).toStringAsFixed(0)} KM',
                           style: EcliniqTextStyles.responsiveBodySmall(context)
                               .copyWith(
                                 color: Color(0xff424242),

@@ -223,7 +223,7 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
 
     return SizedBox(
       width: double.infinity,
-      height: 52,
+      height: EcliniqTextStyles.getResponsiveButtonHeight(context, baseHeight: 52.0),
       child: GestureDetector(
         onTapDown: isButtonEnabled
             ? (_) => setState(() => _isButtonPressed = true)
@@ -267,11 +267,11 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
                               : const Color(0xffD6D6D6),
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 4.0)),
                       SvgPicture.asset(
                         EcliniqIcons.arrowRight.assetPath,
-                        width: 24,
-                        height: 24,
+                        width: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
+                        height: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
                         colorFilter: ColorFilter.mode(
                           _isOtpValid ? Colors.white : const Color(0xff8E8E8E),
                           BlendMode.srcIn,
@@ -302,9 +302,9 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
         leading: IconButton(
           padding: EdgeInsets.zero,
           icon: SvgPicture.asset(
-            EcliniqIcons.arrowLeft.assetPath,
-            width: 32,
-            height: 32,
+            EcliniqIcons.backArrow.assetPath,
+            width: EcliniqTextStyles.getResponsiveSize(context, 32.0),
+            height: EcliniqTextStyles.getResponsiveSize(context, 32.0),
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -321,7 +321,11 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
+        padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+          context,
+          horizontal: 18.0,
+          vertical: 24.0,
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -334,20 +338,26 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
             ),
             if (_isLoading)
               Padding(
-                padding: const EdgeInsets.only(top: 24.0),
+                padding: EdgeInsets.only(
+                  top: EcliniqTextStyles.getResponsiveSpacing(context, 24.0),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     ShimmerLoading(
-                      width: 200,
-                      height: 20,
-                      borderRadius: BorderRadius.circular(4),
+                      width: EcliniqTextStyles.getResponsiveSize(context, 200.0),
+                      height: EcliniqTextStyles.getResponsiveSize(context, 20.0),
+                      borderRadius: BorderRadius.circular(
+                        EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+                      ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 8.0)),
                     ShimmerLoading(
-                      width: 150,
-                      height: 20,
-                      borderRadius: BorderRadius.circular(4),
+                      width: EcliniqTextStyles.getResponsiveSize(context, 150.0),
+                      height: EcliniqTextStyles.getResponsiveSize(context, 20.0),
+                      borderRadius: BorderRadius.circular(
+                        EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
+                      ),
                     ),
                   ],
                 ),
@@ -375,7 +385,9 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
               ),
               if (_errorMessage != null)
                 Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
+                  padding: EdgeInsets.only(
+                    top: EcliniqTextStyles.getResponsiveSpacing(context, 8.0),
+                  ),
                   child: Text(
                     _errorMessage!,
                     style: EcliniqTextStyles.responsiveBodyMedium(context).copyWith(
@@ -383,7 +395,7 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
                     ),
                   ),
                 ),
-              const SizedBox(height: 24),
+              SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 24.0)),
               PinCodeTextField(
                 appContext: context,
                 length: 6,
@@ -426,7 +438,7 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
                   }
                 },
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 12.0)),
               Row(
                 children: [
                   Text(
@@ -440,10 +452,10 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
                     children: [
                       SvgPicture.asset(
                         EcliniqIcons.clockCircle.assetPath,
-                        width: 16,
-                        height: 16,
+                        width: EcliniqTextStyles.getResponsiveIconSize(context, 16.0),
+                        height: EcliniqTextStyles.getResponsiveIconSize(context, 16.0),
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 4.0)),
                       Text(
                         _formatTimer(_resendTimer),
                         style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
@@ -468,9 +480,11 @@ class _VerifyExistingAccountState extends State<VerifyExistingAccount> {
               _buildVerifyButton(),
             ] else if (_errorMessage != null) ...[
               Padding(
-                padding: const EdgeInsets.only(top: 16.0),
+                padding: EdgeInsets.only(
+                  top: EcliniqTextStyles.getResponsiveSpacing(context, 16.0),
+                ),
                 child: Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 12.0),
                   decoration: BoxDecoration(
                     color: Colors.red.shade50,
                     borderRadius: BorderRadius.circular(8),

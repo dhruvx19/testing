@@ -124,7 +124,7 @@ CustomErrorSnackBar.show(
 
     return SizedBox(
       width: double.infinity,
-      height: 52,
+      height: EcliniqTextStyles.getResponsiveButtonHeight(context, baseHeight: 52.0),
       child: GestureDetector(
         onTapDown: isButtonEnabled
             ? (_) => setState(() => _isButtonPressed = true)
@@ -168,11 +168,11 @@ CustomErrorSnackBar.show(
                               : const Color(0xffD6D6D6),
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 4.0)),
                       SvgPicture.asset(
                         EcliniqIcons.arrowRight.assetPath,
-                        width: 24,
-                        height: 24,
+                        width: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
+                        height: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
                         colorFilter: ColorFilter.mode(
                           _isPhoneValid
                               ? Colors.white
@@ -227,7 +227,11 @@ CustomErrorSnackBar.show(
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
+        padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+          context,
+          horizontal: 18.0,
+          vertical: 24.0,
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -238,25 +242,30 @@ CustomErrorSnackBar.show(
                 color: Color(0xff424242),
               ),
             ),
-            SizedBox(height: 24),
+            SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 24.0)),
             GestureDetector(
               onTap: () {
                 FocusScope.of(context).requestFocus(_phoneFocusNode);
               },
               child: Container(
-                height: 52,
+                height: EcliniqTextStyles.getResponsiveButtonHeight(context, baseHeight: 52.0),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Color(0xff626060), width: 0.5),
+                  borderRadius: BorderRadius.circular(
+                    EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0),
+                  ),
+                  border: Border.all(
+                    color: Color(0xff626060),
+                    width: EcliniqTextStyles.getResponsiveSize(context, 0.5),
+                  ),
                 ),
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.only(
-                        left: 16,
-                        right: 12,
-                        top: 12,
-                        bottom: 12,
+                      padding: EdgeInsets.only(
+                        left: EcliniqTextStyles.getResponsiveSpacing(context, 16.0),
+                        right: EcliniqTextStyles.getResponsiveSpacing(context, 12.0),
+                        top: EcliniqTextStyles.getResponsiveSpacing(context, 12.0),
+                        bottom: EcliniqTextStyles.getResponsiveSpacing(context, 12.0),
                       ),
                       child: Row(
                         children: [
@@ -267,19 +276,27 @@ CustomErrorSnackBar.show(
                               color: Color(0xff424242),
                             ),
                           ),
-                          const SizedBox(width: 4),
+                          SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 4.0)),
                           SvgPicture.asset(
                             EcliniqIcons.arrowDown.assetPath,
-                            width: 16,
-                            height: 16,
+                            width: EcliniqTextStyles.getResponsiveIconSize(context, 16.0),
+                            height: EcliniqTextStyles.getResponsiveIconSize(context, 16.0),
                           ),
                         ],
                       ),
                     ),
-                    Container(width: 1, height: 32, color: Color(0xffD6D6D6)),
+                    Container(
+                      width: EcliniqTextStyles.getResponsiveSize(context, 1.0),
+                      height: EcliniqTextStyles.getResponsiveSize(context, 32.0),
+                      color: Color(0xffD6D6D6),
+                    ),
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                          context,
+                          horizontal: 16.0,
+                          vertical: 0.0,
+                        ),
                         child: TextField(
                           controller: _phoneController,
                           focusNode: _phoneFocusNode,
@@ -320,7 +337,9 @@ CustomErrorSnackBar.show(
             ),
             if (_errorMessage != null)
               Padding(
-                padding: const EdgeInsets.only(top: 8.0),
+                padding: EdgeInsets.only(
+                  top: EcliniqTextStyles.getResponsiveSpacing(context, 8.0),
+                ),
                 child: Text(
                   _errorMessage!,
                   style: EcliniqTextStyles.responsiveBodyMedium(context).copyWith(
@@ -328,7 +347,7 @@ CustomErrorSnackBar.show(
                   ),
                 ),
               ),
-            SizedBox(height: 24),
+            SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 24.0)),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

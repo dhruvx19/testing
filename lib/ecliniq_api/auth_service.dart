@@ -540,4 +540,74 @@ class AuthService {
       };
     }
   }
+
+  Future<Map<String, dynamic>> logout({String? authToken}) async {
+    final url = Uri.parse(Endpoints.logout);
+    try {
+      final headers = <String, String>{'Content-Type': 'application/json'};
+
+      if (authToken != null && authToken.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $authToken';
+      }
+
+      final response = await http.post(
+        url,
+        headers: headers,
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && responseData['success'] == true) {
+        return {
+          'success': true,
+          'message': responseData['message'] ?? 'Logged out successfully',
+        };
+      } else {
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 'Failed to logout',
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Failed to connect to the server: $e',
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> deleteAccount({String? authToken}) async {
+    final url = Uri.parse(Endpoints.deleteAccount);
+    try {
+      final headers = <String, String>{'Content-Type': 'application/json'};
+
+      if (authToken != null && authToken.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $authToken';
+      }
+
+      final response = await http.delete(
+        url,
+        headers: headers,
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && responseData['success'] == true) {
+        return {
+          'success': true,
+          'message': responseData['message'] ?? 'Account deleted successfully',
+        };
+      } else {
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 'Failed to delete account',
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Failed to connect to the server: $e',
+      };
+    }
+  }
 }

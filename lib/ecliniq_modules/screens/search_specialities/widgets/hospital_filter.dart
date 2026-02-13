@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
-import 'package:speech_to_text/speech_to_text.dart';
+import 'package:ecliniq/ecliniq_utils/speech_helper.dart';
 
 class HospitalFilterBottomSheet extends StatefulWidget {
   const HospitalFilterBottomSheet({
@@ -27,6 +27,7 @@ class HospitalFilterBottomSheet extends StatefulWidget {
 class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
   String selectedTab = 'Specialities';
   Set<String> selectedSpecialities = {};
+  Set<String> selectedSymptoms = {};
   String? selectedAvailability;
   String? selectedGender;
   String? selectedExperience;
@@ -67,6 +68,7 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
   void _resetFilters() {
     setState(() {
       selectedSpecialities.clear();
+      selectedSymptoms.clear();
       selectedAvailability = null;
       selectedGender = null;
       selectedExperience = null;
@@ -76,6 +78,7 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
     
     widget.onFilterChanged({
       'specialities': <String>[],
+      'symptoms': <String>[],
       'availability': null,
       'gender': null,
       'experience': null,
@@ -84,13 +87,45 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
   }
 
   void _emitFilterChange() {
-    widget.onFilterChanged({
-      'specialities': selectedSpecialities.toList(),
-      'availability': selectedAvailability,
-      'gender': selectedGender,
-      'experience': selectedExperience,
-      'distance': distanceRange,
-    });
+    // Map symptoms to specialties and combine with manually selected specialties
+    final Set<String> allSpecialities = Set<String>.from(selectedSpecialities);
+    
+    // Add specialties from selected symptoms
+    for (final symptom in selectedSymptoms) {
+      if (_symptomSpecialtyMap.containsKey(symptom)) {
+        final specialtiesStr = _symptomSpecialtyMap[symptom]!;
+        final specialitiesList = specialtiesStr.split(',').map((e) => e.trim()).toList();
+        allSpecialities.addAll(specialitiesList);
+      }
+    }
+    
+    // Check if all filters are empty (manually cleared)
+    final bool allFiltersEmpty = allSpecialities.isEmpty &&
+        selectedAvailability == null &&
+        selectedGender == null &&
+        selectedExperience == null &&
+        distanceRange == 50;
+    
+    if (allFiltersEmpty) {
+      // If all filters are manually removed, behave same as reset
+      widget.onFilterChanged({
+        'specialities': <String>[],
+        'symptoms': <String>[],
+        'availability': null,
+        'gender': null,
+        'experience': null,
+        'distance': 50,
+      });
+    } else {
+      widget.onFilterChanged({
+        'specialities': allSpecialities.toList(),
+        'symptoms': selectedSymptoms.toList(),
+        'availability': selectedAvailability,
+        'gender': selectedGender,
+        'experience': selectedExperience,
+        'distance': distanceRange,
+      });
+    }
   }
 
   final List<String> filterTabs = [
@@ -98,10 +133,8 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
     'Availability',
     'Gender',
     'Distance',
-    
+    'Symptoms',
     'Experience',
-    'Languages',
-    'Meet at',
   ];
 
   final List<String> specialities = [
@@ -116,6 +149,51 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
     'Orthopedic (Bone & Joint Specialist)',
     'Diabetologist (Sugar Specialist)',
   ];
+
+  // Common symptoms
+  final List<String> commonSymptoms = [
+    'Fever/Chills',
+    'Headache',
+    'Stomach Pain',
+    'Cold & Cough',
+    'Body Pain',
+    'Back Pain',
+    'Breathing Difficulty',
+    'Skin Rash /Itching',
+    'Periods Problem',
+    'Sleep Problem',
+    'Hair Related Problem',
+    'Pregnancy Related',
+    'Dental Care',
+    'Joint Pain',
+    'Blood Pressure',
+  ];
+
+  // Symptom to specialty mapping
+  final Map<String, String> _symptomSpecialtyMap = {
+    'Fever / Chills': 'General Physician, Pediatrician',
+    'Fever/Chills': 'General Physician, Pediatrician',
+    'Cold & Cough': 'General Physician, Pediatrician, Pulmonologist',
+    'Sore Throat': 'General Physician, ENT',
+    'Body Pain': 'General Physician, Orthopedic',
+    'Weakness / Fatigue': 'General Physician, Diabetologist, Endocrinologist',
+    'Headache': 'General Physician, Neurologist',
+    'Stomach Pain': 'Gastroenterologist',
+    'Back Pain': 'Orthopedic',
+    'Dizziness / Fainting': 'General Physician, Cardiologist, Neurologist',
+    'Viral Infection Symptoms': 'General Physician',
+    'High or Low Blood Pressure': 'General Physician, Cardiologist',
+    'Blood Pressure': 'General Physician, Cardiologist',
+    'General Health Check-up': 'General Physician',
+    'Periods Problem': 'Gynaecologist',
+    'Pregnancy Related': 'Gynaecologist',
+    'Dental Care': 'Dentist',
+    'Skin Rash /Itching': 'Dermatologist',
+    'Hair Related Problem': 'Dermatologist',
+    'Breathing Difficulty': 'Pulmonologist',
+    'Joint Pain': 'Orthopedic',
+    'Sleep Problem': 'Psychiatrist',
+  };
 
   final List<String> availabilityOptions = [
     'Anytime',
@@ -285,6 +363,8 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
         return _buildGenderList();
       case 'Distance':
         return _buildDistanceSlider();
+      case 'Symptoms':
+        return _buildSymptomsList();
       case 'Experience':
         return _buildExperienceList();
       default:
@@ -387,7 +467,8 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
         return InkWell(
           onTap: () {
             setState(() {
-              selectedAvailability = option;
+              // Toggle selection - deselect if already selected
+              selectedAvailability = isSelected ? null : option;
             });
             _emitFilterChange();
           },
@@ -444,7 +525,8 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
         return InkWell(
           onTap: () {
             setState(() {
-              selectedGender = option;
+              // Toggle selection - deselect if already selected
+              selectedGender = isSelected ? null : option;
             });
             _emitFilterChange();
           },
@@ -497,7 +579,8 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
         return InkWell(
           onTap: () {
             setState(() {
-              selectedExperience = option;
+              // Toggle selection - deselect if already selected
+              selectedExperience = isSelected ? null : option;
             });
             _emitFilterChange();
           },
@@ -666,6 +749,86 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
       ),
     );
   }
+
+  Widget _buildSymptomsList() {
+    // Filter symptoms based on search query
+    final filteredSymptoms = _searchQuery.isEmpty
+        ? commonSymptoms
+        : commonSymptoms.where((symptom) {
+            return symptom.toLowerCase().contains(_searchQuery);
+          }).toList();
+
+    if (filteredSymptoms.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Text(
+            'No symptoms found matching "$_searchQuery"',
+            style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+              color: Colors.grey[600],
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      itemCount: filteredSymptoms.length,
+      itemBuilder: (context, index) {
+        final symptom = filteredSymptoms[index];
+        final isSelected = selectedSymptoms.contains(symptom);
+        return InkWell(
+          onTap: () {
+            setState(() {
+              if (isSelected) {
+                selectedSymptoms.remove(symptom);
+              } else {
+                selectedSymptoms.add(symptom);
+              }
+            });
+            _emitFilterChange();
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    symptom,
+                    style: EcliniqTextStyles.responsiveTitleXLarge(
+                      context,
+                    ).copyWith(color: Color(0xff424242)),
+                  ),
+                ),
+                SizedBox(width: 16),
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: isSelected ? Color(0xff2372EC) : Color(0xff8E8E8E),
+                      width: 1,
+                    ),
+                    borderRadius: BorderRadius.circular(6),
+                    color: isSelected ? Color(0xff2372EC) : Colors.transparent,
+                  ),
+                  child: isSelected
+                      ? Icon(
+                          Icons.check,
+                          size: EcliniqTextStyles.getResponsiveIconSize(context, 18),
+                          color: Colors.white,
+                        )
+                      : null,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class SearchBarWidget extends StatefulWidget {
@@ -696,9 +859,8 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
   String query = '';
   final _controller = TextEditingController();
   Timer? _timer;
-  final SpeechToText _speechToText = SpeechToText();
-  bool _speechEnabled = false;
-  bool _isListening = false;
+  final SpeechHelper _speechHelper = SpeechHelper();
+  bool get _isListening => _speechHelper.isListening;
 
   @override
   void initState() {
@@ -710,89 +872,42 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
   void dispose() {
     _timer?.cancel();
     _controller.dispose();
-    _speechToText.cancel();
+    _speechHelper.cancel();
     super.dispose();
   }
 
   Future<void> _initSpeech() async {
-    try {
-      _speechEnabled = await _speechToText.initialize(
-        onError: (error) {
-          if (mounted) {
-            setState(() => _isListening = false);
-          }
-        },
-        onStatus: (status) {
-          if (mounted) {
-            if (status == 'notListening' ||
-                status == 'done' ||
-                status == 'doneNoResult') {
-              setState(() => _isListening = false);
-            } else if (status == 'listening') {
-              setState(() => _isListening = true);
-            }
-          }
-        },
-      );
-    } catch (e) {
-      _speechEnabled = false;
-    }
+    await _speechHelper.initSpeech(
+      onListeningChanged: () {
+        if (mounted) setState(() {});
+      },
+      mounted: () => mounted,
+    );
   }
 
   void _startListening() async {
-    if (_isListening) return;
-
-    if (!_speechEnabled) {
-      await _initSpeech();
-      if (!_speechEnabled) {
+    await _speechHelper.startListening(
+      onResult: _onSpeechResult,
+      onError: (message) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Speech recognition is not available. Please check your permissions.',
-              ),
-              duration: Duration(seconds: 2),
-            ),
+            SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
           );
         }
-        return;
-      }
-    }
-
-    try {
-      await _speechToText.listen(
-        onResult: _onSpeechResult,
-        listenFor: const Duration(seconds: 30),
-        pauseFor: const Duration(seconds: 3),
-        partialResults: true,
-        localeId: 'en_US',
-        cancelOnError: false,
-        listenMode: ListenMode.confirmation,
-      );
-
-      if (mounted) {
-        setState(() {
-          _isListening = true;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isListening = false);
-      }
-    }
+      },
+      mounted: () => mounted,
+      onListeningChanged: () {
+        if (mounted) setState(() {});
+      },
+    );
   }
 
   void _stopListening() async {
-    try {
-      await _speechToText.stop();
-      if (mounted) {
-        setState(() => _isListening = false);
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isListening = false);
-      }
-    }
+    await _speechHelper.stopListening(
+      onListeningChanged: () {
+        if (mounted) setState(() {});
+      },
+    );
   }
 
   void _onSpeechResult(SpeechRecognitionResult result) {

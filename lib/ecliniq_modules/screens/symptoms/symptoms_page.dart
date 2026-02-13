@@ -40,14 +40,18 @@ class _SymptomsPageState extends State<SymptomsPage> {
   final Map<String, String> _symptomSpecialtyMap = {
     // General & Common
     'Fever / Chills': 'General Physician, Pediatrician',
+    'Fever/Chills': 'General Physician, Pediatrician', // Mapping for common symptoms widget
     'Cold & Cough': 'General Physician, Pediatrician, Pulmonologist',
     'Sore Throat': 'General Physician, ENT',
     'Body Pain': 'General Physician, Orthopedic',
     'Weakness / Fatigue': 'General Physician, Diabetologist, Endocrinologist',
     'Headache': 'General Physician, Neurologist',
+    'Stomach Pain': 'Gastroenterologist', // Mapping for common symptoms widget
+    'Back Pain': 'Orthopedic', // Mapping for common symptoms widget
     'Dizziness / Fainting': 'General Physician, Cardiologist, Neurologist',
     'Viral Infection Symptoms': 'General Physician',
     'High or Low Blood Pressure': 'General Physician, Cardiologist',
+    'Blood Pressure': 'General Physician, Cardiologist', // Mapping for common symptoms widget
     'General Health Check-up': 'General Physician',
 
     // Child Health
@@ -60,10 +64,12 @@ class _SymptomsPageState extends State<SymptomsPage> {
 
     // Women's Health
     'Irregular or Painful Periods': 'Gynaecologist',
+    'Periods Problem': 'Gynaecologist', // Mapping for common symptoms widget
     'Heavy Menstrual Bleeding': 'Gynaecologist',
     'Vaginal Discharge / Infection': 'Gynaecologist',
     'Pelvic or Lower Abdominal Pain': 'Gynaecologist',
     'Pregnancy Care': 'Gynaecologist',
+    'Pregnancy Related': 'Gynaecologist', // Mapping for common symptoms widget
     'Menopause Symptoms': 'Gynaecologist',
     'Breast Lump or Pain': 'Gynaecologist, Oncologist',
     'Fertility Concerns': 'Gynaecologist, Endocrinologist',
@@ -77,9 +83,12 @@ class _SymptomsPageState extends State<SymptomsPage> {
     'Jaw Pain': 'Dentist',
     'Tooth Sensitivity': 'Dentist',
     'Wisdom Tooth Pain': 'Dentist',
+    'Dental Care': 'Dentist', // Mapping for common symptoms widget
 
     // Skin & Hair
     'Skin & Hair': 'Dermatologist',
+    'Skin Rash /Itching': 'Dermatologist', // Mapping for common symptoms widget
+    'Hair Related Problem': 'Dermatologist', // Mapping for common symptoms widget
 
     // Category mappings (for categories with no symptoms)
     'ENT Health': 'ENT',
@@ -120,6 +129,7 @@ class _SymptomsPageState extends State<SymptomsPage> {
     // Bones & Movement
     'Back or Neck Pain': 'Orthopedic, Physiotherapist',
     'Joint Pain or Swelling': 'Orthopedic',
+    'Joint Pain': 'Orthopedic', // Mapping for common symptoms widget
     'Knee Pain': 'Orthopedic',
     'Muscle Pain or Stiffness': 'Orthopedic, Physiotherapist',
     'Difficulty Walking': 'Orthopedic, Neurologist',
@@ -174,6 +184,7 @@ class _SymptomsPageState extends State<SymptomsPage> {
     'Anxiety / Stress': 'Psychiatrist',
     'Depression / Low Mood': 'Psychiatrist',
     'Sleep Problems': 'Psychiatrist',
+    'Sleep Problem': 'Psychiatrist', // Mapping for common symptoms widget (singular)
     'Addiction Issues': 'Psychiatrist',
 
     // Sexual Health

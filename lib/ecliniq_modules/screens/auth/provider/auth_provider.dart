@@ -360,6 +360,7 @@ class AuthProvider with ChangeNotifier {
   Future<bool> updatePatientProfile({
     required String firstName,
     required String lastName,
+    String? gender,
     String? bloodGroup,
     int? height,
     int? weight,
@@ -380,6 +381,7 @@ class AuthProvider with ChangeNotifier {
       final body = <String, dynamic>{
         'firstName': firstName,
         'lastName': lastName,
+        if (gender != null && gender.isNotEmpty) 'gender': gender,
         if (bloodGroup != null && bloodGroup.isNotEmpty) 'bloodGroup': bloodGroup,
         if (height != null) 'height': height,
         if (weight != null) 'weight': weight,
@@ -420,8 +422,80 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  
-  
+  Future<bool> updateDependentProfile({
+    required String dependentId,
+    required String firstName,
+    required String lastName,
+    String? gender,
+    String? relation,
+    String? phone,
+    String? emailId,
+    String? bloodGroup,
+    int? height,
+    int? weight,
+    String? dob,
+    String? profilePhoto,
+  }) async {
+    if (_authToken == null) {
+      _errorMessage = 'Authentication required';
+      notifyListeners();
+      return false;
+    }
+
+    _isSavingDetails = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final body = <String, dynamic>{
+        'firstName': firstName,
+        'lastName': lastName,
+        if (gender != null && gender.isNotEmpty) 'gender': gender.toLowerCase(),
+        if (relation != null && relation.isNotEmpty) 'relation': relation.toLowerCase(),
+        if (phone != null && phone.isNotEmpty) 'phone': phone,
+        if (emailId != null && emailId.isNotEmpty) 'emailId': emailId,
+        if (bloodGroup != null && bloodGroup.isNotEmpty) 'bloodGroup': bloodGroup,
+        if (height != null) 'height': height,
+        if (weight != null) 'weight': weight,
+        if (dob != null && dob.isNotEmpty) 'dob': dob,
+        if (profilePhoto != null && profilePhoto.isNotEmpty) 'profilePhoto': profilePhoto,
+      };
+
+      final resp = await http.patch(
+        Uri.parse(Endpoints.updateDependent(dependentId)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${_authToken!}',
+          'x-access-token': _authToken!,
+        },
+        body: jsonEncode(body),
+      );
+
+      _isSavingDetails = false;
+
+      if (resp.statusCode == 200) {
+        notifyListeners();
+        return true;
+      } else {
+        try {
+          final m = jsonDecode(resp.body);
+          _errorMessage = m['message']?.toString() ?? 'Failed to update dependent';
+        } catch (_) {
+          _errorMessage = 'Failed to update dependent';
+        }
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _isSavingDetails = false;
+      _errorMessage = 'Failed to update dependent: ${e.toString()}';
+      notifyListeners();
+      return false;
+    }
+  }
+
+
+
   Future<void> _loadSavedToken() async {
     try {
       

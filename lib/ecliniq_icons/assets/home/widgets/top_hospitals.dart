@@ -10,6 +10,7 @@ import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/button/button.dart';
 import 'package:ecliniq/ecliniq_core/auth/session_service.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
+import 'package:ecliniq/ecliniq_core/location/location_storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
@@ -78,12 +79,26 @@ class _TopHospitalsWidgetState extends State<TopHospitalsWidget>
       listen: false,
     );
 
+    // Get user's stored location
+    final storedLocation = await LocationStorageService.getStoredLocation();
     
-    await hospitalProvider.fetchTopHospitals(
-      latitude: 12.9173,
-      longitude: 77.6377,
-      isRefresh: true,
-    );
+    if (storedLocation != null) {
+      final latitude = storedLocation['latitude'] as double;
+      final longitude = storedLocation['longitude'] as double;
+      
+      await hospitalProvider.fetchTopHospitals(
+        latitude: latitude,
+        longitude: longitude,
+        isRefresh: true,
+      );
+    } else {
+      // Fallback to default location (Bangalore) if no stored location
+      await hospitalProvider.fetchTopHospitals(
+        latitude: 12.9173,
+        longitude: 77.6377,
+        isRefresh: true,
+      );
+    }
   }
 
   @override
@@ -693,21 +708,25 @@ class _TopHospitalsWidgetState extends State<TopHospitalsWidget>
                               Container(
                                 padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
                                   context,
-                                  horizontal: 8.0,
+                                  horizontal: 6.0,
                                   vertical: 4.0,
                                 ),
                                 decoration: BoxDecoration(
                                   color: Color(0xffF9F9F9),
-                                  borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context,  4.0)),
+                                  borderRadius: BorderRadius.circular(EcliniqTextStyles.getResponsiveBorderRadius(context,  6.0)),
                                   border: Border.all(
                                     color: Color(0xffB8B8B8),
                                     width: 0.5,
                                   ),
                                 ),
                                 child: EcliniqText(
-                                  hospital.distance > 0
-                                      ? '${hospital.distance.toStringAsFixed(1)} Km'
-                                      : 'Nearby',
+                                  () {
+                                    final distanceInKm = hospital.distance / 1000;
+                                    // Show minimum 0.2 Km if too close
+                                    return distanceInKm < 0.2 
+                                        ? '0.2 Km' 
+                                        : '${distanceInKm.toStringAsFixed(1)} Km';
+                                  }(),
                                   style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                                     color: Color(0xff424242),
                                   ),

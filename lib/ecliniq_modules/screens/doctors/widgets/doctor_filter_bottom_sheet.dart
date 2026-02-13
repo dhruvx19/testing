@@ -22,13 +22,51 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
   late TextEditingController _distanceController;
   late TextEditingController _experienceController;
   late TextEditingController _specialityController;
-  late TextEditingController _languageController;
   String? _selectedGender;
   String? _selectedAvailability;
   DateTime? _selectedDate;
+  String? _selectedSymptom;
 
   final List<String> _genders = ['MALE', 'FEMALE', 'OTHER'];
   final List<String> _availabilities = ['TODAY', 'TOMORROW', 'DATE'];
+  
+  // Common symptoms list from symptoms_page.dart
+  final List<String> _commonSymptoms = [
+    'Fever/Chills',
+    'Headache',
+    'Stomach Pain',
+    'Cold & Cough',
+    'Body Pain',
+    'Back Pain',
+    'Breathing Difficulty',
+    'Skin Rash /Itching',
+    'Periods Problem',
+    'Sleep Problem',
+    'Hair Related Problem',
+    'Pregnancy Related',
+    'Dental Care',
+    'Joint Pain',
+    'Blood Pressure',
+  ];
+
+  // Symptom to specialty mapping from symptoms_page.dart
+  final Map<String, String> _symptomSpecialtyMap = {
+    'Fever/Chills': 'General Physician, Pediatrician',
+    'Headache': 'General Physician, Neurologist',
+    'Stomach Pain': 'Gastroenterologist',
+    'Cold & Cough': 'General Physician, Pediatrician, Pulmonologist',
+    'Body Pain': 'General Physician, Orthopedic',
+    'Back Pain': 'Orthopedic',
+    'Breathing Difficulty': 'Pulmonologist',
+    'Skin Rash /Itching': 'Dermatologist',
+    'Periods Problem': 'Gynaecologist',
+    'Sleep Problem': 'Psychiatrist',
+    'Hair Related Problem': 'Dermatologist',
+    'Pregnancy Related': 'Gynaecologist',
+    'Dental Care': 'Dentist',
+    'Joint Pain': 'Orthopedic',
+    'Blood Pressure': 'General Physician, Cardiologist',
+  };
 
   @override
   void initState() {
@@ -40,8 +78,6 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
         TextEditingController(text: widget.currentFilter.workExperience);
     _specialityController = TextEditingController(
         text: widget.currentFilter.speciality?.join(', '));
-    _languageController =
-        TextEditingController(text: widget.currentFilter.languages?.join(', '));
     _selectedGender = widget.currentFilter.gender;
     _selectedAvailability = widget.currentFilter.availability;
     if (widget.currentFilter.date != null) {
@@ -57,7 +93,6 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
     _distanceController.dispose();
     _experienceController.dispose();
     _specialityController.dispose();
-    _languageController.dispose();
     super.dispose();
   }
 
@@ -133,6 +168,31 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
                     onChanged: (_) => _applyAndEmit(),
                   ),
                   const SizedBox(height: 20),
+                  _buildSectionTitle('Symptoms'),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String>(
+                    value: _selectedSymptom,
+                    decoration: const InputDecoration(
+                      labelText: 'Select Symptom',
+                      border: OutlineInputBorder(),
+                      hintText: 'Choose a symptom',
+                    ),
+                    items: [
+                      const DropdownMenuItem<String>(
+                        value: null,
+                        child: Text('None'),
+                      ),
+                      ..._commonSymptoms.map((symptom) => DropdownMenuItem(
+                        value: symptom,
+                        child: Text(symptom),
+                      )).toList(),
+                    ],
+                    onChanged: (val) {
+                      setState(() => _selectedSymptom = val);
+                      _applyAndEmit();
+                    },
+                  ),
+                  const SizedBox(height: 20),
                   _buildSectionTitle('Consultation'),
                   const SizedBox(height: 8),
                   TextField(
@@ -162,24 +222,21 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
                     decoration: const InputDecoration(
                       labelText: 'Gender',
                       border: OutlineInputBorder(),
+                      hintText: 'Select Gender',
                     ),
-                    items: _genders
-                        .map((g) => DropdownMenuItem(value: g, child: Text(g)))
-                        .toList(),
+                    items: [
+                      const DropdownMenuItem<String>(
+                        value: null,
+                        child: Text('None'),
+                      ),
+                      ..._genders
+                          .map((g) => DropdownMenuItem(value: g, child: Text(g)))
+                          .toList(),
+                    ],
                     onChanged: (val) {
                       setState(() => _selectedGender = val);
                       _applyAndEmit();
                     },
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _languageController,
-                    decoration: const InputDecoration(
-                      hintText: 'e.g. English, Hindi',
-                      labelText: 'Languages (comma separated)',
-                      border: OutlineInputBorder(),
-                    ),
-                    onChanged: (_) => _applyAndEmit(),
                   ),
                   const SizedBox(height: 20),
                   _buildSectionTitle('Availability'),
@@ -248,10 +305,10 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
       _distanceController.clear();
       _experienceController.clear();
       _specialityController.clear();
-      _languageController.clear();
       _selectedGender = null;
       _selectedAvailability = null;
       _selectedDate = null;
+      _selectedSymptom = null;
     });
     
     final emptyFilter = FilterDoctorsRequest(
@@ -274,29 +331,69 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
     final city = _cityController.text.trim();
     final distance = double.tryParse(_distanceController.text.trim());
     final experience = _experienceController.text.trim();
-    final specialities = _specialityController.text.isNotEmpty
-        ? _specialityController.text.split(',').map((e) => e.trim()).toList()
-        : null;
-    final languages = _languageController.text.isNotEmpty
-        ? _languageController.text.split(',').map((e) => e.trim()).toList()
-        : null;
+    
+    // Combine specialties from both symptom mapping and manual entry
+    final Set<String> specialitiesSet = {};
+    
+    // Add specialties from symptom mapping
+    if (_selectedSymptom != null && _symptomSpecialtyMap.containsKey(_selectedSymptom)) {
+      final mappedSpecialty = _symptomSpecialtyMap[_selectedSymptom]!;
+      final mappedList = mappedSpecialty.split(',').map((e) => e.trim()).toList();
+      specialitiesSet.addAll(mappedList);
+    }
+    
+    // Add manually entered specialties
+    if (_specialityController.text.isNotEmpty) {
+      final manualList = _specialityController.text.split(',').map((e) => e.trim()).toList();
+      specialitiesSet.addAll(manualList);
+    }
+    
+    // Convert set to list (removes duplicates automatically)
+    final specialities = specialitiesSet.isEmpty ? null : specialitiesSet.toList();
     
     final dateStr = _selectedDate?.toIso8601String().split('T')[0];
+    
+    // Check if all filters are empty (manually cleared)
+    final bool allFiltersEmpty = city.isEmpty &&
+        distance == null &&
+        experience.isEmpty &&
+        specialities == null &&
+        _selectedGender == null &&
+        _selectedAvailability == null &&
+        _selectedSymptom == null;
 
-    final newFilter = FilterDoctorsRequest(
-      latitude: widget.currentFilter.latitude,
-      longitude: widget.currentFilter.longitude,
-      city: city.isEmpty ? null : city,
-      distance: distance,
-      workExperience: experience.isEmpty ? null : experience,
-      speciality: specialities,
-      languages: languages,
-      gender: _selectedGender,
-      availability: _selectedAvailability,
-      date: _selectedAvailability == 'DATE' ? dateStr : null,
-      page: 1, 
-    );
+    if (allFiltersEmpty) {
+      // If all filters are manually removed, behave same as reset
+      final emptyFilter = FilterDoctorsRequest(
+        latitude: widget.currentFilter.latitude,
+        longitude: widget.currentFilter.longitude,
+        city: null,
+        distance: null,
+        workExperience: null,
+        speciality: null,
+        languages: null,
+        gender: null,
+        availability: null,
+        date: null,
+        page: 1,
+      );
+      widget.onChanged(emptyFilter);
+    } else {
+      final newFilter = FilterDoctorsRequest(
+        latitude: widget.currentFilter.latitude,
+        longitude: widget.currentFilter.longitude,
+        city: city.isEmpty ? null : city,
+        distance: distance,
+        workExperience: experience.isEmpty ? null : experience,
+        speciality: specialities,
+        languages: null,
+        gender: _selectedGender,
+        availability: _selectedAvailability,
+        date: _selectedAvailability == 'DATE' ? dateStr : null,
+        page: 1, 
+      );
 
-    widget.onChanged(newFilter);
+      widget.onChanged(newFilter);
+    }
   }
 }
