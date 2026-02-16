@@ -39,6 +39,22 @@ class _SelectSpecialitiesBottomSheetState
     'Orthopedic (Bone & Joint Specialist)',
     'Diabetologist (Sugar Specialist)',
     'Pulmonologist (Lung/Chest Specialist)',
+    'Nephrologist (Kidney Specialist)',
+    'Gastroenterologist (Stomach & Digestive Specialist)',
+    'Psychiatrist (Mental Health Doctor)',
+    'Psychologist / Counsellor',
+    'Physiotherapist',
+    'Urologist (Urine & Male Health Specialist)',
+    'Oncologist (Cancer Specialist)',
+    'Neurologist (Brain & Nerve Specialist)',
+    'Sexologist',
+    'Allergist (Immunologist)',
+    'Rheumatologist (Joint & Autoimmune Specialist)',
+    'Endocrinologist (Hormone Specialist)',
+    'Hemontologist (Blood Specialist)',
+    'Infectious Disease Specialist',
+    'Radiologist (Imaging Specialist)',
+    'Anesthesiologist (Pain Management Specialist)',  
   ];
 
   @override

@@ -38,7 +38,7 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
   @override
   void initState() {
     super.initState();
-    
+
     if (widget.initialFilters != null) {
       final filters = widget.initialFilters!;
 
@@ -76,7 +76,7 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
       distanceRange = 50;
       selectedTab = 'Specialities';
     });
-    
+
     widget.onFilterChanged({
       'specialities': <String>[],
       'symptoms': <String>[],
@@ -91,23 +91,27 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
   void _emitFilterChange() {
     // Map symptoms to specialties and combine with manually selected specialties
     final Set<String> allSpecialities = Set<String>.from(selectedSpecialities);
-    
+
     // Add specialties from selected symptoms
     for (final symptom in selectedSymptoms) {
       if (_symptomSpecialtyMap.containsKey(symptom)) {
         final specialtiesStr = _symptomSpecialtyMap[symptom]!;
-        final specialitiesList = specialtiesStr.split(',').map((e) => e.trim()).toList();
+        final specialitiesList = specialtiesStr
+            .split(',')
+            .map((e) => e.trim())
+            .toList();
         allSpecialities.addAll(specialitiesList);
       }
     }
-    
+
     // Check if all filters are empty (manually cleared)
-    final bool allFiltersEmpty = allSpecialities.isEmpty &&
+    final bool allFiltersEmpty =
+        allSpecialities.isEmpty &&
         selectedAvailability == null &&
         selectedGender == null &&
         selectedExperience == null &&
         distanceRange == 50;
-    
+
     if (allFiltersEmpty) {
       // If all filters are manually removed, behave same as reset
       widget.onFilterChanged({
@@ -152,6 +156,23 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
     'Cardiologist (Heart Specialist)',
     'Orthopedic (Bone & Joint Specialist)',
     'Diabetologist (Sugar Specialist)',
+    'Pulmonologist (Lung/Chest Specialist)',
+    'Nephrologist (Kidney Specialist)',
+    'Gastroenterologist (Stomach & Digestive Specialist)',
+    'Psychiatrist (Mental Health Doctor)',
+    'Psychologist / Counsellor',
+    'Physiotherapist',
+    'Urologist (Urine & Male Health Specialist)',
+    'Oncologist (Cancer Specialist)',
+    'Neurologist (Brain & Nerve Specialist)',
+    'Sexologist',
+    'Allergist (Immunologist)',
+    'Rheumatologist (Joint & Autoimmune Specialist)',
+    'Endocrinologist (Hormone Specialist)',
+    'Hemontologist (Blood Specialist)',
+    'Infectious Disease Specialist',
+    'Radiologist (Imaging Specialist)',
+    'Anesthesiologist (Pain Management Specialist)',  
   ];
 
   // Common symptoms
@@ -237,7 +258,6 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
-          
           Padding(
             padding: EdgeInsets.only(left: 16, right: 16, top: 22),
             child: Align(
@@ -257,8 +277,10 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
                     onTap: _resetFilters,
                     child: Text(
                       'Reset',
-                      style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
-                          .copyWith(
+                      style:
+                          EcliniqTextStyles.responsiveHeadlineBMedium(
+                            context,
+                          ).copyWith(
                             fontWeight: FontWeight.w400,
                             color: Color(0xff2372EC),
                           ),
@@ -275,10 +297,10 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
               });
             },
           ),
-         SizedBox(height: EcliniqTextStyles.getResponsiveSize(context, 18)),
-       Container(height: 0.5, color: Color(0xffD6D6D6)),
+          SizedBox(height: EcliniqTextStyles.getResponsiveSize(context, 18)),
+          Container(height: 0.5, color: Color(0xffD6D6D6)),
           SizedBox(height: EcliniqTextStyles.getResponsiveSize(context, 8)),
-          
+
           Expanded(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -383,7 +405,6 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
   }
 
   Widget _buildSpecialitiesList() {
-    
     final filteredSpecialities = _searchQuery.isEmpty
         ? specialities
         : specialities.where((speciality) {
@@ -396,9 +417,9 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
           padding: const EdgeInsets.all(32.0),
           child: Text(
             'No specialities found matching "$_searchQuery"',
-            style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
-              color: Colors.grey[600],
-            ),
+            style: EcliniqTextStyles.responsiveTitleXLarge(
+              context,
+            ).copyWith(color: Colors.grey[600]),
             textAlign: TextAlign.center,
           ),
         ),
@@ -449,7 +470,10 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
                   child: isSelected
                       ? Icon(
                           Icons.check,
-                          size: EcliniqTextStyles.getResponsiveIconSize(context, 18),
+                          size: EcliniqTextStyles.getResponsiveIconSize(
+                            context,
+                            18,
+                          ),
                           color: Colors.white,
                         )
                       : null,
@@ -570,7 +594,10 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
                   child: isSelected
                       ? Icon(
                           Icons.check,
-                          size: EcliniqTextStyles.getResponsiveIconSize(context, 16),
+                          size: EcliniqTextStyles.getResponsiveIconSize(
+                            context,
+                            16,
+                          ),
                           color: Colors.white,
                         )
                       : null,
@@ -778,9 +805,9 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
           padding: const EdgeInsets.all(32.0),
           child: Text(
             'No symptoms found matching "$_searchQuery"',
-            style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
-              color: Colors.grey[600],
-            ),
+            style: EcliniqTextStyles.responsiveTitleXLarge(
+              context,
+            ).copyWith(color: Colors.grey[600]),
             textAlign: TextAlign.center,
           ),
         ),
@@ -831,7 +858,10 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
                   child: isSelected
                       ? Icon(
                           Icons.check,
-                          size: EcliniqTextStyles.getResponsiveIconSize(context, 18),
+                          size: EcliniqTextStyles.getResponsiveIconSize(
+                            context,
+                            18,
+                          ),
                           color: Colors.white,
                         )
                       : null,
@@ -905,7 +935,10 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
       onError: (message) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+            SnackBar(
+              content: Text(message),
+              duration: const Duration(seconds: 2),
+            ),
           );
         }
       },
@@ -961,7 +994,6 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
     final outlinedBorder = OutlineInputBorder(
@@ -970,9 +1002,9 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
     );
 
     return Container(
-           margin: EdgeInsets.only(top: 10, left: 16, right: 16,),
+      margin: EdgeInsets.only(top: 10, left: 16, right: 16),
 
-    height: EcliniqTextStyles.getResponsiveSize(context, 52.0),
+      height: EcliniqTextStyles.getResponsiveSize(context, 52.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8.0),
@@ -1006,7 +1038,7 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
                   filled: true,
                   fillColor: Colors.white,
                   isDense: true,
-                 
+
                   hintText: widget.hintText,
                   hintStyle: EcliniqTextStyles.responsiveHeadlineXMedium(
                     context,

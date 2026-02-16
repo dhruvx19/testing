@@ -1405,22 +1405,26 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                             i < _entered.length
                                                 ? (_showPin ? _entered[i] : '*')
                                                 : (i == _entered.length &&
-                                                        _focusNode.hasFocus
-                                                    ? '|'
-                                                    : '-'),
-                                            style: EcliniqTextStyles
-                                                .responsiveHeadlineBMedium(
-                                              context,
-                                            ).copyWith(
-                                              fontWeight: FontWeight.w400,
-                                              color: i < _entered.length
-                                                  ? Colors.black
-                                                  : (i == _entered.length &&
                                                           _focusNode.hasFocus
-                                                      ? const Color(0xFF2372EC)
-                                                      : const Color(
-                                                          0xffD6D6D6)),
-                                            ),
+                                                      ? '|'
+                                                      : '-'),
+                                            style:
+                                                EcliniqTextStyles.responsiveHeadlineBMedium(
+                                                  context,
+                                                ).copyWith(
+                                                  fontWeight: FontWeight.w400,
+                                                  color: i < _entered.length
+                                                      ? Colors.black
+                                                      : (i == _entered.length &&
+                                                                _focusNode
+                                                                    .hasFocus
+                                                            ? const Color(
+                                                                0xFF2372EC,
+                                                              )
+                                                            : const Color(
+                                                                0xffD6D6D6,
+                                                              )),
+                                                ),
                                           ),
                                           const SizedBox(height: 8),
                                           Container(
@@ -1577,39 +1581,63 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                             _showPin = !_showPin;
                           });
                         },
-                  child: Row(
-                    children: [
-                      Text(
-                        'Show PIN',
-                        style: EcliniqTextStyles.responsiveBodySmall(context)
-                            .copyWith(
-                              fontWeight: FontWeight.w400,
-                              color: _entered.isEmpty
-                                  ? Color(0xffB8B8B8)
-                                  : (_showPin
-                                        ? const Color(0xFF2372EC)
-                                        : Color(0xff424242)),
+                  child: !_showPin
+                      ? Row(
+                          children: [
+                            Text(
+                              'Show PIN',
+                              style:
+                                  EcliniqTextStyles.responsiveBodySmall(
+                                    context,
+                                  ).copyWith(
+                                    fontWeight: FontWeight.w400,
+                                    color: _entered.isEmpty
+                                        ? Color(0xffB8B8B8)
+                                        : const Color(0xFF2372EC),
+                                  ),
                             ),
-                      ),
-                      SizedBox(width: 6),
-                      SvgPicture.asset(
-                        _showPin
-                            ? EcliniqIcons.eyeOpen.assetPath
-                            : EcliniqIcons.eyeClosed.assetPath,
-                        width: 18,
-                        height: 18,
-                        colorFilter: ColorFilter.mode(
-                          _entered.isEmpty
-                              ? Color(0xffB8B8B8)
-                              : (_showPin
-                                    ? const Color(0xFF2372EC)
-                                    : Color(0xff424242)),
-                          BlendMode.srcIn,
+                            SizedBox(width: 6),
+                            SvgPicture.asset(
+                              EcliniqIcons.eyeOpen.assetPath,
+                              width: 18,
+                              height: 18,
+                              colorFilter: ColorFilter.mode(
+                                _entered.isEmpty
+                                    ? Color(0xffB8B8B8)
+                                    : const Color(0xFF2372EC),
+                                BlendMode.srcIn,
+                              ),
+                              errorBuilder: (c, e, s) =>
+                                  const SizedBox.shrink(),
+                            ),
+                          ],
+                        )
+                      : Row(
+                          children: [
+                            Text(
+                              'Hide PIN',
+                              style:
+                                  EcliniqTextStyles.responsiveBodySmall(
+                                    context,
+                                  ).copyWith(
+                                    fontWeight: FontWeight.w400,
+                                    color: _entered.isEmpty
+                                        ? Color(0xffB8B8B8)
+                                        : (_showPin
+                                              ? const Color(0xFF2372EC)
+                                              : Color(0xff424242)),
+                                  ),
+                            ),
+                            SizedBox(width: 6),
+                            SvgPicture.asset(
+                              EcliniqIcons.eyeClosed.assetPath,
+                              width: 18,
+                              height: 18,
+                              errorBuilder: (c, e, s) =>
+                                  const SizedBox.shrink(),
+                            ),
+                          ],
                         ),
-                        errorBuilder: (c, e, s) => const SizedBox.shrink(),
-                      ),
-                    ],
-                  ),
                 ),
             ],
           ),

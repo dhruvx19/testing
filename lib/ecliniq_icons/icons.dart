@@ -178,8 +178,9 @@ enum EcliniqIcons {
   rescheduleCancel('$_base/Calendar X.svg'),
   reschedule('$_base/reschedule.svg'),
   shieldCheck('$_base/Shield Check.svg'),
-  eyeOpen('$_base/Eye.svg'),
+  eyeOpen('$_base/EyeOpened.svg'),
   eyeClosed('$_base/Eye Closed.svg'),
+
   faceId('$_base/Face Scan Square.svg'),
   notificationBell('$_base/Bell.svg'),
   hospitalBuilding('$_base/Hospital_1.svg'),
@@ -230,7 +231,7 @@ enum EcliniqIcons {
   verifiedGreenDoctor('$_base/Verified Check Doctor.svg'),
   homeLogo('$_base/homepic.svg'),
   termsConditions('$_base/termscondition.png'),
-  reply('$_base/Reply.svg'),
+  reply('$_base/Frame 3 (2).svg'),
   userBlue('$_base/UserBlueApp.svg'),
   clockCircleHospital('$_base/Clock Circle Hospital.svg'),
   mapPointHospital('$_base/Map Point Hospital.svg'),
@@ -278,8 +279,6 @@ enum EcliniqIcons {
   logoutImage('$_base/Group (4).png'),
   profileLogo('$_base/UpcharQ_horizontal 1.png'),
   noNotifications('$_base/no_notif.svg');
-
-  
 
   final String assetPath;
   const EcliniqIcons(this.assetPath);
