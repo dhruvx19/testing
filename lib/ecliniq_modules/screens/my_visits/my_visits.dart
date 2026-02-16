@@ -875,38 +875,81 @@ class _MyVisitsState extends State<MyVisits>
             Expanded(
               child: ElevatedButton(
                 onPressed: () async {
-                  print('🔵 Book Again button clicked');
-                  print('🔍 Doctor ID: ${appointment.doctorId}');
-                  print('🔍 Hospital ID: ${appointment.hospitalId}');
-                  print('🔍 Clinic ID: ${appointment.clinicId}');
-                  print('🔍 Doctor Name: ${appointment.doctorName}');
-                  print('🔍 Specialization: ${appointment.specialization}');
+                  // Fetch full appointment details to get doctorId, hospitalId, clinicId
+                  final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                  final authToken = authProvider.authToken;
                   
-                  if (appointment.doctorId != null && 
-                      (appointment.hospitalId != null || appointment.clinicId != null)) {
-                    print('✅ All required fields present, navigating...');
-                    try {
+                  if (authToken == null) {
+                    _showErrorSnackBar('Authentication required. Please login again.');
+                    return;
+                  }
+                  
+                  // Show loading dialog
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (context) => Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2372EC)),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Loading appointment details...',
+                              style: EcliniqTextStyles.responsiveHeadlineMedium(context),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                  
+                  try {
+                    final response = await _appointmentService.getAppointmentDetail(
+                      appointmentId: appointment.id,
+                      authToken: authToken,
+                    );
+                    
+                    if (!mounted) return;
+                    Navigator.pop(context); // Close loading dialog
+                    
+                    if (response.success && response.data != null) {
+                      // Convert API data to AppointmentDetailModel
+                      final detail = AppointmentDetailModel.fromApiData(response.data!);
+                      
+                      // Navigate to slot screen with the extracted IDs
                       await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => ClinicVisitSlotScreen(
-                            doctorId: appointment.doctorId!,
-                            hospitalId: appointment.hospitalId,
-                            clinicId: appointment.clinicId,
-                            doctorName: appointment.doctorName,
-                            doctorSpecialization: appointment.specialization,
+                            doctorId: detail.doctorId!,
+                            hospitalId: detail.hospitalId,
+                            clinicId: detail.clinicId,
+                            doctorName: detail.doctor.name,
+                            doctorSpecialization: detail.doctor.specialization,
                           ),
                         ),
                       );
-                      print('✅ Navigation completed');
-                    } catch (e) {
-                      print('❌ Navigation error: $e');
+                    } else {
+                      _showErrorSnackBar(
+                        response.message.isNotEmpty 
+                            ? response.message 
+                            : 'Failed to load appointment details',
+                      );
                     }
-                  } else {
-                    print('❌ Missing required fields:');
-                    print('   - doctorId is null: ${appointment.doctorId == null}');
-                    print('   - hospitalId is null: ${appointment.hospitalId == null}');
-                    print('   - clinicId is null: ${appointment.clinicId == null}');
+                  } catch (e) {
+                    if (mounted) {
+                      Navigator.pop(context); // Close loading dialog
+                      _showErrorSnackBar('Failed to load appointment details. Please try again.');
+                    }
                   }
                 },
                 style: ElevatedButton.styleFrom(
