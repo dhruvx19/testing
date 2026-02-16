@@ -85,6 +85,7 @@ class _MyVisitsState extends State<MyVisits>
 
   List<AppointmentData> _scheduledAppointments = [];
   List<AppointmentData> _historyAppointments = [];
+  final Map<String, bool> _isLoadingBookAgain = {};
 
   @override
   void initState() {
@@ -873,101 +874,86 @@ class _MyVisitsState extends State<MyVisits>
               ),
             ),
             const SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () async {
-                  // Fetch full appointment details to get doctorId, hospitalId, clinicId
-                  final authProvider = Provider.of<AuthProvider>(context, listen: false);
-                  final authToken = authProvider.authToken;
-                  
-                  if (authToken == null) {
-                    _showErrorSnackBar('Authentication required. Please login again.');
-                    return;
-                  }
-                  
-                  // Show loading dialog
-                  showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (context) => Center(
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2372EC)),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () async {
+                    if (_isLoadingBookAgain[appointment.id] == true) return;
+
+                    print('🔵 Book Again button clicked');
+                    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                    final authToken = authProvider.authToken;
+
+                    if (authToken == null) {
+                      _showErrorSnackBar('Authentication required. Please login again.');
+                      return;
+                    }
+
+                    setState(() {
+                      _isLoadingBookAgain[appointment.id] = true;
+                    });
+
+                    try {
+                      final response = await _appointmentService.getAppointmentDetail(
+                        appointmentId: appointment.id,
+                        authToken: authToken,
+                      );
+
+                      if (!mounted) return;
+
+                      if (response.success && response.data != null) {
+                        // Convert API data to AppointmentDetailModel
+                        final detail = common_detail.AppointmentDetailModel.fromApiData(response.data!);
+
+                        // Navigate to slot screen with the extracted IDs
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ClinicVisitSlotScreen(
+                              doctorId: detail.doctorId!,
+                              hospitalId: detail.hospitalId,
+                              clinicId: detail.clinicId,
+                              doctorName: detail.doctor.name,
+                              doctorSpecialization: detail.doctor.specialization,
                             ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Loading appointment details...',
-                              style: EcliniqTextStyles.responsiveHeadlineMedium(context),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                  
-                  try {
-                    final response = await _appointmentService.getAppointmentDetail(
-                      appointmentId: appointment.id,
-                      authToken: authToken,
-                    );
-                    
-                    if (!mounted) return;
-                    Navigator.pop(context); // Close loading dialog
-                    
-                    if (response.success && response.data != null) {
-                      // Convert API data to AppointmentDetailModel
-                      final detail = common_detail.AppointmentDetailModel.fromApiData(response.data!);
-                      
-                      // Navigate to slot screen with the extracted IDs
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ClinicVisitSlotScreen(
-                            doctorId: detail.doctorId!,
-                            hospitalId: detail.hospitalId,
-                            clinicId: detail.clinicId,
-                            doctorName: detail.doctor.name,
-                            doctorSpecialization: detail.doctor.specialization,
                           ),
-                        ),
-                      );
-                    } else {
-                      _showErrorSnackBar(
-                        response.message.isNotEmpty 
-                            ? response.message 
-                            : 'Failed to load appointment details',
-                      );
+                        );
+                      } else {
+                        _showErrorSnackBar(
+                          response.message.isNotEmpty
+                              ? response.message
+                              : 'Failed to load appointment details',
+                        );
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        _showErrorSnackBar('Failed to load appointment details. Please try again.');
+                      }
+                    } finally {
+                      if (mounted) {
+                        setState(() {
+                          _isLoadingBookAgain[appointment.id] = false;
+                        });
+                      }
                     }
-                  } catch (e) {
-                    if (mounted) {
-                      Navigator.pop(context); // Close loading dialog
-                      _showErrorSnackBar('Failed to load appointment details. Please try again.');
-                    }
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF2372EC),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF2372EC),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    disabledBackgroundColor: Color(0xFF2372EC).withOpacity(0.7),
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                child: Text(
-                  'Book Again',
-                  style: EcliniqTextStyles.responsiveHeadlineMedium(
-                    context,
-                  ).copyWith(color: Colors.white),
+                  child: _isLoadingBookAgain[appointment.id] == true
+                      ? const EcliniqLoader(size: 20, color: Colors.white)
+                      : Text(
+                          'Book Again',
+                          style: EcliniqTextStyles.responsiveHeadlineMedium(
+                            context,
+                          ).copyWith(color: Colors.white),
+                        ),
                 ),
               ),
-            ),
           ],
         );
     }
