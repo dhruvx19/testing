@@ -175,6 +175,7 @@ enum EcliniqIcons {
   notifilter('$_base/filter_notif.svg'),
   doubleMark('$_base/Check Read.svg'),
   rescheduleIcon('$_base/Calendar Reschedule.svg'),
+  rescheduleCancel('$_base/Calendar X.svg'),
   reschedule('$_base/reschedule.svg'),
   shieldCheck('$_base/Shield Check.svg'),
   eyeOpen('$_base/Eye.svg'),

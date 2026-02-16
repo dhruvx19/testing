@@ -3,13 +3,16 @@ import 'dart:convert';
 import 'package:ecliniq/ecliniq_api/models/appointment.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/widgets/eta_bottom_sheet.dart';
+import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/widgets/taxes_bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/widgets.dart';
 import 'package:ecliniq/ecliniq_ui/scripts/ecliniq_ui.dart';
 import 'package:ecliniq/ecliniq_utils/bottom_sheets/ratings/rate_your_exp_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AppointmentDetailModel {
   final String id;
@@ -1259,13 +1262,19 @@ class DoctorInfoCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 4),
+             SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 4.0)),
             Row(
               children: [
                 SvgPicture.asset(
                   EcliniqIcons.hospitalBuilding.assetPath,
-                  width: 24,
-                  height: 24,
+                  width: EcliniqTextStyles.getResponsiveIconSize(
+                          context,
+                          24.0,
+                        ),
+                        height: EcliniqTextStyles.getResponsiveIconSize(
+                          context,
+                          24.0,
+                        ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -1276,16 +1285,22 @@ class DoctorInfoCard extends StatelessWidget {
                     ).copyWith(color: Color(0xff626060)),
                   ),
                 ),
-                const SizedBox(width: 8),
+                   SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 8.0)),
               ],
             ),
-            const SizedBox(height: 4),
+         SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 4.0)),
             Row(
               children: [
                 SvgPicture.asset(
                   EcliniqIcons.mapPointBlack.assetPath,
-                  width: 24,
-                  height: 24,
+                  width: EcliniqTextStyles.getResponsiveIconSize(
+                          context,
+                          24.0,
+                        ),
+                        height: EcliniqTextStyles.getResponsiveIconSize(
+                          context,
+                          24.0,
+                        ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -1476,58 +1491,157 @@ class ClinicLocationCard extends StatelessWidget {
 
   const ClinicLocationCard({super.key, required this.clinic});
 
+  Future<void> _openMapsDirections(BuildContext context) async {
+    final lat = clinic.latitude;
+    final lng = clinic.longitude;
+
+    if (lat == 0.0 || lng == 0.0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Location coordinates not available'),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    
+    final googleMapsUrl = Uri.parse(
+      'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng',
+    );
+
+    
+    final appleMapsUrl = Uri.parse('https://maps.apple.com/?daddr=$lat,$lng');
+
+    try {
+      bool canLaunchGoogle = false;
+      bool canLaunchApple = false;
+
+      
+      try {
+        canLaunchGoogle = await canLaunchUrl(googleMapsUrl);
+      } catch (e) {
+        canLaunchGoogle = false;
+      }
+
+      try {
+        canLaunchApple = await canLaunchUrl(appleMapsUrl);
+      } catch (e) {
+        canLaunchApple = false;
+      }
+
+      
+      if (canLaunchGoogle) {
+        try {
+          await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
+          return;
+        } catch (e) {
+          
+        }
+      }
+
+      
+      if (canLaunchApple) {
+        try {
+          await launchUrl(appleMapsUrl, mode: LaunchMode.externalApplication);
+          return;
+        } catch (e) {
+          
+        }
+      }
+
+      
+      final webMapsUrl = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+      );
+      try {
+        await launchUrl(webMapsUrl, mode: LaunchMode.externalApplication);
+      } catch (e) {
+        
+        try {
+          await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
+        } catch (finalLaunchError) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Unable to open maps app. Please try again or search for the location manually.',
+                ),
+                backgroundColor: Colors.orange,
+                duration: Duration(seconds: 3),
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final hasCoordinates = clinic.latitude != 0.0 && clinic.longitude != 0.0;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          decoration: BoxDecoration(
-            color: Color(0xffF9F9F9),
-            borderRadius: BorderRadius.circular(
-              EcliniqTextStyles.getResponsiveSize(context, 12.0),
-            ),
+        InkWell(
+          onTap: hasCoordinates ? () => _openMapsDirections(context) : null,
+          borderRadius: BorderRadius.circular(
+            EcliniqTextStyles.getResponsiveSize(context, 12.0),
           ),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: 12.0,
-                  right: 12.0,
-                  top: 12.0,
-                  bottom: 12.0,
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(
-                    EcliniqTextStyles.getResponsiveSize(context, 8.0),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Color(0xffF9F9F9),
+              borderRadius: BorderRadius.circular(
+                EcliniqTextStyles.getResponsiveSize(context, 12.0),
+              ),
+            ),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(
+                    left: 12.0,
+                    right: 12.0,
+                    top: 12.0,
+                    bottom: 12.0,
                   ),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      border: Border.all(color: Color(0xffB8B8B8)),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(
+                      EcliniqTextStyles.getResponsiveSize(context, 8.0),
                     ),
-                    height: 70,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        border: Border.all(color: Color(0xffB8B8B8)),
+                      ),
+                      height: 70,
 
-                    child: Center(
-                      child: Icon(
-                        Icons.map_outlined,
-                        size: 48,
-                        color: Colors.grey[400],
+                      child: Center(
+                        child: Icon(
+                          Icons.map_outlined,
+                          size: 48,
+                          color: Colors.grey[400],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              Center(
-                child: Text(
-                  'Tap to get the clinic direction',
-                  style: EcliniqTextStyles.responsiveBodySmall(
-                    context,
-                  ).copyWith(color: Color(0xff2372EC)),
+                Center(
+                  child: Text(
+                    'Tap to get the clinic direction',
+                    style: EcliniqTextStyles.responsiveBodySmall(
+                      context,
+                    ).copyWith(
+                      color: hasCoordinates ? Color(0xff2372EC) : Colors.grey,
+                    ),
+                  ),
                 ),
-              ),
-              SizedBox(height: 4),
-            ],
+                SizedBox(height: 4),
+              ],
+            ),
           ),
         ),
       ],
@@ -1555,8 +1669,7 @@ class PaymentDetailsCard extends StatelessWidget {
         _buildPaymentRow(
           context: context,
           'Consultation Fee',
-          payment.serviceFee > 0 ? 0.0 : payment.consultationFee,
-          subtitle: payment.serviceFee > 0 ? 'Pay at Clinic' : null,
+          0.0,
         ),
         if (payment.serviceFee > 0) ...[
           const SizedBox(height: 8),
@@ -1621,6 +1734,8 @@ class PaymentDetailsCard extends StatelessWidget {
     bool isBold = false,
     required BuildContext context,
   }) {
+    final bool isServiceFee = label.contains('Service Fee');
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1635,15 +1750,22 @@ class PaymentDetailsCard extends StatelessWidget {
                     context,
                   ).copyWith(color: const Color(0xFF626060)),
                 ),
-
-                Padding(
-                  padding: EdgeInsets.only(left: 8),
-                  child: SvgPicture.asset(
-                    EcliniqIcons.infoCircleBlack.assetPath,
-                    width: 20,
-                    height: 20,
+                if (isServiceFee) ...[
+                  const SizedBox(width: 6),
+                  GestureDetector(
+                    onTap: () {
+                      EcliniqBottomSheet.show(
+                        context: context,
+                        child: const TaxesBottomSheet(),
+                      );
+                    },
+                    child: SvgPicture.asset(
+                      EcliniqIcons.infoCircleBlack.assetPath,
+                      width: 20,
+                      height: 20,
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
             Row(

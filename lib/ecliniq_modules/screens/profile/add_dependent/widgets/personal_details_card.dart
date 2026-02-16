@@ -75,22 +75,6 @@ class _PersonalDetailsWidgetState extends State<PersonalDetailsWidget> {
     }
   }
 
-  String? _backendBloodGroup(String? uiValue) {
-    if (uiValue == null || uiValue.isEmpty) return null;
-    const map = {
-      'A+': 'A_POSITIVE',
-      'A-': 'A_NEGATIVE',
-      'B+': 'B_POSITIVE',
-      'B-': 'B_NEGATIVE',
-      'AB+': 'AB_POSITIVE',
-      'AB-': 'AB_NEGATIVE',
-      'O+': 'O_POSITIVE',
-      'O-': 'O_NEGATIVE',
-      'Others': 'OTHERS',
-    };
-    return map[uiValue] ?? uiValue;
-  }
-
   String _backendGender(String? uiValue) {
     if (uiValue == null || uiValue.isEmpty) return '';
     // Convert UI format (Male, Female, Others) to backend format (MALE, FEMALE, OTHER)
@@ -471,12 +455,9 @@ class _PersonalDetailsWidgetState extends State<PersonalDetailsWidget> {
                     child: BloodGroupSelectionSheet(),
                   );
                   if (selected != null) {
-                    // Convert UI format (A+) to backend format (A_POSITIVE)
-                    final backendFormat = _backendBloodGroup(selected);
-                    provider.selectBloodGroup(selected); // UI format
-                    if (backendFormat != null) {
-                      provider.setBloodGroup(backendFormat); // Backend format
-                    }
+                    // Store UI format (A+) - will be converted to backend format (A_POSITIVE) when saving
+                    provider.selectBloodGroup(selected); // UI format for display
+                    provider.setBloodGroup(selected); // UI format - provider will convert when saving
                   }
                 },
               ),

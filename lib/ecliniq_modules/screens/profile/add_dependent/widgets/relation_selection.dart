@@ -23,7 +23,7 @@ class RelationSelectionSheet extends StatelessWidget {
       'Grandmother',
       'Uncle',
       'Aunt',
-      'Other',
+      'Others',
     ];
     final providerToUse =
         provider ?? Provider.of<AddDependentProvider>(context, listen: false);

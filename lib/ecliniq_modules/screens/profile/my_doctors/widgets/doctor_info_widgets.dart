@@ -10,8 +10,13 @@ import '../model/doctor_details.dart';
 
 class DoctorInfoWidget extends StatefulWidget {
   final FavouriteDoctor doctor;
+  final VoidCallback? onRemoveFavourite;
 
-  const DoctorInfoWidget({super.key, required this.doctor});
+  const DoctorInfoWidget({
+    super.key,
+    required this.doctor,
+    this.onRemoveFavourite,
+  });
 
   @override
   State<DoctorInfoWidget> createState() => _DoctorInfoWidgetState();
@@ -101,18 +106,21 @@ class _DoctorInfoWidgetState extends State<DoctorInfoWidget> {
                     ),
                   ),
                   SizedBox(width: 8),
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(4),
-                      color: Color(0xfffff8f8),
-                    ),
-                    child: Center(
-                      child: SvgPicture.asset(
-                        EcliniqIcons.heart.assetPath,
-                        height: 20,
-                        width: 20,
+                  GestureDetector(
+                    onTap: widget.onRemoveFavourite,
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(4),
+                        color: Color(0xfffff8f8),
+                      ),
+                      child: Center(
+                        child: SvgPicture.asset(
+                          EcliniqIcons.heart.assetPath,
+                          height: 20,
+                          width: 20,
+                        ),
                       ),
                     ),
                   ),

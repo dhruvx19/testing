@@ -29,6 +29,7 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
   Set<String> selectedSpecialities = {};
   Set<String> selectedSymptoms = {};
   String? selectedAvailability;
+  DateTime? _selectedDate;
   String? selectedGender;
   String? selectedExperience;
   double distanceRange = 50;
@@ -51,6 +52,12 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
         selectedAvailability = filters['availability'] as String;
       }
 
+      if (filters['date'] != null) {
+        try {
+          _selectedDate = DateTime.parse(filters['date'] as String);
+        } catch (_) {}
+      }
+
       if (filters['gender'] != null) {
         selectedGender = filters['gender'] as String;
       }
@@ -70,6 +77,7 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
       selectedSpecialities.clear();
       selectedSymptoms.clear();
       selectedAvailability = null;
+      _selectedDate = null;
       selectedGender = null;
       selectedExperience = null;
       distanceRange = 50;
@@ -80,6 +88,7 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
       'specialities': <String>[],
       'symptoms': <String>[],
       'availability': null,
+      'date': null,
       'gender': null,
       'experience': null,
       'distance': 50,
@@ -99,6 +108,8 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
       }
     }
     
+    final dateStr = _selectedDate?.toIso8601String().split('T')[0];
+    
     // Check if all filters are empty (manually cleared)
     final bool allFiltersEmpty = allSpecialities.isEmpty &&
         selectedAvailability == null &&
@@ -112,6 +123,7 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
         'specialities': <String>[],
         'symptoms': <String>[],
         'availability': null,
+        'date': null,
         'gender': null,
         'experience': null,
         'distance': 50,
@@ -121,6 +133,7 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
         'specialities': allSpecialities.toList(),
         'symptoms': selectedSymptoms.toList(),
         'availability': selectedAvailability,
+        'date': selectedAvailability == 'DATE' ? dateStr : null,
         'gender': selectedGender,
         'experience': selectedExperience,
         'distance': distanceRange,
@@ -196,15 +209,9 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
   };
 
   final List<String> availabilityOptions = [
-    'Anytime',
-    'Available Now',
-    'Today',
-    'Tomorrow',
-    'Saturday, 01 Nov',
-    'Sunday, 02 Nov',
-    'Monday, 03 Nov',
-    'Tuesday, 04 Nov',
-    'Wednesday, 05 Nov',
+    'TODAY',
+    'TOMORROW',
+    'DATE',
   ];
 
   final List<String> genderOptions = ['Male', 'Female', 'Others'];
@@ -458,60 +465,72 @@ class _HospitalFilterBottomSheetState extends State<HospitalFilterBottomSheet> {
   }
 
   Widget _buildAvailabilityList() {
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      itemCount: availabilityOptions.length,
-      itemBuilder: (context, index) {
-        final option = availabilityOptions[index];
-        final isSelected = selectedAvailability == option;
-        return InkWell(
-          onTap: () {
-            setState(() {
-              // Toggle selection - deselect if already selected
-              selectedAvailability = isSelected ? null : option;
-            });
-            _emitFilterChange();
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    option,
-                    style: EcliniqTextStyles.responsiveTitleXLarge(
-                      context,
-                    ).copyWith(color: Color(0xff424242)),
-                  ),
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: availabilityOptions.map((avail) {
+              final isSelected = selectedAvailability == avail;
+              return ChoiceChip(
+                label: Text(avail),
+                selected: isSelected,
+                selectedColor: Color(0xFF2372EC).withOpacity(0.2),
+                backgroundColor: Colors.grey[200],
+                labelStyle: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+                  color: isSelected ? Color(0xFF2372EC) : Color(0xff424242),
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                 ),
-                Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isSelected ? Color(0xff2372EC) : Color(0xff8E8E8E),
-                      width: 1,
-                    ),
-                  ),
-                  child: isSelected
-                      ? Center(
-                          child: Container(
-                            width: 12,
-                            height: 12,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Color(0xff2372EC),
-                            ),
-                          ),
-                        )
-                      : null,
+                side: BorderSide(
+                  color: isSelected ? Color(0xFF2372EC) : Colors.grey[400]!,
+                  width: isSelected ? 2 : 1,
                 ),
-              ],
-            ),
+                onSelected: (selected) {
+                  setState(() {
+                    selectedAvailability = selected ? avail : null;
+                    if (avail != 'DATE') {
+                      _selectedDate = null;
+                    }
+                  });
+                  _emitFilterChange();
+                },
+              );
+            }).toList(),
           ),
-        );
-      },
+          if (selectedAvailability == 'DATE') ...[
+            const SizedBox(height: 16),
+            OutlinedButton(
+              onPressed: () async {
+                final date = await showDatePicker(
+                  context: context,
+                  initialDate: _selectedDate ?? DateTime.now(),
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime.now().add(const Duration(days: 30)),
+                );
+                if (date != null) {
+                  setState(() => _selectedDate = date);
+                  _emitFilterChange();
+                }
+              },
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: Color(0xFF2372EC)),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              ),
+              child: Text(
+                _selectedDate == null
+                    ? 'Select Date'
+                    : _selectedDate!.toIso8601String().split('T')[0],
+                style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+                  color: Color(0xFF2372EC),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 

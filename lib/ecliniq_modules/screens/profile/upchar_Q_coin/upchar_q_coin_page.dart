@@ -23,7 +23,7 @@ class _UpcharCoinState extends State<UpcharCoin> {
   WalletTransactionsData? _transactionsData;
   bool _isLoadingBalance = true;
   bool _isLoadingTransactions = true;
-  int _selectedYear = DateTime.now().year;
+  final int _selectedYear = 2026;
 
   @override
   void initState() {
@@ -69,19 +69,16 @@ class _UpcharCoinState extends State<UpcharCoin> {
     }
   }
 
-  Future<void> _fetchTransactions(String authToken, {int? year}) async {
-    final yearToFetch = year ?? _selectedYear;
+  Future<void> _fetchTransactions(String authToken) async {
     try {
       final response = await _walletService.getTransactions(
         authToken: authToken,
-        year: yearToFetch,
+        year: _selectedYear,
       );
       if (mounted) {
         setState(() {
           if (response.success && response.data != null) {
             _transactionsData = response.data;
-            
-            _selectedYear = response.data!.year;
           }
           _isLoadingTransactions = false;
         });
@@ -344,51 +341,34 @@ class _UpcharCoinState extends State<UpcharCoin> {
                         ),
                   ),
                   Spacer(),
-                  GestureDetector(
-                    onTap: () => _showYearSelector(context),
-                    child: Container(
-                      width: EcliniqTextStyles.getResponsiveWidth(
-                        context,
-                        74.0,
-                      ),
-                      height: EcliniqTextStyles.getResponsiveHeight(
-                        context,
-                        30.0,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(
-                          EcliniqTextStyles.getResponsiveBorderRadius(
-                            context,
-                            6.0,
-                          ),
+                  Container(
+                    width: EcliniqTextStyles.getResponsiveWidth(
+                      context,
+                      74.0,
+                    ),
+                    height: EcliniqTextStyles.getResponsiveHeight(
+                      context,
+                      30.0,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(
+                        EcliniqTextStyles.getResponsiveBorderRadius(
+                          context,
+                          6.0,
                         ),
-                        color: Color(0xffF9F9F9),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            '$_selectedYear',
-                            style:
-                                EcliniqTextStyles.responsiveTitleXLarge(
-                                  context,
-                                ).copyWith(
-                                  fontWeight: FontWeight.w400,
-                                  color: Color(0xff424242),
-                                ),
-                          ),
-                          SvgPicture.asset(
-                            EcliniqIcons.angleDown.assetPath,
-                            width: EcliniqTextStyles.getResponsiveIconSize(
+                      color: Color(0xffF9F9F9),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '$_selectedYear',
+                        style:
+                            EcliniqTextStyles.responsiveTitleXLarge(
                               context,
-                              18.0,
+                            ).copyWith(
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xff424242),
                             ),
-                            height: EcliniqTextStyles.getResponsiveIconSize(
-                              context,
-                              18.0,
-                            ),
-                          ),
-                        ],
                       ),
                     ),
                   ),
@@ -400,81 +380,7 @@ class _UpcharCoinState extends State<UpcharCoin> {
               transactionsData: _transactionsData,
               isLoading: _isLoadingTransactions,
               selectedYear: _selectedYear,
-              onYearChanged: (year) {
-                setState(() {
-                  _selectedYear = year;
-                  _isLoadingTransactions = true;
-                });
-                final authProvider = Provider.of<AuthProvider>(
-                  context,
-                  listen: false,
-                );
-                final authToken = authProvider.authToken;
-                if (authToken != null) {
-                  _fetchTransactions(authToken, year: year);
-                }
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showYearSelector(BuildContext context) {
-    final currentYear = DateTime.now().year;
-    final years = List.generate(5, (index) => currentYear - index);
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) => Container(
-        padding: EdgeInsets.symmetric(vertical: 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Select Year',
-              style: EcliniqTextStyles.responsiveHeadlineLarge(
-                context,
-              ).copyWith(fontWeight: FontWeight.w600, color: Color(0xff424242)),
-            ),
-            SizedBox(height: 16),
-            ...years.map(
-              (year) => ListTile(
-                title: Text(
-                  year.toString(),
-                  style: EcliniqTextStyles.responsiveHeadlineMedium(context)
-                      .copyWith(
-                        color: year == _selectedYear
-                            ? Color(0xFF2372EC)
-                            : Color(0xff424242),
-                        fontWeight: year == _selectedYear
-                            ? FontWeight.w600
-                            : FontWeight.w400,
-                      ),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  if (year != _selectedYear) {
-                    setState(() {
-                      _selectedYear = year;
-                      _isLoadingTransactions = true;
-                    });
-                    final authProvider = Provider.of<AuthProvider>(
-                      context,
-                      listen: false,
-                    );
-                    final authToken = authProvider.authToken;
-                    if (authToken != null) {
-                      _fetchTransactions(authToken, year: year);
-                    }
-                  }
-                },
-              ),
+              onYearChanged: null,
             ),
           ],
         ),

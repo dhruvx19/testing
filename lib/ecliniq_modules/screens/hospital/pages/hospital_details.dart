@@ -446,7 +446,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen>
           child: Stack(
             children: [
               Positioned(
-                top: EcliniqTextStyles.getResponsiveSize(context, 44.0),
+                top: EcliniqTextStyles.getResponsiveSize(context, 50.0),
                 left: EcliniqTextStyles.getResponsiveSpacing(context, 16.0),
                 right: EcliniqTextStyles.getResponsiveSpacing(context, 16.0),
                 child: Row(

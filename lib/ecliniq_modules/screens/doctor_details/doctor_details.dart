@@ -9,7 +9,6 @@ import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/booking/clinic_visit_slot_screen.dart';
 import 'package:ecliniq/ecliniq_modules/screens/doctor_details/branches/branches.dart';
-import 'package:ecliniq/ecliniq_modules/screens/doctor_details/branches/widgets/hospital_branch_detail.dart';
 import 'package:ecliniq/ecliniq_modules/screens/doctor_details/widgets/about_doctor.dart';
 import 'package:ecliniq/ecliniq_modules/screens/doctor_details/widgets/address_doctor.dart';
 import 'package:ecliniq/ecliniq_modules/screens/doctor_details/widgets/common_widget.dart';
@@ -314,7 +313,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen>
       return Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-        surfaceTintColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
           leadingWidth: EcliniqTextStyles.getResponsiveWidth(context, 54.0),
           titleSpacing: 0,
           toolbarHeight: EcliniqTextStyles.getResponsiveHeight(context, 46.0),
@@ -770,7 +769,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen>
           ),
 
           Positioned(
-            top: EcliniqTextStyles.getResponsiveSize(context, 44.0),
+            top: EcliniqTextStyles.getResponsiveSize(context, 50.0),
             left: EcliniqTextStyles.getResponsiveSpacing(context, 16.0),
             right: EcliniqTextStyles.getResponsiveSpacing(context, 16.0),
             child: Row(
@@ -814,18 +813,15 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen>
   }
 
   Widget _buildCircleButton(EcliniqIcons icon, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(
-        EcliniqTextStyles.getResponsiveBorderRadius(context, 20.0),
+    return Container(
+      width: EcliniqTextStyles.getResponsiveSize(context, 40.0),
+      height: EcliniqTextStyles.getResponsiveSize(context, 40.0),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.5),
+        shape: BoxShape.circle,
       ),
-      child: Container(
-        width: EcliniqTextStyles.getResponsiveSize(context, 40.0),
-        height: EcliniqTextStyles.getResponsiveSize(context, 40.0),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.5),
-          shape: BoxShape.circle,
-        ),
+      child: GestureDetector(
+        onTap: onTap,
         child: Center(
           child: SvgPicture.asset(
             icon.assetPath,

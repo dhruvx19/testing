@@ -513,6 +513,7 @@ class DependentData {
     if (relation.isEmpty) return relation;
     final upperRelation = relation.toUpperCase();
     if (upperRelation == 'SELF') return 'Self';
+    if (upperRelation == 'AUNTY') return 'Aunt';  // Convert AUNTY to Aunt for UI
     
     return relation[0].toUpperCase() + relation.substring(1).toLowerCase();
   }

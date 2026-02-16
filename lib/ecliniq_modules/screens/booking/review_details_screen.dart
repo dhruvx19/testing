@@ -17,6 +17,7 @@ import 'package:ecliniq/ecliniq_modules/screens/booking/widgets/doctor_info_card
 import 'package:ecliniq/ecliniq_modules/screens/login/profile_help.dart';
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/widgets/common.dart'
     hide DoctorInfoCard;
+import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/widgets/taxes_bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_services.dart/phonepe_service.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
@@ -456,6 +457,10 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
   void _updateCurrentLocationDetails() {
     if (_doctor == null) return;
 
+    // If distance was passed from previous screen, keep it (don't override)
+    // This preserves the calculated distance from clinic_visit_slot_screen
+    final shouldPreserveDistance = widget.locationDistance != null;
+
     if (widget.hospitalId != null) {
       final hospital = _doctor!.hospitals.firstWhere(
         (h) => h.id == widget.hospitalId,
@@ -467,9 +472,12 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
         _currentLocationName = hospital.name;
         _currentLocationAddress =
             '${hospital.city ?? ""}, ${hospital.state ?? ""}';
-        _currentDistance = ((hospital.distance ?? 0.0) / 1000).toStringAsFixed(
-          1,
-        );
+        // Only update distance if not already provided from previous screen
+        if (!shouldPreserveDistance) {
+          _currentDistance = ((hospital.distance ?? 0.0) / 1000).toStringAsFixed(
+            1,
+          );
+        }
       }
     } else if (widget.clinicId != null) {
       final clinic = _doctor!.clinics.firstWhere(
@@ -481,7 +489,10 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
       if (clinic.id.isNotEmpty) {
         _currentLocationName = clinic.name;
         _currentLocationAddress = '${clinic.city ?? ""}, ${clinic.state ?? ""}';
-        _currentDistance = ((clinic.distance ?? 0.0) / 1000).toStringAsFixed(1);
+        // Only update distance if not already provided from previous screen
+        if (!shouldPreserveDistance) {
+          _currentDistance = ((clinic.distance ?? 0.0) / 1000).toStringAsFixed(1);
+        }
       }
     }
   }
@@ -1011,25 +1022,15 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    'Consultation Fee',
-                                    style:
-                                        EcliniqTextStyles.responsiveHeadlineXMedium(
-                                          context,
-                                        ).copyWith(color: Color(0xff626060)),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  SvgPicture.asset(
-                                    EcliniqIcons.infoCircleBlack.assetPath,
-                                    width: 20,
-                                    height: 20,
-                                  ),
-                                ],
+                              Text(
+                                'Consultation Fee',
+                                style:
+                                    EcliniqTextStyles.responsiveHeadlineXMedium(
+                                      context,
+                                    ).copyWith(color: Color(0xff626060)),
                               ),
                               Text(
-                                'Pay at Clinic',
+                                '₹0',
                                 style:
                                     EcliniqTextStyles.responsiveHeadlineXMedium(
                                       context,
@@ -1052,10 +1053,18 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                                           ).copyWith(color: Color(0xff626060)),
                                     ),
                                     const SizedBox(width: 6),
-                                    SvgPicture.asset(
-                                      EcliniqIcons.infoCircleBlack.assetPath,
-                                      width: 20,
-                                      height: 20,
+                                    GestureDetector(
+                                       onTap: () {
+                                         EcliniqBottomSheet.show(
+                                           context: context,
+                                           child: const TaxesBottomSheet(),
+                                         );
+                                       },
+                                      child: SvgPicture.asset(
+                                        EcliniqIcons.infoCircleBlack.assetPath,
+                                        width: 20,
+                                        height: 20,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -1083,11 +1092,19 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                                           ).copyWith(color: Color(0xff626060)),
                                     ),
                                     const SizedBox(width: 6),
-                                     SvgPicture.asset(
-                                      EcliniqIcons.infoCircleBlack.assetPath,
-                                      width: 20,
-                                      height: 20,
-                                    ),
+                                     GestureDetector(
+                                       onTap: () {
+                                        EcliniqBottomSheet.show(
+                                           context: context,
+                                           child: const TaxesBottomSheet(),
+                                         );
+                                       },
+                                       child: SvgPicture.asset(
+                                        EcliniqIcons.infoCircleBlack.assetPath,
+                                        width: 20,
+                                        height: 20,
+                                                                           ),
+                                     ),
                                   ],
                                 ),
                                 Row(
@@ -1124,6 +1141,38 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                               ).copyWith(color: Color(0xff54B955)),
                             ),
                           ],
+                          // if (_useWallet && _coinDeductionAmount > 0) ...[
+                          //   const SizedBox(height: 12),
+                          //   Row(
+                          //     mainAxisAlignment: MainAxisAlignment.spaceBetween,x
+                          //     children: [
+                          //       Row(
+                          //         children: [
+                          //           Image.asset(
+                          //             EcliniqIcons.upcharCoinSmall1.assetPath,
+                          //             width: 16,
+                          //             height: 16,
+                          //           ),
+                          //           const SizedBox(width: 6),
+                          //           Text(
+                          //             'Coin Deduction',
+                          //             style:
+                          //                 EcliniqTextStyles.responsiveHeadlineXMedium(
+                          //                   context,
+                          //                 ).copyWith(color: Color(0xff54B955)),
+                          //           ),
+                          //         ],
+                          //       ),
+                          //       Text(
+                          //         '-₹${_coinDeductionAmount.toStringAsFixed(0)}',
+                          //         style:
+                          //             EcliniqTextStyles.responsiveHeadlineXMedium(
+                          //               context,
+                          //             ).copyWith(color: Color(0xff54B955)),
+                          //       ),
+                          //     ],
+                          //   ),
+                          // ],
                           const SizedBox(height: 8),
                           const SizedBox(height: 4),
                           Container(
@@ -1145,7 +1194,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                               ),
                               Text(
                                 _serviceFee > 0
-                                    ? '₹${_serviceFee.toStringAsFixed(0)}'
+                                    ? '₹${_remainingAmountToPay.toStringAsFixed(0)}'
                                     : '₹00.00',
                                 style:
                                     EcliniqTextStyles.responsiveHeadlineLarge(
@@ -1195,21 +1244,23 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
     );
   }
 
+  // Calculate coin deduction amount
+  double get _coinDeductionAmount {
+    if (!_useWallet || _walletBalance <= 0 || _serviceFee <= 0) {
+      return 0.0;
+    }
+    return _walletBalance >= _serviceFee ? _serviceFee : _walletBalance;
+  }
+
+  // Calculate remaining amount to pay via payment gateway
+  double get _remainingAmountToPay {
+    return _serviceFee - _coinDeductionAmount;
+  }
+
   Future<void> _onConfirmVisit() async {
     if (_isBooking) return;
 
-    if (_serviceFee > 0 &&
-        !_useWallet &&
-        _selectedPaymentMethodPackage == null) {
-      CustomErrorSnackBar.show(
-        context: context,
-        title: 'Payment Method Required',
-        subtitle: 'Please select a payment method',
-        duration: const Duration(seconds: 4),
-      );
-      return;
-    }
-
+    // If using wallet and balance is zero, show error
     if (_useWallet && _walletBalance <= 0) {
       CustomErrorSnackBar.show(
         context: context,
@@ -1221,12 +1272,14 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
       return;
     }
 
-    if (_useWallet && _serviceFee > 0 && _walletBalance < _serviceFee) {
+    // Check if payment method is required for remaining amount
+    if (_serviceFee > 0 && _remainingAmountToPay > 0 && _selectedPaymentMethodPackage == null) {
       CustomErrorSnackBar.show(
         context: context,
-        title: 'Insufficient Balance',
-        subtitle:
-            'Your Upchar-Q Coin balance (₹${_walletBalance.toStringAsFixed(2)}) is less than the required amount (₹${_serviceFee.toStringAsFixed(2)}).',
+        title: 'Payment Method Required',
+        subtitle: _useWallet 
+          ? 'Please select a payment method for the remaining amount of ₹${_remainingAmountToPay.toStringAsFixed(0)}'
+          : 'Please select a payment method',
         duration: const Duration(seconds: 4),
       );
       return;
@@ -1341,10 +1394,11 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                 responseDataJson['paymentRequired'] == true) {
               final paymentData = BookingPaymentData.fromJson(responseDataJson);
 
+              // Skip payment gateway if no amount needs to be paid via gateway
               if (paymentData.totalAmount == 0 ||
                   paymentData.gatewayAmount == 0 ||
                   _serviceFee == 0 ||
-                  (_useWallet && _walletBalance >= paymentData.totalAmount)) {
+                  _remainingAmountToPay == 0) {
                 final appointmentData = response.data is AppointmentData
                     ? response.data as AppointmentData
                     : null;
@@ -1751,6 +1805,10 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                   }
                   setState(() {
                     _useWallet = !_useWallet;
+                    // If unchecking wallet and no payment method selected, reset
+                    if (!_useWallet && _remainingAmountToPay > 0) {
+                      // Keep payment method selected
+                    }
                   });
                 },
                 child: Container(
@@ -1782,6 +1840,27 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
               ),
             ],
           ),
+          // if (_useWallet && _coinDeductionAmount > 0) ...[
+          //   const SizedBox(height: 8),
+          //   Row(
+          //     children: [
+          //       const SizedBox(width: 32),
+          //       Expanded(
+          //         child: Text(
+          //           _walletBalance >= _serviceFee
+          //               ? 'Your coins will cover the full amount'
+          //               : 'Remaining ₹${_remainingAmountToPay.toStringAsFixed(0)} will be charged via selected payment method',
+          //           style: EcliniqTextStyles.responsiveButtonSmall(
+          //             context,
+          //           ).copyWith(
+          //             color: const Color(0xff54B955),
+          //             fontStyle: FontStyle.italic,
+          //           ),
+          //         ),
+          //       ),
+          //     ],
+          //   ),
+          // ],
           const SizedBox(height: 8),
           Container(height: 0.5, color: const Color(0xffB8B8B8)),
           const SizedBox(height: 8),
@@ -1791,7 +1870,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
             children: [
               Expanded(
                 child: GestureDetector(
-                  onTap: _isBooking
+                  onTap: _isBooking || _remainingAmountToPay == 0
                       ? null
                       : () => _showPaymentMethodBottomSheet(),
                   child: Column(
@@ -1800,28 +1879,30 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                     children: [
                       Row(
                         children: [
-                          if (_selectedPaymentMethodPackage != null)
-                            Image.asset(
-                              _getIconForPackage(
-                                _selectedPaymentMethodPackage!,
+                          if (_remainingAmountToPay > 0) ...[
+                            if (_selectedPaymentMethodPackage != null)
+                              Image.asset(
+                                _getIconForPackage(
+                                  _selectedPaymentMethodPackage!,
+                                ),
+                                width: 20,
+                                height: 20,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Icon(
+                                    Icons.payment,
+                                    size: 20,
+                                    color: Color(0xFF2372EC),
+                                  );
+                                },
+                              )
+                            else
+                              Image.asset(
+                                EcliniqIcons.googlePay.assetPath,
+                                width: 20,
+                                height: 20,
                               ),
-                              width: 20,
-                              height: 20,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Icon(
-                                  Icons.payment,
-                                  size: 20,
-                                  color: Color(0xFF2372EC),
-                                );
-                              },
-                            )
-                          else
-                            Image.asset(
-                              EcliniqIcons.googlePay.assetPath,
-                              width: 20,
-                              height: 20,
-                            ),
-                          const SizedBox(width: 4),
+                            const SizedBox(width: 4),
+                          ],
                           Flexible(
                             child: Text(
                               'Pay using',
@@ -1832,28 +1913,34 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                               maxLines: 1,
                             ),
                           ),
-                          const SizedBox(width: 4),
-                          SvgPicture.asset(
-                            EcliniqIcons.arrowUp.assetPath,
-                            width: 16,
-                            height: 16,
-                            colorFilter: const ColorFilter.mode(
-                              Color(0xff626060),
-                              BlendMode.srcIn,
+                          if (_remainingAmountToPay > 0) ...[
+                            const SizedBox(width: 4),
+                            SvgPicture.asset(
+                              EcliniqIcons.arrowUp.assetPath,
+                              width: 16,
+                              height: 16,
+                              colorFilter: const ColorFilter.mode(
+                                Color(0xff626060),
+                                BlendMode.srcIn,
+                              ),
                             ),
-                          ),
+                          ],
                         ],
                       ),
                       const SizedBox(height: 2),
 
                       Text(
-                        _selectedPaymentMethod ?? 'Google Pay UPI',
+                        _remainingAmountToPay == 0
+                            ? 'Upchar-Q Coins'
+                            : (_selectedPaymentMethod ?? 'Google Pay UPI'),
                         style: EcliniqTextStyles.responsiveBodyMedium(context)
                             .copyWith(
                               fontWeight: FontWeight.w300,
-                              color: _selectedPaymentMethod != null
+                              color: _remainingAmountToPay == 0
                                   ? Color(0xff424242)
-                                  : Color(0xff8E8E8E),
+                                  : (_selectedPaymentMethod != null
+                                      ? Color(0xff424242)
+                                      : Color(0xff8E8E8E)),
                             ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -1912,7 +1999,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     Text(
-                                      '₹${_serviceFee.toStringAsFixed(0)}',
+                                      '₹${_remainingAmountToPay.toStringAsFixed(0)}',
                                       style:
                                           EcliniqTextStyles.responsiveTitleXBLarge(
                                             context,

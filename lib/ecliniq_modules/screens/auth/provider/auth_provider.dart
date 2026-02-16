@@ -43,36 +43,22 @@ class AuthProvider with ChangeNotifier {
   String? get redirectTo => _redirectTo;
   String? get userStatus => _userStatus;
 
-  
-  
   Future<void> initialize() async {
     try {
-      
       await SecureStorageService.initializeStorage();
 
-      
       await _loadSavedToken();
 
-      
       final isExpired = await SessionService.isTokenExpired();
       if (isExpired && _authToken != null) {
-        
         await clearSession();
       } else if (_authToken != null && !isExpired) {
-        
         try {
           await EcliniqPushNotifications.registerDeviceToken(
             authToken: _authToken!,
           );
-        } catch (e) {
-          
-          
-        }
+        } catch (e) {}
       }
-
-      
-      
-      
     } catch (e) {}
   }
 
@@ -127,20 +113,15 @@ class AuthProvider with ChangeNotifier {
       if (result.success) {
         if (result.data != null) {
           try {
-            
             final responseData = result.data!;
             final data = responseData['data'];
 
             if (data != null && data['token'] != null) {
               _authToken = data['token'];
 
-              
               _redirectTo = data['redirectTo'];
               _userStatus = data['userStatus'];
 
-              
-              
-              
               if (_redirectTo == 'home') {
                 await SessionService.setOnboardingComplete(true);
               } else if (_redirectTo == 'profile_setup') {
@@ -153,14 +134,11 @@ class AuthProvider with ChangeNotifier {
               return false;
             }
 
-            
-            
             if (_userId == null && data != null && data['userId'] != null) {
               _userId = data['userId'];
             }
 
             if (_authToken != null) {
-              
               if (_userId != null && _phoneNumber != null) {
                 final stored = await SecureStorageService.storeUserInfo(
                   _userId!,
@@ -169,19 +147,13 @@ class AuthProvider with ChangeNotifier {
                 if (!stored) {}
               }
 
-              
-              
               await SessionService.storeTokens(authToken: _authToken!);
-              
-              
+
               try {
                 await EcliniqPushNotifications.registerDeviceToken(
                   authToken: _authToken!,
                 );
-              } catch (e) {
-                
-                
-              }
+              } catch (e) {}
             } else {}
           } catch (e) {
             _errorMessage = 'Failed to parse authentication data';
@@ -330,8 +302,6 @@ class AuthProvider with ChangeNotifier {
       _isSavingDetails = false;
 
       if (response.success) {
-        
-        
         await SessionService.setOnboardingComplete(true);
 
         _profilePhotoKey = null;
@@ -364,7 +334,7 @@ class AuthProvider with ChangeNotifier {
     String? bloodGroup,
     int? height,
     int? weight,
-    String? dob, 
+    String? dob,
     String? profilePhoto,
   }) async {
     if (_authToken == null) {
@@ -382,11 +352,13 @@ class AuthProvider with ChangeNotifier {
         'firstName': firstName,
         'lastName': lastName,
         if (gender != null && gender.isNotEmpty) 'gender': gender,
-        if (bloodGroup != null && bloodGroup.isNotEmpty) 'bloodGroup': bloodGroup,
+        if (bloodGroup != null && bloodGroup.isNotEmpty)
+          'bloodGroup': bloodGroup,
         if (height != null) 'height': height,
         if (weight != null) 'weight': weight,
         if (dob != null && dob.isNotEmpty) 'dob': dob,
-        if (profilePhoto != null && profilePhoto.isNotEmpty) 'profilePhoto': profilePhoto,
+        if (profilePhoto != null && profilePhoto.isNotEmpty)
+          'profilePhoto': profilePhoto,
       };
 
       final resp = await http.post(
@@ -407,7 +379,20 @@ class AuthProvider with ChangeNotifier {
       } else {
         try {
           final m = jsonDecode(resp.body);
-          _errorMessage = m['message']?.toString() ?? 'Failed to update profile';
+
+          // Check if there are detailed validation errors
+          if (m['errors'] != null &&
+              m['errors'] is List &&
+              (m['errors'] as List).isNotEmpty) {
+            final errors = (m['errors'] as List);
+            final errorMessages = errors.map((error) {
+              return error['message']?.toString() ?? 'Validation error';
+            }).toList();
+            _errorMessage = errorMessages.join(', ');
+          } else {
+            _errorMessage =
+                m['message']?.toString() ?? 'Failed to update profile';
+          }
         } catch (_) {
           _errorMessage = 'Failed to update profile';
         }
@@ -419,6 +404,16 @@ class AuthProvider with ChangeNotifier {
       _errorMessage = 'Failed to update profile: ${e.toString()}';
       notifyListeners();
       return false;
+    }
+  }
+
+  String _mapRelationToApi(String uiValue) {
+    // Handle both UI format and backend format
+    if (uiValue == 'Aunt' || uiValue == 'AUNT') {
+      return 'AUNTY';
+    } else {
+      // Convert all other relations to uppercase
+      return uiValue.toUpperCase();
     }
   }
 
@@ -451,14 +446,17 @@ class AuthProvider with ChangeNotifier {
         'firstName': firstName,
         'lastName': lastName,
         if (gender != null && gender.isNotEmpty) 'gender': gender.toLowerCase(),
-        if (relation != null && relation.isNotEmpty) 'relation': relation.toLowerCase(),
+        if (relation != null && relation.isNotEmpty)
+          'relation': _mapRelationToApi(relation),
         if (phone != null && phone.isNotEmpty) 'phone': phone,
         if (emailId != null && emailId.isNotEmpty) 'emailId': emailId,
-        if (bloodGroup != null && bloodGroup.isNotEmpty) 'bloodGroup': bloodGroup,
+        if (bloodGroup != null && bloodGroup.isNotEmpty)
+          'bloodGroup': bloodGroup,
         if (height != null) 'height': height,
         if (weight != null) 'weight': weight,
         if (dob != null && dob.isNotEmpty) 'dob': dob,
-        if (profilePhoto != null && profilePhoto.isNotEmpty) 'profilePhoto': profilePhoto,
+        if (profilePhoto != null && profilePhoto.isNotEmpty)
+          'profilePhoto': profilePhoto,
       };
 
       final resp = await http.patch(
@@ -479,7 +477,20 @@ class AuthProvider with ChangeNotifier {
       } else {
         try {
           final m = jsonDecode(resp.body);
-          _errorMessage = m['message']?.toString() ?? 'Failed to update dependent';
+
+          // Check if there are detailed validation errors
+          if (m['errors'] != null &&
+              m['errors'] is List &&
+              (m['errors'] as List).isNotEmpty) {
+            final errors = (m['errors'] as List);
+            final errorMessages = errors.map((error) {
+              return error['message']?.toString() ?? 'Validation error';
+            }).toList();
+            _errorMessage = errorMessages.join(', ');
+          } else {
+            _errorMessage =
+                m['message']?.toString() ?? 'Failed to update dependent';
+          }
         } catch (_) {
           _errorMessage = 'Failed to update dependent';
         }
@@ -494,11 +505,8 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-
-
   Future<void> _loadSavedToken() async {
     try {
-      
       final hasValidSession = await SessionService.hasValidSession();
       if (hasValidSession) {
         _authToken = await SessionService.getAuthToken();
@@ -506,7 +514,6 @@ class AuthProvider with ChangeNotifier {
         _userId = userInfo['userId'];
         notifyListeners();
       } else {
-        
         _authToken = null;
         _userId = null;
         notifyListeners();
@@ -518,10 +525,8 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  
   Future<bool> clearSession() async {
     try {
-      
       _challengeId = null;
       _phoneNumber = null;
       _errorMessage = null;
@@ -532,7 +537,6 @@ class AuthProvider with ChangeNotifier {
       _redirectTo = null;
       _userStatus = null;
 
-      
       final success = await SessionService.clearSession();
 
       notifyListeners();
@@ -547,18 +551,12 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  
-  
-  
-  
-  
   Future<bool> loginWithMPIN(String mpin) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      
       final userInfo = await SecureStorageService.getUserInfo();
       final phoneNumber = userInfo['phoneNumber'];
 
@@ -569,20 +567,14 @@ class AuthProvider with ChangeNotifier {
         return false;
       }
 
-      
       final result = await _authService.loginWithMPIN(phoneNumber, mpin);
 
-      
-      
+      final isSuccess =
+          result['success'] == true || result['success'] == 'true';
 
-      
-      final isSuccess = result['success'] == true || result['success'] == 'true';
-      
       if (isSuccess) {
-        
         final token = result['token'];
-        
-        
+
         if (token == null || token.toString().isEmpty) {
           _isLoading = false;
           _errorMessage = 'Token not received from server';
@@ -592,7 +584,6 @@ class AuthProvider with ChangeNotifier {
 
         _authToken = token.toString();
 
-        
         String? extractedUserId;
         try {
           if (_authToken != null && _authToken!.isNotEmpty) {
@@ -602,33 +593,19 @@ class AuthProvider with ChangeNotifier {
               _userId = extractedUserId;
             }
           }
-        } catch (e) {
-          
-          
-        }
+        } catch (e) {}
 
-        
         try {
-          
           final userIdToStore = extractedUserId ?? phoneNumber;
           await Future.wait([
             SessionService.storeTokens(authToken: _authToken!),
-            SecureStorageService.storeUserInfo(
-              userIdToStore,
-              phoneNumber,
-            ),
+            SecureStorageService.storeUserInfo(userIdToStore, phoneNumber),
           ]);
-          
-          
-          
+
           EcliniqPushNotifications.registerDeviceToken(
             authToken: _authToken!,
-          ).catchError((e) {
-            
-            
-          });
+          ).catchError((e) {});
         } catch (e) {
-          
           _isLoading = false;
           _errorMessage = 'Failed to store authentication token: $e';
           notifyListeners();
@@ -639,22 +616,18 @@ class AuthProvider with ChangeNotifier {
         notifyListeners();
         return true;
       } else {
-        
-        
         final statusCode = result['statusCode'] as int?;
         final errorMessage = result['message'] ?? 'MPIN login failed';
-        
+
         _isLoading = false;
         _errorMessage = errorMessage;
         notifyListeners();
-        
-        
-        
-        if (statusCode == 401 || errorMessage.toLowerCase().contains('invalid mpin')) {
+
+        if (statusCode == 401 ||
+            errorMessage.toLowerCase().contains('invalid mpin')) {
           return false;
         }
-        
-        
+
         return false;
       }
     } catch (e) {
@@ -665,16 +638,12 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  
-  
-  
   Future<bool> loginWithBiometric() async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      
       final isAvailable = await BiometricService.isAvailable();
       if (!isAvailable) {
         _isLoading = false;
@@ -692,7 +661,6 @@ class AuthProvider with ChangeNotifier {
         return false;
       }
 
-      
       final authConfig = BiometricAuthConfig(
         localizedReason: 'Use your biometric to authenticate',
         signInTitle: 'Biometric Authentication',
@@ -710,7 +678,6 @@ class AuthProvider with ChangeNotifier {
         return false;
       }
 
-      
       return await loginWithMPIN(mpin);
     } catch (e) {
       _isLoading = false;
@@ -720,22 +687,17 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  
-  
   Future<bool> setupMPIN(String mpin) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      
       final authToken = _authToken ?? await SessionService.getAuthToken();
 
-      
       final result = await _authService.setupMPIN(mpin, authToken: authToken);
 
       if (result['success'] == true) {
-        
         await SecureStorageService.storeMPIN(mpin);
 
         _isLoading = false;
@@ -755,9 +717,6 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  
-  
-  
   Future<bool> logout() async {
     try {
       final success = await clearSession();
@@ -771,7 +730,6 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  
   Future<bool> isOnboardingComplete() async {
     try {
       return await SessionService.isOnboardingComplete();
@@ -780,14 +738,12 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  
   Future<bool> forgetMpinSendOtp(String phone) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      
       final authToken = _authToken ?? await SessionService.getAuthToken();
       final result = await _authService.forgetMpinSendOtp(
         phone: phone,
@@ -813,7 +769,6 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  
   Future<bool> forgetMpinVerifyOtp(String otp) async {
     if (_challengeId == null || _phoneNumber == null) {
       _errorMessage = 'Session expired. Please try again.';
@@ -849,7 +804,6 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  
   Future<bool> forgetMpinReset(String mpin) async {
     if (_phoneNumber == null) {
       _errorMessage = 'Phone number not found. Please start over.';
@@ -869,7 +823,6 @@ class AuthProvider with ChangeNotifier {
       _isLoading = false;
 
       if (result['success'] == true) {
-        
         await SecureStorageService.storeMPIN(mpin);
         notifyListeners();
         return true;

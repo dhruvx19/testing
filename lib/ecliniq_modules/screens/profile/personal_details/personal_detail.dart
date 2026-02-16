@@ -1086,6 +1086,12 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                                 ? _genderController.text
                                 : null,
                             onTap: () async {
+                              // Set current gender in provider before opening sheet
+                              final dependentProvider = Provider.of<AddDependentProvider>(context, listen: false);
+                              if (_genderController.text.isNotEmpty) {
+                                dependentProvider.selectGender(_genderController.text);
+                              }
+
                               final selected = await EcliniqBottomSheet.show<String>(
                                 context: context,
                                 child: const GenderSelectionSheet(),
@@ -1142,6 +1148,12 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                                   ? _relationController.text
                                   : null,
                               onTap: () async {
+                                // Set current relation in provider before opening sheet
+                                final dependentProvider = Provider.of<AddDependentProvider>(context, listen: false);
+                                if (_relationController.text.isNotEmpty) {
+                                  dependentProvider.selectRelation(_relationController.text);
+                                }
+
                                 final selected = await EcliniqBottomSheet.show<String>(
                                   context: context,
                                   child: const RelationSelectionSheet(),
@@ -1247,6 +1259,12 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                                 ? _bloodGroupController.text
                                 : null,
                             onTap: () async {
+                              // Set current blood group in provider before opening sheet
+                              final dependentProvider = Provider.of<AddDependentProvider>(context, listen: false);
+                              if (_bloodGroupController.text.isNotEmpty) {
+                                dependentProvider.selectBloodGroup(_bloodGroupController.text);
+                              }
+
                               final selected =
                                   await EcliniqBottomSheet.show<String>(
                                     context: context,

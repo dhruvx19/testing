@@ -318,6 +318,9 @@ class NotFeelingWell extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(
+          EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0),
+        ),
         child: Container(
           width: EcliniqTextStyles.getResponsiveWidth(context, 120.0),
           height: EcliniqTextStyles.getResponsiveHeight(context, 124.0),
@@ -333,9 +336,11 @@ class NotFeelingWell extends StatelessWidget {
               10.0,
             ),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
+                SizedBox(
+                  height: EcliniqTextStyles.getResponsiveSpacing(context, 4.0),
+                ),
                 Container(
                   width: EcliniqTextStyles.getResponsiveSize(context, 48.0),
                   height: EcliniqTextStyles.getResponsiveSize(context, 48.0),
@@ -345,7 +350,6 @@ class NotFeelingWell extends StatelessWidget {
                   ),
                   child: Center(
                     child: SvgPicture.asset(
-                      
                       icon.assetPath,
                       width: EcliniqTextStyles.getResponsiveIconSize(
                         context,
@@ -366,7 +370,7 @@ class NotFeelingWell extends StatelessWidget {
                     title,
                     textAlign: TextAlign.center,
                     maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+
                     style: EcliniqTextStyles.responsiveTitleXLarge(context)
                         .copyWith(
                           color: Color(0xff424242),

@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class BloodGroupSelectionSheet extends StatelessWidget {
-  const BloodGroupSelectionSheet({super.key});
+  final AddDependentProvider? provider;
+
+  const BloodGroupSelectionSheet({super.key, this.provider});
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +23,9 @@ class BloodGroupSelectionSheet extends StatelessWidget {
       'Others',
     ];
 
-    return ChangeNotifierProvider(
-      create: (_) => AddDependentProvider(),
-      child: Container(
+    final providerToUse = provider ?? Provider.of<AddDependentProvider>(context, listen: false);
+
+    return Container(
         height: MediaQuery.of(context).size.height * 0.6,
         decoration: BoxDecoration(
           color: EcliniqColors.light.bgBaseOverlay,
@@ -47,58 +49,54 @@ class BloodGroupSelectionSheet extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: Consumer<AddDependentProvider>(
-                builder: (context, provider, child) {
-                  return ListView.builder(
-                    itemCount: bloodGroups.length,
-                    itemBuilder: (context, index) {
-                      final bloodGroup = bloodGroups[index];
-                      final isSelected =
-                          provider.selectedBloodGroup == bloodGroup;
+              child: ListView.builder(
+                itemCount: bloodGroups.length,
+                itemBuilder: (context, index) {
+                  final bloodGroup = bloodGroups[index];
+                  final isSelected =
+                      providerToUse.selectedBloodGroup == bloodGroup;
 
-                      return ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 0,
+                  return ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 0,
+                    ),
+                    leading: Container(
+                      height: 20,
+                      width: 20,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: isSelected
+                              ? EcliniqColors.light.strokeBrand
+                              : EcliniqColors.light.strokeNeutralSubtle,
                         ),
-                        leading: Container(
-                          height: 20,
-                          width: 20,
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: isSelected
-                                  ? EcliniqColors.light.strokeBrand
-                                  : EcliniqColors.light.strokeNeutralSubtle,
-                            ),
-                            shape: BoxShape.circle,
-                            color: isSelected
-                                ? EcliniqColors
-                                      .light
-                                      .bgContainerInteractiveBrand
-                                : EcliniqColors.light.bgBaseOverlay,
-                          ),
-                          child: Container(
-                            margin: const EdgeInsets.all(0),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: EcliniqColors.light.bgBaseOverlay,
-                            ),
-                          ),
+                        shape: BoxShape.circle,
+                        color: isSelected
+                            ? EcliniqColors
+                                  .light
+                                  .bgContainerInteractiveBrand
+                            : EcliniqColors.light.bgBaseOverlay,
+                      ),
+                      child: Container(
+                        margin: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: EcliniqColors.light.bgBaseOverlay,
                         ),
-                        title: Text(
-                          bloodGroup,
-                          style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
-                            color: Color(0xff424242),
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                        onTap: () {
-                          provider.selectBloodGroup(bloodGroup);
-                          Future.delayed(
-                            const Duration(milliseconds: 200),
-                            () => Navigator.pop(context, bloodGroup),
-                          );
-                        },
+                      ),
+                    ),
+                    title: Text(
+                      bloodGroup,
+                      style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+                        color: Color(0xff424242),
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    onTap: () {
+                      providerToUse.selectBloodGroup(bloodGroup);
+                      Future.delayed(
+                        const Duration(milliseconds: 200),
+                        () => Navigator.pop(context, bloodGroup),
                       );
                     },
                   );
@@ -108,7 +106,6 @@ class BloodGroupSelectionSheet extends StatelessWidget {
             const SizedBox(height: 20),
           ],
         ),
-      ),
     );
   }
 }

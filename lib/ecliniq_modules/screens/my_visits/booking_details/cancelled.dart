@@ -1,7 +1,9 @@
 import 'package:ecliniq/ecliniq_api/appointment_service.dart';
+import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/booking/clinic_visit_slot_screen.dart';
+import 'package:ecliniq/ecliniq_modules/screens/login/profile_help.dart';
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/widgets/common.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
@@ -125,23 +127,28 @@ class _BookingCancelledDetailState extends State<BookingCancelledDetail> {
           child: Container(color: Color(0xFFB8B8B8), height: 0.5),
         ),
         actions: [
-          Row(
-            children: [
-              SvgPicture.asset(
-                EcliniqIcons.questionCircleFilled.assetPath,
-                width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
-                height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
-              ),
-              Text(
-                ' Help',
-                style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
-                  color: Color(0xff424242),
-           
-                  fontWeight: FontWeight.w400,
+          GestureDetector(
+            onTap: () {
+              EcliniqRouter.push(ProfileHelpPage());
+            },
+            child: Row(
+              children: [
+                SvgPicture.asset(
+                  EcliniqIcons.questionCircleFilled.assetPath,
+                  width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+                  height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
                 ),
-              ),
-              SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 20)),
-            ],
+                Text(
+                  ' Help',
+                  style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+                    color: Color(0xff424242),
+             
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 20)),
+              ],
+            ),
           ),
         ],
       ),

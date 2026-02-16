@@ -1,14 +1,17 @@
 import 'dart:async';
-import 'dart:developer' as developer;
 
 import 'package:ecliniq/ecliniq_api/patient_service.dart';
+import 'package:ecliniq/ecliniq_core/location/location_storage_service.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/my_doctors/model/doctor_details.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/my_doctors/widgets/doctor_info_widgets.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/success_snackbar.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/error_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:ecliniq/ecliniq_utils/speech_helper.dart';
@@ -129,6 +132,23 @@ class _MyDoctorsState extends State<MyDoctors> {
     }
   }
 
+  double _calculateDistance(
+    double userLat,
+    double userLng,
+    double locationLat,
+    double locationLng,
+  ) {
+    final distanceInMeters = Geolocator.distanceBetween(
+      userLat,
+      userLng,
+      locationLat,
+      locationLng,
+    );
+    final distanceInKm = distanceInMeters / 1000;
+    // Show minimum 0.2 Km if too close
+    return distanceInKm < 0.2 ? 0.2 : double.parse(distanceInKm.toStringAsFixed(1));
+  }
+
   Future<void> _fetchFavouriteDoctors() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final authToken = authProvider.authToken;
@@ -147,8 +167,16 @@ class _MyDoctorsState extends State<MyDoctors> {
     });
 
     try {
+      // Get user's current location for distance calculation
+      final storedLocation = await LocationStorageService.getStoredLocation();
+      double? userLat = storedLocation?['latitude'] as double?;
+      double? userLng = storedLocation?['longitude'] as double?;
+
       final response = await _patientService.getFavouriteDoctors(
         authToken: authToken,
+        userLat: userLat,
+        userLng: userLng,
+        distanceCalculator: _calculateDistance,
       );
 
       if (mounted) {
@@ -172,6 +200,54 @@ class _MyDoctorsState extends State<MyDoctors> {
           _isLoading = false;
           _errorMessage = 'Failed to load doctors: $e';
         });
+      }
+    }
+  }
+
+  Future<void> _removeFavouriteDoctor(String doctorId) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final authToken = authProvider.authToken;
+
+    if (authToken == null) {
+      if (mounted) {
+        CustomErrorSnackBar.show(
+          context: context,
+          title: 'Authentication Error',
+          subtitle: 'Please login to remove favourite doctors',
+          duration: const Duration(seconds: 3),
+        );
+      }
+      return;
+    }
+
+    try {
+      final response = await _patientService.removeFavouriteDoctor(
+        authToken: authToken,
+        doctorId: doctorId,
+      );
+
+      if (mounted) {
+        final message = response['message'] as String? ??
+            'Doctor removed from favourites successfully';
+
+        CustomSuccessSnackBar.show(
+          context: context,
+          title: 'Success',
+          subtitle: message,
+          duration: const Duration(seconds: 3),
+        );
+
+        // Refresh the list after removal
+        await _fetchFavouriteDoctors();
+      }
+    } catch (e) {
+      if (mounted) {
+        CustomErrorSnackBar.show(
+          context: context,
+          title: 'Error',
+          subtitle: 'Failed to remove doctor from favourites',
+          duration: const Duration(seconds: 3),
+        );
       }
     }
   }
@@ -339,7 +415,11 @@ class _MyDoctorsState extends State<MyDoctors> {
     return ListView.builder(
       itemCount: _filteredDoctors.length,
       itemBuilder: (context, index) {
-        return DoctorInfoWidget(doctor: _filteredDoctors[index]);
+        final doctor = _filteredDoctors[index];
+        return DoctorInfoWidget(
+          doctor: doctor,
+          onRemoveFavourite: () => _removeFavouriteDoctor(doctor.id),
+        );
       },
     );
   }

@@ -148,6 +148,9 @@ class PatientService {
   
   Future<FavouriteDoctorsResponse> getFavouriteDoctors({
     required String authToken,
+    double? userLat,
+    double? userLng,
+    Function? distanceCalculator,
   }) async {
     try {
       final url = Uri.parse(Endpoints.getFavouriteDoctors);
@@ -162,7 +165,12 @@ class PatientService {
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
-        return FavouriteDoctorsResponse.fromJson(responseData);
+        return FavouriteDoctorsResponse.fromJson(
+          responseData,
+          userLat: userLat,
+          userLng: userLng,
+          distanceCalculator: distanceCalculator,
+        );
       } else {
         final responseData = jsonDecode(response.body);
         return FavouriteDoctorsResponse(

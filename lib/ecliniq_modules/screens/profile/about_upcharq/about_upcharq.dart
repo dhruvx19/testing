@@ -27,7 +27,7 @@ class AboutUpcharqPage extends StatelessWidget {
         title: Align(
           alignment: Alignment.centerLeft,
           child: Text(
-            'About Upcharq',
+            'About Upchar-Q',
             style: EcliniqTextStyles.responsiveHeadlineMedium(
               context,
             ).copyWith(color: Color(0xff424242)),
@@ -45,7 +45,7 @@ class AboutUpcharqPage extends StatelessWidget {
           children: [
             // Paragraph 1
             Text(
-              'UpcharQ is a smart digital healthcare platform designed to simplify OPD visits by replacing traditional, manual token systems with a real-time, transparent queue management solution.',
+              'Upchar-Q is a smart digital healthcare platform designed to simplify OPD visits by replacing traditional, manual token systems with a real-time, transparent queue management solution.',
               style: EcliniqTextStyles.responsiveTitleXBLarge(context).copyWith(
                 color: Color(0xff424242),
                 fontWeight: FontWeight.w400,
@@ -59,7 +59,7 @@ class AboutUpcharqPage extends StatelessWidget {
 
             // Paragraph 2
             Text(
-              'Built for the realities of Indian healthcare, UpcharQ enables patients to book tokens, track their position in the queue, and receive live updates, reducing unnecessary waiting and overcrowding at clinics and hospitals. At the same time, it empowers doctors and healthcare providers to manage OPD flow efficiently, handle walk-ins, reduce no-shows, and improve overall patient experience.',
+              'Built for the realities of Indian healthcare, Upchar-Q enables patients to book tokens, track their position in the queue, and receive live updates, reducing unnecessary waiting and overcrowding at clinics and hospitals. At the same time, it empowers doctors and healthcare providers to manage OPD flow efficiently, handle walk-ins, reduce no-shows, and improve overall patient experience.',
               style: EcliniqTextStyles.responsiveTitleXBLarge(context).copyWith(
                 color: Color(0xff424242),
                 fontWeight: FontWeight.w400,
@@ -73,7 +73,7 @@ class AboutUpcharqPage extends StatelessWidget {
 
             // Paragraph 3
             Text(
-              'UpcharQ supports both online and walk-in consultations, offers secure communication and notifications, and follows a compliance-first approach to data privacy and security. The platform is designed to scale across individual clinics, multi-doctor hospitals, and healthcare networks.',
+              'Upchar-Q supports both online and walk-in consultations, offers secure communication and notifications, and follows a compliance-first approach to data privacy and security. The platform is designed to scale across individual clinics, multi-doctor hospitals, and healthcare networks.',
               style: EcliniqTextStyles.responsiveTitleXBLarge(context).copyWith(
                 color: Color(0xff424242),
                 fontWeight: FontWeight.w400,
@@ -87,7 +87,7 @@ class AboutUpcharqPage extends StatelessWidget {
 
             // Paragraph 4
             Text(
-              'UpcharQ is a product of Bloomevera Solutions, with a vision to become the digital backbone of OPD operations in India, making healthcare access smoother, predictable, and more patient-friendly.',
+              'Upchar-Q is a product of Bloomevera Solutions, with a vision to become the digital backbone of OPD operations in India, making healthcare access smoother, predictable, and more patient-friendly.',
               style: EcliniqTextStyles.responsiveTitleXBLarge(context).copyWith(
                 color: Color(0xff424242),
                 fontWeight: FontWeight.w400,

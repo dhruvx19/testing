@@ -323,7 +323,7 @@ class AddDependentProvider extends ChangeNotifier {
         lastName: _lastName.trim(),
         dob: formattedDob,
         gender: _gender!.toLowerCase(),
-        relation: _relation!.toLowerCase(),
+        relation: _mapRelationToApi(_relation!),
         phone: _contactNumber.trim().isNotEmpty ? _contactNumber.trim() : null,
         emailId: _email.trim().isNotEmpty ? _email.trim() : null,
         bloodGroup: _mapBloodGroupToApi(_bloodGroup),
@@ -399,6 +399,17 @@ class AddDependentProvider extends ChangeNotifier {
       'O-': 'O_NEGATIVE',
       'OTHERS': 'OTHERS',
     };
-    return map[v] ?? null;
+    return map[v];
+  }
+
+  
+  String _mapRelationToApi(String uiValue) {
+    // Handle both UI format and backend format
+    if (uiValue == 'Aunt' || uiValue == 'AUNT') {
+      return 'AUNTY';
+    } else {
+      // Convert all other relations to uppercase
+      return uiValue.toUpperCase();
+    }
   }
 }

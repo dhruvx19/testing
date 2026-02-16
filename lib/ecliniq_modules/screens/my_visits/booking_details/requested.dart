@@ -413,7 +413,7 @@ class _BookingRequestedDetailState extends State<BookingRequestedDetail> {
           SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 8)),
           BookingActionButton(
             label: 'Cancel Booking',
-            icon: EcliniqIcons.rescheduleIcon,
+            icon: EcliniqIcons.rescheduleCancel,
             type: BookingButtonType.cancel,
             onPressed: () {
               EcliniqBottomSheet.show(

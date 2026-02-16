@@ -141,9 +141,9 @@ class _BMIVisualization extends StatelessWidget {
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerRight,
                   child: Text(
-                    '22.3',
+                    bmi.toStringAsFixed(1),
                     style: EcliniqTextStyles.responsiveHeadlineXLarge(context).copyWith(
-                     
+
                       fontWeight: FontWeight.w700,
                       color: _getBMIColor(),
                       height: 1,

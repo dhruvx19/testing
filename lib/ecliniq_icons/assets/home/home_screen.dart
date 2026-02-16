@@ -8,7 +8,7 @@ import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/provider/doctor_provider.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/provider/hospital_provider.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/widgets/appointment_banner.dart';
-import 'package:ecliniq/ecliniq_icons/assets/home/widgets/easy_to_book.dart';
+// import 'package:ecliniq/ecliniq_icons/assets/home/widgets/easy_to_book.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/widgets/not_feeling_well.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/widgets/quick_actions.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/widgets/searched_specialities.dart';
@@ -505,9 +505,9 @@ class _HomeScreenState extends State<HomeScreen>
                                             30,
                                           ),
                                     ),
-                                    RepaintBoundary(
-                                      child: EasyWayToBookWidget(),
-                                    ),
+                                    // RepaintBoundary(
+                                    //   child: EasyWayToBookWidget(),
+                                    // ),
                                     SizedBox(
                                       height:
                                           EcliniqTextStyles.getResponsiveSpacing(

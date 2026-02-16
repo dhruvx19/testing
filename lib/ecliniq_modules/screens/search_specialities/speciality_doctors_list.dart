@@ -17,6 +17,7 @@ import 'package:ecliniq/ecliniq_ui/lib/widgets/widgets.dart';
 import 'package:ecliniq/ecliniq_utils/bottom_sheets/filter_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:ecliniq/ecliniq_utils/speech_helper.dart';
@@ -311,6 +312,23 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
             availability: null,
             profilePhoto: apiDoctor.profilePhoto,
             hospitals: apiDoctor.hospitals.map((h) {
+              // Calculate distance from user location to hospital
+              double? calculatedDistance;
+              if (_latitude != 0 && _longitude != 0 && h.latitude != null && h.longitude != null) {
+                final distanceInMeters = Geolocator.distanceBetween(
+                  _latitude,
+                  _longitude,
+                  h.latitude!,
+                  h.longitude!,
+                );
+                final distanceInKm = distanceInMeters / 1000;
+                calculatedDistance = distanceInKm < 0.2 ? 0.2 : double.parse(distanceInKm.toStringAsFixed(1));
+              } else if (h.distance != null && h.distance! > 0) {
+                // Fallback to API distance
+                final apiDistance = h.distance! / 1000;
+                calculatedDistance = apiDistance < 0.2 ? 0.2 : double.parse(apiDistance.toStringAsFixed(1));
+              }
+              
               return DoctorHospital(
                 id: h.id,
                 name: h.name,
@@ -318,11 +336,28 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                 state: h.state,
                 latitude: h.latitude,
                 longitude: h.longitude,
-                distanceKm: h.distance,
+                distanceKm: calculatedDistance,
                 consultationFee: h.consultationFee?.toString(),
               );
             }).toList(),
             clinics: apiDoctor.clinics.map((c) {
+              // Calculate distance from user location to clinic
+              double? calculatedDistance;
+              if (_latitude != 0 && _longitude != 0 && c.latitude != null && c.longitude != null) {
+                final distanceInMeters = Geolocator.distanceBetween(
+                  _latitude,
+                  _longitude,
+                  c.latitude!,
+                  c.longitude!,
+                );
+                final distanceInKm = distanceInMeters / 1000;
+                calculatedDistance = distanceInKm < 0.2 ? 0.2 : double.parse(distanceInKm.toStringAsFixed(1));
+              } else if (c.distance != null && c.distance! > 0) {
+                // Fallback to API distance
+                final apiDistance = c.distance! / 1000;
+                calculatedDistance = apiDistance < 0.2 ? 0.2 : double.parse(apiDistance.toStringAsFixed(1));
+              }
+              
               return {
                 'id': c.id,
                 'name': c.name,
@@ -330,7 +365,7 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                 'state': c.state,
                 'latitude': c.latitude,
                 'longitude': c.longitude,
-                'distance': c.distance,
+                'distance': calculatedDistance,
                 'consultationFee': c.consultationFee,
               };
             }).toList(),
@@ -419,9 +454,6 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
         case 'Price: Low - High':
           _doctors.sort((a, b) => safeCompare(computeFee(a), computeFee(b)));
           break;
-        case 'Price: High - Low':
-          _doctors.sort((a, b) => safeCompare(computeFee(b), computeFee(a)));
-          break;
         case 'Experience - Most Experience first':
           _doctors.sort((a, b) => safeCompare(b.experience, a.experience));
           break;
@@ -430,21 +462,8 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
             (a, b) => safeCompare(computeDistance(a), computeDistance(b)),
           );
           break;
-        case 'Order A-Z':
-          _doctors.sort(
-            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-          );
-          break;
-        case 'Order Z-A':
-          _doctors.sort(
-            (a, b) => b.name.toLowerCase().compareTo(a.name.toLowerCase()),
-          );
-          break;
-        case 'Rating High - low':
+        case 'Rating High - Low':
           _doctors.sort((a, b) => safeCompare(b.rating, a.rating));
-          break;
-        case 'Rating Low - High':
-          _doctors.sort((a, b) => safeCompare(a.rating, b.rating));
           break;
         case 'Relevance':
           _doctors.sort((a, b) {
@@ -544,6 +563,23 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
             availability: null,
             profilePhoto: apiDoctor.profilePhoto,
             hospitals: apiDoctor.hospitals.map((h) {
+              // Calculate distance from user location to hospital
+              double? calculatedDistance;
+              if (_latitude != 0 && _longitude != 0 && h.latitude != null && h.longitude != null) {
+                final distanceInMeters = Geolocator.distanceBetween(
+                  _latitude,
+                  _longitude,
+                  h.latitude!,
+                  h.longitude!,
+                );
+                final distanceInKm = distanceInMeters / 1000;
+                calculatedDistance = distanceInKm < 0.2 ? 0.2 : double.parse(distanceInKm.toStringAsFixed(1));
+              } else if (h.distance != null && h.distance! > 0) {
+                // Fallback to API distance
+                final apiDistance = h.distance! / 1000;
+                calculatedDistance = apiDistance < 0.2 ? 0.2 : double.parse(apiDistance.toStringAsFixed(1));
+              }
+              
               return DoctorHospital(
                 id: h.id,
                 name: h.name,
@@ -551,11 +587,28 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                 state: h.state,
                 latitude: h.latitude,
                 longitude: h.longitude,
-                distanceKm: h.distance,
+                distanceKm: calculatedDistance,
                 consultationFee: h.consultationFee?.toString(),
               );
             }).toList(),
             clinics: apiDoctor.clinics.map((c) {
+              // Calculate distance from user location to clinic
+              double? calculatedDistance;
+              if (_latitude != 0 && _longitude != 0 && c.latitude != null && c.longitude != null) {
+                final distanceInMeters = Geolocator.distanceBetween(
+                  _latitude,
+                  _longitude,
+                  c.latitude!,
+                  c.longitude!,
+                );
+                final distanceInKm = distanceInMeters / 1000;
+                calculatedDistance = distanceInKm < 0.2 ? 0.2 : double.parse(distanceInKm.toStringAsFixed(1));
+              } else if (c.distance != null && c.distance! > 0) {
+                // Fallback to API distance
+                final apiDistance = c.distance! / 1000;
+                calculatedDistance = apiDistance < 0.2 ? 0.2 : double.parse(apiDistance.toStringAsFixed(1));
+              }
+              
               return {
                 'id': c.id,
                 'name': c.name,
@@ -563,7 +616,7 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                 'state': c.state,
                 'latitude': c.latitude,
                 'longitude': c.longitude,
-                'distance': c.distance,
+                'distance': calculatedDistance,
                 'consultationFee': c.consultationFee,
               };
             }).toList(),
@@ -633,9 +686,9 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        leadingWidth: 56,
+        leadingWidth: EcliniqTextStyles.getResponsiveWidth(context, 54.0),
         titleSpacing: 0,
-        toolbarHeight: 42,
+        toolbarHeight: EcliniqTextStyles.getResponsiveHeight(context, 46.0),
         surfaceTintColor: Colors.transparent,
         backgroundColor: Colors.white,
         elevation: 0,
@@ -676,10 +729,11 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                       ),
                     ),
                   ),
-                  if (_selectedSortOption != null)
-                    Positioned(
-                      right: 4,
-                      top: 3,
+                  Positioned(
+                    right: 4,
+                    top: 3,
+                    child: Visibility(
+                      visible: _selectedSortOption != null,
                       child: Container(
                         width: 10,
                         height: 10,
@@ -689,6 +743,7 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                         ),
                       ),
                     ),
+                  ),
                 ],
               ),
 
@@ -723,19 +778,27 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                       ),
                     ),
                   ),
-                  if (_hasActiveFilters())
-                    Positioned(
-                      right: 4,
-                      top: 3,
+                  Positioned(
+                    right: 4,
+                    top: 3,
+                    child: Visibility(
+                      visible: _hasActiveFilters(),
                       child: Container(
-                        width: 10,
-                        height: 10,
+                        width: EcliniqTextStyles.getResponsiveWidth(
+                          context,
+                          10,
+                        ),
+                        height: EcliniqTextStyles.getResponsiveHeight(
+                          context,
+                          10,
+                        ),
                         decoration: const BoxDecoration(
                           color: Colors.red,
                           shape: BoxShape.circle,
                         ),
                       ),
                     ),
+                  ),
                 ],
               ),
               SizedBox(
@@ -767,13 +830,15 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
   }
 
   Widget _buildLocationSection() {
-    return GestureDetector(
+    return InkWell(
       onTap: () {
         EcliniqBottomSheet.show(
           context: context,
           child: LocationBottomSheet(currentLocation: _currentLocation),
         );
       },
+      splashColor: Color(0xFF2372EC).withOpacity(0.05),
+      highlightColor: Color(0xFF2372EC).withOpacity(0.02),
       child: Container(
         padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
           context,
@@ -926,9 +991,11 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
           child: Row(
             children: _categories.map((category) {
               final isSelected = _selectedCategory == category;
-              return GestureDetector(
+              return InkWell(
                 key: _categoryKeys[category],
                 onTap: () => _onCategorySelected(category),
+                splashColor: Color(0xFF2372EC).withOpacity(0.1),
+                highlightColor: Color(0xFF2372EC).withOpacity(0.05),
                 child: Padding(
                   padding: const EdgeInsets.only(right: 24),
                   child: IntrinsicWidth(
@@ -1118,13 +1185,15 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
   Widget _buildDoctorCard(Doctor doctor) {
     return Column(
       children: [
-        GestureDetector(
+        InkWell(
           onTap: () {
             // Navigate to doctor details
             EcliniqRouter.push(
               DoctorDetailScreen(doctorId: doctor.id),
             );
           },
+          splashColor: Color(0xFF2372EC).withOpacity(0.05),
+          highlightColor: Color(0xFF2372EC).withOpacity(0.02),
           child: Container(
             color: Colors.white,
             padding: const EdgeInsets.all(16),
@@ -1635,11 +1704,9 @@ class _SortByBottomSheetState extends State<SortByBottomSheet> {
   final List<String> sortOptions = [
     'Relevance',
     'Price: Low - High',
-
     'Experience - Most Experience first',
     'Distance - Nearest First',
-
-    'Rating High - low',
+    'Rating High - Low',
   ];
 
   @override
@@ -1671,7 +1738,7 @@ class _SortByBottomSheetState extends State<SortByBottomSheet> {
               left: 16,
               right: 16,
               top: 22,
-              bottom: 0,
+              bottom: 8,
             ),
             child: Align(
               alignment: Alignment.centerLeft,

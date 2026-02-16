@@ -41,7 +41,12 @@ class HealthFilesProvider extends ChangeNotifier {
     
     try {
       _allFiles = await _storageService.getAllFiles();
-      _allFiles.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      // Sort from newest to oldest (most recent first) - using fileDate or createdAt
+      _allFiles.sort((a, b) {
+        final dateA = a.fileDate ?? a.createdAt;
+        final dateB = b.fileDate ?? b.createdAt;
+        return dateB.compareTo(dateA); // Newest first
+      });
       _invalidateCache();
       notifyListeners();
     } catch (e) {

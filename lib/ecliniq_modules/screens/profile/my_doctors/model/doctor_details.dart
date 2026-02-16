@@ -57,7 +57,12 @@ class FavouriteDoctor {
   }
 
   
-  factory FavouriteDoctor.fromApiResponse(Map<String, dynamic> json) {
+  factory FavouriteDoctor.fromApiResponse(
+    Map<String, dynamic> json, {
+    double? userLat,
+    double? userLng,
+    Function? distanceCalculator,
+  }) {
     
     final name = json['name'] ?? '';
     
@@ -91,18 +96,43 @@ class FavouriteDoctor {
     
     
     double distance = 0.0;
-    final d = json['distance'];
-    if (d is Map<String, dynamic>) {
-      final km = d['km'];
-      if (km is num) {
-        distance = km.toDouble();
-      } else {
-        distance = double.tryParse(km?.toString() ?? '0') ?? 0.0;
+    
+    // Calculate distance from clinic/hospital coordinates if available
+    if (userLat != null && userLng != null && distanceCalculator != null) {
+      final clinics = json['clinics'] as List<dynamic>? ?? [];
+      final hospitals = json['hospitals'] as List<dynamic>? ?? [];
+      
+      double? locationLat;
+      double? locationLng;
+      
+      if (clinics.isNotEmpty) {
+        final clinic = clinics[0] as Map<String, dynamic>;
+        locationLat = (clinic['latitude'] as num?)?.toDouble();
+        locationLng = (clinic['longitude'] as num?)?.toDouble();
+      } else if (hospitals.isNotEmpty) {
+        final hospital = hospitals[0] as Map<String, dynamic>;
+        locationLat = (hospital['latitude'] as num?)?.toDouble();
+        locationLng = (hospital['longitude'] as num?)?.toDouble();
       }
-    } else if (d is num) {
-      distance = d.toDouble();
-    } else if (d != null) {
-      distance = double.tryParse(d.toString()) ?? 0.0;
+      
+      if (locationLat != null && locationLng != null) {
+        distance = distanceCalculator(userLat, userLng, locationLat, locationLng);
+      }
+    } else {
+      // Fallback to distance from API if available
+      final d = json['distance'];
+      if (d is Map<String, dynamic>) {
+        final km = d['km'];
+        if (km is num) {
+          distance = km.toDouble();
+        } else {
+          distance = double.tryParse(km?.toString() ?? '0') ?? 0.0;
+        }
+      } else if (d is num) {
+        distance = d.toDouble();
+      } else if (d != null) {
+        distance = double.tryParse(d.toString()) ?? 0.0;
+      }
     }
     
     
@@ -236,12 +266,22 @@ class FavouriteDoctorsResponse {
     required this.timestamp,
   });
 
-  factory FavouriteDoctorsResponse.fromJson(Map<String, dynamic> json) {
+  factory FavouriteDoctorsResponse.fromJson(
+    Map<String, dynamic> json, {
+    double? userLat,
+    double? userLng,
+    Function? distanceCalculator,
+  }) {
     return FavouriteDoctorsResponse(
       success: json['success'] ?? false,
       message: json['message'] ?? '',
       data: (json['data'] as List<dynamic>?)
-          ?.map((item) => FavouriteDoctor.fromApiResponse(item as Map<String, dynamic>))
+          ?.map((item) => FavouriteDoctor.fromApiResponse(
+                item as Map<String, dynamic>,
+                userLat: userLat,
+                userLng: userLng,
+                distanceCalculator: distanceCalculator,
+              ))
           .toList() ?? [],
       errors: json['errors'],
       meta: json['meta'],

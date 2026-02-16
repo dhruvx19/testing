@@ -11,6 +11,7 @@ import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_modules/screens/login/login.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
+import 'package:ecliniq/ecliniq_modules/screens/login/privacy_policy.dart';
 import 'package:ecliniq/ecliniq_modules/screens/login/terms_and_conditions.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/about_upcharq/about_upcharq.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/add_dependent/add_dependent.dart';
@@ -39,6 +40,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -58,6 +60,7 @@ class _ProfilePageState extends State<ProfilePage>
   PatientDetailsData? _patientData;
   List<DependentData> _dependents = [];
   bool _isLoading = true;
+  bool _isDependentsLoading = false;
   String? _errorMessage;
   String? _profilePhotoUrl;
 
@@ -120,7 +123,9 @@ class _ProfilePageState extends State<ProfilePage>
         // Load profile photo asynchronously without blocking UI
         final profilePhotoKey = user?.profilePhoto;
         if (profilePhotoKey is String && profilePhotoKey.isNotEmpty) {
-          _resolveProfileImageUrl(profilePhotoKey, token: authToken).then((value) {
+          _resolveProfileImageUrl(profilePhotoKey, token: authToken).then((
+            value,
+          ) {
             if (mounted) setState(() {});
           });
         } else {
@@ -204,6 +209,10 @@ class _ProfilePageState extends State<ProfilePage>
       return;
     }
 
+    setState(() {
+      _isDependentsLoading = true;
+    });
+
     try {
       final response = await _patientService.getDependents(
         authToken: authToken,
@@ -212,17 +221,23 @@ class _ProfilePageState extends State<ProfilePage>
       if (!mounted) return;
 
       if (response.success) {
-        // Only update if dependents actually changed
-        final newDependents = response.data;
-        if (_dependents.length != newDependents.length ||
-            !_dependents.every((d) => newDependents.any((nd) => nd.id == d.id))) {
+        setState(() {
+          _dependents = response.data;
+          _isDependentsLoading = false;
+        });
+      } else {
+        if (mounted) {
           setState(() {
-            _dependents = newDependents;
+            _isDependentsLoading = false;
           });
         }
       }
     } catch (e) {
-      // Handle error silently for dependents fetch
+      if (mounted) {
+        setState(() {
+          _isDependentsLoading = false;
+        });
+      }
     }
   }
 
@@ -496,8 +511,11 @@ Sent from my ${Platform.isIOS ? 'iPhone' : 'Android device'}''';
                         width: double.infinity,
                         height: double.infinity,
                         fit: BoxFit.cover,
-                        cacheWidth: (MediaQuery.of(context).size.width * 2).toInt(),
-                        cacheHeight: ((MediaQuery.of(context).size.height / 3) * 2).toInt(),
+                        cacheWidth: (MediaQuery.of(context).size.width * 2)
+                            .toInt(),
+                        cacheHeight:
+                            ((MediaQuery.of(context).size.height / 3) * 2)
+                                .toInt(),
                       ),
                     ),
                   ),
@@ -661,113 +679,119 @@ extension _ProfilePageContent on _ProfilePageState {
         padding: const EdgeInsets.all(20),
         physics: const NeverScrollableScrollPhysics(),
         child: Column(
-        children: [
-          Column(
-            children: [
-              ShimmerLoading(
-                width: 150,
-                height: 24,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              const SizedBox(height: 12),
-              ShimmerLoading(
-                width: 120,
-                height: 16,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              const SizedBox(height: 8),
-              ShimmerLoading(
-                width: 180,
-                height: 16,
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ],
-          ),
-          const SizedBox(height: 30),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Expanded(
-                child: Column(
-                  children: [
-                    ShimmerLoading(
-                      width: 28,
-                      height: 28,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    const SizedBox(height: 8),
-                    ShimmerLoading(
-                      width: 40,
-                      height: 14,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    const SizedBox(height: 4),
-                    ShimmerLoading(
-                      width: 50,
-                      height: 18,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ],
+          children: [
+            Column(
+              children: [
+                ShimmerLoading(
+                  width: 150,
+                  height: 24,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              ),
-              Container(width: 1, height: 60, color: Colors.grey[300]),
-              Expanded(
-                child: Column(
-                  children: [
-                    ShimmerLoading(
-                      width: 28,
-                      height: 28,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    const SizedBox(height: 8),
-                    ShimmerLoading(
-                      width: 50,
-                      height: 14,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    const SizedBox(height: 4),
-                    ShimmerLoading(
-                      width: 40,
-                      height: 18,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ],
+                const SizedBox(height: 12),
+                ShimmerLoading(
+                  width: 120,
+                  height: 16,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              ),
-              Container(width: 1, height: 60, color: Colors.grey[300]),
-              Expanded(
-                child: Column(
-                  children: [
-                    ShimmerLoading(
-                      width: 28,
-                      height: 28,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    const SizedBox(height: 8),
-                    ShimmerLoading(
-                      width: 80,
-                      height: 14,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    const SizedBox(height: 4),
-                    ShimmerLoading(
-                      width: 30,
-                      height: 18,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ],
+                const SizedBox(height: 8),
+                ShimmerLoading(
+                  width: 180,
+                  height: 16,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 30),
+              ],
+            ),
+            const SizedBox(height: 30),
 
-          ShimmerLoading(height: 200, borderRadius: BorderRadius.circular(16)),
-          const SizedBox(height: 30),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Expanded(
+                  child: Column(
+                    children: [
+                      ShimmerLoading(
+                        width: 28,
+                        height: 28,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      const SizedBox(height: 8),
+                      ShimmerLoading(
+                        width: 40,
+                        height: 14,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      const SizedBox(height: 4),
+                      ShimmerLoading(
+                        width: 50,
+                        height: 18,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(width: 1, height: 60, color: Colors.grey[300]),
+                Expanded(
+                  child: Column(
+                    children: [
+                      ShimmerLoading(
+                        width: 28,
+                        height: 28,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      const SizedBox(height: 8),
+                      ShimmerLoading(
+                        width: 50,
+                        height: 14,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      const SizedBox(height: 4),
+                      ShimmerLoading(
+                        width: 40,
+                        height: 18,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(width: 1, height: 60, color: Colors.grey[300]),
+                Expanded(
+                  child: Column(
+                    children: [
+                      ShimmerLoading(
+                        width: 28,
+                        height: 28,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      const SizedBox(height: 8),
+                      ShimmerLoading(
+                        width: 80,
+                        height: 14,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      const SizedBox(height: 4),
+                      ShimmerLoading(
+                        width: 30,
+                        height: 18,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 30),
 
-          ShimmerLoading(height: 100, borderRadius: BorderRadius.circular(16)),
-        ],
+            ShimmerLoading(
+              height: 200,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            const SizedBox(height: 30),
+
+            ShimmerLoading(
+              height: 100,
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ],
         ),
       ),
     );
@@ -804,6 +828,70 @@ extension _ProfilePageContent on _ProfilePageState {
     );
   }
 
+  Widget _buildDependentsShimmer() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(left: EcliniqTextStyles.getResponsiveSpacing(context, 5)),
+          child: Center(
+            child: Shimmer.fromColors(
+              baseColor: Colors.grey[300]!,
+              highlightColor: Colors.grey[100]!,
+              child: Container(
+                width: EcliniqTextStyles.getResponsiveWidth(context, 120),
+                height: EcliniqTextStyles.getResponsiveHeight(context, 20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 20)),
+        Center(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: List.generate(
+                3,
+                (index) => Padding(
+                  padding: EdgeInsets.only(right: EcliniqTextStyles.getResponsiveSpacing(context, 15)),
+                  child: Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[100]!,
+                    child: Column(
+                      children: [
+                        Container(
+                          width: EcliniqTextStyles.getResponsiveSize(context, 52),
+                          height: EcliniqTextStyles.getResponsiveSize(context, 52),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 8)),
+                        Container(
+                          width: EcliniqTextStyles.getResponsiveWidth(context, 50),
+                          height: EcliniqTextStyles.getResponsiveHeight(context, 16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildProfileContent() {
     if (_patientData == null) {
       return _buildErrorWidget();
@@ -826,7 +914,7 @@ extension _ProfilePageContent on _ProfilePageState {
     final dependents = _dependents
         .map(
           (dep) =>
-              Dependent(id: dep.id, name: dep.fullName, relation: dep.relation),
+              Dependent(id: dep.id, name: dep.fullName, relation: dep.formattedRelation),
         )
         .toList();
 
@@ -849,7 +937,11 @@ extension _ProfilePageContent on _ProfilePageState {
           const SizedBox(height: 12),
           RepaintBoundary(
             key: ValueKey('basic_info_$age$gender$bloodGroup'),
-            child: BasicInfoCards(age: age, gender: gender, bloodGroup: bloodGroup),
+            child: BasicInfoCards(
+              age: age,
+              gender: gender,
+              bloodGroup: bloodGroup,
+            ),
           ),
           const SizedBox(height: 16),
           RepaintBoundary(
@@ -864,11 +956,13 @@ extension _ProfilePageContent on _ProfilePageState {
           const Divider(color: Color(0xffD6D6D6), thickness: 0.5, height: 40),
           RepaintBoundary(
             key: ValueKey('dependents_${dependents.length}'),
-            child: DependentsSection(
-              dependents: dependents,
-              onAddDependent: _handleAddDependent,
-              onDependentTap: _handleDependentTap,
-            ),
+            child: _isDependentsLoading
+                ? _buildDependentsShimmer()
+                : DependentsSection(
+                    dependents: dependents,
+                    onAddDependent: _handleAddDependent,
+                    onDependentTap: _handleDependentTap,
+                  ),
           ),
           const Divider(color: Color(0xffD6D6D6), thickness: 0.5, height: 40),
           const SizedBox(height: 14),
@@ -889,7 +983,9 @@ extension _ProfilePageContent on _ProfilePageState {
           ),
           const SizedBox(height: 24),
           RepaintBoundary(
-            key: ValueKey('notifications_${patient.getWhatsAppNotifications}${patient.getPhoneNotifications}'),
+            key: ValueKey(
+              'notifications_${patient.getWhatsAppNotifications}${patient.getPhoneNotifications}',
+            ),
             child: NotificationsSettingsWidget(
               initialWhatsAppEnabled: patient.getWhatsAppNotifications,
               initialSmsEnabled: patient.getPhoneNotifications,
@@ -902,85 +998,88 @@ extension _ProfilePageContent on _ProfilePageState {
           const SizedBox(height: 24),
           RepaintBoundary(
             child: MoreSettingsMenuWidget(
-            appVersion: 'v1.0.0',
-            supportEmail: 'Support@eclinicq.com',
-            onReferEarnPressed: () {},
-            onHelpSupportPressed: _launchEmailSupport,
-            onTermsPressed: () {
-              EcliniqRouter.push(TermsAndConditionsPage());
-            },
-            onPrivacyPressed: () {},
-            onFaqPressed: () {
-              _navigateTofaq();
-            },
-            onAboutPressed: _navigateToAboutUpcharq,
-            onFeedbackPressed: () {
-              EcliniqBottomSheet.show(
-                context: context,
-                child: FeedbackBottomSheet(),
-              );
-            },
-            onLogoutPressed: () async {
-              final result = await EcliniqBottomSheet.show(
-                context: context,
-                child: const LogoutBottomSheet(),
-              );
+              appVersion: 'v1.0.0',
+              supportEmail: 'Support@eclinicq.com',
+              onReferEarnPressed: () {},
+              onHelpSupportPressed: _launchEmailSupport,
+              onTermsPressed: () {
+                EcliniqRouter.push(TermsAndConditionsPage());
+              },
+              onPrivacyPressed: () {
+                EcliniqRouter.push(PrivacyPolicyPage());
+              },
+              onFaqPressed: () {
+                _navigateTofaq();
+              },
+              onAboutPressed: _navigateToAboutUpcharq,
+              onFeedbackPressed: () {
+                EcliniqBottomSheet.show(
+                  context: context,
+                  child: FeedbackBottomSheet(),
+                );
+              },
+              onLogoutPressed: () async {
+                final result = await EcliniqBottomSheet.show(
+                  context: context,
+                  child: const LogoutBottomSheet(),
+                );
 
-              if (result == true && mounted) {
-                // User confirmed logout
-                try {
-                  final authProvider = Provider.of<AuthProvider>(
-                    context,
-                    listen: false,
-                  );
-                  final authToken = authProvider.authToken;
-
-                  // Call logout API
-                  final authService = AuthService();
-                  final logoutResponse = await authService.logout(
-                    authToken: authToken,
-                  );
-
-                  // Clear local data regardless of API response
-                  await authProvider.logout();
-
-                  // Navigate to login page
-                  if (mounted) {
-                    EcliniqRouter.pushAndRemoveUntil(
-                      const LoginPage(),
-                      (route) => false,
-                    );
-
-                    // Show success message after navigation completes
-                    Future.delayed(const Duration(milliseconds: 500), () {
-                      if (mounted) {
-                        CustomSuccessSnackBar.show(
-                          context: context,
-                          title: 'Logged Out',
-                          subtitle: logoutResponse['message'] ??
-                              'Logged out successfully',
-                          duration: const Duration(seconds: 3),
-                        );
-                      }
-                    });
-                  }
-                } catch (e) {
-                  // Even if API fails, clear local data and logout
-                  if (mounted) {
+                if (result == true && mounted) {
+                  // User confirmed logout
+                  try {
                     final authProvider = Provider.of<AuthProvider>(
                       context,
                       listen: false,
                     );
-                    await authProvider.logout();
-                    EcliniqRouter.pushAndRemoveUntil(
-                      const LoginPage(),
-                      (route) => false,
+                    final authToken = authProvider.authToken;
+
+                    // Call logout API
+                    final authService = AuthService();
+                    final logoutResponse = await authService.logout(
+                      authToken: authToken,
                     );
+
+                    // Clear local data regardless of API response
+                    await authProvider.logout();
+
+                    // Navigate to login page
+                    if (mounted) {
+                      EcliniqRouter.pushAndRemoveUntil(
+                        const LoginPage(),
+                        (route) => false,
+                      );
+
+                      // Show success message after navigation completes
+                      Future.delayed(const Duration(milliseconds: 500), () {
+                        if (mounted) {
+                          CustomSuccessSnackBar.show(
+                            context: context,
+                            title: 'Logged Out',
+                            subtitle:
+                                logoutResponse['message'] ??
+                                'Logged out successfully',
+                            duration: const Duration(seconds: 3),
+                          );
+                        }
+                      });
+                    }
+                  } catch (e) {
+                    // Even if API fails, clear local data and logout
+                    if (mounted) {
+                      final authProvider = Provider.of<AuthProvider>(
+                        context,
+                        listen: false,
+                      );
+                      await authProvider.logout();
+                      EcliniqRouter.pushAndRemoveUntil(
+                        const LoginPage(),
+                        (route) => false,
+                      );
+                    }
                   }
                 }
-              }
-            },
-          ),
+              },
+            ),
           ),
           RepaintBoundary(
             child: Image.asset(

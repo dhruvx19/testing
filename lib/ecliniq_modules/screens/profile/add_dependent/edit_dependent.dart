@@ -48,6 +48,7 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
   bool _isExpanded = true;
   bool _isExpandedPhysicalInfo = true;
   bool _isDeleting = false;
+  bool _isSaving = false;
   final PatientService _patientService = PatientService();
   DependentData? _latestDependentData;
 
@@ -137,8 +138,10 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
       provider.setEmail(dep.emailId!);
     }
     if (dep.bloodGroup != null && dep.bloodGroup!.isNotEmpty) {
-      provider.setBloodGroup(dep.bloodGroup!);
-      provider.selectBloodGroup(_uiBloodGroup(dep.bloodGroup));
+      // Convert backend format (A_POSITIVE) to UI format (A+) for consistency
+      final uiFormat = _uiBloodGroup(dep.bloodGroup);
+      provider.setBloodGroup(uiFormat); // Store UI format
+      provider.selectBloodGroup(uiFormat); // Display UI format
     }
     if (dep.height != null) {
       provider.setHeight(dep.height);
@@ -229,6 +232,22 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
     return map[backendValue] ?? backendValue;
   }
 
+  String? _apiBloodGroup(String? uiValue) {
+    if (uiValue == null || uiValue.isEmpty) return null;
+    const map = {
+      'A+': 'A_POSITIVE',
+      'A-': 'A_NEGATIVE',
+      'B+': 'B_POSITIVE',
+      'B-': 'B_NEGATIVE',
+      'AB+': 'AB_POSITIVE',
+      'AB-': 'AB_NEGATIVE',
+      'O+': 'O_POSITIVE',
+      'O-': 'O_NEGATIVE',
+      'Others': 'OTHERS',
+    };
+    return map[uiValue] ?? uiValue;
+  }
+
   String _uiGender(String? backendValue) {
     if (backendValue == null || backendValue.isEmpty) return '';
     // Convert backend format (MALE, male) to UI format (Male)
@@ -251,6 +270,8 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
     // Convert backend format (FATHER, father, FATHER) to UI format (Father)
     // Special case for SELF
     if (backendValue.toUpperCase() == 'SELF') return 'Self';
+    // Special case for AUNTY -> Aunt
+    if (backendValue.toUpperCase() == 'AUNTY') return 'Aunt';
     
     // Capitalize first letter, lowercase rest
     return backendValue[0].toUpperCase() + backendValue.substring(1).toLowerCase();
@@ -312,6 +333,10 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
       return;
     }
 
+    setState(() {
+      _isSaving = true;
+    });
+
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final dependentId = _latestDependentData?.id ?? widget.dependentData.id;
@@ -321,6 +346,9 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
       if (provider.selectedProfilePhoto != null) {
         photoKey = await authProvider.uploadProfileImage(provider.selectedProfilePhoto!);
         if (photoKey == null) {
+          setState(() {
+            _isSaving = false;
+          });
           throw Exception('Failed to upload profile photo');
         }
       }
@@ -330,10 +358,10 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
         firstName: provider.firstName,
         lastName: provider.lastName,
         gender: provider.gender,
-        relation: provider.relation,
+        relation: provider.selectedRelation, // Use selectedRelation (UI format) instead of relation (backend format)
         phone: provider.contactNumber.isEmpty ? null : provider.contactNumber,
         emailId: provider.email.isEmpty ? null : provider.email,
-        bloodGroup: provider.bloodGroup,
+        bloodGroup: _apiBloodGroup(provider.bloodGroup), // Convert UI format (A+) to API format (A_POSITIVE)
         height: provider.height,
         weight: provider.weight,
         dob: provider.dateOfBirth != null
@@ -359,11 +387,18 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
           duration: const Duration(seconds: 3),
         );
 
+        setState(() {
+          _isSaving = false;
+        });
+
         await Future.delayed(const Duration(milliseconds: 800));
         if (mounted) {
           Navigator.pop(context, true);
         }
       } else {
+        setState(() {
+          _isSaving = false;
+        });
         CustomErrorSnackBar.show(
           context: context,
           title: 'Failed to Update',
@@ -372,6 +407,9 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
         );
       }
     } catch (e) {
+      setState(() {
+        _isSaving = false;
+      });
       CustomErrorSnackBar.show(
         context: context,
         title: 'Error',
@@ -861,7 +899,7 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                     Expanded(
                       flex: 2,
                       child: GestureDetector(
-                        onTap: (provider.isLoading || _isDeleting)
+                        onTap: (_isSaving || _isDeleting)
                             ? null
                             : () {
                                 _updateDependent(provider);
@@ -872,7 +910,7 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                             baseHeight: 52,
                           ),
                           decoration: BoxDecoration(
-                            color: provider.isFormValid && !_isDeleting
+                            color: provider.isFormValid && !_isDeleting && !_isSaving
                                 ? Color(0xFF2372EC)
                                 : Color(0xFFF9F9F9),
                             borderRadius: BorderRadius.circular(
@@ -883,7 +921,7 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                             ),
                           ),
                           child: Center(
-                            child: provider.isLoading
+                            child: _isSaving
                                 ? SizedBox(
                                     height:
                                         EcliniqTextStyles.getResponsiveHeight(
@@ -908,7 +946,8 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                                         ).copyWith(
                                           color:
                                               provider.isFormValid &&
-                                                  !_isDeleting
+                                                  !_isDeleting &&
+                                                  !_isSaving
                                               ? Colors.white
                                               : Color(0xffD6D6D6),
                                           fontWeight: FontWeight.w500,

@@ -368,13 +368,14 @@ class _VerifyExistingEmailState extends State<VerifyExistingEmail> {
                 ),
               ),
             if (_contact != null) ...[
-              Row(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'OTP sent to ',
+                    'OTP sent to',
                     style:EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                       fontWeight: FontWeight.w400,
-                     
+
                       color: const Color(0xff424242),
                     ),
                   ),
@@ -382,7 +383,7 @@ class _VerifyExistingEmailState extends State<VerifyExistingEmail> {
                     _contact!,
                     style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                       fontWeight: FontWeight.w500,
-                     
+
                       color: const Color(0xff424242),
                     ),
                   ),

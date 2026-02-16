@@ -322,7 +322,7 @@ class _MyVisitsState extends State<MyVisits>
 
   Widget _buildTabButton(String title, int index) {
     bool isSelected = _selectedTabIndex == index;
-    return GestureDetector(
+    return InkWell(
       onTap: () {
         setState(() {
           _selectedTabIndex = index;
@@ -330,6 +330,8 @@ class _MyVisitsState extends State<MyVisits>
 
         _loadAppointments();
       },
+      splashColor: Color(0xFF2372EC).withOpacity(0.1),
+      highlightColor: Color(0xFF2372EC).withOpacity(0.05),
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
@@ -365,13 +367,16 @@ class _MyVisitsState extends State<MyVisits>
         itemCount: filters.length,
         itemBuilder: (context, index) {
           bool isSelected = _selectedFilterIndex == index;
-          return GestureDetector(
+          return InkWell(
             onTap: () {
               setState(() {
                 _selectedFilterIndex = index;
               });
               _loadAppointments();
             },
+            borderRadius: BorderRadius.circular(8),
+            splashColor: Color(0xFF2372EC).withOpacity(0.1),
+            highlightColor: Color(0xFF2372EC).withOpacity(0.05),
             child: Container(
               margin: EdgeInsets.only(right: screenWidth * 0.03),
               padding: EdgeInsets.only(left: 8, right: 8),
@@ -407,8 +412,13 @@ class _MyVisitsState extends State<MyVisits>
     final horizontalMargin = screenWidth * 0.04;
     final cardPadding = screenWidth * 0.04;
 
-    return GestureDetector(
+    return InkWell(
       onTap: () => _navigateToDetailPage(appointment),
+      borderRadius: BorderRadius.circular(
+        EcliniqTextStyles.getResponsiveBorderRadius(context, 12),
+      ),
+      splashColor: Color(0xFF2372EC).withOpacity(0.05),
+      highlightColor: Color(0xFF2372EC).withOpacity(0.02),
       child: Container(
         width: screenWidth - (horizontalMargin * 2),
         margin: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
@@ -780,8 +790,11 @@ class _MyVisitsState extends State<MyVisits>
     switch (appointment.status) {
       case AppointmentStatus.confirmed:
       case AppointmentStatus.requested:
-        return GestureDetector(
+        return InkWell(
           onTap: () => _navigateToDetailPage(appointment),
+          borderRadius: BorderRadius.circular(4),
+          splashColor: Color(0xFF424242).withOpacity(0.1),
+          highlightColor: Color(0xFF424242).withOpacity(0.05),
           child: Container(
             width: double.infinity,
             height: EcliniqTextStyles.getResponsiveButtonHeight(
@@ -836,8 +849,11 @@ class _MyVisitsState extends State<MyVisits>
         return Row(
           children: [
             Expanded(
-              child: GestureDetector(
+              child: InkWell(
                 onTap: () => _navigateToDetailPage(appointment),
+                borderRadius: BorderRadius.circular(4),
+                splashColor: Color(0xFF2372EC).withOpacity(0.1),
+                highlightColor: Color(0xFF2372EC).withOpacity(0.05),
                 child: Container(
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.white),
@@ -859,9 +875,8 @@ class _MyVisitsState extends State<MyVisits>
             Expanded(
               child: ElevatedButton(
                 onPressed: () {
-                  if (appointment.doctorId != null &&
-                      (appointment.hospitalId != null ||
-                          appointment.clinicId != null)) {
+                  if (appointment.doctorId != null && 
+                      (appointment.hospitalId != null || appointment.clinicId != null)) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -873,15 +888,6 @@ class _MyVisitsState extends State<MyVisits>
                           doctorSpecialization: appointment.specialization,
                         ),
                       ),
-                    );
-                  } else {
-                    // Show error if IDs are missing
-                    CustomErrorSnackBar.show(
-                      context: context,
-                      title: 'Unable to Book',
-                      subtitle:
-                          'Appointment details are incomplete. Please search for the doctor.',
-                      duration: const Duration(seconds: 3),
                     );
                   }
                 },
@@ -919,8 +925,10 @@ class _MyVisitsState extends State<MyVisits>
           bottomRight: Radius.circular(12),
         ),
       ),
-      child: GestureDetector(
+      child: InkWell(
         onTap: hasRating ? null : () => _openRatingSheet(appointment),
+        splashColor: hasRating ? Colors.transparent : Color(0xFF2372EC).withOpacity(0.1),
+        highlightColor: hasRating ? Colors.transparent : Color(0xFF2372EC).withOpacity(0.05),
         child: Row(
           children: [
             Text(
@@ -1004,7 +1012,7 @@ class _MyVisitsState extends State<MyVisits>
                             ),
                           ),
                           const Spacer(),
-                          GestureDetector(
+                          InkWell(
                             onTap: () async {
                               await EcliniqRouter.push(NotificationScreen());
                               if (mounted) {
@@ -1014,6 +1022,9 @@ class _MyVisitsState extends State<MyVisits>
                                 ).fetchUnreadCount();
                               }
                             },
+                            borderRadius: BorderRadius.circular(16),
+                            splashColor: Colors.white.withOpacity(0.2),
+                            highlightColor: Colors.white.withOpacity(0.1),
                             child: Consumer<NotificationProvider>(
                               builder: (context, provider, child) {
                                 return Stack(

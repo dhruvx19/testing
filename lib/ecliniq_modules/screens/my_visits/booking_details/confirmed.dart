@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:ecliniq/ecliniq_api/appointment_service.dart';
+import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/booking/clinic_visit_slot_screen.dart';
+import 'package:ecliniq/ecliniq_modules/screens/login/profile_help.dart';
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/cancelled.dart';
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/widgets/cancel_bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/widgets/cancellation_policy_bottom_sheet.dart';
@@ -220,7 +222,7 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
         title: Align(
           alignment: Alignment.centerLeft,
           child: Text(
-            'Booking Details',
+            'Booking Detail',
             style: EcliniqTextStyles.responsiveHeadlineMedium(
               context,
             ).copyWith(color: Color(0xff424242)),
@@ -237,26 +239,31 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
         ),
 
         actions: [
-          Row(
-            children: [
-              SvgPicture.asset(
-                EcliniqIcons.questionCircleFilled.assetPath,
-                width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
-                height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
-              ),
-              Text(
-                ' Help',
-                style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
-                    .copyWith(
-                      color: Color(0xff424242),
+          GestureDetector(
+            onTap: () {
+              EcliniqRouter.push(ProfileHelpPage());
+            },
+            child: Row(
+              children: [
+                SvgPicture.asset(
+                  EcliniqIcons.questionCircleFilled.assetPath,
+                  width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+                  height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+                ),
+                Text(
+                  ' Help',
+                  style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                      .copyWith(
+                        color: Color(0xff424242),
 
-                      fontWeight: FontWeight.w400,
-                    ),
-              ),
-              SizedBox(
-                width: EcliniqTextStyles.getResponsiveSpacing(context, 20),
-              ),
-            ],
+                        fontWeight: FontWeight.w400,
+                      ),
+                ),
+                SizedBox(
+                  width: EcliniqTextStyles.getResponsiveSpacing(context, 20),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -527,7 +534,7 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
           SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 8)),
           BookingActionButton(
             label: 'Cancel Booking',
-            icon: EcliniqIcons.rescheduleIcon,
+            icon: EcliniqIcons.rescheduleCancel,
             type: BookingButtonType.cancel,
             onPressed: () {
               EcliniqBottomSheet.show(
