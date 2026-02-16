@@ -874,10 +874,10 @@ class _MyVisitsState extends State<MyVisits>
             const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (appointment.doctorId != null && 
                       (appointment.hospitalId != null || appointment.clinicId != null)) {
-                    Navigator.push(
+                    await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => ClinicVisitSlotScreen(
