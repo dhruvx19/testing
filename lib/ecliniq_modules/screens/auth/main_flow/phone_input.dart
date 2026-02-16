@@ -136,7 +136,8 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
       }
 
       final statusData = await authProvider.checkUserStatus(phone);
-      // ... (rest of the logic)
+
+      if (mounted) {
         if (statusData != null) {
           final isNewUser = statusData['isNewUser'] ?? false;
           final isPatient = statusData['isPatient'] ?? false;
@@ -453,7 +454,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
               opacity: widget.fadeAnimation,
               child: Row(
                 children: [
-                  SvgPicture.asset(
+                   SvgPicture.asset(
                     EcliniqIcons.questionCircleWhite.assetPath,
                     width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
                     height: EcliniqTextStyles.getResponsiveIconSize(
@@ -479,8 +480,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
         ],
       ),
 
-      body: Expanded(
-        child: Container(
+      body: Container(
           decoration: const BoxDecoration(color: Colors.white),
           child: FadeTransition(
             opacity: widget.fadeAnimation,
@@ -537,7 +537,6 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
             ),
           ),
         ),
-      ),
     );
   }
 }
