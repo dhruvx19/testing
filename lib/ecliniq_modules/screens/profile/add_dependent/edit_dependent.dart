@@ -437,27 +437,6 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
   }
 
   Future<void> _deleteDependent() async {
-    // Show loading dialog
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return PopScope(
-          canPop: false,
-          child: Center(
-            child: Container(
-              padding: const EdgeInsets.all(32),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: const EcliniqLoader(size: 48),
-            ),
-          ),
-        );
-      },
-    );
-    
     setState(() {
       _isDeleting = true;
     });
@@ -479,10 +458,6 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
         dependentId: dependentId,
       );
 
-      // Dismiss loader
-      if (mounted) {
-        Navigator.of(context).pop(); // Dismiss loading dialog
-      }
 
       if (response.success) {
         if (widget.onDependentDeleted != null) {
@@ -509,10 +484,6 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
         );
       }
     } catch (e) {
-      // Dismiss loader on error
-      if (mounted) {
-        Navigator.of(context).pop(); // Dismiss loading dialog
-      }
       
       CustomErrorSnackBar.show(
         context: context,
@@ -869,21 +840,38 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                           ),
                         ),
                         child: Center(
-                          child: SvgPicture.asset(
-                            EcliniqIcons.delete.assetPath,
-                            width: EcliniqTextStyles.getResponsiveIconSize(
-                              context,
-                              32,
-                            ),
-                            height: EcliniqTextStyles.getResponsiveIconSize(
-                              context,
-                              32,
-                            ),
-                            colorFilter: ColorFilter.mode(
-                              _isDeleting ? Color(0xffD6D6D6) : Color(0xff424242),
-                              BlendMode.srcIn,
-                            ),
-                          ),
+                          child: _isDeleting
+                              ? SizedBox(
+                                  height: EcliniqTextStyles.getResponsiveHeight(
+                                    context,
+                                    32,
+                                  ),
+                                  width: EcliniqTextStyles.getResponsiveWidth(
+                                    context,
+                                    32,
+                                  ),
+                                  child: const EcliniqLoader(
+                                    size: 24,
+                                    color: Color(0xff424242),
+                                  ),
+                                )
+                              : SvgPicture.asset(
+                                  EcliniqIcons.delete.assetPath,
+                                  width: EcliniqTextStyles.getResponsiveIconSize(
+                                    context,
+                                    32,
+                                  ),
+                                  height: EcliniqTextStyles.getResponsiveIconSize(
+                                    context,
+                                    32,
+                                  ),
+                                  colorFilter: ColorFilter.mode(
+                                    _isDeleting
+                                        ? const Color(0xffD6D6D6)
+                                        : const Color(0xff424242),
+                                    BlendMode.srcIn,
+                                  ),
+                                ),
                         ),
                       ),
                     ),
