@@ -875,20 +875,38 @@ class _MyVisitsState extends State<MyVisits>
             Expanded(
               child: ElevatedButton(
                 onPressed: () async {
+                  print('🔵 Book Again button clicked');
+                  print('🔍 Doctor ID: ${appointment.doctorId}');
+                  print('🔍 Hospital ID: ${appointment.hospitalId}');
+                  print('🔍 Clinic ID: ${appointment.clinicId}');
+                  print('🔍 Doctor Name: ${appointment.doctorName}');
+                  print('🔍 Specialization: ${appointment.specialization}');
+                  
                   if (appointment.doctorId != null && 
                       (appointment.hospitalId != null || appointment.clinicId != null)) {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ClinicVisitSlotScreen(
-                          doctorId: appointment.doctorId!,
-                          hospitalId: appointment.hospitalId,
-                          clinicId: appointment.clinicId,
-                          doctorName: appointment.doctorName,
-                          doctorSpecialization: appointment.specialization,
+                    print('✅ All required fields present, navigating...');
+                    try {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ClinicVisitSlotScreen(
+                            doctorId: appointment.doctorId!,
+                            hospitalId: appointment.hospitalId,
+                            clinicId: appointment.clinicId,
+                            doctorName: appointment.doctorName,
+                            doctorSpecialization: appointment.specialization,
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                      print('✅ Navigation completed');
+                    } catch (e) {
+                      print('❌ Navigation error: $e');
+                    }
+                  } else {
+                    print('❌ Missing required fields:');
+                    print('   - doctorId is null: ${appointment.doctorId == null}');
+                    print('   - hospitalId is null: ${appointment.hospitalId == null}');
+                    print('   - clinicId is null: ${appointment.clinicId == null}');
                   }
                 },
                 style: ElevatedButton.styleFrom(
