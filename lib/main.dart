@@ -115,7 +115,7 @@ class _MyAppState extends State<MyApp> {
           child: child!,
         );
       },
-      home: const LoginPage(),
+      home: const SplashScreen(),
     );
   }
 }

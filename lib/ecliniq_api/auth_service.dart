@@ -4,6 +4,37 @@ import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:http/http.dart' as http;
 
 class AuthService {
+  Future<Map<String, dynamic>> checkUserStatus(String phone) async {
+    final url = Uri.parse(Endpoints.checkUserStatus);
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'phone': phone}),
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && responseData['success'] == true) {
+        return {
+          'success': true,
+          'data': responseData['data'],
+          'message': responseData['message'],
+        };
+      } else {
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 'Failed to check user status',
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Failed to connect to the server: $e',
+      };
+    }
+  }
+
   Future<Map<String, dynamic>> loginOrRegisterUser(String phone) async {
     final url = Uri.parse(Endpoints.loginOrRegisterUser);
     try {

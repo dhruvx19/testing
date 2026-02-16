@@ -28,6 +28,7 @@ class AuthProvider with ChangeNotifier {
   bool _isNewUser = false;
   String? _redirectTo;
   String? _userStatus;
+  Map<String, dynamic>? _checkUserStatusData;
 
   bool get isLoading => _isLoading;
   bool get isUploadingImage => _isUploadingImage;
@@ -42,6 +43,7 @@ class AuthProvider with ChangeNotifier {
   bool get isNewUser => _isNewUser;
   String? get redirectTo => _redirectTo;
   String? get userStatus => _userStatus;
+  Map<String, dynamic>? get checkUserStatusData => _checkUserStatusData;
 
   Future<void> initialize() async {
     try {
@@ -60,6 +62,34 @@ class AuthProvider with ChangeNotifier {
         } catch (e) {}
       }
     } catch (e) {}
+  }
+
+  Future<Map<String, dynamic>?> checkUserStatus(String phone) async {
+    _isLoading = true;
+    _errorMessage = null;
+    _checkUserStatusData = null;
+    notifyListeners();
+
+    try {
+      final result = await _authService.checkUserStatus(phone);
+      _isLoading = false;
+
+      if (result['success']) {
+        _checkUserStatusData = result['data'];
+        _phoneNumber = phone;
+        notifyListeners();
+        return result['data'];
+      } else {
+        _errorMessage = result['message'];
+        notifyListeners();
+        return null;
+      }
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return null;
+    }
   }
 
   Future<bool> loginOrRegisterUser(String phone) async {

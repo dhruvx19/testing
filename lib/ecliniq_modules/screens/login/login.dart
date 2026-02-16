@@ -21,7 +21,14 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  final String? phoneNumber;
+  final bool initialOtpMode;
+
+  const LoginPage({
+    super.key,
+    this.phoneNumber,
+    this.initialOtpMode = false,
+  });
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -148,10 +155,18 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
     _textController.addListener(_onMPINChanged);
     _phoneController.addListener(_onPhoneNumberChanged);
 
-    _isLoading = false;
+    if (widget.phoneNumber != null) {
+      _phoneNumber = widget.phoneNumber!;
+      _phoneController.text = _phoneNumber;
+      _showMPINScreen = true;
+      _isOTPMode = widget.initialOtpMode;
+      _userExplicitlyChoseMPIN = !widget.initialOtpMode;
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _loadSavedPhoneNumber();
+      if (widget.phoneNumber == null) {
+        await _loadSavedPhoneNumber();
+      }
 
       await _loadUserName();
 

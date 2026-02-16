@@ -120,24 +120,83 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
 
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-      final success = widget.isForgotPinFlow
-          ? await authProvider.forgetMpinSendOtp(phone)
-          : await authProvider.loginOrRegisterUser(phone);
+      if (widget.isForgotPinFlow) {
+        final success = await authProvider.forgetMpinSendOtp(phone);
+        if (mounted) {
+          if (success) {
+            EcliniqRouter.push(
+              OtpInputScreen(isForgotPinFlow: widget.isForgotPinFlow),
+            );
+          } else {
+            setState(() => _isButtonPressed = false);
+            _showSnackBar(authProvider.errorMessage ?? 'Failed to send OTP');
+          }
+        }
+        return;
+      }
 
-      if (mounted) {
-        if (success) {
-          EcliniqRouter.push(
-            OtpInputScreen(isForgotPinFlow: widget.isForgotPinFlow),
-          );
+      final statusData = await authProvider.checkUserStatus(phone);
+      // ... (rest of the logic)
+        if (statusData != null) {
+          final isNewUser = statusData['isNewUser'] ?? false;
+          final isPatient = statusData['isPatient'] ?? false;
+          final isMpinSet = statusData['isMpinSet'] ?? false;
+
+          if (isNewUser) {
+            
+            final otpSuccess = await authProvider.loginOrRegisterUser(phone);
+            if (mounted) {
+              if (otpSuccess) {
+                EcliniqRouter.push(
+                  OtpInputScreen(isForgotPinFlow: widget.isForgotPinFlow),
+                );
+              } else {
+                setState(() => _isButtonPressed = false);
+                _showSnackBar(authProvider.errorMessage ?? 'Failed to send OTP');
+              }
+            }
+          } else if (isPatient) {
+            if (isMpinSet) {
+              
+              EcliniqRouter.push(
+                LoginPage(phoneNumber: phone, initialOtpMode: false),
+              );
+            } else {
+              
+              final otpSuccess = await authProvider.loginOrRegisterUser(phone);
+              if (mounted) {
+                if (otpSuccess) {
+                  EcliniqRouter.push(
+                    LoginPage(phoneNumber: phone, initialOtpMode: true),
+                  );
+                } else {
+                  setState(() => _isButtonPressed = false);
+                  _showSnackBar(
+                    authProvider.errorMessage ?? 'Failed to send OTP',
+                  );
+                }
+              }
+            }
+          } else {
+            
+            final otpSuccess = await authProvider.loginOrRegisterUser(phone);
+            if (mounted) {
+              if (otpSuccess) {
+                EcliniqRouter.push(
+                  OtpInputScreen(isForgotPinFlow: widget.isForgotPinFlow),
+                );
+              } else {
+                setState(() => _isButtonPressed = false);
+                _showSnackBar(authProvider.errorMessage ?? 'Failed to send OTP');
+              }
+            }
+          }
         } else {
           setState(() {
             _isButtonPressed = false;
           });
           _showSnackBar(
-            authProvider.errorMessage ??
-                (widget.isForgotPinFlow
-                    ? 'Failed to send OTP'
-                    : 'Login failed'),
+            authProvider.errorMessage ?? 'Failed to check user status',
           );
         }
       }

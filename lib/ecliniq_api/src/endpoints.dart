@@ -7,6 +7,8 @@ class Endpoints {
   static String get loginOrRegisterUser =>
       '$localhost/api/auth/login-or-register';
 
+  static String get checkUserStatus => '$localhost/api/auth/check-user-status';
+
   static String get verifyUser => '$localhost/api/auth/verify-user';
 
   static String get login => '$localhost/api/auth/login';
