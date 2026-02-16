@@ -3,6 +3,7 @@ import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/main_flow/otp_screen.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
+import 'package:ecliniq/ecliniq_modules/screens/login/login.dart';
 import 'package:ecliniq/ecliniq_modules/screens/login/login_trouble.dart';
 import 'package:ecliniq/ecliniq_modules/screens/login/privacy_policy.dart';
 import 'package:ecliniq/ecliniq_modules/screens/login/profile_help.dart';
