@@ -1402,24 +1402,23 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                     children: [
                       SvgPicture.asset(
                         EcliniqIcons.mapPointBlack.assetPath,
-                        width: 24,
-                        height: 24,
+                        width:  EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
+                        height: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
                       ),
                       const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _getHospitalLocation(doctor),
-                          style: EcliniqTextStyles.responsiveTitleXLarge(
-                            context,
-                          ).copyWith(color: const Color(0xFF626060)),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                      Text(
+                        _getHospitalLocation(doctor),
+                        style: EcliniqTextStyles.responsiveTitleXLarge(
+                          context,
+                        ).copyWith(color: const Color(0xFF626060)),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       if (_getDistanceText(doctor) != 'Nearby') ...[
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(
+                          padding:EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                            context,
                             horizontal: 8,
                             vertical: 4,
                           ),

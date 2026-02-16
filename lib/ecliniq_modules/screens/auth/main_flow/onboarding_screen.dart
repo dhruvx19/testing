@@ -142,18 +142,17 @@ class _EcliniqWelcomeScreenState extends State<EcliniqWelcomeScreen>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          
-          
+          SizedBox(height: EcliniqTextStyles.getResponsiveSize(context, 10)),
           LayoutBuilder(
             builder: (context, constraints) {
               return SvgPicture.asset(
                 EcliniqIcons.homeLogo.assetPath,
-                width: EcliniqTextStyles.getResponsiveIconSize(context, 250.0),
+                width: EcliniqTextStyles.getResponsiveIconSize(context, 240.0),
                 height: EcliniqTextStyles.getResponsiveIconSize(context, 240.0),
               );
             },
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: EcliniqTextStyles.getResponsiveSize(context, 32)),
           Text(
             'Welcome To Upchar-Q',
             style: EcliniqTextStyles.responsiveHeadlineXLarge(
@@ -179,7 +178,6 @@ class _EcliniqWelcomeScreenState extends State<EcliniqWelcomeScreen>
           ),
           const SizedBox(height: 32),
 
-          
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: _buildIndicatorDots(),
@@ -189,7 +187,6 @@ class _EcliniqWelcomeScreenState extends State<EcliniqWelcomeScreen>
     );
   }
 
-  
   List<Widget> _buildIndicatorDots() {
     return List.generate(5, (index) {
       return Container(
@@ -322,10 +319,9 @@ class _EcliniqWelcomeScreenState extends State<EcliniqWelcomeScreen>
                 ),
                 TextButton(
                   style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero, 
-                    minimumSize: Size.zero, 
-                    tapTargetSize:
-                        MaterialTapTargetSize.shrinkWrap, 
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                   onPressed: () {
                     EcliniqRouter.push(LoginTroublePage());
