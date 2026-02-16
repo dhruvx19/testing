@@ -23,11 +23,13 @@ import 'package:provider/provider.dart';
 class LoginPage extends StatefulWidget {
   final String? phoneNumber;
   final bool initialOtpMode;
+  final bool showSelectionMode;
 
   const LoginPage({
     super.key,
     this.phoneNumber,
     this.initialOtpMode = false,
+    this.showSelectionMode = false,
   });
 
   @override
@@ -158,9 +160,16 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
     if (widget.phoneNumber != null) {
       _phoneNumber = widget.phoneNumber!;
       _phoneController.text = _phoneNumber;
-      _showMPINScreen = true;
-      _isOTPMode = widget.initialOtpMode;
-      _userExplicitlyChoseMPIN = !widget.initialOtpMode;
+      
+      if (widget.showSelectionMode) {
+        _showMPINScreen = false;
+        _isOTPMode = false;
+        _userExplicitlyChoseMPIN = false;
+      } else {
+        _showMPINScreen = true;
+        _isOTPMode = widget.initialOtpMode;
+        _userExplicitlyChoseMPIN = !widget.initialOtpMode;
+      }
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {

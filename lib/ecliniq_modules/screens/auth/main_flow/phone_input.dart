@@ -160,7 +160,11 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
             if (isMpinSet) {
               
               EcliniqRouter.push(
-                LoginPage(phoneNumber: phone, initialOtpMode: false),
+                LoginPage(
+                  phoneNumber: phone,
+                  initialOtpMode: false,
+                  showSelectionMode: true,
+                ),
               );
             } else {
               
@@ -168,7 +172,11 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
               if (mounted) {
                 if (otpSuccess) {
                   EcliniqRouter.push(
-                    LoginPage(phoneNumber: phone, initialOtpMode: true),
+                    LoginPage(
+                      phoneNumber: phone,
+                      initialOtpMode: true,
+                      showSelectionMode: true,
+                    ),
                   );
                 } else {
                   setState(() => _isButtonPressed = false);

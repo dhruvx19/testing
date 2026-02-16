@@ -141,9 +141,18 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
           
           
           await SessionService.clearFlowState(); 
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
-          );
+          
+          final phone = await SecureStorageService.getPhoneNumber();
+          
+          if (mounted) {
+            EcliniqRouter.pushAndRemoveUntil(
+              LoginPage(
+                phoneNumber: phone,
+                showSelectionMode: true,
+              ),
+              (route) => false,
+            );
+          }
         } else {
           throw Exception('Failed to save patient details');
         }

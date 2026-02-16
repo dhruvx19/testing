@@ -205,7 +205,10 @@ class _OtpInputScreenState extends State<OtpInputScreen>
                 
                 await SessionService.clearFlowState(); 
                 EcliniqRouter.pushAndRemoveUntil(
-                  const LoginPage(),
+                  LoginPage(
+                    phoneNumber: authProvider.phoneNumber,
+                    showSelectionMode: true,
+                  ),
                   (route) => route.isFirst,
                 );
               }
