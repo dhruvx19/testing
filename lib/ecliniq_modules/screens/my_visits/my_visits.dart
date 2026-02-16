@@ -10,6 +10,7 @@ import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/cancel
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/completed.dart';
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/confirmed.dart';
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/requested.dart';
+import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/widgets/common.dart' as common_detail;
 import 'package:ecliniq/ecliniq_modules/screens/notifications/notification_screen.dart';
 import 'package:ecliniq/ecliniq_modules/screens/notifications/provider/notification_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/search_specialities/speciality_doctors_list.dart';
@@ -923,7 +924,7 @@ class _MyVisitsState extends State<MyVisits>
                     
                     if (response.success && response.data != null) {
                       // Convert API data to AppointmentDetailModel
-                      final detail = AppointmentDetailModel.fromApiData(response.data!);
+                      final detail = common_detail.AppointmentDetailModel.fromApiData(response.data!);
                       
                       // Navigate to slot screen with the extracted IDs
                       await Navigator.push(
