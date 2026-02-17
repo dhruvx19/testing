@@ -27,8 +27,10 @@ void main() async {
     
   }
 
+  final authProvider = AuthProvider();
+  
   final futures = [
-    AuthProvider().initialize(),
+    authProvider.initialize(),
     SharedPreferences.getInstance(),
     EcliniqPushNotifications.init(),
     AppointmentLockScreenNotification.init(), 
@@ -43,7 +45,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider.value(value: authProvider),
         ChangeNotifierProvider(create: (_) => HospitalProvider()),
         ChangeNotifierProvider(create: (_) => DoctorProvider()),
         ChangeNotifierProvider(create: (_) => HealthFilesProvider()),
