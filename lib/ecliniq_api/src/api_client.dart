@@ -12,35 +12,45 @@ class EcliniqHttpClient {
 
   static Future<http.Response> get(Uri url, {Map<String, String>? headers}) async {
     final response = await http.get(url, headers: headers);
-    _checkUnauthorized(response);
+    _checkUnauthorized(response, url);
     return response;
   }
 
   static Future<http.Response> post(Uri url, {Map<String, String>? headers, Object? body, Encoding? encoding}) async {
     final response = await http.post(url, headers: headers, body: body, encoding: encoding);
-    _checkUnauthorized(response);
+    _checkUnauthorized(response, url);
     return response;
   }
 
   static Future<http.Response> patch(Uri url, {Map<String, String>? headers, Object? body, Encoding? encoding}) async {
     final response = await http.patch(url, headers: headers, body: body, encoding: encoding);
-    _checkUnauthorized(response);
+    _checkUnauthorized(response, url);
     return response;
   }
 
   static Future<http.Response> delete(Uri url, {Map<String, String>? headers, Object? body, Encoding? encoding}) async {
     final response = await http.delete(url, headers: headers, body: body, encoding: encoding);
-    _checkUnauthorized(response);
+    _checkUnauthorized(response, url);
     return response;
   }
 
   static Future<http.Response> put(Uri url, {Map<String, String>? headers, Object? body, Encoding? encoding}) async {
     final response = await http.put(url, headers: headers, body: body, encoding: encoding);
-    _checkUnauthorized(response);
+    _checkUnauthorized(response, url);
     return response;
   }
 
-  static void _checkUnauthorized(http.Response response) {
+  static void _checkUnauthorized(http.Response response, Uri url) {
+    // Skip unauthorized check for login-related endpoints to avoid auto-logout on invalid credentials
+    final path = url.path.toLowerCase();
+    if (path.contains('/api/auth/login') ||
+        path.contains('/api/auth/login-or-register') ||
+        path.contains('/api/auth/verify-user') ||
+        path.contains('/api/auth/forget-mpin/verify-otp') ||
+        path.contains('/api/auth/check-user-status')) {
+      return;
+    }
+
     bool isUnauthorized = false;
 
     // Direct status code checks
