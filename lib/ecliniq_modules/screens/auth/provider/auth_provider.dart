@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:ecliniq/ecliniq_api/auth_service.dart';
+import 'package:ecliniq/ecliniq_api/models/patient.dart';
 import 'package:ecliniq/ecliniq_api/models/upload.dart';
 import 'package:ecliniq/ecliniq_api/src/upload_service.dart';
 import 'package:ecliniq/ecliniq_core/auth/session_service.dart';

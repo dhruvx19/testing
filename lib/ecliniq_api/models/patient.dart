@@ -29,6 +29,32 @@ class PatientDetailsResponse {
   }
 }
 
+class PatientDetailsRequest {
+  final String firstName;
+  final String lastName;
+  final String dob;
+  final String gender;
+  final String? profilePhoto;
+
+  PatientDetailsRequest({
+    required this.firstName,
+    required this.lastName,
+    required this.dob,
+    required this.gender,
+    this.profilePhoto,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'firstName': firstName,
+      'lastName': lastName,
+      'dob': dob,
+      'gender': gender,
+      if (profilePhoto != null) 'profilePhoto': profilePhoto,
+    };
+  }
+}
+
 class PatientDetailsData {
   final String userId;
   final String patientCode;
