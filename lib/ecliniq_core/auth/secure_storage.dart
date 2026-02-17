@@ -21,6 +21,7 @@ class SecureStorageService {
   static const String _keyUserID = 'user_id';
   static const String _keyPhoneNumber = 'phone_number';
   static const String _keyUserName = 'user_name';
+  static const String _keyIsExistingUser = 'is_existing_user';
 
   
   static const String _keyStorageVersion = 'storage_version';
@@ -255,6 +256,26 @@ class SecureStorageService {
   static Future<bool> isBiometricEnabled() async {
     try {
       final value = await _secureStorage.read(key: _keyIsBiometricEnabled);
+      return value == 'true';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  
+  static Future<void> setExistingUser(bool value) async {
+    try {
+      await _secureStorage.write(
+        key: _keyIsExistingUser,
+        value: value.toString(),
+      );
+    } catch (e) {}
+  }
+
+  
+  static Future<bool> isExistingUser() async {
+    try {
+      final value = await _secureStorage.read(key: _keyIsExistingUser);
       return value == 'true';
     } catch (e) {
       return false;

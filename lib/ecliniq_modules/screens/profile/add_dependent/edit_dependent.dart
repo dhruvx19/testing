@@ -179,7 +179,7 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
       final publicUri = Uri.parse(
         '${Endpoints.storagePublicUrl}?key=${Uri.encodeComponent(key)}',
       );
-      final resp = await http.get(
+      final resp = await EcliniqHttpClient.get(
         publicUri,
         headers: {'Content-Type': 'application/json'},
       );
@@ -196,7 +196,7 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
       final downloadUri = Uri.parse(
         '${Endpoints.storageDownloadUrl}?key=${Uri.encodeComponent(key)}',
       );
-      final resp = await http.get(
+      final resp = await EcliniqHttpClient.get(
         downloadUri,
         headers: {
           'Content-Type': 'application/json',

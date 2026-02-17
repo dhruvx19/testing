@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:ecliniq/ecliniq_api/src/api_client.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
@@ -33,7 +34,7 @@ class NotificationProvider with ChangeNotifier {
         return;
       }
 
-      final response = await http.get(
+      final response = await EcliniqHttpClient.get(
         Uri.parse(Endpoints.getUnreadNotificationCount),
         headers: {
           'Content-Type': 'application/json',
@@ -88,6 +89,7 @@ class NotificationProvider with ChangeNotifier {
         _allNotifications = response;
         
         if (response['data'] != null &&
+            (response['data'] as Map).containsKey('counts') &&
             response['data']['counts'] != null) {
           _unreadCount = response['data']['counts']['unreadCount'] ?? 0;
         }

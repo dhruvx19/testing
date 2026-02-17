@@ -8,8 +8,9 @@ import 'package:ecliniq/ecliniq_core/auth/secure_storage.dart';
 import 'package:ecliniq/ecliniq_core/auth/jwt_decoder.dart';
 import 'package:ecliniq/ecliniq_core/notifications/push_notification.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:ecliniq/ecliniq_api/src/api_client.dart';
+import 'package:ecliniq/ecliniq_core/router/route.dart';
+import 'package:ecliniq/ecliniq_modules/screens/login/login.dart';
 import 'package:flutter/material.dart';
 
 class AuthProvider with ChangeNotifier {
@@ -49,6 +50,14 @@ class AuthProvider with ChangeNotifier {
     try {
       await SecureStorageService.initializeStorage();
 
+      EcliniqHttpClient.setUnauthorizedCallback(() async {
+        await clearSession();
+        EcliniqRouter.pushAndRemoveUntil(
+          const LoginPage(showSelectionMode: true),
+          (route) => false,
+        );
+      });
+
       await _loadSavedToken();
 
       final isExpired = await SessionService.isTokenExpired();
@@ -77,6 +86,18 @@ class AuthProvider with ChangeNotifier {
       if (result['success']) {
         _checkUserStatusData = result['data'];
         _phoneNumber = phone;
+
+        // Persist for returning users to skip onboarding
+        if (_checkUserStatusData != null) {
+          final isRegistered = _checkUserStatusData!['isRegistered'] as bool? ?? false;
+          final hasProfile = _checkUserStatusData!['hasProfile'] as bool? ?? false;
+          
+          if (isRegistered || hasProfile) {
+            await SecureStorageService.storePhoneNumber(phone);
+            await SecureStorageService.setExistingUser(true);
+          }
+        }
+
         notifyListeners();
         return result['data'];
       } else {
@@ -332,6 +353,12 @@ class AuthProvider with ChangeNotifier {
       _isSavingDetails = false;
 
       if (response.success) {
+        // If the API returns a new token, store it to maintain session
+        if (response.data?.token != null) {
+          _authToken = response.data!.token;
+          await SessionService.storeTokens(authToken: _authToken!);
+        }
+
         await SessionService.setOnboardingComplete(true);
 
         _profilePhotoKey = null;
@@ -391,7 +418,7 @@ class AuthProvider with ChangeNotifier {
           'profilePhoto': profilePhoto,
       };
 
-      final resp = await http.post(
+      final resp = await EcliniqHttpClient.post(
         Uri.parse(Endpoints.updatePatientProfile),
         headers: {
           'Content-Type': 'application/json',
@@ -489,7 +516,7 @@ class AuthProvider with ChangeNotifier {
           'profilePhoto': profilePhoto,
       };
 
-      final resp = await http.patch(
+      final resp = await EcliniqHttpClient.patch(
         Uri.parse(Endpoints.updateDependent(dependentId)),
         headers: {
           'Content-Type': 'application/json',

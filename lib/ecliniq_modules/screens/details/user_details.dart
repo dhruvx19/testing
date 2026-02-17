@@ -147,10 +147,7 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
           
           if (mounted) {
             EcliniqRouter.pushAndRemoveUntil(
-              LoginPage(
-                phoneNumber: phone,
-                showSelectionMode: true,
-              ),
+              const HomeScreen(),
               (route) => false,
             );
           }

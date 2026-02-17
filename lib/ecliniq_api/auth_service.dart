@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'package:ecliniq/ecliniq_api/models/otp_verification_model.dart';
+import 'package:ecliniq/ecliniq_api/src/api_client.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
-import 'package:http/http.dart' as http;
 
 class AuthService {
   Future<Map<String, dynamic>> checkUserStatus(String phone) async {
     final url = Uri.parse(Endpoints.checkUserStatus);
     try {
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'phone': phone}),
@@ -38,7 +38,7 @@ class AuthService {
   Future<Map<String, dynamic>> loginOrRegisterUser(String phone) async {
     final url = Uri.parse(Endpoints.loginOrRegisterUser);
     try {
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'phone': phone}),
@@ -85,7 +85,7 @@ class AuthService {
         'otp': otp,
       };
 
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody),
@@ -132,7 +132,7 @@ class AuthService {
         headers['Authorization'] = 'Bearer $authToken';
       }
 
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: headers,
         body: jsonEncode({'mpin': mpin}),
@@ -162,7 +162,7 @@ class AuthService {
   Future<Map<String, dynamic>> loginWithMPIN(String phone, String mpin) async {
     final url = Uri.parse('${Endpoints.localhost}/api/auth/login-with-mpin');
     try {
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
@@ -286,7 +286,7 @@ class AuthService {
         headers['Authorization'] = 'Bearer $authToken';
       }
 
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: headers,
         body: jsonEncode({'type': type}),
@@ -332,7 +332,7 @@ class AuthService {
         headers['Authorization'] = 'Bearer $authToken';
       }
 
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: headers,
         body: jsonEncode({'challengeId': challengeId, 'otp': otp}),
@@ -378,7 +378,7 @@ class AuthService {
         headers['Authorization'] = 'Bearer $authToken';
       }
 
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: headers,
         body: jsonEncode({'type': type, 'newContact': newContact}),
@@ -423,7 +423,7 @@ class AuthService {
         headers['Authorization'] = 'Bearer $authToken';
       }
 
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: headers,
         body: jsonEncode({'challengeId': challengeId, 'otp': otp}),
@@ -464,7 +464,7 @@ class AuthService {
         headers['Authorization'] = 'Bearer $authToken';
       }
 
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: headers,
         body: jsonEncode({'phone': phone}),
@@ -510,7 +510,7 @@ class AuthService {
         requestBody['phone'] = phone;
       }
 
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody),
@@ -545,7 +545,7 @@ class AuthService {
   }) async {
     final url = Uri.parse(Endpoints.forgetMpinReset);
     try {
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'mpin': mpin, 'phone': phone}),
@@ -581,7 +581,7 @@ class AuthService {
         headers['Authorization'] = 'Bearer $authToken';
       }
 
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: headers,
       );
@@ -616,7 +616,7 @@ class AuthService {
         headers['Authorization'] = 'Bearer $authToken';
       }
 
-      final response = await http.delete(
+      final response = await EcliniqHttpClient.delete(
         url,
         headers: headers,
       );

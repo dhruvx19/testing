@@ -1,7 +1,8 @@
-
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:ecliniq/ecliniq_api/models/upload.dart';
+import 'package:ecliniq/ecliniq_api/models/patient.dart';
+import 'package:ecliniq/ecliniq_api/src/api_client.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -18,8 +19,7 @@ class UploadService {
       
       final request = UploadUrlRequest(contentType: contentType);
       
-      
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: {
           'Content-Type': 'application/json',
@@ -47,10 +47,9 @@ class UploadService {
     required String contentType,
   }) async {
     try {
-      
       final bytes = await imageFile.readAsBytes();
       
-      final response = await http.put(
+      final response = await EcliniqHttpClient.put(
         Uri.parse(uploadUrl),
         headers: {
           'Content-Type': contentType,
@@ -58,7 +57,6 @@ class UploadService {
         body: bytes,
       );
 
-      
       if (response.statusCode == 200) {
         return true;
       } else {
@@ -76,7 +74,7 @@ class UploadService {
     required String contentType,
   }) async {
     try {
-      final response = await http.put(
+      final response = await EcliniqHttpClient.put(
         Uri.parse(uploadUrl),
         headers: {
           'Content-Type': contentType,
@@ -98,7 +96,7 @@ class UploadService {
     try {
       final url = Uri.parse(Endpoints.patientDetails); 
 
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: {
           'Content-Type': 'application/json',
@@ -130,10 +128,7 @@ class UploadService {
     required File imageFile,
   }) async {
     try {
-      
-      
       final contentType = getContentTypeFromFile(imageFile);
-      
       
       final uploadUrlResponse = await generateUploadUrl(
         authToken: authToken,
@@ -144,8 +139,6 @@ class UploadService {
         throw Exception('Failed to get upload URL: ${uploadUrlResponse.message}');
       }
 
-
-      
       final uploadSuccess = await uploadImageToS3(
         uploadUrl: uploadUrlResponse.data!.uploadUrl,
         imageFile: imageFile,
@@ -156,8 +149,6 @@ class UploadService {
         throw Exception('Failed to upload image to S3');
       }
 
-      
-      
       return uploadUrlResponse.data!.key;
     } catch (e) {
       throw Exception('Complete upload failed: $e');
@@ -171,10 +162,8 @@ class UploadService {
     required String fileName,
   }) async {
     try {
-      
       final mimeType = lookupMimeType(fileName);
       final contentType = mimeType ?? 'image/jpeg';
-      
       
       final uploadUrlResponse = await generateUploadUrl(
         authToken: authToken,
@@ -185,7 +174,6 @@ class UploadService {
         throw Exception('Failed to get upload URL: ${uploadUrlResponse.message}');
       }
 
-      
       final uploadSuccess = await uploadImageBytesToS3(
         uploadUrl: uploadUrlResponse.data!.uploadUrl,
         imageBytes: imageBytes,
@@ -196,7 +184,6 @@ class UploadService {
         throw Exception('Failed to upload image to S3');
       }
 
-      
       return uploadUrlResponse.data!.key;
     } catch (e) {
       throw Exception('Complete upload failed: $e');

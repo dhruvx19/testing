@@ -1,12 +1,9 @@
 import 'dart:convert';
+import 'package:ecliniq/ecliniq_api/src/api_client.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:http/http.dart' as http;
 
 class NotificationService {
-  
-  
-  
-  
   Future<Map<String, dynamic>> getAllNotifications({
     required String authToken,
   }) async {
@@ -19,7 +16,7 @@ class NotificationService {
         'x-access-token': authToken,
       };
 
-      final response = await http.get(url, headers: headers);
+      final response = await EcliniqHttpClient.get(url, headers: headers);
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -46,11 +43,6 @@ class NotificationService {
     }
   }
 
-  
-  
-  
-  
-  
   Future<Map<String, dynamic>> markAsRead({
     required String notificationId,
     required String authToken,
@@ -64,7 +56,7 @@ class NotificationService {
         'x-access-token': authToken,
       };
 
-      final response = await http.patch(url, headers: headers);
+      final response = await EcliniqHttpClient.patch(url, headers: headers);
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -91,10 +83,6 @@ class NotificationService {
     }
   }
 
-  
-  
-  
-  
   Future<Map<String, dynamic>> markAllAsRead({
     required String authToken,
   }) async {
@@ -107,7 +95,7 @@ class NotificationService {
         'x-access-token': authToken,
       };
 
-      final response = await http.patch(url, headers: headers);
+      final response = await EcliniqHttpClient.patch(url, headers: headers);
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -134,6 +122,3 @@ class NotificationService {
     }
   }
 }
-
-
-

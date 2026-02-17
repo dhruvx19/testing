@@ -56,15 +56,20 @@ class AuthFlowManager {
           SessionService.clearFlowState(),
         ]);
 
+        // If user was previously identified as existing, go to login instead of onboarding
+        final isExisting = await SecureStorageService.isExistingUser();
+        if (isExisting) {
+          return 'login';
+        }
         
         return 'onboarding';
       }
 
-      if (hasMPIN) {
-        
+      final isExisting = await SecureStorageService.isExistingUser();
+      if (hasMPIN || isExisting) {
+        // If they have an MPIN or were identified as existing, go to login
         return 'login';
       } else {
-        
         return 'onboarding';
       }
     } catch (e) {

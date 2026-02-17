@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:async';
 
 import 'package:ecliniq/ecliniq_api/models/payment.dart';
+import 'package:ecliniq/ecliniq_api/src/api_client.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:http/http.dart' as http;
 
@@ -14,7 +15,7 @@ class PaymentService {
 
       final headers = <String, String>{'Content-Type': 'application/json'};
 
-      final response = await http.get(url, headers: headers);
+      final response = await EcliniqHttpClient.get(url, headers: headers);
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
@@ -44,7 +45,6 @@ class PaymentService {
     }
   }
 
-  
   Future<PaymentDetailResponse> getPaymentDetails({
     required String appointmentId,
     required String authToken,
@@ -58,7 +58,7 @@ class PaymentService {
         'x-access-token': authToken,
       };
 
-      final response = await http.get(url, headers: headers);
+      final response = await EcliniqHttpClient.get(url, headers: headers);
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);

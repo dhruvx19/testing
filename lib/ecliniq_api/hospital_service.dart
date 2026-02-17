@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'package:ecliniq/ecliniq_api/models/hospital.dart';
 import 'package:ecliniq/ecliniq_api/models/hospital_doctor_model.dart';
+import 'package:ecliniq/ecliniq_api/src/api_client.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:http/http.dart' as http;
 
@@ -36,7 +37,7 @@ class HospitalService {
         longitude: 77.6377,
       );
 
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody.toJson()),
@@ -112,7 +113,7 @@ class HospitalService {
 
       final requestBody = {"latitude": latitude, "longitude": longitude};
 
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody),
@@ -161,7 +162,7 @@ class HospitalService {
     try {
       final url = Uri.parse(Endpoints.hospitalDetails(hospitalId));
 
-      final response = await http.get(
+      final response = await EcliniqHttpClient.get(
         url,
         headers: {'Content-Type': 'application/json'},
       );
@@ -265,7 +266,7 @@ class HospitalService {
       };
 
       
-      final response = await http.get(url, headers: headers);
+      final response = await EcliniqHttpClient.get(url, headers: headers);
 
       
       if (response.statusCode == 200) {
@@ -576,7 +577,7 @@ class HospitalService {
         requestBody['languages'] = languages;
       }
 
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: headers,
         body: jsonEncode(requestBody),
@@ -683,7 +684,7 @@ class HospitalService {
         requestBody['languages'] = languages;
       }
 
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: headers,
         body: jsonEncode(requestBody),

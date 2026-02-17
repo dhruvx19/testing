@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:ecliniq/ecliniq_api/models/patient.dart';
+import 'package:ecliniq/ecliniq_api/src/api_client.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/my_doctors/model/doctor_details.dart';
 import 'package:http/http.dart' as http;
@@ -18,7 +19,7 @@ class PatientService {
         'x-access-token': authToken,
       };
 
-      final response = await http.get(url, headers: headers);
+      final response = await EcliniqHttpClient.get(url, headers: headers);
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
@@ -61,7 +62,7 @@ class PatientService {
         'x-access-token': authToken,
       };
 
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: headers,
         body: jsonEncode(request.toJson()),
@@ -111,7 +112,7 @@ class PatientService {
         'x-access-token': authToken,
       };
 
-      final response = await http.get(url, headers: headers);
+      final response = await EcliniqHttpClient.get(url, headers: headers);
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
@@ -161,7 +162,7 @@ class PatientService {
         'x-access-token': authToken,
       };
 
-      final response = await http.get(url, headers: headers);
+      final response = await EcliniqHttpClient.get(url, headers: headers);
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
@@ -213,7 +214,7 @@ class PatientService {
         'x-access-token': authToken,
       };
 
-      final response = await http.patch(
+      final response = await EcliniqHttpClient.patch(
         url,
         headers: headers,
         body: jsonEncode(prefs),
@@ -279,7 +280,7 @@ class PatientService {
         'x-access-token': authToken,
       };
 
-      final response = await http.delete(url, headers: headers);
+      final response = await EcliniqHttpClient.delete(url, headers: headers);
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
@@ -321,7 +322,7 @@ class PatientService {
         'x-access-token': authToken,
       };
 
-      final response = await http.post(url, headers: headers);
+      final response = await EcliniqHttpClient.post(url, headers: headers);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return jsonDecode(response.body);
@@ -347,7 +348,7 @@ class PatientService {
         'x-access-token': authToken,
       };
 
-      final response = await http.delete(url, headers: headers);
+      final response = await EcliniqHttpClient.delete(url, headers: headers);
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);

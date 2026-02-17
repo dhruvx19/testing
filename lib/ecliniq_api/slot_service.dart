@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:ecliniq/ecliniq_api/models/slot.dart';
+import 'package:ecliniq/ecliniq_api/src/api_client.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:http/http.dart' as http;
 
@@ -21,7 +22,7 @@ class SlotService {
         clinicId: clinicId,
       );
 
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody.toJson()),
@@ -66,7 +67,7 @@ class SlotService {
         clinicId: clinicId,
       );
 
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody.toJson()),
@@ -112,7 +113,7 @@ class SlotService {
 
       final requestBody = HoldTokenRequest(slotId: slotId);
 
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: headers,
         body: jsonEncode(requestBody.toJson()),

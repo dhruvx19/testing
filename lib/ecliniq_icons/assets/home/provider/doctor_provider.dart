@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:ecliniq/ecliniq_api/models/doctor.dart' as api;
+import 'package:ecliniq/ecliniq_api/src/api_client.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:ecliniq/ecliniq_api/top_doctor_model.dart';
 import 'package:flutter/material.dart';
@@ -90,7 +91,7 @@ class DoctorProvider with ChangeNotifier {
         longitude: 77.6377,
       );
 
-      final httpResponse = await http.post(
+      final httpResponse = await EcliniqHttpClient.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody.toJson()),

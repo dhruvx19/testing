@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:ecliniq/ecliniq_api/src/api_client.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:http/http.dart' as http;
 
 class DeviceTokenService {
-  
   Future<void> registerDeviceToken({
     required String token,
     required String platform,
@@ -39,7 +39,7 @@ class DeviceTokenService {
 
       log('Registering device token with body: $body');
 
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: headers,
         body: jsonEncode(body),

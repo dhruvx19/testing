@@ -295,6 +295,21 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
           setState(() {
             _phoneNumber = phoneNumber;
           });
+
+          // If we came from Splash (no widget.phoneNumber) and found a stored number,
+          // automatically proceed to the choice screen or MPIN screen
+          if (widget.phoneNumber == null) {
+            final hasMpin = await SecureStorageService.hasMPIN();
+            final isExisting = await SecureStorageService.isExistingUser();
+            
+            if (hasMpin || isExisting) {
+              setState(() {
+                _showMPINScreen = true;
+                _isOTPMode = !hasMpin;
+                _userExplicitlyChoseMPIN = hasMpin;
+              });
+            }
+          }
         }
       }
     } catch (e) {}

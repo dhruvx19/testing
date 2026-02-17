@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:ecliniq/ecliniq_api/models/patient.dart';
 import 'package:ecliniq/ecliniq_api/patient_service.dart';
+import 'package:ecliniq/ecliniq_api/src/api_client.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
@@ -136,7 +137,7 @@ class _SelectMemberBottomSheetState extends State<SelectMemberBottomSheet> {
         headers['Authorization'] = 'Bearer ${_authToken!}';
         headers['x-access-token'] = _authToken!;
       }
-      final resp = await http.get(uri, headers: headers);
+      final resp = await EcliniqHttpClient.get(uri, headers: headers);
       if (resp.statusCode == 200) {
         final body = jsonDecode(resp.body) as Map<String, dynamic>;
         final data = body['data'] as Map<String, dynamic>?;

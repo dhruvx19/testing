@@ -53,6 +53,7 @@ class PatientDetailsData {
   final DateTime createdAt;
   final DateTime updatedAt;
   final String? profilePhoto;
+  final String? token;
   final PatientUser? user;
 
   PatientDetailsData({
@@ -79,6 +80,7 @@ class PatientDetailsData {
     required this.createdAt,
     required this.updatedAt,
     this.profilePhoto,
+    this.token,
     this.user,
   });
 
@@ -139,6 +141,7 @@ class PatientDetailsData {
           : (json['user'] is Map<String, dynamic>
               ? (json['user']['profilePhoto']?.toString())
               : null),
+      token: json['token']?.toString(),
       user: json['user'] != null
           ? PatientUser.fromJson(json['user'])
           : null,

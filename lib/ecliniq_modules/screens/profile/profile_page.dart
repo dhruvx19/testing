@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:ecliniq/ecliniq_api/auth_service.dart';
 import 'package:ecliniq/ecliniq_api/models/patient.dart';
 import 'package:ecliniq/ecliniq_api/patient_service.dart';
+import 'package:ecliniq/ecliniq_api/src/api_client.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:ecliniq/ecliniq_core/auth/secure_storage.dart';
 import 'package:ecliniq/ecliniq_core/router/navigation_helper.dart';
@@ -165,7 +166,7 @@ class _ProfilePageState extends State<ProfilePage>
       final publicUri = Uri.parse(
         '${Endpoints.storagePublicUrl}?key=${Uri.encodeComponent(key)}',
       );
-      final resp = await http.get(
+      final resp = await EcliniqHttpClient.get(
         publicUri,
         headers: {'Content-Type': 'application/json'},
       );
@@ -183,7 +184,7 @@ class _ProfilePageState extends State<ProfilePage>
       final downloadUri = Uri.parse(
         '${Endpoints.storageDownloadUrl}?key=${Uri.encodeComponent(key)}',
       );
-      final resp = await http.get(
+      final resp = await EcliniqHttpClient.get(
         downloadUri,
         headers: {
           'Content-Type': 'application/json',

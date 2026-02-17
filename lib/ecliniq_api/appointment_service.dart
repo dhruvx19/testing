@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:ecliniq/ecliniq_api/models/appointment.dart';
+import 'package:ecliniq/ecliniq_api/src/api_client.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:http/http.dart' as http;
 
@@ -19,7 +20,7 @@ class AppointmentService {
         headers['x-access-token'] = authToken;
       }
 
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: headers,
         body: jsonEncode(request.toJson()),
@@ -72,7 +73,7 @@ class AppointmentService {
         'x-access-token': authToken,
       };
 
-      final response = await http.get(url, headers: headers);
+      final response = await EcliniqHttpClient.get(url, headers: headers);
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
@@ -121,7 +122,7 @@ class AppointmentService {
         'x-access-token': authToken,
       };
 
-      final response = await http.get(url, headers: headers);
+      final response = await EcliniqHttpClient.get(url, headers: headers);
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
@@ -164,7 +165,7 @@ class AppointmentService {
         'x-access-token': authToken,
       };
 
-      final response = await http.get(url, headers: headers);
+      final response = await EcliniqHttpClient.get(url, headers: headers);
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
@@ -211,7 +212,7 @@ class AppointmentService {
         'appointmentId': appointmentId,
       });
 
-      final response = await http.post(url, headers: headers, body: body);
+      final response = await EcliniqHttpClient.post(url, headers: headers, body: body);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseData = jsonDecode(response.body);
@@ -255,7 +256,7 @@ class AppointmentService {
         headers['x-access-token'] = authToken;
       }
 
-      final response = await http.put(
+      final response = await EcliniqHttpClient.put(
         url,
         headers: headers,
         body: jsonEncode(request.toJson()),
@@ -303,7 +304,7 @@ class AppointmentService {
         headers['x-access-token'] = authToken;
       }
 
-      final response = await http.post(
+      final response = await EcliniqHttpClient.post(
         url,
         headers: headers,
         body: jsonEncode(request.toJson()),
@@ -355,7 +356,7 @@ class AppointmentService {
         'rating': rating,
       });
 
-      final response = await http.put(url, headers: headers, body: body);
+      final response = await EcliniqHttpClient.put(url, headers: headers, body: body);
 
       final responseData = jsonDecode(response.body);
       if (response.statusCode == 200) {
@@ -392,7 +393,7 @@ class AppointmentService {
         'x-access-token': authToken,
       };
 
-      final response = await http.get(url, headers: headers);
+      final response = await EcliniqHttpClient.get(url, headers: headers);
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
@@ -441,7 +442,7 @@ extension AppointmentEtaExtension on AppointmentService {
         'x-access-token': authToken,
       };
 
-      final response = await http.get(url, headers: headers);
+      final response = await EcliniqHttpClient.get(url, headers: headers);
       final body = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
