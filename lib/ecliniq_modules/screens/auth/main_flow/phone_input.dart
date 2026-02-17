@@ -440,110 +440,114 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: EcliniqScaffold.primaryBlue,
-        toolbarHeight: 38,
-        
-        leading: IconButton(
-          onPressed: widget.onClose,
-          icon: SvgPicture.asset(
-            EcliniqIcons.reply.assetPath,
-            width: EcliniqTextStyles.getResponsiveIconSize(context, 36),
-            height: EcliniqTextStyles.getResponsiveIconSize(context, 36 ),
-          ),
-        ),
-        actions: [
-          GestureDetector(
-            onTap: () => EcliniqRouter.push(LoginTroublePage()),
-            child: FadeTransition(
-              opacity: widget.fadeAnimation,
-              child: Row(
-                children: [
-                   SvgPicture.asset(
-                    EcliniqIcons.questionCircleWhite.assetPath,
-                    width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
-                    height: EcliniqTextStyles.getResponsiveIconSize(
-                      context,
-                      24,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Help',
-                    style: EcliniqTextStyles.responsiveHeadlineXLMedium(context)
-                        .copyWith(
-                          color: Colors.white,
-
-                          fontWeight: FontWeight.w400,
-                        ),
-                  ),
-                  const SizedBox(width: 10),
-                ],
-              ),
+    return EcliniqScaffold(
+      backgroundColor: EcliniqScaffold.primaryBlue,
+      resizeToAvoidBottomInset: true,
+      body: SizedBox.expand(
+        child: Column(
+          children: [
+            SizedBox(
+              height: EcliniqTextStyles.getResponsiveSpacing(context, 52),
             ),
-          ),
-        ],
-      ),
-
-      body: Container(
-          decoration: const BoxDecoration(color: Colors.white),
-          child: FadeTransition(
-            opacity: widget.fadeAnimation,
-            child: Column(
+            Row(
               children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
-                      context,
-                      top: 24,
-                      left: 18,
-                      right: 18,
-                      bottom: 0,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                IconButton(
+                  onPressed: widget.onClose,
+                  icon: SvgPicture.asset(
+                    EcliniqIcons.reply.assetPath,
+                    width: EcliniqTextStyles.getResponsiveIconSize(context, 32),
+                    height: EcliniqTextStyles.getResponsiveIconSize(context, 32),
+                  ),
+                ),
+                const Spacer(),
+                GestureDetector(
+                  onTap: () => EcliniqRouter.push(LoginTroublePage()),
+                  child: FadeTransition(
+                    opacity: widget.fadeAnimation,
+                    child: Row(
                       children: [
+                        SvgPicture.asset(
+                          EcliniqIcons.questionCircleWhite.assetPath,
+                          width: 24,
+                          height: 24,
+                        ),
+                        const SizedBox(width: 4),
                         Text(
-                          widget.isForgotPinFlow
-                              ? 'Enter Your Mobile Number to Reset PIN'
-                              : 'Enter Your Mobile Number',
-                          style: EcliniqTextStyles.responsiveHeadlineXMedium(
-                            context,
-                          ).copyWith(color: const Color(0xff626060)),
+                          'Help',
+                          style: EcliniqTextStyles.responsiveHeadlineXLMedium(context)
+                              .copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w400,
+                              ),
                         ),
-                        SizedBox(
-                          height: EcliniqTextStyles.getResponsiveSpacing(
-                            context,
-                            4,
-                          ),
-                        ),
-                        _buildPhoneInputField(),
-                        SizedBox(
-                          height: EcliniqTextStyles.getResponsiveSpacing(
-                            context,
-                            24,
-                          ),
-                        ),
-                        _buildTermsAndConditions(),
+                        const SizedBox(width: 10),
                       ],
                     ),
                   ),
                 ),
-
-                Container(
-                  padding: const EdgeInsets.only(
-                    right: 18,
-                    left: 18,
-                    bottom: 24,
-                  ),
-                  child: _buildContinueButton(),
-                ),
               ],
             ),
-          ),
+            Expanded(
+              child: Container(
+                decoration: const BoxDecoration(color: Colors.white),
+                child: FadeTransition(
+                  opacity: widget.fadeAnimation,
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                          padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+                            context,
+                            top: 24,
+                            left: 18,
+                            right: 18,
+                            bottom: 0,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.isForgotPinFlow
+                                    ? 'Enter Your Mobile Number to Reset PIN'
+                                    : 'Enter Your Mobile Number',
+                                style: EcliniqTextStyles.responsiveHeadlineXMedium(
+                                  context,
+                                ).copyWith(color: const Color(0xff626060)),
+                              ),
+                              SizedBox(
+                                height: EcliniqTextStyles.getResponsiveSpacing(
+                                  context,
+                                  4,
+                                ),
+                              ),
+                              _buildPhoneInputField(),
+                              SizedBox(
+                                height: EcliniqTextStyles.getResponsiveSpacing(
+                                  context,
+                                  24,
+                                ),
+                              ),
+                              _buildTermsAndConditions(),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.only(
+                          right: 18,
+                          left: 18,
+                          bottom: 24,
+                        ),
+                        child: _buildContinueButton(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
+      ),
     );
   }
 }
