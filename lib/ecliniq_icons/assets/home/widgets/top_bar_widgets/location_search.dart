@@ -343,7 +343,8 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
           isRefresh: true,
         ),
       ]).catchError((e) {
-        
+        // Handle the error and return an empty list to satisfy the return type
+        return <void>[];
       });
     });
   }

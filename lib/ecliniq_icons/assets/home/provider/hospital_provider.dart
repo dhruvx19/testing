@@ -1,6 +1,5 @@
 import 'package:ecliniq/ecliniq_api/hospital_service.dart';
 import 'package:ecliniq/ecliniq_api/models/hospital.dart';
-import 'package:ecliniq/ecliniq_core/location/location_storage_service.dart';
 import 'package:flutter/material.dart';
 
 class HospitalProvider with ChangeNotifier {

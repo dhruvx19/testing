@@ -49,7 +49,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
       
       if (mounted) {
-        EcliniqRouter.pushReplacement(nextScreen!);
+        EcliniqRouter.pushReplacement(nextScreen);
       }
     } catch (e) {
       

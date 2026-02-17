@@ -1,6 +1,5 @@
 import 'dart:developer';
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:ecliniq/ecliniq_api/models/appointment.dart' as api_models;
 import 'package:flutter/services.dart';
@@ -177,7 +176,7 @@ class AppointmentLockScreenNotification {
       
       if (runningToken > 0) {
         
-        final totalTokens = userToken > runningToken ? userToken : (runningToken + 5);
+        final _ = userToken > runningToken ? userToken : (runningToken + 5);
         final startToCurrent = runningToken;
         final currentToYour = userToken > runningToken ? (userToken - runningToken) : 0;
         

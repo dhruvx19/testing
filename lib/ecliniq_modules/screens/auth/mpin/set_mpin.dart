@@ -230,7 +230,7 @@ class _MPINSetState extends State<MPINSet> with TickerProviderStateMixin {
             authProvider.errorMessage ??
             'Failed to create MPIN. Please try again.';
       }
-    } on Exception catch (e) {
+    } on Exception {
       
       _errorNotifier.value = 'An unexpected error occurred. Please try again.';
     } finally {
@@ -280,13 +280,6 @@ class _MPINSetState extends State<MPINSet> with TickerProviderStateMixin {
     );
   }
 
-  void _navigateToUserDetails() {
-    if (!mounted) return;
-    EcliniqRouter.pushAndRemoveUntil(
-      const UserDetails(),
-      (route) => route.isFirst,
-    );
-  }
 
   @override
   Widget build(BuildContext context) {

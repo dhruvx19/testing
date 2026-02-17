@@ -1,6 +1,5 @@
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
-import 'package:ecliniq/ecliniq_modules/screens/search_specialities/search_specialities_page.dart';
 import 'package:ecliniq/ecliniq_modules/screens/search_specialities/speciality_doctors_list.dart';
 import 'package:ecliniq/ecliniq_modules/screens/symptoms/symptoms_page.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
@@ -14,9 +13,7 @@ class NotFeelingWell extends StatelessWidget {
 
   const NotFeelingWell({super.key, this.showShimmer = false});
 
-  // Symptom to Specialty mapping - same as in symptoms_page.dart
   static const Map<String, String> _symptomSpecialtyMap = {
-    // General & Common
     'Fever/Chills': 'General Physician',
     'Headache': 'General Physician',
     'Stomach Pain': 'Gastroenterologist',
@@ -30,12 +27,9 @@ class NotFeelingWell extends StatelessWidget {
   };
 
   void _handleSymptomTap(BuildContext context, String symptom) {
-    // Get specialty from map
     final specialtiesStr = _symptomSpecialtyMap[symptom];
     if (specialtiesStr != null) {
-      // Pick first specialty
       final firstSpecialty = specialtiesStr.split(',').first.trim();
-      // Navigate to specialty doctors list
       EcliniqRouter.push(
         SpecialityDoctorsList(initialSpeciality: firstSpecialty),
       );
@@ -311,7 +305,7 @@ class NotFeelingWell extends StatelessWidget {
   Widget _buildSymptomButton(
     BuildContext context,
     String title,
-    EcliniqIcons icon, 
+    EcliniqIcons icon,
     VoidCallback onTap,
   ) {
     return Material(
@@ -323,7 +317,7 @@ class NotFeelingWell extends StatelessWidget {
         ),
         child: Container(
           width: EcliniqTextStyles.getResponsiveWidth(context, 120.0),
-          height: EcliniqTextStyles.getResponsiveHeight(context, 124.0),
+          height: EcliniqTextStyles.getResponsiveHeight(context, 128.0),
           decoration: BoxDecoration(
             color: Color(0xFfF8FAFF),
             borderRadius: BorderRadius.circular(

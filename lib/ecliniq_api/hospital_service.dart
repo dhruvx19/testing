@@ -5,7 +5,6 @@ import 'package:ecliniq/ecliniq_api/models/hospital.dart';
 import 'package:ecliniq/ecliniq_api/models/hospital_doctor_model.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
 class HospitalService {
   

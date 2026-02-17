@@ -40,7 +40,8 @@ class _SymptomsPageState extends State<SymptomsPage> {
   final Map<String, String> _symptomSpecialtyMap = {
     // General & Common
     'Fever / Chills': 'General Physician, Pediatrician',
-    'Fever/Chills': 'General Physician, Pediatrician', // Mapping for common symptoms widget
+    'Fever/Chills':
+        'General Physician, Pediatrician', // Mapping for common symptoms widget
     'Cold & Cough': 'General Physician, Pediatrician, Pulmonologist',
     'Sore Throat': 'General Physician, ENT',
     'Body Pain': 'General Physician, Orthopedic',
@@ -51,7 +52,8 @@ class _SymptomsPageState extends State<SymptomsPage> {
     'Dizziness / Fainting': 'General Physician, Cardiologist, Neurologist',
     'Viral Infection Symptoms': 'General Physician',
     'High or Low Blood Pressure': 'General Physician, Cardiologist',
-    'Blood Pressure': 'General Physician, Cardiologist', // Mapping for common symptoms widget
+    'Blood Pressure':
+        'General Physician, Cardiologist', // Mapping for common symptoms widget
     'General Health Check-up': 'General Physician',
 
     // Child Health
@@ -84,12 +86,11 @@ class _SymptomsPageState extends State<SymptomsPage> {
     'Tooth Sensitivity': 'Dentist',
     'Wisdom Tooth Pain': 'Dentist',
     'Dental Care': 'Dentist', // Mapping for common symptoms widget
-
     // Skin & Hair
     'Skin & Hair': 'Dermatologist',
     'Skin Rash /Itching': 'Dermatologist', // Mapping for common symptoms widget
-    'Hair Related Problem': 'Dermatologist', // Mapping for common symptoms widget
-
+    'Hair Related Problem':
+        'Dermatologist', // Mapping for common symptoms widget
     // Category mappings (for categories with no symptoms)
     'ENT Health': 'ENT',
     'Eyes Health': 'Ophthalmologist',
@@ -184,7 +185,8 @@ class _SymptomsPageState extends State<SymptomsPage> {
     'Anxiety / Stress': 'Psychiatrist',
     'Depression / Low Mood': 'Psychiatrist',
     'Sleep Problems': 'Psychiatrist',
-    'Sleep Problem': 'Psychiatrist', // Mapping for common symptoms widget (singular)
+    'Sleep Problem':
+        'Psychiatrist', // Mapping for common symptoms widget (singular)
     'Addiction Issues': 'Psychiatrist',
 
     // Sexual Health
@@ -330,14 +332,15 @@ class _SymptomsPageState extends State<SymptomsPage> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         surfaceTintColor: Colors.transparent,
-        leadingWidth: EcliniqTextStyles.getResponsiveSize(context, 58.0),
+        leadingWidth: EcliniqTextStyles.getResponsiveWidth(context, 54.0),
         titleSpacing: 0,
+        toolbarHeight: EcliniqTextStyles.getResponsiveHeight(context, 46.0),
         backgroundColor: Colors.white,
         leading: IconButton(
           icon: SvgPicture.asset(
             EcliniqIcons.arrowLeft.assetPath,
-            width: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
-            height: EcliniqTextStyles.getResponsiveIconSize(context, 32.0),
+            width: EcliniqTextStyles.getResponsiveSize(context, 32.0),
+            height: EcliniqTextStyles.getResponsiveSize(context, 32.0),
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -387,7 +390,7 @@ class _SymptomsPageState extends State<SymptomsPage> {
                     ),
                   )
                 : SingleChildScrollView(
-                    padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16.0),
+                    padding: const EdgeInsets.all(16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -400,14 +403,23 @@ class _SymptomsPageState extends State<SymptomsPage> {
                                 ).copyWith(
                                   color: const Color(0xff424242),
                                   fontWeight: FontWeight.w600,
-                                  fontSize: EcliniqTextStyles.getResponsiveSize(context, 20.0),
+                                  fontSize: 20,
                                 ),
                           ),
-                          SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 16.0)),
-                          Wrap(
-                            spacing: EcliniqTextStyles.getResponsiveSpacing(context, 12.0),
-                            runSpacing: EcliniqTextStyles.getResponsiveSpacing(context, 12.0),
-                            children: _filteredCommonSymptoms.map((symptom) {
+                          const SizedBox(height: 16),
+                          GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 3,
+                                  crossAxisSpacing: 12.0,
+                                  mainAxisSpacing: 12.0,
+                                  childAspectRatio: 0.95,
+                                ),
+                            itemCount: _filteredCommonSymptoms.length,
+                            itemBuilder: (context, index) {
+                              final symptom = _filteredCommonSymptoms[index];
                               return _buildSymptomButton(
                                 context,
                                 symptom['title'] as String,
@@ -416,7 +428,7 @@ class _SymptomsPageState extends State<SymptomsPage> {
                                   symptom['title'] as String,
                                 ),
                               );
-                            }).toList(),
+                            },
                           ),
                         ],
 
@@ -452,7 +464,7 @@ class _SymptomsPageState extends State<SymptomsPage> {
         ),
         child: Container(
           width: EcliniqTextStyles.getResponsiveWidth(context, 120.0),
-          height: EcliniqTextStyles.getResponsiveHeight(context, 124.0),
+          height: EcliniqTextStyles.getResponsiveHeight(context, 126.0),
           decoration: BoxDecoration(
             color: Color(0xFfF8FAFF),
             borderRadius: BorderRadius.circular(
@@ -460,19 +472,16 @@ class _SymptomsPageState extends State<SymptomsPage> {
             ),
           ),
           child: Padding(
-            padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(
-              context,
-              10.0,
-            ),
+            padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 7.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 SizedBox(
-                  height: EcliniqTextStyles.getResponsiveSpacing(context, 4.0),
+                  height: EcliniqTextStyles.getResponsiveSpacing(context, 3.0),
                 ),
                 Container(
-                  width: EcliniqTextStyles.getResponsiveSize(context, 48.0),
-                  height: EcliniqTextStyles.getResponsiveSize(context, 48.0),
+                  width: EcliniqTextStyles.getResponsiveSize(context, 46.0),
+                  height: EcliniqTextStyles.getResponsiveSize(context, 46.0),
                   decoration: BoxDecoration(
                     color: Color(0xFF2372EC),
                     shape: BoxShape.circle,
@@ -482,11 +491,11 @@ class _SymptomsPageState extends State<SymptomsPage> {
                       icon.assetPath,
                       width: EcliniqTextStyles.getResponsiveIconSize(
                         context,
-                        48.0,
+                        46.0,
                       ),
                       height: EcliniqTextStyles.getResponsiveIconSize(
                         context,
-                        48.0,
+                        46.0,
                       ),
                     ),
                   ),
@@ -499,6 +508,7 @@ class _SymptomsPageState extends State<SymptomsPage> {
                     title,
                     textAlign: TextAlign.center,
                     maxLines: 2,
+
                     style: EcliniqTextStyles.responsiveTitleXLarge(context)
                         .copyWith(
                           color: Color(0xff424242),
@@ -550,7 +560,7 @@ class _SymptomsPageState extends State<SymptomsPage> {
                       ).copyWith(
                         color: const Color(0xff424242),
                         fontWeight: FontWeight.w600,
-                        fontSize: EcliniqTextStyles.getResponsiveSize(context, 20.0),
+                        fontSize: 20,
                       ),
                 ),
               ),
@@ -559,8 +569,8 @@ class _SymptomsPageState extends State<SymptomsPage> {
                   angle: -90 * 3.14159 / 180,
                   child: SvgPicture.asset(
                     EcliniqIcons.arrowDown.assetPath,
-                    width: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
-                    height: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
+                    width: 24,
+                    height: 24,
                     colorFilter: ColorFilter.mode(
                       const Color(0xff424242),
                       BlendMode.srcIn,
@@ -573,8 +583,8 @@ class _SymptomsPageState extends State<SymptomsPage> {
                   turns: isExpanded ? 0 : -0.25,
                   child: SvgPicture.asset(
                     EcliniqIcons.arrowDown.assetPath,
-                    width: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
-                    height: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
+                    width: 24,
+                    height: 24,
                     colorFilter: ColorFilter.mode(
                       const Color(0xff424242),
                       BlendMode.srcIn,
@@ -584,7 +594,7 @@ class _SymptomsPageState extends State<SymptomsPage> {
             ],
           ),
         ),
-        SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 6.0)),
+        const SizedBox(height: 6),
         if (isExpanded && symptoms.isNotEmpty)
           ...symptoms.asMap().entries.map((entry) {
             final index = entry.key;
@@ -592,7 +602,7 @@ class _SymptomsPageState extends State<SymptomsPage> {
             final isLast = index == symptoms.length - 1;
             return _buildSymptomListItem(context, symptom, isLast);
           }),
-        SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 16.0)),
+        const SizedBox(height: 16),
       ],
     );
   }
@@ -607,11 +617,7 @@ class _SymptomsPageState extends State<SymptomsPage> {
         InkWell(
           onTap: () => _handleSymptomTap(symptom),
           child: Padding(
-            padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
-              context,
-              vertical: 6.0,
-              horizontal: 0.0,
-            ),
+            padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 0.0),
             child: Row(
               children: [
                 Expanded(
@@ -623,7 +629,7 @@ class _SymptomsPageState extends State<SymptomsPage> {
                         ).copyWith(
                           color: const Color(0xff424242),
                           fontWeight: FontWeight.w400,
-                          fontSize: EcliniqTextStyles.getResponsiveSize(context, 20.0),
+                          fontSize: 20,
                         ),
                   ),
                 ),

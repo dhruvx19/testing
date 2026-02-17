@@ -739,8 +739,9 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         surfaceTintColor: Colors.transparent,
-        leadingWidth: 58,
-        titleSpacing: 0,
+         leadingWidth: EcliniqTextStyles.getResponsiveWidth(context, 54.0),
+          titleSpacing: 0,
+          toolbarHeight: EcliniqTextStyles.getResponsiveHeight(context, 46.0),
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(

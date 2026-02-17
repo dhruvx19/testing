@@ -815,12 +815,6 @@ class _TopHospitalsWidgetState extends State<TopHospitalsWidget>
     );
   }
 
-  bool _isValidImageUrl(String url) {
-    if (url.startsWith('file://') || url.startsWith('/hospitals/')) {
-      return false;
-    }
-    return url.startsWith('http://') || url.startsWith('https://');
-  }
 
   Widget _buildImagePlaceholder(String hospitalName) {
     return Container(

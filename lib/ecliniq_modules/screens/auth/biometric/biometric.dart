@@ -5,7 +5,6 @@ import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 
 class BiometricSetupPage extends StatefulWidget {

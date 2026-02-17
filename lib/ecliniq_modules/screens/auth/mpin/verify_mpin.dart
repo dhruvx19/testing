@@ -5,7 +5,6 @@ import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart
 import 'package:ecliniq/ecliniq_icons/assets/home/home_screen.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
-import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';

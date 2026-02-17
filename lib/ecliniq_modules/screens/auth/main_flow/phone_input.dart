@@ -6,14 +6,12 @@ import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart
 import 'package:ecliniq/ecliniq_modules/screens/login/login.dart';
 import 'package:ecliniq/ecliniq_modules/screens/login/login_trouble.dart';
 import 'package:ecliniq/ecliniq_modules/screens/login/privacy_policy.dart';
-import 'package:ecliniq/ecliniq_modules/screens/login/profile_help.dart';
 import 'package:ecliniq/ecliniq_modules/screens/login/terms_and_conditions.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/button/button.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/error_snackbar.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 

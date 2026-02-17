@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:ecliniq/ecliniq_api/models/doctor.dart';
 import 'package:ecliniq/ecliniq_api/models/doctor_booking_response.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class DoctorService {

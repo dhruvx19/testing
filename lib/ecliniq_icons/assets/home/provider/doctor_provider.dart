@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:ecliniq/ecliniq_api/models/doctor.dart' as api;
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:ecliniq/ecliniq_api/top_doctor_model.dart';
-import 'package:ecliniq/ecliniq_core/location/location_storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -120,7 +119,7 @@ class DoctorProvider with ChangeNotifier {
                 final doctor = Doctor.fromJson(doctorJson);
                 uiDoctors.add(doctor);
                 
-              } catch (e, stackTrace) {
+              } catch (e) {
                 
                 
                 
@@ -153,7 +152,7 @@ class DoctorProvider with ChangeNotifier {
               latitude: latitude,
               longitude: longitude,
             );
-          } catch (parseError, stackTrace) {
+          } catch (parseError) {
             
             
             
