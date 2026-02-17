@@ -138,9 +138,11 @@ class PatientDetailsData {
       updatedAt: parseDateTime(json['updatedAt']) ?? DateTime.now(),
       profilePhoto: (json['profilePhoto']?.toString().isNotEmpty == true)
           ? json['profilePhoto']?.toString()
-          : (json['user'] is Map<String, dynamic>
-              ? (json['user']['profilePhoto']?.toString())
-              : null),
+          : (json['photo']?.toString().isNotEmpty == true)
+              ? json['photo']?.toString()
+              : (json['user'] is Map<String, dynamic>
+                  ? (json['user']['profilePhoto']?.toString())
+                  : null),
       token: json['token']?.toString(),
       user: json['user'] != null
           ? PatientUser.fromJson(json['user'])

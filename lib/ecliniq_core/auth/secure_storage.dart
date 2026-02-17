@@ -405,16 +405,13 @@ class SecureStorageService {
     try {
       
       await _secureStorage.delete(key: _keyUserID);
-      await _secureStorage.delete(key: _keyPhoneNumber);
 
       
       final userId = await _secureStorage.read(key: _keyUserID);
-      final phoneNumber = await _secureStorage.read(key: _keyPhoneNumber);
 
-      if (userId != null || phoneNumber != null) {
+      if (userId != null) {
         
         await _secureStorage.delete(key: _keyUserID);
-        await _secureStorage.delete(key: _keyPhoneNumber);
       }
 
       return true;

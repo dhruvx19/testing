@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:ecliniq/ecliniq_api/models/patient.dart';
 import 'package:ecliniq/ecliniq_api/models/upload.dart';
-import 'package:ecliniq/ecliniq_api/models/patient.dart' hide PatientDetailsResponse;
 import 'package:ecliniq/ecliniq_api/src/api_client.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:http/http.dart' as http;
