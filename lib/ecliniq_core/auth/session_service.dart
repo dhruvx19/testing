@@ -72,8 +72,8 @@ class SessionService {
       }
 
       final expiryTime = DateTime.parse(expiryString);
-      DateTime.now().isAfter(expiryTime);
-
+      
+      // Proactively return true if we're within 5 minutes of real expiry
       final bufferTime = expiryTime.subtract(const Duration(minutes: 5));
       return DateTime.now().isAfter(bufferTime);
     } catch (e) {

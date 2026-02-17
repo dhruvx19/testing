@@ -308,6 +308,15 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                 _isOTPMode = !hasMpin;
                 _userExplicitlyChoseMPIN = hasMpin;
               });
+
+              // Auto-trigger biometric if enabled
+              if (_isBiometricEnabled && _isBiometricAvailable) {
+                Future.delayed(const Duration(milliseconds: 300), () {
+                  if (mounted && _showMPINScreen && !_isLoading) {
+                    _handleBiometricLogin();
+                  }
+                });
+              }
             }
           }
         }

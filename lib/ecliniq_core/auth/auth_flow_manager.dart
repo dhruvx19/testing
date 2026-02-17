@@ -13,7 +13,7 @@ class AuthFlowManager {
 
         if (isOnboardingComplete) {
           SessionService.clearFlowState();
-          return 'home';
+          return 'login';
         } else {
           return 'onboarding';
         }

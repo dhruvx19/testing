@@ -43,17 +43,31 @@ class EcliniqHttpClient {
   static void _checkUnauthorized(http.Response response) {
     bool isUnauthorized = false;
 
-    if (response.statusCode == 401) {
+    // Direct status code checks
+    if (response.statusCode == 401 || response.statusCode == 403) {
       isUnauthorized = true;
     } else {
+      // Check for specific error message patterns in the body
       try {
-        final body = jsonDecode(response.body);
-        if (body is Map && 
-            body['message'] != null && 
-            body['message'].toString().toLowerCase().contains('authentication required')) {
+        final bodyString = response.body.toLowerCase();
+        if (bodyString.contains('authentication required') ||
+            bodyString.contains('invalid token') ||
+            bodyString.contains('token expired') ||
+            bodyString.contains('unauthorized access')) {
           isUnauthorized = true;
         }
-      } catch (_) {}
+        
+        // Also check decoded body if it's JSON
+        final body = jsonDecode(response.body);
+        if (body is Map && body['message'] != null) {
+          final msg = body['message'].toString().toLowerCase();
+          if (msg.contains('login') && msg.contains('again')) {
+             isUnauthorized = true;
+          }
+        }
+      } catch (_) {
+        // Not JSON or other parsing error, ignore
+      }
     }
 
     if (isUnauthorized && _onUnauthorized != null) {
