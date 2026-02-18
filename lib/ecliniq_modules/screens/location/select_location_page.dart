@@ -1,16 +1,12 @@
-import 'dart:developer' as developer;
 
 import 'package:ecliniq/ecliniq_core/location/location_permission_manager.dart';
 import 'package:ecliniq/ecliniq_core/location/location_service.dart';
 import 'package:ecliniq/ecliniq_core/location/location_storage_service.dart';
-import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/provider/doctor_provider.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/provider/hospital_provider.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/widgets/top_bar_widgets/search_bar.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
-import 'package:ecliniq/ecliniq_modules/screens/login/profile_help.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
-import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/error_snackbar.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -319,7 +315,11 @@ class _SelectLocationPageState extends State<SelectLocationPage> {
         longitude: lng,
         isRefresh: true,
       ),
-    ]).catchError((e) {});
+    ]).catchError((e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error fetching data: $e')),
+        );
+    });
 
     if (Navigator.of(context).canPop()) {
       Navigator.of(context).pop();

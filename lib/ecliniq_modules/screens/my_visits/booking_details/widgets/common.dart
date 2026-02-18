@@ -1731,7 +1731,6 @@ class PaymentDetailsCard extends StatelessWidget {
     double? originalAmount,
     bool isFree = false,
     String? subtitle,
-    bool isBold = false,
     required BuildContext context,
   }) {
     final bool isServiceFee = label.contains('Service Fee');

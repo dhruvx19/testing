@@ -13,7 +13,6 @@ import 'package:ecliniq/ecliniq_ui/lib/widgets/widgets.dart';
 import 'package:ecliniq/ecliniq_utils/bottom_sheets/circular.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
 class SelectMemberBottomSheet extends StatefulWidget {

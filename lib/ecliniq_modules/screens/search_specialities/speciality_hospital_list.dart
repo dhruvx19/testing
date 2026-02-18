@@ -371,8 +371,8 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
         } else {
           // Check if it's a 404 or "no hospitals found" error
           final is404Error =
-              response.message?.contains('No hospitals found') == true ||
-              response.message?.contains('within the specified radius') ==
+              response.message.contains('No hospitals found') == true ||
+              response.message.contains('within the specified radius') ==
                   true ||
               (response.meta != null && response.meta['statusCode'] == 404);
 
@@ -513,8 +513,8 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
       } else {
         // Check if it's a 404 or "no hospitals found" error
         final is404Error =
-            response.message?.contains('No hospitals found') == true ||
-            response.message?.contains('within the specified radius') == true ||
+            response.message.contains('No hospitals found') == true ||
+            response.message.contains('within the specified radius') == true ||
             (response.meta != null && response.meta['statusCode'] == 404);
 
         if (is404Error) {
@@ -1637,12 +1637,6 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
     );
   }
 
-  bool _isValidImageUrl(String url) {
-    if (url.startsWith('file://') || url.startsWith('/hospitals/')) {
-      return false;
-    }
-    return url.startsWith('http://') || url.startsWith('https://');
-  }
 
   Widget _buildImagePlaceholder() {
     return Container(

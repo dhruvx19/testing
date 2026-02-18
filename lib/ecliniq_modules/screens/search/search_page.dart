@@ -13,7 +13,6 @@ import 'package:ecliniq/ecliniq_modules/screens/search_specialities/speciality_d
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/error_snackbar.dart';
-import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/action_snackbar.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
 import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 import 'package:flutter/material.dart';
@@ -94,11 +93,6 @@ class _SearchPageState extends State<SearchPage> {
   List<String> _filteredSpecialities = [];
   List<String> _filteredSymptoms = [];
 
-  final List<String> _randomSuggestions = [
-    'Cardiologist',
-    'Dermatologist',
-    'Orthopedic',
-  ];
 
   @override
   void initState() {
@@ -1832,106 +1826,6 @@ class MostSearchedSpecialities extends StatelessWidget {
     );
   }
 
-  Widget _buildShimmerLoading() {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        ShimmerLoading(
-          width: 120,
-          height: 20,
-          borderRadius: BorderRadius.circular(4),
-        ),
-        const SizedBox(height: 12),
 
-        ...List.generate(3, (index) => _buildDoctorCardShimmer()),
-        const SizedBox(height: 24),
 
-        ShimmerLoading(
-          width: 120,
-          height: 20,
-          borderRadius: BorderRadius.circular(4),
-        ),
-        const SizedBox(height: 12),
-
-        ...List.generate(2, (index) => _buildHospitalCardShimmer()),
-      ],
-    );
-  }
-
-  Widget _buildDoctorCardShimmer() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      color: Colors.white,
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 6),
-        leading: ShimmerLoading(
-          width: 60,
-          height: 60,
-          borderRadius: BorderRadius.circular(30),
-        ),
-        title: ShimmerLoading(
-          width: 200,
-          height: 20,
-          borderRadius: BorderRadius.circular(4),
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 8),
-          child: ShimmerLoading(
-            width: 150,
-            height: 16,
-            borderRadius: BorderRadius.circular(4),
-          ),
-        ),
-        trailing: ShimmerLoading(
-          width: 24,
-          height: 24,
-          borderRadius: BorderRadius.circular(4),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHospitalCardShimmer() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      color: Colors.white,
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 6),
-        leading: ShimmerLoading(
-          width: 60,
-          height: 60,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        title: ShimmerLoading(
-          width: 200,
-          height: 20,
-          borderRadius: BorderRadius.circular(4),
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ShimmerLoading(
-                width: 150,
-                height: 16,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              const SizedBox(height: 4),
-              ShimmerLoading(
-                width: 100,
-                height: 14,
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ],
-          ),
-        ),
-        trailing: ShimmerLoading(
-          width: 24,
-          height: 24,
-          borderRadius: BorderRadius.circular(4),
-        ),
-      ),
-    );
-  }
 }

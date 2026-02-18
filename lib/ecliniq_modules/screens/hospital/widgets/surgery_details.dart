@@ -1,4 +1,3 @@
-import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_utils/horizontal_divider.dart';
 import 'package:flutter/material.dart';

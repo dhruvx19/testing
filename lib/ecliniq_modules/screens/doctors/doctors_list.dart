@@ -4,24 +4,17 @@ import 'package:ecliniq/ecliniq_api/models/doctor.dart';
 import 'package:ecliniq/ecliniq_modules/screens/booking/clinic_visit_slot_screen.dart';
 import 'package:ecliniq/ecliniq_modules/screens/doctor_details/doctor_details.dart';
 import 'package:ecliniq/ecliniq_modules/screens/doctors/widgets/doctor_filter_bottom_sheet.dart';
-import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
-import 'package:ecliniq/ecliniq_ui/lib/widgets/button/button.dart';
 import 'package:ecliniq/ecliniq_ui/scripts/ecliniq_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
-import 'package:ecliniq/ecliniq_modules/screens/doctor_details/widgets/doctor_hospital_select_bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_api/top_doctor_model.dart'
     show LocationData, LocationType;
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart'
     as ecliniq_sheet;
 import 'package:ecliniq/ecliniq_utils/bottom_sheets/sort_by_filter_bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
-import 'package:ecliniq/ecliniq_core/location/location_storage_service.dart';
-import 'package:provider/provider.dart';
-import 'package:ecliniq/ecliniq_icons/assets/home/provider/doctor_provider.dart'
-    as doctor_provider;
 
 class DoctorsListScreen extends StatefulWidget {
   final FilterDoctorsRequest? initialFilter;

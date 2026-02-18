@@ -177,28 +177,28 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
       mobileLarge: 16.0,
     );
 
-    final photoSize = screenSize.getResponsiveValue(
+    screenSize.getResponsiveValue(
       mobile: 100.0,
       mobileSmall: 90.0,
       mobileMedium: 100.0,
       mobileLarge: 110.0,
     );
 
-    final iconSize = screenSize.getResponsiveValue(
+    screenSize.getResponsiveValue(
       mobile: 32.0,
       mobileSmall: 28.0,
       mobileMedium: 32.0,
       mobileLarge: 36.0,
     );
 
-    final titlePadding = screenSize.getResponsiveValue(
+    screenSize.getResponsiveValue(
       mobile: 20.0,
       mobileSmall: 16.0,
       mobileMedium: 20.0,
       mobileLarge: 24.0,
     );
 
-    final verticalSpacing = screenSize.getResponsiveValue(
+    screenSize.getResponsiveValue(
       mobile: 24.0,
       mobileSmall: 20.0,
       mobileMedium: 24.0,

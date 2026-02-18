@@ -22,10 +22,7 @@ class UserInfoSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = ResponsiveHelper.getScreenSize(context);
-    final colors = Theme.of(context).brightness == Brightness.light
-        ? EcliniqColors.light
-        : EcliniqColors.dark;
+    ResponsiveHelper.getScreenSize(context);
 
     return Column(
      

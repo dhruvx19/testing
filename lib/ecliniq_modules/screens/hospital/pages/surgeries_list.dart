@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer' as developer;
 
 import 'package:ecliniq/ecliniq_modules/screens/hospital/widgets/surgery_details.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';

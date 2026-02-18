@@ -268,7 +268,7 @@ class TransactionItem extends StatelessWidget {
       'Dec',
     ];
     final month = months[date.month - 1];
-    final hour = date.hour.toString().padLeft(2, '0');
+    date.hour.toString().padLeft(2, '0');
     final minute = date.minute.toString().padLeft(2, '0');
     final period = date.hour >= 12 ? 'PM' : 'AM';
     final displayHour = date.hour > 12

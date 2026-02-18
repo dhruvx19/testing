@@ -35,7 +35,6 @@ class _VerifyExistingEmailState extends State<VerifyExistingEmail> {
   final TextEditingController _otpController = TextEditingController();
   final AuthService _authService = AuthService();
 
-  bool _isSendingOTP = false;
   bool _isLoading = false;
   bool _isButtonPressed = false;
   bool _isVerifying = false;
@@ -107,7 +106,6 @@ class _VerifyExistingEmailState extends State<VerifyExistingEmail> {
     if (!mounted) return;
 
     setState(() {
-      _isSendingOTP = true;
       _errorMessage = null;
     });
 
@@ -135,20 +133,17 @@ class _VerifyExistingEmailState extends State<VerifyExistingEmail> {
           if (widget.preloadedEmail == null) {
             _contact = result['contact'];
           }
-          _isSendingOTP = false;
         });
         _startTimer();
       } else {
         setState(() {
           _errorMessage = result['message'] ?? 'Failed to send OTP';
-          _isSendingOTP = false;
         });
       }
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _errorMessage = 'An error occurred: $e';
-        _isSendingOTP = false;
       });
     }
   }

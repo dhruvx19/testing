@@ -4,7 +4,6 @@ import 'package:ecliniq/ecliniq_modules/screens/auth/splash_screen.dart';
 import 'package:ecliniq/ecliniq_modules/screens/health_files/providers/health_files_provider.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/provider/doctor_provider.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/provider/hospital_provider.dart';
-import 'package:ecliniq/ecliniq_modules/screens/login/login.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/add_dependent/provider/dependent_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/provider/eta_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/notifications/provider/notification_provider.dart';
@@ -19,21 +18,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  
   try {
     await Firebase.initializeApp();
-  } catch (e) {
-    
-    
-  }
+  } catch (e) {}
 
   final authProvider = AuthProvider();
-  
+
   final futures = [
     authProvider.initialize(),
     SharedPreferences.getInstance(),
     EcliniqPushNotifications.init(),
-    AppointmentLockScreenNotification.init(), 
+    AppointmentLockScreenNotification.init(),
   ];
   await Future.wait(futures);
   EcliniqPushNotifications.setNotificationListeners();
@@ -58,39 +53,6 @@ void main() async {
   );
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -110,7 +72,6 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
         final mediaQueryData = MediaQuery.of(context);
-        
         return MediaQuery(
           data: mediaQueryData.copyWith(
             textScaler: const TextScaler.linear(1.0),

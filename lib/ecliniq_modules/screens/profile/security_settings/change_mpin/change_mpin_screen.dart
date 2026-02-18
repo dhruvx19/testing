@@ -31,7 +31,6 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
   final TextEditingController _otpController = TextEditingController();
 
   bool _isLoading = false;
-  bool _isSendingOTP = false;
   bool _isVerifying = false;
   bool _isButtonPressed = false;
   String? _errorMessage;
@@ -158,7 +157,6 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
 
     if (!mounted) return;
     setState(() {
-      _isSendingOTP = true;
       _errorMessage = null;
     });
 
@@ -172,7 +170,6 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
       if (success) {
         if (!mounted) return;
         setState(() {
-          _isSendingOTP = false;
         });
         if (mounted) {
           _startTimer();
@@ -180,7 +177,6 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
       } else {
         if (!mounted) return;
         setState(() {
-          _isSendingOTP = false;
         });
 
         
@@ -196,7 +192,6 @@ class _ChangeMPINScreenState extends State<ChangeMPINScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _isSendingOTP = false;
       });
 
       

@@ -1528,41 +1528,6 @@ class _HospitalDoctorsScreenState extends State<HospitalDoctorsScreen> {
     );
   }
 
-  Widget _buildShimmerSearchBar() {
-    return Container(
-      margin: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
-        context,
-        horizontal: 16.0,
-        vertical: 8.0,
-      ),
-      height: EcliniqTextStyles.getResponsiveHeight(context, 52.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(
-          EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Shimmer.fromColors(
-        baseColor: Colors.grey.shade300,
-        highlightColor: Colors.grey.shade100,
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(
-              EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildShimmerDoctorList() {
     return ListView.builder(

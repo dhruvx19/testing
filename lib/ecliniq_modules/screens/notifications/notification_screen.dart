@@ -1,9 +1,6 @@
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
-import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/cancelled.dart';
-import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/completed.dart';
 import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/confirmed.dart';
-import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/requested.dart';
 import 'package:ecliniq/ecliniq_modules/screens/notifications/models/notification_model.dart';
 import 'package:ecliniq/ecliniq_modules/screens/notifications/provider/notification_provider.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';

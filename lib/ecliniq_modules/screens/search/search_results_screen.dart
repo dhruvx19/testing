@@ -1,6 +1,5 @@
 import 'dart:developer' as developer;
 import 'package:ecliniq/ecliniq_api/search_service.dart';
-import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';

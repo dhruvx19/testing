@@ -52,7 +52,7 @@ class _RescheduleBottomSheetState extends State<RescheduleBottomSheet> {
                     onTap: () {
                       
                       final isAlreadyRescheduled =
-                          widget.appointment.isRescheduled ?? false;
+                          widget.appointment.isRescheduled;
                       if (isAlreadyRescheduled) {
                         Navigator.pop(context, false);
                 

@@ -15,7 +15,6 @@ import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/error_snackbar.dart';
-import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
@@ -41,7 +40,6 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
   String? _errorMessage;
   String? _currentTokenNumber;
   String? _expectedTime;
-  bool _isLoadingETA = false;
   final _appointmentService = AppointmentService();
   Timer? _etaTimer;
 
@@ -127,14 +125,12 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
     if (!mounted) return;
     try {
       setState(() {
-        _isLoadingETA = true;
       });
 
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final authToken = authProvider.authToken;
       if (authToken == null) {
         setState(() {
-          _isLoadingETA = false;
         });
         return;
       }
@@ -170,25 +166,21 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
             if (formattedEta != null) {
               _expectedTime = formattedEta;
             }
-            _isLoadingETA = false;
           });
         } else {
           setState(() {
             if (tokenNo != null) {
               _currentTokenNumber = tokenNo.toString();
             }
-            _isLoadingETA = false;
           });
         }
       } else {
         setState(() {
-          _isLoadingETA = false;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _isLoadingETA = false;
         });
       }
     }

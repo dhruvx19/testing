@@ -398,29 +398,6 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
       }
     }
 
-    Future<void> onPressedLogout() async {
-      if (!mounted) return;
-
-      try {
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-
-        
-        final success = await authProvider.logout();
-
-        if (success && mounted) {
-          
-          EcliniqRouter.pushAndRemoveUntil(const LoginPage(), (route) => false);
-        } else if (mounted) {
-          
-          EcliniqRouter.pushAndRemoveUntil(const LoginPage(), (route) => false);
-        }
-      } catch (e) {
-        
-        if (mounted) {
-          EcliniqRouter.pushAndRemoveUntil(const LoginPage(), (route) => false);
-        }
-      }
-    }
 
     return WillPopScope(
       onWillPop: () async {

@@ -138,7 +138,6 @@ class FavouriteDoctor {
     
     final availability = json['availability'] as Map<String, dynamic>?;
     final availableTokens = availability?['availableTokens'] ?? 0;
-    final totalTokens = availability?['totalTokens'] ?? 0;
     final availabilityMessage = availability?['message'] ?? 'Not available';
     final startTime = availability?['startTime'] ?? '';
     

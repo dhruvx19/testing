@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:ecliniq/ecliniq_api/src/api_client.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:ecliniq/ecliniq_api/notification_service.dart';
 import 'package:ecliniq/ecliniq_core/auth/session_service.dart';

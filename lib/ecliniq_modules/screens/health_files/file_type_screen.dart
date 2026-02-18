@@ -870,36 +870,6 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
     }
   }
 
-  Future<void> _shareFile(HealthFile healthFile) async {
-    try {
-      final file = File(healthFile.filePath);
-      if (!await file.exists()) {
-        if (!mounted) return;
-        SnackBarHelper.showErrorSnackBar(
-          context,
-          'File not found',
-          duration: const Duration(seconds: 2),
-        );
-        return;
-      }
-
-      if (!mounted) return;
-
-      SnackBarHelper.showSnackBar(
-        context,
-        'File saved to app Downloads folder. Share functionality coming soon.',
-        backgroundColor: Colors.blue,
-        duration: const Duration(seconds: 3),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      SnackBarHelper.showErrorSnackBar(
-        context,
-        'Failed to process file: ${e.toString()}',
-        duration: const Duration(seconds: 2),
-      );
-    }
-  }
 
   void _showFilterBottomSheet() {
     EcliniqBottomSheet.show<Map<String, dynamic>>(
@@ -937,7 +907,6 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
   }
 
   void _showFileActions(HealthFile file) {
-    final savedContext = context;
 
     EcliniqBottomSheet.show(
       context: context,
