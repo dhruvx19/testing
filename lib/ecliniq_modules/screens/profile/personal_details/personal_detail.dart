@@ -8,7 +8,6 @@ import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:ecliniq/ecliniq_core/auth/secure_storage.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
-import 'package:ecliniq/ecliniq_modules/screens/details/widgets/add_profile_sheet.dart';
 import 'package:ecliniq/ecliniq_modules/screens/details/widgets/date_picker_sheet.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/personal_details/provider/personal_details_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/security_settings/security_settings.dart';
@@ -17,6 +16,7 @@ import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/error_snackbar.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/success_snackbar.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
@@ -88,6 +88,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
   String? _profilePhotoKey;
   String? _profilePhotoUrl;
   File? _selectedProfilePhoto;
+  bool _photoDeleted = false;
 
   // Section expansion states
   bool _isPersonalDetailsExpanded = true;
@@ -340,6 +341,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
         _heightController.text = d.height != null ? d.height.toString() : '';
         _weightController.text = d.weight != null ? d.weight.toString() : '';
         _dob = d.dob;
+        _photoDeleted = false;
 
         final firstName = d.user?.firstName ?? '';
         final lastName = d.user?.lastName ?? '';
@@ -454,7 +456,9 @@ class _PersonalDetailsState extends State<PersonalDetails> {
         if (resp.self != null) allMembers.add(resp.self!);
         allMembers.addAll(resp.dependents);
 
-        final dep = allMembers.where((d) => d.id == widget.dependentId).firstOrNull;
+        final dep = allMembers
+            .where((d) => d.id == widget.dependentId)
+            .firstOrNull;
         if (dep != null) {
           _firstNameController.text = dep.firstName;
           _lastNameController.text = dep.lastName;
@@ -469,6 +473,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
           _profilePhotoKey = dep.profilePhoto;
           _profilePhotoUrl = null;
           _selectedProfilePhoto = null;
+          _photoDeleted = false;
           if (dep.profilePhoto != null && dep.profilePhoto!.isNotEmpty) {
             await _resolveImageUrl(dep.profilePhoto!, token: token);
           }
@@ -505,10 +510,23 @@ class _PersonalDetailsState extends State<PersonalDetails> {
   }
 
   Future<void> _selectProfilePhoto() async {
+    final bool hasPhoto =
+        _selectedProfilePhoto != null ||
+        (_profilePhotoUrl != null && _profilePhotoUrl!.isNotEmpty);
+
     final String? action = await EcliniqBottomSheet.show<String>(
       context: context,
-      child: const ProfilePhotoSelector(),
+      child: ProfilePhotoSelector(hasPhoto: hasPhoto),
     );
+
+    if (action == 'delete_photo') {
+      setState(() {
+        _selectedProfilePhoto = null;
+        _profilePhotoUrl = null;
+        _photoDeleted = true;
+      });
+      return;
+    }
 
     if (action != null) {
       final ImagePicker picker = ImagePicker();
@@ -534,6 +552,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
           setState(() {
             _selectedProfilePhoto = File(pickedFile!.path);
             _profilePhotoUrl = null;
+            _photoDeleted = false;
           });
         }
       } catch (e) {
@@ -654,6 +673,9 @@ class _PersonalDetailsState extends State<PersonalDetails> {
         final key = await auth.uploadProfileImage(_selectedProfilePhoto!);
         if (key == null) throw Exception('Failed to upload profile photo');
         photoKey = key;
+      } else if (_photoDeleted) {
+        // Send empty string to signal the backend to clear the profile photo
+        photoKey = '';
       }
 
       final firstName = _firstNameController.text.trim();
@@ -729,7 +751,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
           _selectedProfilePhoto = null;
           _isSaving = false;
         });
-        
+
         // Refresh data after successful update
         if (widget.isSelf) {
           await _fetchPatientDetails();
@@ -780,7 +802,10 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                   width: EcliniqTextStyles.getResponsiveIconSize(context, 32),
                   height: EcliniqTextStyles.getResponsiveIconSize(context, 32),
                 ),
-                onPressed: () => Navigator.pop(context, true), // Return true to indicate data may have changed
+                onPressed: () => Navigator.pop(
+                  context,
+                  true,
+                ), // Return true to indicate data may have changed
               ),
               title: Align(
                 alignment: Alignment.centerLeft,
@@ -829,594 +854,769 @@ class _PersonalDetailsState extends State<PersonalDetails> {
             body: _isLoading
                 ? _buildShimmerLoading()
                 : _errorMessage != null
-                    ? Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.error_outline,
-                                size: EcliniqTextStyles.getResponsiveIconSize(context, 64),
-                                color: Colors.red,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                _errorMessage!,
-                                style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
-                                  color: Colors.red,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 24),
-                              ElevatedButton(
-                                onPressed: widget.isSelf ? _fetchPatientDetails : _fetchDependentDetails,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Color(0xff2372EC),
-                                ),
-                                child: Text(
-                                  'Retry',
-                                  style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ],
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            size: EcliniqTextStyles.getResponsiveIconSize(
+                              context,
+                              64,
+                            ),
+                            color: Colors.red,
                           ),
-                        ),
-                      )
-                    : Column(
-              children: [
-                // Scrollable content
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
-                      context,
-                      horizontal: 16,
-                      vertical: 12,
+                          const SizedBox(height: 16),
+                          Text(
+                            _errorMessage!,
+                            style: EcliniqTextStyles.responsiveHeadlineMedium(
+                              context,
+                            ).copyWith(color: Colors.red),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 24),
+                          ElevatedButton(
+                            onPressed: widget.isSelf
+                                ? _fetchPatientDetails
+                                : _fetchDependentDetails,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xff2372EC),
+                            ),
+                            child: Text(
+                              'Retry',
+                              style: EcliniqTextStyles.responsiveHeadlineMedium(
+                                context,
+                              ).copyWith(color: Colors.white),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Column(
-                          children: [
-                            Stack(
-                              children: [
-                                Container(
-                                  height: EcliniqTextStyles.getResponsiveHeight(
-                                    context,
-                                    150,
-                                  ),
-                                  width: EcliniqTextStyles.getResponsiveWidth(
-                                    context,
-                                    150,
-                                  ),
-                                  padding:
-                                      EcliniqTextStyles.getResponsiveEdgeInsetsAll(
-                                        context,
-                                        16,
+                  )
+                : Column(
+                    children: [
+                      // Scrollable content
+                      Expanded(
+                        child: SingleChildScrollView(
+                          padding:
+                              EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                                context,
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.max,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Column(
+                                children: [
+                                  Stack(
+                                    children: [
+                                      Container(
+                                        height:
+                                            EcliniqTextStyles.getResponsiveHeight(
+                                              context,
+                                              150,
+                                            ),
+                                        width:
+                                            EcliniqTextStyles.getResponsiveWidth(
+                                              context,
+                                              150,
+                                            ),
+                                        padding:
+                                            EcliniqTextStyles.getResponsiveEdgeInsetsAll(
+                                              context,
+                                              16,
+                                            ),
+                                        child: Container(
+                                          width:
+                                              EcliniqTextStyles.getResponsiveWidth(
+                                                context,
+                                                50,
+                                              ),
+                                          height:
+                                              EcliniqTextStyles.getResponsiveHeight(
+                                                context,
+                                                50,
+                                              ),
+                                          decoration: BoxDecoration(
+                                            color: Color(0xffF2F7FF),
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: Color(0xff96BFFF),
+                                              width: 1.5,
+                                            ),
+                                            image: _selectedProfilePhoto != null
+                                                ? DecorationImage(
+                                                    fit: BoxFit.cover,
+                                                    image: FileImage(
+                                                      _selectedProfilePhoto!,
+                                                    ),
+                                                  )
+                                                : null,
+                                          ),
+                                          child: _selectedProfilePhoto != null
+                                              ? null
+                                              : (_profilePhotoUrl != null &&
+                                                    _profilePhotoUrl!
+                                                        .isNotEmpty)
+                                              ? ClipOval(
+                                                  child: Image.network(
+                                                    _profilePhotoUrl!,
+                                                    fit: BoxFit.cover,
+                                                    width: double.infinity,
+                                                    height: double.infinity,
+                                                    errorBuilder:
+                                                        (
+                                                          context,
+                                                          error,
+                                                          stackTrace,
+                                                        ) {
+                                                          return SvgPicture.asset(
+                                                            'lib/ecliniq_icons/assets/Group.svg',
+                                                            fit: BoxFit.contain,
+                                                          );
+                                                        },
+                                                  ),
+                                                )
+                                              : ClipOval(
+                                                  child: SvgPicture.asset(
+                                                    'lib/ecliniq_icons/assets/Group.svg',
+                                                    fit: BoxFit.contain,
+                                                  ),
+                                                ),
+                                        ),
                                       ),
-                                  child: Container(
-                                    width: EcliniqTextStyles.getResponsiveWidth(
-                                      context,
-                                      50,
-                                    ),
+                                      Positioned(
+                                        bottom: 25,
+                                        right: -2,
+                                        child: GestureDetector(
+                                          onTap: _selectProfilePhoto,
+                                          child: Container(
+                                            width:
+                                                EcliniqTextStyles.getResponsiveIconSize(
+                                                  context,
+                                                  48,
+                                                ),
+                                            height:
+                                                EcliniqTextStyles.getResponsiveIconSize(
+                                                  context,
+                                                  48,
+                                                ),
+                                            decoration: BoxDecoration(
+                                              color: Color(0xff2372EC),
+                                              borderRadius:
+                                                  BorderRadius.circular(25),
+                                              border: Border.all(
+                                                color: Colors.white,
+                                                width: 2,
+                                              ),
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(6),
+                                              child: SvgPicture.asset(
+                                                'lib/ecliniq_icons/assets/Refresh.svg',
+                                                width:
+                                                    EcliniqTextStyles.getResponsiveIconSize(
+                                                      context,
+                                                      32,
+                                                    ),
+                                                height:
+                                                    EcliniqTextStyles.getResponsiveIconSize(
+                                                      context,
+                                                      32,
+                                                    ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                  SizedBox(
                                     height:
                                         EcliniqTextStyles.getResponsiveHeight(
                                           context,
-                                          50,
+                                          24,
                                         ),
-                                    decoration: BoxDecoration(
-                                      color: Color(0xffF2F7FF),
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Color(0xff96BFFF),
-                                        width: 1.5,
+                                  ),
+                                ],
+                              ),
+
+                              // Personal Details Section
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _isPersonalDetailsExpanded =
+                                        !_isPersonalDetailsExpanded;
+                                  });
+                                },
+                                child: Container(
+                                  color: Colors.white,
+                                  padding:
+                                      EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                                        context,
+                                        vertical: 0,
+                                        horizontal: 6,
                                       ),
-                                      image: _selectedProfilePhoto != null
-                                          ? DecorationImage(
-                                              fit: BoxFit.cover,
-                                              image: FileImage(
-                                                _selectedProfilePhoto!,
-                                              ),
-                                            )
-                                          : null,
-                                    ),
-                                    child: _selectedProfilePhoto != null
-                                        ? null
-                                        : (_profilePhotoUrl != null &&
-                                              _profilePhotoUrl!.isNotEmpty)
-                                        ? ClipOval(
-                                            child: Image.network(
-                                              _profilePhotoUrl!,
-                                              fit: BoxFit.cover,
-                                              width: double.infinity,
-                                              height: double.infinity,
-                                              errorBuilder:
-                                                  (context, error, stackTrace) {
-                                                    return SvgPicture.asset(
-                                                      'lib/ecliniq_icons/assets/Group.svg',
-                                                      fit: BoxFit.contain,
-                                                    );
-                                                  },
-                                            ),
-                                          )
-                                        : ClipOval(
-                                            child: SvgPicture.asset(
-                                              'lib/ecliniq_icons/assets/Group.svg',
-                                              fit: BoxFit.contain,
-                                            ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                            'Personal Details',
+                                            style:
+                                                EcliniqTextStyles.responsiveHeadlineMedium(
+                                                  context,
+                                                ).copyWith(
+                                                  color: Color(0xff424242),
+                                                ),
                                           ),
+                                          Text(
+                                            ' •',
+                                            style:
+                                                EcliniqTextStyles.responsiveHeadlineLarge(
+                                                  context,
+                                                ).copyWith(
+                                                  color: Color(0xffD92D20),
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                      Icon(
+                                        _isPersonalDetailsExpanded
+                                            ? Icons.keyboard_arrow_up
+                                            : Icons.keyboard_arrow_down,
+                                        color: Color(0xff626060),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                Positioned(
-                                  bottom: 25,
-                                  right: -2,
-                                  child: GestureDetector(
-                                    onTap: _selectProfilePhoto,
-                                    child: Container(
-                                      width:
-                                          EcliniqTextStyles.getResponsiveIconSize(
-                                            context,
-                                            48,
-                                          ),
-                                      height:
-                                          EcliniqTextStyles.getResponsiveIconSize(
-                                            context,
-                                            48,
-                                          ),
-                                      decoration: BoxDecoration(
-                                        color: Color(0xff2372EC),
-                                        borderRadius: BorderRadius.circular(25),
-                                        border: Border.all(
-                                          color: Colors.white,
-                                          width: 2,
-                                        ),
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(6),
-                                        child: SvgPicture.asset(
-                                          'lib/ecliniq_icons/assets/Refresh.svg',
-                                          width:
-                                              EcliniqTextStyles.getResponsiveIconSize(
-                                                context,
-                                                32,
+                              ),
+
+                              if (_isPersonalDetailsExpanded) ...[
+                                _buildTextField(
+                                  label: 'First Name',
+                                  isRequired: true,
+                                  hint: 'Enter First Name',
+                                  controller: _firstNameController,
+                                  onChanged: (_) {},
+                                ),
+                                Divider(
+                                  color: Color(0xffD6D6D6),
+                                  thickness: 1,
+                                  height: 0.5,
+                                ),
+                                _buildTextField(
+                                  label: 'Last Name',
+                                  isRequired: true,
+                                  hint: 'Enter Last Name',
+                                  controller: _lastNameController,
+                                  onChanged: (_) {},
+                                ),
+                                Divider(
+                                  color: Color(0xffD6D6D6),
+                                  thickness: 1,
+                                  height: 0.5,
+                                ),
+                                _buildSelectField(
+                                  label: 'Gender',
+                                  isRequired: true,
+                                  hint: 'Select Gender',
+                                  value: _genderController.text.isNotEmpty
+                                      ? _genderController.text
+                                      : null,
+                                  onTap: () async {
+                                    // Set current gender in provider before opening sheet
+                                    final dependentProvider =
+                                        Provider.of<AddDependentProvider>(
+                                          context,
+                                          listen: false,
+                                        );
+                                    if (_genderController.text.isNotEmpty) {
+                                      dependentProvider.selectGender(
+                                        _genderController.text,
+                                      );
+                                    }
+
+                                    final selected =
+                                        await EcliniqBottomSheet.show<String>(
+                                          context: context,
+                                          child: const GenderSelectionSheet(),
+                                        );
+                                    if (selected != null && mounted) {
+                                      setState(() {
+                                        _genderController.text = selected;
+                                      });
+                                    }
+                                  },
+                                ),
+                                Divider(
+                                  color: Color(0xffD6D6D6),
+                                  thickness: 1,
+                                  height: 0.5,
+                                ),
+                                _buildSelectField(
+                                  label: 'Date of Birth',
+                                  isRequired: true,
+                                  hint: 'Select Date',
+                                  value: _dob != null
+                                      ? '${_dob!.day.toString().padLeft(2, '0')}/${_dob!.month.toString().padLeft(2, '0')}/${_dob!.year}'
+                                      : null,
+                                  onTap: () async {
+                                    final picked =
+                                        await EcliniqDatePicker.showDatePicker(
+                                          context: context,
+                                          initialDateTime:
+                                              _dob ??
+                                              DateTime.now().subtract(
+                                                const Duration(days: 365 * 25),
                                               ),
-                                          height:
-                                              EcliniqTextStyles.getResponsiveIconSize(
-                                                context,
-                                                32,
-                                              ),
-                                        ),
-                                      ),
-                                    ),
+                                          minimumDateTime: DateTime(1900),
+                                          maximumDateTime: DateTime.now(),
+                                        );
+                                    if (picked != null) {
+                                      setState(() {
+                                        _dob = picked;
+                                      });
+                                    }
+                                  },
+                                ),
+                                Divider(
+                                  color: Color(0xffD6D6D6),
+                                  thickness: 1,
+                                  height: 0.5,
+                                ),
+                                if (!widget.isSelf) ...[
+                                  _buildSelectField(
+                                    label: 'Relation',
+                                    isRequired: true,
+                                    hint: 'Select Relation',
+                                    value: _relationController.text.isNotEmpty
+                                        ? _relationController.text
+                                        : null,
+                                    onTap: () async {
+                                      // Set current relation in provider before opening sheet
+                                      final dependentProvider =
+                                          Provider.of<AddDependentProvider>(
+                                            context,
+                                            listen: false,
+                                          );
+                                      if (_relationController.text.isNotEmpty) {
+                                        dependentProvider.selectRelation(
+                                          _relationController.text,
+                                        );
+                                      }
+
+                                      final selected =
+                                          await EcliniqBottomSheet.show<String>(
+                                            context: context,
+                                            child:
+                                                const RelationSelectionSheet(),
+                                          );
+                                      if (selected != null && mounted) {
+                                        setState(() {
+                                          _relationController.text = selected;
+                                        });
+                                      }
+                                    },
                                   ),
+                                  Divider(
+                                    color: Color(0xffD6D6D6),
+                                    thickness: 1,
+                                    height: 0.5,
+                                  ),
+                                ],
+                                if (widget.isSelf)
+                                  _buildSelectField(
+                                    label: 'Contact Number',
+                                    isRequired: true,
+                                    hint: 'Enter Contact Number',
+                                    value:
+                                        _contactNumberController.text.isNotEmpty
+                                        ? _contactNumberController.text
+                                        : null,
+                                    onTap: () async {
+                                      // Navigate to security settings and wait for result
+                                      final result = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              SecuritySettingsOptions(
+                                                patientData: _data,
+                                              ),
+                                        ),
+                                      );
+
+                                      // Reload data if user potentially changed phone/email
+                                      if (result == true && mounted) {
+                                        await _fetchPatientDetails();
+                                      }
+                                    },
+                                  )
+                                else
+                                  _buildTextField(
+                                    label: 'Contact Number',
+                                    isRequired: true,
+                                    hint: 'Enter Contact Number',
+                                    controller: _contactNumberController,
+                                    keyboardType: TextInputType.phone,
+                                    onChanged: (_) {},
+                                  ),
+                                Divider(
+                                  color: Color(0xffD6D6D6),
+                                  thickness: 1,
+                                  height: 0.5,
+                                ),
+                                if (widget.isSelf)
+                                  _buildSelectField(
+                                    label: 'Email',
+                                    isRequired: false,
+                                    hint: 'Enter Email',
+                                    value: _emailController.text.isNotEmpty
+                                        ? _emailController.text
+                                        : null,
+                                    onTap: () async {
+                                      // Navigate to security settings and wait for result
+                                      final result = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              SecuritySettingsOptions(
+                                                patientData: _data,
+                                              ),
+                                        ),
+                                      );
+
+                                      // Reload data if user potentially changed phone/email
+                                      if (result == true && mounted) {
+                                        await _fetchPatientDetails();
+                                      }
+                                    },
+                                  )
+                                else
+                                  _buildTextField(
+                                    label: 'Email',
+                                    isRequired: false,
+                                    hint: 'Enter Email',
+                                    controller: _emailController,
+                                    keyboardType: TextInputType.emailAddress,
+                                    onChanged: (_) {},
+                                  ),
+                                Divider(
+                                  color: Color(0xffD6D6D6),
+                                  thickness: 1,
+                                  height: 0.5,
+                                ),
+                                _buildSelectField(
+                                  label: 'Blood Group',
+                                  isRequired: true,
+                                  hint: 'Select Blood Group',
+                                  value: _bloodGroupController.text.isNotEmpty
+                                      ? _bloodGroupController.text
+                                      : null,
+                                  onTap: () async {
+                                    // Set current blood group in provider before opening sheet
+                                    final dependentProvider =
+                                        Provider.of<AddDependentProvider>(
+                                          context,
+                                          listen: false,
+                                        );
+                                    if (_bloodGroupController.text.isNotEmpty) {
+                                      dependentProvider.selectBloodGroup(
+                                        _bloodGroupController.text,
+                                      );
+                                    }
+
+                                    final selected =
+                                        await EcliniqBottomSheet.show<String>(
+                                          context: context,
+                                          child:
+                                              const BloodGroupSelectionSheet(),
+                                        );
+                                    if (selected != null && mounted) {
+                                      setState(() {
+                                        _bloodGroupController.text = selected;
+                                      });
+                                    }
+                                  },
                                 ),
                               ],
-                            ),
 
-                            SizedBox(
-                              height: EcliniqTextStyles.getResponsiveHeight(
-                                context,
-                                24,
+                              SizedBox(
+                                height: EcliniqTextStyles.getResponsiveHeight(
+                                  context,
+                                  24,
+                                ),
                               ),
+
+                              // Physical Info Section
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _isPhysicalInfoExpanded =
+                                        !_isPhysicalInfoExpanded;
+                                  });
+                                },
+                                child: Container(
+                                  color: Colors.white,
+                                  padding:
+                                      EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                                        context,
+                                        vertical: 0,
+                                        horizontal: 6,
+                                      ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Physical Info',
+                                        style:
+                                            EcliniqTextStyles.responsiveHeadlineMedium(
+                                              context,
+                                            ).copyWith(
+                                              color: Color(0xff424242),
+                                            ),
+                                      ),
+                                      Icon(
+                                        _isPhysicalInfoExpanded
+                                            ? Icons.keyboard_arrow_up
+                                            : Icons.keyboard_arrow_down,
+                                        color: Color(0xff626060),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                              if (_isPhysicalInfoExpanded) ...[
+                                _buildTextField(
+                                  label: 'Height (cm)',
+                                  isRequired: false,
+                                  hint: 'Enter height',
+                                  controller: _heightController,
+                                  keyboardType: TextInputType.number,
+                                  onChanged: (_) {},
+                                ),
+                                Divider(
+                                  color: Color(0xffD6D6D6),
+                                  thickness: 1,
+                                  height: 0.5,
+                                ),
+                                _buildTextField(
+                                  label: 'Weight (Kg)',
+                                  isRequired: false,
+                                  hint: 'Enter weight',
+                                  controller: _weightController,
+                                  keyboardType: TextInputType.number,
+                                  onChanged: (_) {},
+                                ),
+                              ],
+
+                              SizedBox(height: 24),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // Fixed Save Button at bottom
+                      Container(
+                        padding:
+                            EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                              context,
+                              horizontal: 16,
+                              vertical: 24,
+                            ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 8,
+                              offset: Offset(0, -2),
                             ),
                           ],
                         ),
-
-                        // Personal Details Section
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _isPersonalDetailsExpanded =
-                                  !_isPersonalDetailsExpanded;
-                            });
-                          },
-                          child: Container(
-                            color: Colors.white,
-                            padding:
-                                EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
-                                  context,
-                                  vertical: 0,
-                                  horizontal: 6,
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: EcliniqTextStyles.getResponsiveSize(
+                            context,
+                            52,
+                          ),
+                          child: ElevatedButton(
+                            onPressed: (_isLoading || _isSaving) ? null : _save,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xff2372EC),
+                              disabledBackgroundColor: _isSaving
+                                  ? Color(0xff2372EC)
+                                  : EcliniqColors.light.strokeNeutralSubtle
+                                        .withOpacity(0.5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  EcliniqTextStyles.getResponsiveBorderRadius(
+                                    context,
+                                    4,
+                                  ),
                                 ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                      'Personal Details',
+                              ),
+                            ),
+                            child: Center(
+                              child: _isSaving
+                                  ? EcliniqLoader(
+                                      size:
+                                          EcliniqTextStyles.getResponsiveIconSize(
+                                            context,
+                                            24,
+                                          ),
+                                      color: Colors.white,
+                                    )
+                                  : Text(
+                                      'Save',
+                                      textAlign: TextAlign.center,
                                       style:
                                           EcliniqTextStyles.responsiveHeadlineMedium(
                                             context,
-                                          ).copyWith(color: Color(0xff424242)),
+                                          ).copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w500,
+                                          ),
                                     ),
-                                    Text(
-                                      ' •',
-                                      style:
-                                          EcliniqTextStyles.responsiveHeadlineLarge(
-                                            context,
-                                          ).copyWith(color: Color(0xffD92D20)),
-                                    ),
-                                  ],
-                                ),
-                                Icon(
-                                  _isPersonalDetailsExpanded
-                                      ? Icons.keyboard_arrow_up
-                                      : Icons.keyboard_arrow_down,
-                                  color: Color(0xff626060),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        if (_isPersonalDetailsExpanded) ...[
-                          _buildTextField(
-                            label: 'First Name',
-                            isRequired: true,
-                            hint: 'Enter First Name',
-                            controller: _firstNameController,
-                            onChanged: (_) {},
-                          ),
-                          Divider(
-                            color: Color(0xffD6D6D6),
-                            thickness: 1,
-                            height: 0.5,
-                          ),
-                          _buildTextField(
-                            label: 'Last Name',
-                            isRequired: true,
-                            hint: 'Enter Last Name',
-                            controller: _lastNameController,
-                            onChanged: (_) {},
-                          ),
-                          Divider(
-                            color: Color(0xffD6D6D6),
-                            thickness: 1,
-                            height: 0.5,
-                          ),
-                          _buildSelectField(
-                            label: 'Gender',
-                            isRequired: true,
-                            hint: 'Select Gender',
-                            value: _genderController.text.isNotEmpty
-                                ? _genderController.text
-                                : null,
-                            onTap: () async {
-                              // Set current gender in provider before opening sheet
-                              final dependentProvider = Provider.of<AddDependentProvider>(context, listen: false);
-                              if (_genderController.text.isNotEmpty) {
-                                dependentProvider.selectGender(_genderController.text);
-                              }
-
-                              final selected = await EcliniqBottomSheet.show<String>(
-                                context: context,
-                                child: const GenderSelectionSheet(),
-                              );
-                              if (selected != null && mounted) {
-                                setState(() {
-                                  _genderController.text = selected;
-                                });
-                              }
-                            },
-                          ),
-                          Divider(
-                            color: Color(0xffD6D6D6),
-                            thickness: 1,
-                            height: 0.5,
-                          ),
-                          _buildSelectField(
-                            label: 'Date of Birth',
-                            isRequired: true,
-                            hint: 'Select Date',
-                            value: _dob != null
-                                ? '${_dob!.day.toString().padLeft(2, '0')}/${_dob!.month.toString().padLeft(2, '0')}/${_dob!.year}'
-                                : null,
-                            onTap: () async {
-                              final picked =
-                                  await EcliniqDatePicker.showDatePicker(
-                                    context: context,
-                                    initialDateTime:
-                                        _dob ??
-                                        DateTime.now().subtract(
-                                          const Duration(days: 365 * 25),
-                                        ),
-                                    minimumDateTime: DateTime(1900),
-                                    maximumDateTime: DateTime.now(),
-                                  );
-                              if (picked != null) {
-                                setState(() {
-                                  _dob = picked;
-                                });
-                              }
-                            },
-                          ),
-                          Divider(
-                            color: Color(0xffD6D6D6),
-                            thickness: 1,
-                            height: 0.5,
-                          ),
-                          if (!widget.isSelf) ...[
-                            _buildSelectField(
-                              label: 'Relation',
-                              isRequired: true,
-                              hint: 'Select Relation',
-                              value: _relationController.text.isNotEmpty
-                                  ? _relationController.text
-                                  : null,
-                              onTap: () async {
-                                // Set current relation in provider before opening sheet
-                                final dependentProvider = Provider.of<AddDependentProvider>(context, listen: false);
-                                if (_relationController.text.isNotEmpty) {
-                                  dependentProvider.selectRelation(_relationController.text);
-                                }
-
-                                final selected = await EcliniqBottomSheet.show<String>(
-                                  context: context,
-                                  child: const RelationSelectionSheet(),
-                                );
-                                if (selected != null && mounted) {
-                                  setState(() {
-                                    _relationController.text = selected;
-                                  });
-                                }
-                              },
-                            ),
-                            Divider(
-                              color: Color(0xffD6D6D6),
-                              thickness: 1,
-                              height: 0.5,
-                            ),
-                          ],
-                          if (widget.isSelf)
-                            _buildSelectField(
-                              label: 'Contact Number',
-                              isRequired: true,
-                              hint: 'Enter Contact Number',
-                              value: _contactNumberController.text.isNotEmpty
-                                  ? _contactNumberController.text
-                                  : null,
-                              onTap: () async {
-                                // Navigate to security settings and wait for result
-                                final result = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        SecuritySettingsOptions(
-                                          patientData: _data,
-                                        ),
-                                  ),
-                                );
-                                
-                                // Reload data if user potentially changed phone/email
-                                if (result == true && mounted) {
-                                  await _fetchPatientDetails();
-                                }
-                              },
-                            )
-                          else
-                            _buildTextField(
-                              label: 'Contact Number',
-                              isRequired: true,
-                              hint: 'Enter Contact Number',
-                              controller: _contactNumberController,
-                              keyboardType: TextInputType.phone,
-                              onChanged: (_) {},
-                            ),
-                          Divider(
-                            color: Color(0xffD6D6D6),
-                            thickness: 1,
-                            height: 0.5,
-                          ),
-                          if (widget.isSelf)
-                            _buildSelectField(
-                              label: 'Email',
-                              isRequired: false,
-                              hint: 'Enter Email',
-                              value: _emailController.text.isNotEmpty
-                                  ? _emailController.text
-                                  : null,
-                              onTap: () async {
-                                // Navigate to security settings and wait for result
-                                final result = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        SecuritySettingsOptions(
-                                          patientData: _data,
-                                        ),
-                                  ),
-                                );
-                                
-                                // Reload data if user potentially changed phone/email
-                                if (result == true && mounted) {
-                                  await _fetchPatientDetails();
-                                }
-                              },
-                            )
-                          else
-                            _buildTextField(
-                              label: 'Email',
-                              isRequired: false,
-                              hint: 'Enter Email',
-                              controller: _emailController,
-                              keyboardType: TextInputType.emailAddress,
-                              onChanged: (_) {},
-                            ),
-                          Divider(
-                            color: Color(0xffD6D6D6),
-                            thickness: 1,
-                            height: 0.5,
-                          ),
-                          _buildSelectField(
-                            label: 'Blood Group',
-                            isRequired: true,
-                            hint: 'Select Blood Group',
-                            value: _bloodGroupController.text.isNotEmpty
-                                ? _bloodGroupController.text
-                                : null,
-                            onTap: () async {
-                              // Set current blood group in provider before opening sheet
-                              final dependentProvider = Provider.of<AddDependentProvider>(context, listen: false);
-                              if (_bloodGroupController.text.isNotEmpty) {
-                                dependentProvider.selectBloodGroup(_bloodGroupController.text);
-                              }
-
-                              final selected =
-                                  await EcliniqBottomSheet.show<String>(
-                                    context: context,
-                                    child: const BloodGroupSelectionSheet(),
-                                  );
-                              if (selected != null && mounted) {
-                                setState(() {
-                                  _bloodGroupController.text = selected;
-                                });
-                              }
-                            },
-                          ),
-                        ],
-
-                        SizedBox(
-                          height: EcliniqTextStyles.getResponsiveHeight(
-                            context,
-                            24,
-                          ),
-                        ),
-
-                        // Physical Info Section
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _isPhysicalInfoExpanded =
-                                  !_isPhysicalInfoExpanded;
-                            });
-                          },
-                          child: Container(
-                            color: Colors.white,
-                            padding:
-                                EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
-                                  context,
-                                  vertical: 0,
-                                  horizontal: 6,
-                                ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Physical Info',
-                                  style:
-                                      EcliniqTextStyles.responsiveHeadlineMedium(
-                                        context,
-                                      ).copyWith(color: Color(0xff424242)),
-                                ),
-                                Icon(
-                                  _isPhysicalInfoExpanded
-                                      ? Icons.keyboard_arrow_up
-                                      : Icons.keyboard_arrow_down,
-                                  color: Color(0xff626060),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        if (_isPhysicalInfoExpanded) ...[
-                          _buildTextField(
-                            label: 'Height (cm)',
-                            isRequired: false,
-                            hint: 'Enter height',
-                            controller: _heightController,
-                            keyboardType: TextInputType.number,
-                            onChanged: (_) {},
-                          ),
-                          Divider(
-                            color: Color(0xffD6D6D6),
-                            thickness: 1,
-                            height: 0.5,
-                          ),
-                          _buildTextField(
-                            label: 'Weight (Kg)',
-                            isRequired: false,
-                            hint: 'Enter weight',
-                            controller: _weightController,
-                            keyboardType: TextInputType.number,
-                            onChanged: (_) {},
-                          ),
-                        ],
-
-                        SizedBox(height: 24),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // Fixed Save Button at bottom
-                Container(
-                  padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
-                    context,
-                    horizontal: 16,
-                    vertical: 24,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 8,
-                        offset: Offset(0, -2),
-                      ),
-                    ],
-                  ),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: EcliniqTextStyles.getResponsiveSize(context, 52),
-                    child: ElevatedButton(
-                      onPressed: (_isLoading || _isSaving) ? null : _save,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xff2372EC),
-                        disabledBackgroundColor: _isSaving
-                            ? Color(0xff2372EC)
-                            : EcliniqColors
-                                .light
-                                .strokeNeutralSubtle
-                                .withOpacity(0.5),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            EcliniqTextStyles.getResponsiveBorderRadius(
-                              context,
-                              4,
                             ),
                           ),
                         ),
                       ),
-                      child: Center(
-                        child: _isSaving
-                            ? EcliniqLoader(
-                                size: EcliniqTextStyles.getResponsiveIconSize(context, 24),
-                                color: Colors.white,
-                              )
-                            : Text(
-                                'Save',
-                                textAlign: TextAlign.center,
-                                style:
-                                    EcliniqTextStyles.responsiveHeadlineMedium(
-                                      context,
-                                    ).copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                              ),
-                      ),
-                    ),
+                    ],
                   ),
-                ),
-              ],
-            ),
           );
         },
+      ),
+    );
+  }
+}
+
+class ProfilePhotoSelector extends StatelessWidget {
+  const ProfilePhotoSelector({super.key, required this.hasPhoto});
+
+  final bool hasPhoto;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(20),
+          bottom: Radius.circular(16),
+        ),
+      ),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              EcliniqText(
+                hasPhoto ? 'Change Profile Photo' : 'Add Profile Photo',
+                style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                    .copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xff424242),
+                    ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 22),
+
+          _buildPhotoOption(
+            context: context,
+            title: 'Take Photo',
+            onTap: () => Navigator.pop(context, 'take_photo'),
+          ),
+
+          const SizedBox(height: 12),
+
+          _buildPhotoOption(
+            context: context,
+            title: 'Upload Photo',
+            onTap: () => Navigator.pop(context, 'upload_photo'),
+          ),
+
+          if (hasPhoto) ...[
+            const SizedBox(height: 10),
+
+            GestureDetector(
+              onTap: () => Navigator.pop(context, 'delete_photo'),
+              child: Container(
+                width: double.infinity,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: Color(0xFFFFF8F8),
+                  border: Border.all(color: Color(0xffEB8B85), width: 0.5),
+                  borderRadius: BorderRadius.circular(
+                    EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Delete Photo',
+                      style: EcliniqTextStyles.responsiveHeadlineBMedium(
+                        context,
+                      ).copyWith(
+                        color: Color(0xffF04248),
+                        fontWeight: FontWeight.w500,
+                        height: 1.0,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPhotoOption({
+    required BuildContext context,
+
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        height: 52,
+
+        decoration: BoxDecoration(
+          border: Border.all(color: Color(0xff8E8E8E), width: 0.5),
+          borderRadius: BorderRadius.circular(4),
+          color: Colors.white,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              title,
+              style: EcliniqTextStyles.responsiveHeadlineBMedium(
+                context,
+              ).copyWith(fontWeight: FontWeight.w500, color: Color(0xff424242)),
+            ),
+          ],
+        ),
       ),
     );
   }

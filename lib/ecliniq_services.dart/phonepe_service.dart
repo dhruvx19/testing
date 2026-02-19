@@ -7,7 +7,7 @@ class PhonePeService {
   PhonePeService._internal();
 
   bool _isInitialized = false;
-  String _environment = 'SANDBOX';
+  String _environment = 'PRODUCTION';
   String _packageName = 'com.phonepe.simulator';
   String? _merchantId;
 
@@ -29,7 +29,7 @@ class PhonePeService {
     }
 
     try {
-      _environment = isProduction ? 'PRODUCTION' : 'SANDBOX';
+      _environment = 'PRODUCTION';
       _packageName = isProduction ? 'com.phonepe.app' : 'com.phonepe.simulator';
       _merchantId = merchantId;
 
@@ -136,9 +136,9 @@ class PhonePeService {
           errorString.contains('config')) {
         throw PhonePeException(
           'PhonePe SDK configuration error. Please verify:\n'
-          '1. Merchant ID is correct: M237OHQ3YCVAO_2511191950\n'
-          '2. Environment is set to SANDBOX for testing\n'
-          '3. PhonePe Simulator is installed\n\n'
+          '1. Merchant ID is correct\n'
+          '2. Environment is set correctly\n'
+          '3. PhonePe app is installed\n\n'
           'Error: $e',
         );
       }

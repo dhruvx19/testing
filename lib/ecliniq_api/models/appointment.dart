@@ -422,6 +422,61 @@ class AppointmentDetailResponse {
   }
 }
 
+class PaymentDetail {
+  final String? paymentId;
+  final bool isFree;
+  final double totalAmount;
+  final double walletAmount;
+  final double gatewayAmount;
+  final String status;
+
+  PaymentDetail({
+    this.paymentId,
+    required this.isFree,
+    required this.totalAmount,
+    required this.walletAmount,
+    required this.gatewayAmount,
+    required this.status,
+  });
+
+  factory PaymentDetail.fromJson(Map<String, dynamic> json) {
+    toDouble(dynamic value) {
+      if (value == null) return 0.0;
+      if (value is double) return value;
+      if (value is int) return value.toDouble();
+      if (value is String) return double.tryParse(value) ?? 0.0;
+      return 0.0;
+    }
+
+    toBool(dynamic value) {
+      if (value == null) return false;
+      if (value is bool) return value;
+      if (value is String) return value.toLowerCase() == 'true';
+      return false;
+    }
+
+    return PaymentDetail(
+      paymentId: json['paymentId']?.toString(),
+      isFree: toBool(json['isFree']),
+      totalAmount: toDouble(json['totalAmount']),
+      walletAmount: toDouble(json['walletAmount']),
+      gatewayAmount: toDouble(json['gatewayAmount']),
+      status: json['status']?.toString() ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (paymentId != null) 'paymentId': paymentId,
+      'isFree': isFree,
+      'totalAmount': totalAmount,
+      'walletAmount': walletAmount,
+      'gatewayAmount': gatewayAmount,
+      'status': status,
+    };
+  }
+}
+
 class AppointmentDetailData {
   final String appointmentId;
   final String status;
@@ -439,6 +494,7 @@ class AppointmentDetailData {
   final double? consultationFee;
   final double? followUpFee;
   final int? rating;
+  final PaymentDetail? paymentDetail;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -459,6 +515,7 @@ class AppointmentDetailData {
     this.consultationFee,
     this.followUpFee,
     this.rating,
+    this.paymentDetail,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -525,6 +582,9 @@ class AppointmentDetailData {
       consultationFee: toDouble(json['consultationFee']),
       followUpFee: toDouble(json['followUpFee']),
       rating: toInt(json['rating']),
+      paymentDetail: json['payment'] != null
+          ? PaymentDetail.fromJson(json['payment'] as Map<String, dynamic>)
+          : null,
       createdAt: parseDateTime(json['createdAt']),
       updatedAt: parseDateTime(json['updatedAt']),
     );
@@ -548,6 +608,7 @@ class AppointmentDetailData {
       if (consultationFee != null) 'consultationFee': consultationFee,
       if (followUpFee != null) 'followUpFee': followUpFee,
       if (rating != null) 'rating': rating,
+      if (paymentDetail != null) 'payment': paymentDetail!.toJson(),
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };

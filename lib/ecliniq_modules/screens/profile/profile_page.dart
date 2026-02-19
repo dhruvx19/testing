@@ -7,6 +7,7 @@ import 'package:ecliniq/ecliniq_api/patient_service.dart';
 import 'package:ecliniq/ecliniq_api/src/api_client.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:ecliniq/ecliniq_core/auth/secure_storage.dart';
+import 'package:ecliniq/ecliniq_core/notifications/test_notification_widget.dart';
 import 'package:ecliniq/ecliniq_core/router/navigation_helper.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_modules/screens/login/login.dart';
@@ -833,7 +834,9 @@ extension _ProfilePageContent on _ProfilePageState {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.only(left: EcliniqTextStyles.getResponsiveSpacing(context, 5)),
+          padding: EdgeInsets.only(
+            left: EcliniqTextStyles.getResponsiveSpacing(context, 5),
+          ),
           child: Center(
             child: Shimmer.fromColors(
               baseColor: Colors.grey[300]!,
@@ -857,24 +860,43 @@ extension _ProfilePageContent on _ProfilePageState {
               children: List.generate(
                 3,
                 (index) => Padding(
-                  padding: EdgeInsets.only(right: EcliniqTextStyles.getResponsiveSpacing(context, 15)),
+                  padding: EdgeInsets.only(
+                    right: EcliniqTextStyles.getResponsiveSpacing(context, 15),
+                  ),
                   child: Shimmer.fromColors(
                     baseColor: Colors.grey[300]!,
                     highlightColor: Colors.grey[100]!,
                     child: Column(
                       children: [
                         Container(
-                          width: EcliniqTextStyles.getResponsiveSize(context, 52),
-                          height: EcliniqTextStyles.getResponsiveSize(context, 52),
+                          width: EcliniqTextStyles.getResponsiveSize(
+                            context,
+                            52,
+                          ),
+                          height: EcliniqTextStyles.getResponsiveSize(
+                            context,
+                            52,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             shape: BoxShape.circle,
                           ),
                         ),
-                        SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 8)),
+                        SizedBox(
+                          height: EcliniqTextStyles.getResponsiveSpacing(
+                            context,
+                            8,
+                          ),
+                        ),
                         Container(
-                          width: EcliniqTextStyles.getResponsiveWidth(context, 50),
-                          height: EcliniqTextStyles.getResponsiveHeight(context, 16),
+                          width: EcliniqTextStyles.getResponsiveWidth(
+                            context,
+                            50,
+                          ),
+                          height: EcliniqTextStyles.getResponsiveHeight(
+                            context,
+                            16,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(4),
@@ -913,8 +935,11 @@ extension _ProfilePageContent on _ProfilePageState {
     final newVersion = "v1.0.1";
     final dependents = _dependents
         .map(
-          (dep) =>
-              Dependent(id: dep.id, name: dep.fullName, relation: dep.formattedRelation),
+          (dep) => Dependent(
+            id: dep.id,
+            name: dep.fullName,
+            relation: dep.formattedRelation,
+          ),
         )
         .toList();
 
@@ -1081,6 +1106,7 @@ extension _ProfilePageContent on _ProfilePageState {
               },
             ),
           ),
+          
           RepaintBoundary(
             child: Image.asset(
               EcliniqIcons.profileLogo.assetPath,
@@ -1099,6 +1125,8 @@ extension _ProfilePageContent on _ProfilePageState {
               ).copyWith(color: Color(0xffB8B8B8), fontWeight: FontWeight.w400),
             ),
           ),
+
+          TestNotificationWidget(),
         ],
       ),
     );

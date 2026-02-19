@@ -115,8 +115,8 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
         final userId = prefs.getString('user_id') ?? 'user_${DateTime.now().millisecondsSinceEpoch}';
         
         
-        const merchantId = 'M237OHQ3YCVAO_2511191950';
-        const isProduction = false; 
+        const merchantId = 'SU2512271831021904206385';
+        const isProduction = true;
 
         final initialized = await _phonePeService.initialize(
           isProduction: isProduction,

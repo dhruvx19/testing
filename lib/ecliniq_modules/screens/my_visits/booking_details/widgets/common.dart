@@ -199,8 +199,10 @@ class AppointmentDetailModel {
         apiData.consultationFee ?? apiData.doctor.consultationFee ?? 0.0;
     final followUpFee =
         apiData.followUpFee ?? apiData.doctor.followUpFee ?? 0.0;
-    final serviceFee = 0.0;
-    final totalPayable = consultationFee + serviceFee;
+    final paymentDetail = apiData.paymentDetail;
+    final isFree = paymentDetail?.isFree ?? false;
+    final serviceFee = isFree ? 0.0 : (paymentDetail?.totalAmount ?? 0.0);
+    final totalPayable = serviceFee;
 
     final doctorId = apiData.doctor.userId;
     String? hospitalId;
@@ -260,10 +262,11 @@ class AppointmentDetailModel {
         followUpFee: followUpFee,
         serviceFee: serviceFee,
         totalPayable: totalPayable,
-        isServiceFeeWaived: serviceFee == 0,
-        waiverMessage: serviceFee == 0
+        isServiceFeeWaived: isFree,
+        waiverMessage: isFree
             ? 'We care for you and provide a free booking'
             : '',
+        isFree: isFree,
       ),
       rating: apiData.rating,
       doctorId: doctorId,
@@ -624,6 +627,7 @@ class PaymentInfo {
   final double totalPayable;
   final bool isServiceFeeWaived;
   final String waiverMessage;
+  final bool isFree;
 
   PaymentInfo({
     required this.consultationFee,
@@ -632,6 +636,7 @@ class PaymentInfo {
     required this.totalPayable,
     required this.isServiceFeeWaived,
     required this.waiverMessage,
+    this.isFree = false,
   });
 
   factory PaymentInfo.fromJson(Map<String, dynamic> json) {
@@ -644,6 +649,7 @@ class PaymentInfo {
       waiverMessage:
           json['waiver_message'] ??
           'We care for you and provide a free booking',
+      isFree: json['is_free'] ?? false,
     );
   }
 
@@ -655,6 +661,7 @@ class PaymentInfo {
       'total_payable': totalPayable,
       'is_service_fee_waived': isServiceFeeWaived,
       'waiver_message': waiverMessage,
+      'is_free': isFree,
     };
   }
 }
@@ -1669,24 +1676,24 @@ class PaymentDetailsCard extends StatelessWidget {
         _buildPaymentRow(
           context: context,
           'Consultation Fee',
-          0.0,
+          payment.consultationFee,
+          showPayAtClinic: true,
         ),
-        if (payment.serviceFee > 0) ...[
-          const SizedBox(height: 8),
+        const SizedBox(height: 8),
+        if (payment.isFree) ...[
           _buildPaymentRow(
-            'Service Fee & Tax',
-            payment.serviceFee,
             context: context,
+            'Service Fee & Tax',
+            0.0,
+            originalAmount: 40,
+            isFree: true,
+            subtitle: payment.waiverMessage,
           ),
         ] else ...[
-          const SizedBox(height: 8),
           _buildPaymentRow(
             context: context,
             'Service Fee & Tax',
             payment.serviceFee,
-            originalAmount: payment.isServiceFeeWaived ? 40 : null,
-            isFree: payment.isServiceFeeWaived,
-            subtitle: payment.isServiceFeeWaived ? payment.waiverMessage : null,
           ),
         ],
         const SizedBox(height: 8),
@@ -1708,9 +1715,7 @@ class PaymentDetailsCard extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  payment.serviceFee > 0
-                      ? '₹${payment.serviceFee.toStringAsFixed(0)}'
-                      : '₹${payment.totalPayable.toStringAsFixed(0)}',
+                  '₹${payment.totalPayable.toStringAsFixed(0)}',
                   style: EcliniqTextStyles.responsiveHeadlineLarge(context)
                       .copyWith(
                         color: const Color(0xFF424242),
@@ -1730,11 +1735,12 @@ class PaymentDetailsCard extends StatelessWidget {
     double amount, {
     double? originalAmount,
     bool isFree = false,
+    bool showPayAtClinic = false,
     String? subtitle,
     required BuildContext context,
   }) {
     final bool isServiceFee = label.contains('Service Fee');
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1780,12 +1786,12 @@ class PaymentDetailsCard extends StatelessWidget {
                   ),
                 if (originalAmount != null) const SizedBox(width: 8),
                 Text(
-                  subtitle == 'Pay at Clinic'
+                  showPayAtClinic
                       ? 'Pay at Clinic'
                       : isFree
                       ? 'Free'
                       : '₹${amount.toInt()}',
-                  style: (isFree || subtitle == 'Pay at Clinic')
+                  style: (isFree || showPayAtClinic)
                       ? EcliniqTextStyles.responsiveHeadlineMedium(
                           context,
                         ).copyWith(
