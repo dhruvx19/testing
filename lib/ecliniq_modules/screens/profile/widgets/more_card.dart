@@ -1,7 +1,9 @@
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:share_plus/share_plus.dart';
 
 class MoreSettingsMenuWidget extends StatelessWidget {
   final VoidCallback? onReferEarnPressed;
@@ -31,8 +33,48 @@ class MoreSettingsMenuWidget extends StatelessWidget {
     this.supportEmail = 'Support@eclinicq.com',
   });
 
+  void _showCopyFeedback(BuildContext context) {
+    final overlay = Overlay.of(context);
+    late OverlayEntry overlayEntry;
+
+    overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        bottom: 50,
+        left: 20,
+        right: 20,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Text(
+              'Invite URL Copied',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(overlayEntry);
+
+    Future.delayed(const Duration(seconds: 2), () {
+      overlayEntry.remove();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    const String referralLink = "https://upcharq.com/invite/RANDOM123";
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -55,7 +97,13 @@ class MoreSettingsMenuWidget extends StatelessWidget {
             icon: EcliniqIcons.whatsapp.assetPath,
             title: 'Refer & Earn',
             subtitle: 'Invite and Care for Friends and Family',
-            onTap: onReferEarnPressed,
+            onCopy: () {
+              Clipboard.setData(const ClipboardData(text: referralLink));
+              _showCopyFeedback(context);
+            },
+            onShare: () {
+              Share.share('Check out Upchar-Q: $referralLink');
+            },
           ),
 
           _buildDivider(),
@@ -135,19 +183,20 @@ class _ReferEarnMenuItem extends StatelessWidget {
   final String icon;
   final String title;
   final String? subtitle;
-  final VoidCallback? onTap;
+  final VoidCallback? onCopy;
+  final VoidCallback? onShare;
 
   const _ReferEarnMenuItem({
     required this.icon,
     required this.title,
     this.subtitle,
-    this.onTap,
+    this.onCopy,
+    this.onShare,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
+    return Container(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
         child: Row(
@@ -188,25 +237,31 @@ class _ReferEarnMenuItem extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SvgPicture.asset(
-                  EcliniqIcons.copy.assetPath,
-                  width: 24,
-                  height: 24,
-                  colorFilter: ColorFilter.mode(
-                    Color(0xff424242),
-                    BlendMode.srcIn,
+                GestureDetector(
+                  onTap: onCopy,
+                  child: SvgPicture.asset(
+                    EcliniqIcons.copy.assetPath,
+                    width: 24,
+                    height: 24,
+                    colorFilter: const ColorFilter.mode(
+                      Color(0xff424242),
+                      BlendMode.srcIn,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Container(width: 0.5, height: 20, color: Color(0xffD6D6D6)),
                 const SizedBox(width: 8),
-                SvgPicture.asset(
-                  EcliniqIcons.share.assetPath,
-                  width: 24,
-                  height: 24,
-                  colorFilter: ColorFilter.mode(
-                    Color(0xff424242),
-                    BlendMode.srcIn,
+                GestureDetector(
+                  onTap: onShare,
+                  child: SvgPicture.asset(
+                    EcliniqIcons.share.assetPath,
+                    width: 24,
+                    height: 24,
+                    colorFilter: const ColorFilter.mode(
+                      Color(0xff424242),
+                      BlendMode.srcIn,
+                    ),
                   ),
                 ),
               ],

@@ -20,7 +20,9 @@ void main() async {
 
   try {
     await Firebase.initializeApp();
-  } catch (e) {}
+  } catch (e) {
+    debugPrint('Firebase initialization failed: $e');
+  }
 
   final authProvider = AuthProvider();
 
