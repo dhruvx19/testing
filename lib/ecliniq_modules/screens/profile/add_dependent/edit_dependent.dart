@@ -276,10 +276,20 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
   }
 
   void _uploadPhoto(AddDependentProvider provider) async {
+    final bool hasPhoto = provider.selectedProfilePhoto != null ||
+        (provider.photoUrl != null && provider.photoUrl!.isNotEmpty && !provider.photoDeleted);
+
     final String? action = await EcliniqBottomSheet.show<String>(
       context: context,
-      child: const ProfilePhotoSelector(),
+      child: ProfilePhotoSelector(hasPhoto: hasPhoto),
     );
+
+    if (action == 'delete_photo') {
+      provider.setSelectedProfilePhoto(null);
+      provider.setPhotoUrl(null);
+      provider.setPhotoDeleted(true);
+      return;
+    }
 
     if (action != null) {
       final ImagePicker picker = ImagePicker();
@@ -304,6 +314,7 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
 
         if (pickedFile != null && mounted) {
           provider.setSelectedProfilePhoto(File(pickedFile.path));
+          provider.setPhotoDeleted(false);
         }
       } catch (e) {
         if (mounted) {
@@ -591,14 +602,15 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                                         : null,
                                     color:
                                         provider.selectedProfilePhoto == null &&
-                                            provider.photoUrl == null
-                                        ? Primitives.lightBackground
+                                            (provider.photoUrl == null || provider.photoDeleted)
+                                        ? const Color(0xffFFF7ED)
                                         : null,
                                   ),
                                   child: provider.selectedProfilePhoto != null
                                       ? null
-                                      : provider.photoUrl != null &&
-                                            provider.photoUrl!.isNotEmpty
+                                      : (provider.photoUrl != null &&
+                                            provider.photoUrl!.isNotEmpty &&
+                                            !provider.photoDeleted)
                                       ? ClipOval(
                                           child: Image.network(
                                             provider.photoUrl!,
@@ -609,27 +621,28 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                                               return Center(
                                                 child: Text(
                                                   (_latestDependentData
-                                                                  ?.fullName ??
+                                                                  ?.firstName ??
                                                               widget
                                                                   .dependentData
-                                                                  .fullName)
+                                                                  .firstName)
                                                           .isNotEmpty
                                                       ? (_latestDependentData
-                                                                    ?.fullName ??
+                                                                    ?.firstName ??
                                                                 widget
                                                                     .dependentData
-                                                                    .fullName)[0]
+                                                                    .firstName)[0]
                                                             .toUpperCase()
                                                       : 'D',
                                                   style:
                                                       EcliniqTextStyles.responsiveHeadlineXLarge(
                                                         context,
                                                       ).copyWith(
-                                                        color: Color(
-                                                          0xff2372EC,
-                                                        ),
-                                                        fontWeight:
-                                                            FontWeight.w600,
+                                                          color: const Color(
+                                                            0xffEC7600,
+                                                          ),
+                                                          fontWeight:
+                                                              FontWeight.w400,
+                                                          fontSize: EcliniqTextStyles.getResponsiveSize(context, 40),
                                                       ),
                                                 ),
                                               );
@@ -638,25 +651,26 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                                         )
                                       : Center(
                                           child: Text(
-                                            (_latestDependentData?.fullName ??
+                                            (_latestDependentData?.firstName ??
                                                         widget
                                                             .dependentData
-                                                            .fullName)
+                                                            .firstName)
                                                     .isNotEmpty
                                                 ? (_latestDependentData
-                                                              ?.fullName ??
+                                                              ?.firstName ??
                                                           widget
                                                               .dependentData
-                                                              .fullName)[0]
+                                                              .firstName)[0]
                                                       .toUpperCase()
                                                 : 'D',
                                             style:
                                                 EcliniqTextStyles.responsiveHeadlineXLarge(
                                                   context,
-                                                ).copyWith(
-                                                  color: Color(0xff2372EC),
-                                                  fontWeight: FontWeight.w600,
-                                                ),
+                                                  ).copyWith(
+                                                    color: const Color(0xffEC7600),
+                                                    fontWeight: FontWeight.w400,
+                                                    fontSize: EcliniqTextStyles.getResponsiveSize(context, 40),
+                                                  ),
                                           ),
                                         ),
                                 ),

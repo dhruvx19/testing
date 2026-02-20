@@ -44,6 +44,7 @@ class DependentsSection extends StatelessWidget {
                     padding: EdgeInsets.only(right: EcliniqTextStyles.getResponsiveSpacing(context, 15)),
                     child: _DependentCard(
                       label: dep.relation,
+                      name: dep.name,
                       isAdded: true,
                       onTap: () => onDependentTap?.call(dep),
                     ),
@@ -73,11 +74,13 @@ class Dependent {
 
 class _DependentCard extends StatelessWidget {
   final String label;
+  final String? name;
   final bool isAdded;
   final VoidCallback? onTap;
 
   const _DependentCard({
     required this.label,
+    this.name,
     required this.isAdded,
     this.onTap,
   });
@@ -102,7 +105,7 @@ class _DependentCard extends StatelessWidget {
             child: Center(
               child: isAdded
                   ? EcliniqText(
-                      label.substring(0, 1).toUpperCase(),
+                      (name != null && name!.isNotEmpty ? name! : 'D').substring(0, 1).toUpperCase(),
                       style: EcliniqTextStyles.responsiveHeadlineLargeBold(context).copyWith(
                         color: Color(0xffEC7600),
                         fontWeight: FontWeight.w400,

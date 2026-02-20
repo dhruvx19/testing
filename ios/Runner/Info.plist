@@ -59,5 +59,23 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>ppemerchantsdkv1</string>
+		<string>ppemerchantsdkv2</string>
+		<string>ppemerchantsdkv3</string>
+		<string>phonepe</string>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>ecliniq</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

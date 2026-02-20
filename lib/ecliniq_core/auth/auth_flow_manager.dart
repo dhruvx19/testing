@@ -5,30 +5,44 @@ import 'package:ecliniq/ecliniq_core/auth/secure_storage.dart';
 class AuthFlowManager {
   static Future<String> getInitialRoute() async {
     try {
-      final hasValidSession = await SessionService.hasValidSession();
-
-      if (hasValidSession) {
-        final isOnboardingComplete =
-            await SessionService.isOnboardingComplete();
-
-        if (isOnboardingComplete) {
-          SessionService.clearFlowState();
-          return 'login';
-        } else {
-          return 'onboarding';
-        }
-      }
-
       final results = await Future.wait([
-        SessionService.getFlowState(),
+        SessionService.hasValidSession(),
+        SessionService.isOnboardingComplete(),
         SessionService.isFirstLaunch(),
         SecureStorageService.hasMPIN(),
+        SecureStorageService.isExistingUser(),
       ]);
 
-      final savedFlowState = results[0] as String?;
-      final isFirstLaunch = results[1] as bool;
-      final hasMPIN = results[2] as bool;
+      final hasValidSession = results[0] as bool;
+      final isOnboardingComplete = results[1] as bool;
+      final isFirstLaunch = results[2] as bool;
+      final hasMPIN = results[3] as bool;
+      final isExisting = results[4] as bool;
 
+      // 1. Fresh install/First launch ALWAYS goes to onboarding
+      if (isFirstLaunch) {
+        Future.wait([
+          SecureStorageService.deleteMPIN(),
+          SecureStorageService.setBiometricEnabled(false),
+          SessionService.clearFlowState(),
+        ]);
+        return 'onboarding';
+      }
+
+      // 2. If logged in and onboarding is finished, go home (re-login screen for security)
+      if (hasValidSession && isOnboardingComplete) {
+        SessionService.clearFlowState();
+        return 'login';
+      }
+
+      // 3. If onboarding was completed before, OR user has MPIN, OR identified as existing
+      // Skip onboarding and go to login/mpin
+      if (isOnboardingComplete || hasMPIN || isExisting) {
+        return 'login';
+      }
+
+      // 4. Default to saved flow state or onboarding
+      final savedFlowState = await SessionService.getFlowState();
       if (savedFlowState != null && savedFlowState.isNotEmpty) {
         if ([
           'phone_input',
@@ -37,43 +51,12 @@ class AuthFlowManager {
           'biometric_setup',
           'onboarding',
         ].contains(savedFlowState)) {
-          
-          if (savedFlowState == 'phone_input' || savedFlowState == 'otp') {
-            return 'onboarding'; 
-          } else if (savedFlowState == 'mpin_setup' ||
-              savedFlowState == 'biometric_setup') {
-            return 'onboarding'; 
-          } else if (savedFlowState == 'onboarding') {
-            return 'onboarding'; 
-          }
+          return 'onboarding';
         }
       }
 
-      if (isFirstLaunch) {
-        Future.wait([
-          SecureStorageService.deleteMPIN(),
-          SecureStorageService.setBiometricEnabled(false),
-          SessionService.clearFlowState(),
-        ]);
-
-        // If user was previously identified as existing, go to login instead of onboarding
-        final isExisting = await SecureStorageService.isExistingUser();
-        if (isExisting) {
-          return 'login';
-        }
-        
-        return 'onboarding';
-      }
-
-      final isExisting = await SecureStorageService.isExistingUser();
-      if (hasMPIN || isExisting) {
-        // If they have an MPIN or were identified as existing, go to login
-        return 'login';
-      } else {
-        return 'onboarding';
-      }
+      return 'onboarding';
     } catch (e) {
-      
       return 'onboarding';
     }
   }

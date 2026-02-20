@@ -180,6 +180,11 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
       await _loadUserName();
 
       await _checkBiometricAvailability();
+
+      // Auto-trigger biometric login if enabled and we are on MPIN screen
+      if (_isBiometricEnabled && _showMPINScreen && mounted && !_isOTPMode) {
+        _handleBiometricLogin();
+      }
     });
 
     _focusNode.addListener(() {
@@ -294,6 +299,8 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
           _phoneController.text = phoneNumber;
           setState(() {
             _phoneNumber = phoneNumber;
+            _showMPINScreen = true;
+            _userExplicitlyChoseMPIN = true;
           });
         }
       }

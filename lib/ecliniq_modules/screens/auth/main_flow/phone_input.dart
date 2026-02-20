@@ -162,7 +162,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
                 LoginPage(
                   phoneNumber: phone,
                   initialOtpMode: false,
-                  showSelectionMode: true,
+                  showSelectionMode: false,
                 ),
               );
             } else {

@@ -1,10 +1,13 @@
 import 'package:ecliniq/ecliniq_core/auth/auth_flow_manager.dart';
+import 'package:ecliniq/ecliniq_core/auth/secure_storage.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/main_flow/onboarding_screen.dart';
+import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/login/login.dart';
 import 'package:ecliniq/ecliniq_icons/assets/home/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 
 class SplashScreen extends StatefulWidget {
@@ -29,7 +32,19 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
 
     try {
+      // 1. Try biometric login if enabled
+      final isBiometricEnabled = await SecureStorageService.isBiometricEnabled();
+      if (isBiometricEnabled && mounted) {
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        final success = await authProvider.loginWithBiometric();
+        
+        if (success && mounted) {
+          EcliniqRouter.pushReplacement(const HomeScreen());
+          return;
+        }
+      }
       
+      // 2. Fallback to normal flow
       final initialRoute = await AuthFlowManager.getInitialRoute();
 
       Widget? nextScreen;

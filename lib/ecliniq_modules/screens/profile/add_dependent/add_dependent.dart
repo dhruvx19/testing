@@ -36,10 +36,16 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
   bool _isExpandedPhysicalInfo = true;
 
   void _uploadPhoto(AddDependentProvider provider) async {
+    final bool hasPhoto = provider.selectedProfilePhoto != null;
     final String? action = await EcliniqBottomSheet.show<String>(
       context: context,
-      child: const ProfilePhotoSelector(),
+      child: ProfilePhotoSelector(hasPhoto: hasPhoto),
     );
+
+    if (action == 'delete_photo') {
+      provider.setSelectedProfilePhoto(null);
+      return;
+    }
 
     if (action != null) {
       final ImagePicker picker = ImagePicker();
@@ -270,35 +276,44 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                                           )
                                         : null,
                                     color: provider.selectedProfilePhoto == null
-                                        ? Primitives.lightBackground
+                                        ? const Color(0xffFFF7ED)
                                         : null,
                                   ),
-                                  child: provider.selectedProfilePhoto == null
-                                      ? Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            SvgPicture.asset(
-                                              EcliniqIcons.add.assetPath,
-                                              width: EcliniqTextStyles.getResponsiveIconSize(context, 44),
-                                              height: EcliniqTextStyles.getResponsiveIconSize(context, 44),
-                                              colorFilter: ColorFilter.mode(
-                                                Color(0xff2372EC),
-                                                BlendMode.srcIn,
-                                              ),
-                                            ),
-
-                                            EcliniqText(
-                                              'Upload \nPhoto',
-                                              textAlign: TextAlign.center,
-                                              style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
-                                                    color: Color(0xff2372EC),
-                                                    
-                                                  ),
-                                            ),
-                                          ],
-                                        )
-                                      : null,
+                                   child: provider.selectedProfilePhoto == null
+                                       ? (provider.firstName.isNotEmpty
+                                           ? Center(
+                                               child: Text(
+                                                 provider.firstName[0].toUpperCase(),
+                                                 style: EcliniqTextStyles.responsiveHeadlineXLarge(context).copyWith(
+                                                       color: const Color(0xffEC7600),
+                                                       fontWeight: FontWeight.w400,
+                                                       fontSize: EcliniqTextStyles.getResponsiveSize(context, 40),
+                                                     ),
+                                               ),
+                                             )
+                                           : Column(
+                                               mainAxisAlignment:
+                                                   MainAxisAlignment.center,
+                                               children: [
+                                                 SvgPicture.asset(
+                                                   EcliniqIcons.add.assetPath,
+                                                   width: EcliniqTextStyles.getResponsiveIconSize(context, 44),
+                                                   height: EcliniqTextStyles.getResponsiveIconSize(context, 44),
+                                                   colorFilter: ColorFilter.mode(
+                                                     const Color(0xff2372EC),
+                                                     BlendMode.srcIn,
+                                                   ),
+                                                 ),
+                                                 EcliniqText(
+                                                   'Upload \nPhoto',
+                                                   textAlign: TextAlign.center,
+                                                   style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+                                                         color: const Color(0xff2372EC),
+                                                       ),
+                                                 ),
+                                               ],
+                                             ))
+                                       : null,
                                 ),
 
                                 

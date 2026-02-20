@@ -61,6 +61,7 @@ class AddDependentProvider extends ChangeNotifier {
   int? _weight;
   String? _profilePhotoKey;
   File? _selectedProfilePhoto;
+  bool _photoDeleted = false;
 
   bool _isLoading = false;
   bool _isUploadingPhoto = false;
@@ -81,6 +82,7 @@ class AddDependentProvider extends ChangeNotifier {
   int? get height => _height;
   int? get weight => _weight;
   File? get selectedProfilePhoto => _selectedProfilePhoto;
+  bool get photoDeleted => _photoDeleted;
   bool get isLoading => _isLoading;
   bool get isUploadingPhoto => _isUploadingPhoto;
   String? get errorMessage => _errorMessage;
@@ -195,6 +197,11 @@ class AddDependentProvider extends ChangeNotifier {
 
   void setSelectedProfilePhoto(File? file) {
     _selectedProfilePhoto = file;
+    notifyListeners();
+  }
+
+  void setPhotoDeleted(bool value) {
+    _photoDeleted = value;
     notifyListeners();
   }
 
@@ -381,6 +388,7 @@ class AddDependentProvider extends ChangeNotifier {
     _isLoading = false;
     _isUploadingPhoto = false;
     _errorMessage = null;
+    _photoDeleted = false;
     notifyListeners();
   }
 

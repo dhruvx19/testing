@@ -3,7 +3,9 @@ import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
 import 'package:flutter/material.dart';
 
 class ProfilePhotoSelector extends StatelessWidget {
-  const ProfilePhotoSelector({super.key});
+  const ProfilePhotoSelector({super.key, required this.hasPhoto});
+
+  final bool hasPhoto;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +27,7 @@ class ProfilePhotoSelector extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               EcliniqText(
-                'Add Profile Photo',
+                hasPhoto ? 'Change Profile Photo' : 'Add Profile Photo',
                 style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
                   fontWeight: FontWeight.w500,
                   color: Color(0xff424242),
@@ -38,7 +40,6 @@ class ProfilePhotoSelector extends StatelessWidget {
 
           _buildPhotoOption(
             context: context,
-
             title: 'Take Photo',
             onTap: () => Navigator.pop(context, 'take_photo'),
           ),
@@ -51,7 +52,38 @@ class ProfilePhotoSelector extends StatelessWidget {
             onTap: () => Navigator.pop(context, 'upload_photo'),
           ),
 
-          const SizedBox(height: 10),
+          if (hasPhoto) ...[
+            const SizedBox(height: 10),
+            GestureDetector(
+              onTap: () => Navigator.pop(context, 'delete_photo'),
+              child: Container(
+                width: double.infinity,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF8F8),
+                  border: Border.all(color: const Color(0xffEB8B85), width: 0.5),
+                  borderRadius: BorderRadius.circular(
+                    EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Delete Photo',
+                      style: EcliniqTextStyles.responsiveHeadlineBMedium(
+                        context,
+                      ).copyWith(
+                        color: const Color(0xffF04248),
+                        fontWeight: FontWeight.w500,
+                        height: 1.0,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -59,7 +91,6 @@ class ProfilePhotoSelector extends StatelessWidget {
 
   Widget _buildPhotoOption({
     required BuildContext context,
-
     required String title,
     required VoidCallback onTap,
   }) {
@@ -68,9 +99,8 @@ class ProfilePhotoSelector extends StatelessWidget {
       child: Container(
         width: double.infinity,
         height: 52,
-
         decoration: BoxDecoration(
-          border: Border.all(color: Color(0xff8E8E8E), width: 0.5),
+          border: Border.all(color: const Color(0xff8E8E8E), width: 0.5),
           borderRadius: BorderRadius.circular(4),
           color: Colors.white,
         ),
@@ -79,10 +109,9 @@ class ProfilePhotoSelector extends StatelessWidget {
           children: [
             Text(
               title,
-              style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
-                fontWeight: FontWeight.w500,
-                color: Color(0xff424242),
-              ),
+              style: EcliniqTextStyles.responsiveHeadlineBMedium(
+                context,
+              ).copyWith(fontWeight: FontWeight.w500, color: const Color(0xff424242)),
             ),
           ],
         ),
