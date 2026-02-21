@@ -122,7 +122,7 @@ class PermissionRequestDialog extends StatelessWidget {
                       ),
                     ),
                     child:  Text(
-                      'Allow',
+                      'Continue',
                       style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
              
                         fontWeight: FontWeight.w500,

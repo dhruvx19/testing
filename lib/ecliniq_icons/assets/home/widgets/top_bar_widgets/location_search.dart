@@ -126,8 +126,9 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
           ),
 
           EcliniqText(
-            'Enable your location for better services',
-            style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+            'Setting your location helps us provide better services by finding the best doctors and hospitals near you.',
+            textAlign: TextAlign.center,
+            style: EcliniqTextStyles.responsiveHeadlineXLMedium(context).copyWith(
               color: Color(0xff626060),
             ),
           ),
@@ -152,7 +153,7 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
                 ),
                 alignment: Alignment.center,
                 child: EcliniqText(
-                  'Enable Device Location',
+                  'Continue',
                   style: EcliniqTextStyles.responsiveHeadlineZMedium(context).copyWith(
                     color: Colors.white,
 

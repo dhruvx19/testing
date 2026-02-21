@@ -27,19 +27,19 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>We need access to your camera to take photos for your health records.</string>
+	<string>Camera access is required to take photos of prescriptions and medical reports to save securely in your health records.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>We need your location to find nearby hospitals and doctors.</string>
+	<string>Your location is used to show you the closest available doctors and hospitals for quicker bookings and emergency care.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>We need your location to find nearby hospitals and doctors.</string>
+	<string>Your location is used to show you the closest available doctors and hospitals for quicker bookings and emergency care.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>We need access to your microphone to enable voice search.</string>
+	<string>Microphone access is used for the voice-to-text search feature to help you find doctors more easily.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>We need access to save images to your photo library.</string>
+	<string>Permission is required to save prescriptions and digital medical reports to your photo gallery.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We need access to your photo library to upload documents and images for your health records.</string>
+	<string>Photo library access allows you to select and upload existing medical reports and prescriptions to your health files.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>We need access to speech recognition to enable voice search.</string>
+	<string>Speech recognition is used to enable voice-based searching for doctors and healthcare services.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>
