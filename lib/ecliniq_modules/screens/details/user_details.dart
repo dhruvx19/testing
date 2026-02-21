@@ -174,8 +174,15 @@ class _UserDetailsState extends State<UserDetails> with WidgetsBindingObserver {
   void _selectProfilePhoto() async {
     final String? action = await EcliniqBottomSheet.show<String>(
       context: context,
-      child: const ProfilePhotoSelector(),
+      child: ProfilePhotoSelector(hasPhoto: _selectedProfilePhoto != null),
     );
+
+    if (action == 'delete_photo') {
+      setState(() {
+        _selectedProfilePhoto = null;
+      });
+      return;
+    }
 
     if (action != null) {
       final ImagePicker picker = ImagePicker();
