@@ -285,12 +285,6 @@ class NotFeelingWell extends StatelessWidget {
                       EcliniqIcons.sleepProblem,
                       () => _handleSymptomTap(context, 'Sleep Problem'),
                     ),
-                    SizedBox(
-                      width: EcliniqTextStyles.getResponsiveSpacing(
-                        context,
-                        16.0,
-                      ),
-                    ),
                   ],
                 ),
               ),
