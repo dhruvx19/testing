@@ -159,15 +159,17 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
     _phoneController.addListener(_onPhoneNumberChanged);
 
     if (widget.phoneNumber != null) {
-      _phoneNumber = widget.phoneNumber!;
+      _phoneNumber = widget.phoneNumber!
+          .replaceAll(RegExp(r'^\+?91'), '')
+          .trim();
       _phoneController.text = _phoneNumber;
-      
+
       if (widget.showSelectionMode) {
         _showMPINScreen = false;
         _isOTPMode = false;
         _userExplicitlyChoseMPIN = false;
       } else {
-        _showMPINScreen = true;
+        _showMPINScreen = _phoneNumber.length == 10;
         _isOTPMode = widget.initialOtpMode;
         _userExplicitlyChoseMPIN = !widget.initialOtpMode;
       }

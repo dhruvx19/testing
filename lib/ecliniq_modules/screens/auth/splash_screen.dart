@@ -32,8 +32,14 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
 
     try {
-      // 1. Fallback to normal flow
-      final initialRoute = await AuthFlowManager.getInitialRoute();
+      // 1. Fetch initial route and phone number in parallel
+      final results = await Future.wait([
+        AuthFlowManager.getInitialRoute(),
+        SecureStorageService.getPhoneNumber(),
+      ]);
+
+      final initialRoute = results[0] as String;
+      final savedPhone = results[1] as String?;
 
       Widget? nextScreen;
       switch (initialRoute) {
@@ -41,7 +47,7 @@ class _SplashScreenState extends State<SplashScreen> {
           nextScreen = const EcliniqWelcomeScreen();
           break;
         case 'login':
-          nextScreen = const LoginPage();
+          nextScreen = LoginPage(phoneNumber: savedPhone);
           break;
         case 'home':
           nextScreen = const HomeScreen();
