@@ -67,10 +67,9 @@ class AuthProvider with ChangeNotifier {
       if (isExpired && _authToken != null) {
         await clearSession();
       } else if (_authToken != null && !isExpired) {
-        // Fire-and-forget: don't block startup on network call
-        EcliniqPushNotifications.registerDeviceToken(
-          authToken: _authToken!,
-        ).catchError((e) {});
+        // We will register FCM token when the user explicitly interacts or on specific events,
+        // but not necessarily blocking/triggering here if we want to move it to post-login.
+        // For now, removing it from here to move it to login success points.
       }
     } catch (e) {}
   }
@@ -203,6 +202,7 @@ class AuthProvider with ChangeNotifier {
               await SessionService.storeTokens(authToken: _authToken!);
 
               try {
+                // Register device token after successful OTP verification
                 await EcliniqPushNotifications.registerDeviceToken(
                   authToken: _authToken!,
                 );
@@ -731,6 +731,7 @@ class AuthProvider with ChangeNotifier {
             SecureStorageService.storeUserInfo(userIdToStore, phoneNumber),
           ]);
 
+          // Register device token after successful MPIN login
           EcliniqPushNotifications.registerDeviceToken(
             authToken: _authToken!,
           ).catchError((e) {});

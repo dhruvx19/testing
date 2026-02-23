@@ -27,7 +27,8 @@ class _SplashScreenState extends State<SplashScreen> {
   
   Future<void> _navigateToNextScreen() async {
     // 1. Minimum display time for splash branding
-    await Future.delayed(const Duration(milliseconds: 800));
+    // Artificial delay removed for faster startup
+    // await Future.delayed(const Duration(milliseconds: 800));
 
     if (!mounted) return;
 
