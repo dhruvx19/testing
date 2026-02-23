@@ -167,9 +167,12 @@ class _OtpInputScreenState extends State<OtpInputScreen>
               );
             }
           } else {
-            
+            final redirectTo = authProvider.redirectTo;
+            final userStatus = authProvider.userStatus;
+
             if (redirectTo == 'home') {
               // Case 3: Existing user re-downloaded or re-authenticating and profile is complete
+              await authProvider.syncUserProfile();
               await SessionService.clearFlowState();
               EcliniqRouter.pushAndRemoveUntil(
                 const HomeScreen(),
