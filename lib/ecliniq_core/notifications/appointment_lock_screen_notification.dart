@@ -229,10 +229,9 @@ class AppointmentLockScreenNotification {
             '$tokenProgressLine\n$tokenLabelsLine';
       }
 
-      
-      if (Platform.isAndroid || Platform.isIOS) {
+      // On Android, use the custom native notification via MethodChannel
+      if (Platform.isAndroid) {
         try {
-          
           String timeInfoText = '';
           if (runningToken == 0) {
             timeInfoText = 'Queue not started yet';
@@ -244,7 +243,6 @@ class AppointmentLockScreenNotification {
             timeInfoText = 'Your token has been called';
           }
 
-          
           await _customNotificationChannel.invokeMethod('showCustomNotification', {
             'title': title,
             'doctorName': doctorName,
@@ -255,12 +253,12 @@ class AppointmentLockScreenNotification {
             'hospitalName': hospitalName,
           });
 
-          log('✅ Custom native notification/Live Activity shown');
+          log('✅ Custom native notification shown on Android');
           _currentAppointmentId = appointment.id;
-          return; 
+          return; // Return early — native handler takes care of it
         } catch (e) {
           log('⚠️ Failed to show custom native notification (falling back to default): $e');
-          
+          // Fall through to flutter_local_notifications below
         }
       }
 
@@ -386,8 +384,8 @@ class AppointmentLockScreenNotification {
       return;
     }
 
-    
-    if (Platform.isAndroid || Platform.isIOS) {
+    // On Android, update via the custom native MethodChannel
+    if (Platform.isAndroid) {
       try {
         final userToken = appointment.tokenNo;
         final runningToken = currentRunningToken ?? 0;
@@ -418,11 +416,11 @@ class AppointmentLockScreenNotification {
           'hospitalName': hospitalName,
         });
 
-        log('✅ Custom native notification/Live Activity updated');
-        return; 
+        log('✅ Custom native notification updated on Android');
+        return; // Return early — native handler takes care of it
       } catch (e) {
         log('⚠️ Failed to update custom notification (falling back to default): $e');
-        
+        // Fall through to showAppointmentNotification below
       }
     }
 
@@ -440,17 +438,17 @@ class AppointmentLockScreenNotification {
   
   static Future<void> dismissNotification() async {
     try {
-      
-      if (Platform.isAndroid || Platform.isIOS) {
+      if (Platform.isAndroid) {
+        // Dismiss via native MethodChannel on Android
         try {
           await _customNotificationChannel.invokeMethod('dismissCustomNotification');
-          log('✅ Custom native notification/Live Activity dismissed');
+          log('✅ Custom native notification dismissed on Android');
         } catch (e) {
-          log('⚠️ Failed to dismiss custom notification, using default: $e');
+          log('⚠️ Failed to dismiss via MethodChannel, using plugin cancel: $e');
         }
       }
-      
-      
+
+      // Also cancel via plugin (handles iOS and Android fallback)
       await _plugin.cancel(_notificationId);
       _currentAppointmentId = null;
       log('Lock screen notification dismissed');

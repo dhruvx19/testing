@@ -18,21 +18,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  try {
-    await Firebase.initializeApp();
-  } catch (e) {
-    debugPrint('Firebase initialization failed: $e');
-  }
-
   final authProvider = AuthProvider();
 
-  final futures = [
+  // Run all heavy initialization tasks in parallel to minimize startup time
+  await Future.wait([
+    Firebase.initializeApp().catchError((e) {
+      debugPrint('Firebase initialization failed: $e');
+      return null;
+    }),
     authProvider.initialize(),
     SharedPreferences.getInstance(),
     EcliniqPushNotifications.init(),
     AppointmentLockScreenNotification.init(),
-  ];
-  await Future.wait(futures);
+  ]);
   EcliniqPushNotifications.setNotificationListeners();
 
   await SystemChrome.setPreferredOrientations([

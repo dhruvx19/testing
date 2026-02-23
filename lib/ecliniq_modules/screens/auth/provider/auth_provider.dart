@@ -67,11 +67,10 @@ class AuthProvider with ChangeNotifier {
       if (isExpired && _authToken != null) {
         await clearSession();
       } else if (_authToken != null && !isExpired) {
-        try {
-          await EcliniqPushNotifications.registerDeviceToken(
-            authToken: _authToken!,
-          );
-        } catch (e) {}
+        // Fire-and-forget: don't block startup on network call
+        EcliniqPushNotifications.registerDeviceToken(
+          authToken: _authToken!,
+        ).catchError((e) {});
       }
     } catch (e) {}
   }

@@ -14,7 +14,7 @@ import androidx.core.app.NotificationManagerCompat
 class CustomNotificationService(private val context: Context) {
     private val channelId = "appointment_tracking"
     private val channelName = "Appointment Tracking"
-    private val notificationId = 1001
+    private val notificationId = 9999
 
     init {
         createNotificationChannel()
@@ -113,7 +113,7 @@ class CustomNotificationService(private val context: Context) {
             .setColor(0xFF2372EC.toInt())
             .setCategory(NotificationCompat.CATEGORY_STATUS)
             .setShowWhen(false)
-            .setOnlyAlertOnce(false) // Allow updates to be visible
+            .setOnlyAlertOnce(true) // Don't re-alert on every update
             .setDefaults(0) // No sound, vibration, or lights
             .setSilent(true)
             .build()
