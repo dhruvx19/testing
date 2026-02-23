@@ -128,6 +128,8 @@ class _FeedbackBottomSheetState extends State<FeedbackBottomSheet> {
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       child: SingleChildScrollView(
+        child: SafeArea(
+        top: false,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

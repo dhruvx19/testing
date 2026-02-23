@@ -359,4 +359,53 @@ class PatientService {
       throw Exception('Network error: $e');
     }
   }
+  
+  Future<Map<String, dynamic>> deleteProfilePhoto({
+    required String authToken,
+  }) async {
+    try {
+      final url = Uri.parse(Endpoints.deleteProfilePhoto);
+
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $authToken',
+        'x-access-token': authToken,
+      };
+
+      final response = await EcliniqHttpClient.delete(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('Failed to delete profile photo: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> deleteDependentPhoto({
+    required String authToken,
+    required String dependentId,
+  }) async {
+    try {
+      final url = Uri.parse(Endpoints.deleteDependentPhoto(dependentId));
+
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $authToken',
+        'x-access-token': authToken,
+      };
+
+      final response = await EcliniqHttpClient.delete(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('Failed to delete dependent photo: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
 }

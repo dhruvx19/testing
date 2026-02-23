@@ -21,6 +21,8 @@ import 'package:ecliniq/ecliniq_modules/screens/profile/add_dependent/edit_depen
 import 'package:ecliniq/ecliniq_modules/screens/profile/faq/faq.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/my_doctors/my_doctor.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/personal_details/personal_detail.dart';
+import 'package:ecliniq/ecliniq_modules/screens/details/widgets/add_profile_sheet.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/security_settings/security_settings.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/widgets/account_card.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/widgets/basic_info.dart';
@@ -314,6 +316,56 @@ class _ProfilePageState extends State<ProfilePage>
     }
   }
 
+  Future<void> _manageProfilePhoto() async {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final action = await EcliniqBottomSheet.show(
+      context: context,
+      child: ProfilePhotoSelector(hasPhoto: _profilePhotoUrl != null),
+    );
+
+    if (action == null) return;
+
+    if (action == 'delete_photo') {
+      try {
+        await auth.deleteProfilePhoto();
+        await _fetchPatientDetails();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Profile photo deleted successfully')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to delete photo: $e')),
+          );
+        }
+      }
+    } else if (action == 'take_photo' || action == 'upload_photo') {
+      await _uploadPhoto(
+        action == 'take_photo' ? ImageSource.camera : ImageSource.gallery,
+      );
+    }
+  }
+
+  Future<void> _uploadPhoto(ImageSource source) async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(source: source);
+    if (image == null) return;
+
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    try {
+      await auth.uploadProfileImage(File(image.path));
+      await _fetchPatientDetails();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to upload photo: $e')),
+        );
+      }
+    }
+  }
+
   void _onMyDoctorsPressed() {
     Navigator.push(
       context,
@@ -573,26 +625,29 @@ Sent from my ${Platform.isIOS ? 'iPhone' : 'Android device'}''';
                           ),
                         ],
                       ),
-                      child: ClipOval(
-                        child: Container(
-                          width: 86,
-                          height: 86,
-                          color: const Color(0xFFDFE8FF),
-                          child:
-                              _profilePhotoUrl != null &&
-                                  _profilePhotoUrl!.isNotEmpty
-                              ? Image.network(
-                                  _profilePhotoUrl!,
-                                  width: 86,
-                                  height: 86,
-                                  fit: BoxFit.cover,
-                                  cacheWidth: 172,
-                                  cacheHeight: 172,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return const _ProfileAvatarIcon();
-                                  },
-                                )
-                              : const _ProfileAvatarIcon(),
+                      child: GestureDetector(
+                        onTap: _manageProfilePhoto,
+                        child: ClipOval(
+                          child: Container(
+                            width: 86,
+                            height: 86,
+                            color: const Color(0xFFDFE8FF),
+                            child:
+                                _profilePhotoUrl != null &&
+                                    _profilePhotoUrl!.isNotEmpty
+                                ? Image.network(
+                                    _profilePhotoUrl!,
+                                    width: 86,
+                                    height: 86,
+                                    fit: BoxFit.cover,
+                                    cacheWidth: 172,
+                                    cacheHeight: 172,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const _ProfileAvatarIcon();
+                                    },
+                                  )
+                                : const _ProfileAvatarIcon(),
+                          ),
                         ),
                       ),
                     ),

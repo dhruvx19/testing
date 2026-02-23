@@ -154,107 +154,113 @@ class _CancelBottomSheetState extends State<CancelBottomSheet> {
       ),
       width: double.infinity,
       padding: const EdgeInsets.only(top: 22, right: 16, left: 16, bottom: 40),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SvgPicture.asset(
-            EcliniqIcons.cancelGif.assetPath,
-            
-            
-            
-          ),
-             const SizedBox(height: 12),
-           EcliniqText(
-            'Are you sure you want cancel the booking?',
-            style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
-         
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF424242),
-              
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SvgPicture.asset(
+              EcliniqIcons.cancelGif.assetPath,
             ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-           EcliniqText(
-            'You can also change this booking at any time. Please note that the Service Fee and Tax are non-refundable if you cancel.',
-            style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
-            
-              fontWeight: FontWeight.w400,
-              color: Color(0xFF626060),
+            const SizedBox(height: 12),
+            EcliniqText(
+              'Are you sure you want cancel the booking?',
+              style:
+                  EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF424242),
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 22),
-          Padding(
-            padding: const EdgeInsets.only(left: 4.0, right: 4.0),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: GestureDetector(
-                    onTap: _isLoading ? null : _handleCancel,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Color(0xFFEB8B85), width: 0.5),
-                        color: Color(0xFFFFF8F8),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Yes',
-                            style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
-                              color: Color(0xffF04248),
+            const SizedBox(height: 8),
+            EcliniqText(
+              'You can also change this booking at any time. Please note that the Service Fee and Tax are non-refundable if you cancel.',
+              style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
+                fontWeight: FontWeight.w400,
+                color: Color(0xFF626060),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 22),
+            Padding(
+              padding: const EdgeInsets.only(left: 4.0, right: 4.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: GestureDetector(
+                      onTap: _isLoading ? null : _handleCancel,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xFFEB8B85), width: 0.5),
+                          color: Color(0xFFFFF8F8),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Yes',
+                              style: EcliniqTextStyles.responsiveHeadlineMedium(
+                                      context)
+                                  .copyWith(
+                                color: Color(0xffF04248),
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                        ],
+                            const SizedBox(width: 8),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 1,
-                  child: GestureDetector(
-                    onTap: _isLoading ? null : () => Navigator.of(context).pop(),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Color(0xff8E8E8E), width: 0.5),
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'No',
-                            style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
-                              color: Color(0xff424242),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 1,
+                    child: GestureDetector(
+                      onTap: _isLoading
+                          ? null
+                          : () => Navigator.of(context).pop(),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xff8E8E8E), width: 0.5),
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'No',
+                              style: EcliniqTextStyles.responsiveHeadlineMedium(
+                                      context)
+                                  .copyWith(
+                                color: Color(0xff424242),
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                        ],
+                            const SizedBox(width: 8),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

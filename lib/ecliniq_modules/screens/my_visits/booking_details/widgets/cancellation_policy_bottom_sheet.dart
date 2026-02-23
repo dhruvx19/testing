@@ -24,32 +24,35 @@ class _CancellationPolicyBottomSheetState
       ),
       width: double.infinity,
       padding: const EdgeInsets.only(left: 16, right: 16, top: 22, bottom: 40),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-           EcliniqText(
-            'Cancellation & Rescheduling Policy',
-            style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
-       
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF424242),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            EcliniqText(
+              'Cancellation & Rescheduling Policy',
+              style:
+                  EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF424242),
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          _buildBulletPoint(
-            'You can cancel or reschedule your appointment up to 30 minutes before the scheduled appointment time.',
-          ),
-          const SizedBox(height: 12),
-          _buildBulletPoint(
-            'If the provider cancels the appointment, the Service Fee and Taxes will be refunded as Upchar-Q Coins, which can be used for your next booking.',
-          ),
-          const SizedBox(height: 12),
-          _buildBulletPoint(
-            'Service Fee and Taxes are non-refundable if the appointment is cancelled by the patient or marked as a no-show.',
-          ),
-        ],
+            const SizedBox(height: 8),
+            _buildBulletPoint(
+              'You can cancel or reschedule your appointment up to 30 minutes before the scheduled appointment time.',
+            ),
+            const SizedBox(height: 12),
+            _buildBulletPoint(
+              'If the provider cancels the appointment, the Service Fee and Taxes will be refunded as Upchar-Q Coins, which can be used for your next booking.',
+            ),
+            const SizedBox(height: 12),
+            _buildBulletPoint(
+              'Service Fee and Taxes are non-refundable if the appointment is cancelled by the patient or marked as a no-show.',
+            ),
+          ],
+        ),
       ),
     );
   }

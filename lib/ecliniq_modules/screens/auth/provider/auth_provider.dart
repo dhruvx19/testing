@@ -566,6 +566,75 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> deleteProfilePhoto() async {
+    if (_authToken == null) {
+      _errorMessage = 'Authentication required';
+      notifyListeners();
+      return false;
+    }
+
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final result = await PatientService().deleteProfilePhoto(
+        authToken: _authToken!,
+      );
+
+      _isLoading = false;
+      if (result['success'] == true) {
+        _profilePhotoKey = null;
+        await syncUserProfile();
+        notifyListeners();
+        return true;
+      } else {
+        _errorMessage = result['message'] ?? 'Failed to delete profile photo';
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = 'Failed to delete profile photo: ${e.toString()}';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> deleteDependentPhoto(String dependentId) async {
+    if (_authToken == null) {
+      _errorMessage = 'Authentication required';
+      notifyListeners();
+      return false;
+    }
+
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final result = await PatientService().deleteDependentPhoto(
+        authToken: _authToken!,
+        dependentId: dependentId,
+      );
+
+      _isLoading = false;
+      if (result['success'] == true) {
+        notifyListeners();
+        return true;
+      } else {
+        _errorMessage = result['message'] ?? 'Failed to delete dependent photo';
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = 'Failed to delete dependent photo: ${e.toString()}';
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<void> _loadSavedToken() async {
     try {
       final hasValidSession = await SessionService.hasValidSession();

@@ -1729,7 +1729,9 @@ class _SortByBottomSheetState extends State<SortByBottomSheet> {
           ),
         ),
       ),
-      child: Column(
+      child: SafeArea(
+        top: false,
+        child: Column(
         children: [
           Padding(
             padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(

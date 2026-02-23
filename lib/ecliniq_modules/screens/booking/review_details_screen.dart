@@ -1220,7 +1220,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
           ),
 
           if (_serviceFee > 0)
-            _buildPaymentBottomBar()
+            SafeArea(top: false, child: _buildPaymentBottomBar())
           else
             Container(
               padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(

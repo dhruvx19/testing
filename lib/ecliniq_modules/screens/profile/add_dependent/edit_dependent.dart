@@ -360,6 +360,8 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
           });
           throw Exception('Failed to upload profile photo');
         }
+      } else if (provider.photoDeleted) {
+        await authProvider.deleteDependentPhoto(dependentId);
       }
 
       final success = await authProvider.updateDependentProfile(
@@ -578,19 +580,23 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                             child: Stack(
                               children: [
                                 Container(
-                                  width: EcliniqTextStyles.getResponsiveWidth(
+                                  width: EcliniqTextStyles.getResponsiveSize(
                                     context,
-                                    100,
+                                    150.0,
+                                    minSize: 120.0,
+                                    maxSize: 180.0,
                                   ),
-                                  height: EcliniqTextStyles.getResponsiveHeight(
+                                  height: EcliniqTextStyles.getResponsiveSize(
                                     context,
-                                    100,
+                                    150.0,
+                                    minSize: 120.0,
+                                    maxSize: 180.0,
                                   ),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     border: Border.all(
                                       color: Color(0xff96BFFF),
-                                      width: EcliniqTextStyles.getResponsiveSize(context, 0.5),
+                                      width: 0.5,
                                     ),
                                     image: provider.selectedProfilePhoto != null
                                         ? DecorationImage(
@@ -599,116 +605,80 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                                             ),
                                             fit: BoxFit.cover,
                                           )
-                                        : null,
-                                    color:
-                                        provider.selectedProfilePhoto == null &&
-                                            (provider.photoUrl == null || provider.photoDeleted)
-                                        ? const Color(0xffFFF7ED)
+                                        : (provider.photoUrl != null && provider.photoUrl!.isNotEmpty && !provider.photoDeleted)
+                                            ? DecorationImage(
+                                                image: NetworkImage(provider.photoUrl!),
+                                                fit: BoxFit.cover,
+                                              )
+                                            : null,
+                                    color: (provider.selectedProfilePhoto == null && (provider.photoUrl == null || provider.photoDeleted))
+                                        ? const Color(0xffF8FAFF)
                                         : null,
                                   ),
-                                  child: provider.selectedProfilePhoto != null
-                                      ? null
-                                      : (provider.photoUrl != null &&
-                                            provider.photoUrl!.isNotEmpty &&
-                                            !provider.photoDeleted)
-                                      ? ClipOval(
-                                          child: Image.network(
-                                            provider.photoUrl!,
-                                            fit: BoxFit.cover,
-                                            width: double.infinity,
-                                            height: double.infinity,
-                                            errorBuilder: (context, error, stackTrace) {
-                                              return Center(
-                                                child: Text(
-                                                  (_latestDependentData
-                                                                  ?.firstName ??
-                                                              widget
-                                                                  .dependentData
-                                                                  .firstName)
-                                                          .isNotEmpty
-                                                      ? (_latestDependentData
-                                                                    ?.firstName ??
-                                                                widget
-                                                                    .dependentData
-                                                                    .firstName)[0]
-                                                            .toUpperCase()
-                                                      : 'D',
-                                                  style:
-                                                      EcliniqTextStyles.responsiveHeadlineXLarge(
-                                                        context,
-                                                      ).copyWith(
-                                                          color: const Color(
-                                                            0xffEC7600,
-                                                          ),
-                                                          fontWeight:
-                                                              FontWeight.w400,
-                                                          fontSize: EcliniqTextStyles.getResponsiveSize(context, 40),
-                                                      ),
-                                                ),
-                                              );
-                                            },
-                                          ),
+                                  child: (provider.selectedProfilePhoto == null && (provider.photoUrl == null || provider.photoDeleted))
+                                      ? Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            SvgPicture.asset(
+                                              EcliniqIcons.add.assetPath,
+                                              width: EcliniqTextStyles.getResponsiveIconSize(
+                                                context,
+                                                48.0,
+                                              ),
+                                              height: EcliniqTextStyles.getResponsiveIconSize(
+                                                context,
+                                                48.0,
+                                              ),
+                                              colorFilter: ColorFilter.mode(
+                                                Color(0xff2372EC),
+                                                BlendMode.srcIn,
+                                              ),
+                                            ),
+                                            EcliniqText(
+                                              'Upload Photo',
+                                              style: EcliniqTextStyles.headlineXMedium.copyWith(
+                                                color: Color(0xff2372EC),
+                                              ),
+                                            ),
+                                          ],
                                         )
-                                      : Center(
-                                          child: Text(
-                                            (_latestDependentData?.firstName ??
-                                                        widget
-                                                            .dependentData
-                                                            .firstName)
-                                                    .isNotEmpty
-                                                ? (_latestDependentData
-                                                              ?.firstName ??
-                                                          widget
-                                                              .dependentData
-                                                              .firstName)[0]
-                                                      .toUpperCase()
-                                                : 'D',
-                                            style:
-                                                EcliniqTextStyles.responsiveHeadlineXLarge(
-                                                  context,
-                                                  ).copyWith(
-                                                    color: const Color(0xffEC7600),
-                                                    fontWeight: FontWeight.w400,
-                                                    fontSize: EcliniqTextStyles.getResponsiveSize(context, 40),
-                                                  ),
-                                          ),
-                                        ),
+                                      : null,
                                 ),
-                                // Edit icon
-                                Positioned(
-                                  bottom: 0,
-                                  right: 0,
-                                  child: Container(
-                                    width: EcliniqTextStyles.getResponsiveWidth(
-                                      context,
-                                      32,
-                                    ),
-                                    height:
-                                        EcliniqTextStyles.getResponsiveHeight(
-                                          context,
-                                          32,
+                                if (provider.selectedProfilePhoto != null || (provider.photoUrl != null && provider.photoUrl!.isNotEmpty && !provider.photoDeleted))
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: Container(
+                                      width: EcliniqTextStyles.getResponsiveSize(
+                                        context,
+                                        40.0,
+                                        minSize: 36.0,
+                                        maxSize: 44.0,
+                                      ),
+                                      height: EcliniqTextStyles.getResponsiveSize(
+                                        context,
+                                        40.0,
+                                        minSize: 36.0,
+                                        maxSize: 44.0,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Primitives.brightBlue,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Colors.white,
+                                          width: 3,
                                         ),
-                                    decoration: BoxDecoration(
-                                      color: Primitives.brightBlue,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
+                                      ),
+                                      child: Icon(
+                                        Icons.edit,
                                         color: Colors.white,
-                                        width: EcliniqTextStyles.getResponsiveSize(context, 2.0),
+                                        size: EcliniqTextStyles.getResponsiveIconSize(
+                                          context,
+                                          20.0,
+                                        ),
                                       ),
-                                    ),
-                                    child: SvgPicture.asset(
-                                     'lib/ecliniq_icons/assets/Refresh.svg',
-                                      width: EcliniqTextStyles.getResponsiveIconSize(
-                                        context,
-                                        16,
-                                      ),
-                                      height: EcliniqTextStyles.getResponsiveIconSize(
-                                        context,
-                                        16,
-                                    ),
                                     ),
                                   ),
-                                ),
                               ],
                             ),
                           ),
@@ -828,136 +798,142 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
               ),
 
               // Action Buttons (Delete and Save)
-              Padding(
-                padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
-                  context,
-                  left: 16,
-                  right: 12,
-                  top: 22,
-                  bottom: 40,
-                ),
-                child: Row(
-                  children: [
-                    // Delete Button
-                    GestureDetector(
-                      onTap: _isDeleting ? null : _showDeleteConfirmation,
-                      child: Container(
-                        padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(
-                          context,
-                          12.0,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(
-                            EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
-                          ),
-                        ),
-                        child: Center(
-                          child: _isDeleting
-                              ? SizedBox(
-                                  height: EcliniqTextStyles.getResponsiveHeight(
-                                    context,
-                                    32,
-                                  ),
-                                  width: EcliniqTextStyles.getResponsiveWidth(
-                                    context,
-                                    32,
-                                  ),
-                                  child: const EcliniqLoader(
-                                    size: 24,
-                                    color: Color(0xff424242),
-                                  ),
-                                )
-                              : SvgPicture.asset(
-                                  EcliniqIcons.delete.assetPath,
-                                  width: EcliniqTextStyles.getResponsiveIconSize(
-                                    context,
-                                    32,
-                                  ),
-                                  height: EcliniqTextStyles.getResponsiveIconSize(
-                                    context,
-                                    32,
-                                  ),
-                                  colorFilter: ColorFilter.mode(
-                                    _isDeleting
-                                        ? const Color(0xffD6D6D6)
-                                        : const Color(0xff424242),
-                                    BlendMode.srcIn,
-                                  ),
-                                ),
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(
-                      width: EcliniqTextStyles.getResponsiveSpacing(
-                        context,
-                        12,
-                      ),
-                    ),
-
-                    // Save Button
-                    Expanded(
-                      flex: 2,
-                      child: GestureDetector(
-                        onTap: (_isSaving || _isDeleting)
-                            ? null
-                            : () {
-                                _updateDependent(provider);
-                              },
+              SafeArea(
+                top: false,
+                child: Padding(
+                  padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+                    context,
+                    left: 16,
+                    right: 12,
+                    top: 22,
+                    bottom: 40,
+                  ),
+                  child: Row(
+                    children: [
+                      // Delete Button
+                      GestureDetector(
+                        onTap: _isDeleting ? null : _showDeleteConfirmation,
                         child: Container(
-                          height: EcliniqTextStyles.getResponsiveButtonHeight(
+                          padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(
                             context,
-                            baseHeight: 52,
+                            12.0,
                           ),
                           decoration: BoxDecoration(
-                            color: provider.isFormValid && !_isDeleting && !_isSaving
-                                ? Color(0xFF2372EC)
-                                : Color(0xFFF9F9F9),
                             borderRadius: BorderRadius.circular(
                               EcliniqTextStyles.getResponsiveBorderRadius(
-                                context,
-                                4,
-                              ),
+                                  context, 4.0),
                             ),
                           ),
                           child: Center(
-                            child: _isSaving
+                            child: _isDeleting
                                 ? SizedBox(
                                     height:
                                         EcliniqTextStyles.getResponsiveHeight(
-                                          context,
-                                          20,
-                                        ),
+                                      context,
+                                      32,
+                                    ),
                                     width: EcliniqTextStyles.getResponsiveWidth(
                                       context,
-                                      20,
+                                      32,
                                     ),
-                                    child: EcliniqLoader(
-                                      color: Colors.white,
-                                      size: 20,
+                                    child: const EcliniqLoader(
+                                      size: 24,
+                                      color: Color(0xff424242),
                                     ),
                                   )
-                                : Text(
-                                    'Save',
-                                    textAlign: TextAlign.center,
-                                    style:
-                                        EcliniqTextStyles.responsiveTitleXBLarge(
-                                          context,
-                                        ).copyWith(
-                                          color:
-                                              provider.isFormValid &&
-                                                  !_isDeleting &&
-                                                  !_isSaving
-                                              ? Colors.white
-                                              : Color(0xffD6D6D6),
-                                          fontWeight: FontWeight.w500,
-                                        ),
+                                : SvgPicture.asset(
+                                    EcliniqIcons.delete.assetPath,
+                                    width: EcliniqTextStyles.getResponsiveIconSize(
+                                      context,
+                                      32,
+                                    ),
+                                    height: EcliniqTextStyles.getResponsiveIconSize(
+                                      context,
+                                      32,
+                                    ),
+                                    colorFilter: ColorFilter.mode(
+                                      _isDeleting
+                                          ? const Color(0xffD6D6D6)
+                                          : const Color(0xff424242),
+                                      BlendMode.srcIn,
+                                    ),
                                   ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+
+                      SizedBox(
+                        width: EcliniqTextStyles.getResponsiveSpacing(
+                          context,
+                          12,
+                        ),
+                      ),
+
+                      // Save Button
+                      Expanded(
+                        flex: 2,
+                        child: GestureDetector(
+                          onTap: (_isSaving || _isDeleting)
+                              ? null
+                              : () {
+                                  _updateDependent(provider);
+                                },
+                          child: Container(
+                            height: EcliniqTextStyles.getResponsiveButtonHeight(
+                              context,
+                              baseHeight: 52,
+                            ),
+                            decoration: BoxDecoration(
+                              color: provider.isFormValid &&
+                                      !_isDeleting &&
+                                      !_isSaving
+                                  ? Color(0xFF2372EC)
+                                  : Color(0xFFF9F9F9),
+                              borderRadius: BorderRadius.circular(
+                                EcliniqTextStyles.getResponsiveBorderRadius(
+                                  context,
+                                  4,
+                                ),
+                              ),
+                            ),
+                            child: Center(
+                              child: _isSaving
+                                  ? SizedBox(
+                                      height:
+                                          EcliniqTextStyles.getResponsiveHeight(
+                                        context,
+                                        20,
+                                      ),
+                                      width: EcliniqTextStyles.getResponsiveWidth(
+                                        context,
+                                        20,
+                                      ),
+                                      child: EcliniqLoader(
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                    )
+                                  : Text(
+                                      'Save',
+                                      textAlign: TextAlign.center,
+                                      style: EcliniqTextStyles
+                                              .responsiveTitleXBLarge(
+                                        context,
+                                      ).copyWith(
+                                        color: provider.isFormValid &&
+                                                !_isDeleting &&
+                                                !_isSaving
+                                            ? Colors.white
+                                            : Color(0xffD6D6D6),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

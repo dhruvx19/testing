@@ -58,6 +58,10 @@ class Endpoints {
       '$localhost/api/patients/update-dependent/$dependentId';
   static String get getFavouriteDoctors =>
       '$localhost/api/patients/get-favourite-doctors';
+  static String get deleteProfilePhoto =>
+      '$localhost/api/patients/delete-profile-photo';
+  static String deleteDependentPhoto(String dependentId) =>
+      '$localhost/api/patients/delete-dependent-photo/$dependentId';
   static String doctorDetailsById(String doctorId) =>
       '$localhost/api/doctors/doctorDetailsByIdByPatient/$doctorId';
   static String doctorDetailsForBooking(String doctorId) =>

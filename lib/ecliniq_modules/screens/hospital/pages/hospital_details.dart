@@ -785,10 +785,12 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen>
   }
 
   Widget _buildBottomSection() {
-    return Container(
-      color: Colors.white,
-      padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16.0),
-      child: Column(
+    return SafeArea(
+      top: false,
+      child: Container(
+        color: Colors.white,
+        padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16.0),
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(

@@ -518,13 +518,16 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
                           ),
                         ),
                       ),
-                      Container(
-                        padding: const EdgeInsets.only(
-                          right: 18,
-                          left: 18,
-                          bottom: 24,
+                      SafeArea(
+                        top: false,
+                        child: Container(
+                          padding: const EdgeInsets.only(
+                            right: 18,
+                            left: 18,
+                            bottom: 24,
+                          ),
+                          child: _buildContinueButton(),
                         ),
-                        child: _buildContinueButton(),
                       ),
                     ],
                   ),

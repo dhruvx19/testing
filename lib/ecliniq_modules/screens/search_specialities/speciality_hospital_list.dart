@@ -1723,7 +1723,9 @@ class _HospitalSortByBottomSheetState extends State<HospitalSortByBottomSheet> {
           ),
         ),
       ),
-      child: Column(
+      child: SafeArea(
+        top: false,
+        child: Column(
         children: [
           Padding(
             padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
