@@ -248,6 +248,7 @@ class _FeedbackBottomSheetState extends State<FeedbackBottomSheet> {
           ],
         ),
       ),
+      ),
     );
   }
 }

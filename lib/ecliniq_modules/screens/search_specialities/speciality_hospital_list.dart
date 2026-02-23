@@ -1783,6 +1783,7 @@ class _HospitalSortByBottomSheetState extends State<HospitalSortByBottomSheet> {
           ),
         ],
       ),
+      ),
     );
   }
 

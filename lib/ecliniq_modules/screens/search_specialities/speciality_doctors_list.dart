@@ -1791,6 +1791,7 @@ class _SortByBottomSheetState extends State<SortByBottomSheet> {
           ),
         ],
       ),
+      ),
     );
   }
 

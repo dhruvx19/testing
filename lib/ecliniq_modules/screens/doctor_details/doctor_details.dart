@@ -1201,6 +1201,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen>
           ),
         ],
       ),
+      ),
     );
   }
 

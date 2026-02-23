@@ -834,6 +834,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen>
           SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 8.0)),
         ],
       ),
+      ),
     );
   }
 
