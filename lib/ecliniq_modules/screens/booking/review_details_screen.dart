@@ -29,7 +29,6 @@ import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class ReviewDetailsScreen extends StatefulWidget {
   final String selectedSlot;
@@ -2159,22 +2158,12 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
         }
       }
 
-      if (selectedUPIPackage != 'com.phonepe.app' &&
-          selectedUPIPackage != 'com.phonepe.simulator') {
-        try {
-          final uri = Uri.parse('package:$selectedUPIPackage');
-          if (await canLaunchUrl(uri)) {
-            await launchUrl(uri, mode: LaunchMode.externalApplication);
-            await Future.delayed(const Duration(milliseconds: 300));
-          }
-        } catch (e) {}
-      }
-
       final result = await _phonePeService.startPayment(
         requestPayload: paymentData.requestPayload,
         token: paymentData.token,
         orderId: paymentData.orderId,
         appSchema: 'ecliniq',
+        targetUpiPackage: selectedUPIPackage,
       );
 
       if (result.success || result.status != 'INCOMPLETE') {

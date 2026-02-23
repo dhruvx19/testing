@@ -329,6 +329,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
       }
     } catch (e) {}
   }
+
   Future<void> _loadUserProfilePhoto() async {
     try {
       final photo = await SecureStorageService.getProfilePhoto();
@@ -1893,30 +1894,6 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                     width: 198,
                                   ),
 
-                                   if (_userProfilePhoto != null &&
-                                      _userProfilePhoto!.isNotEmpty)
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 20.0),
-                                      child: Container(
-                                        padding: const EdgeInsets.all(4),
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color:
-                                                Colors.white.withOpacity(0.4),
-                                            width: 2,
-                                          ),
-                                        ),
-                                        child: CircleAvatar(
-                                          radius: 40,
-                                          backgroundColor: Colors.white,
-                                          backgroundImage: NetworkImage(
-                                            _userProfilePhoto!,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
                                   Text(
                                     _userName != null && _userName!.isNotEmpty
                                         ? 'Welcome back, $_userName!'
@@ -2029,8 +2006,8 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                                   _userProfilePhoto!.isNotEmpty)
                                               ? Image.network(
                                                   _userProfilePhoto!,
-                                                  width: 80,
-                                                  height: 80,
+                                                  width: 94,
+                                                  height: 94,
                                                   fit: BoxFit.cover,
                                                   errorBuilder: (context,
                                                           error,

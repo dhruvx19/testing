@@ -978,7 +978,7 @@ class AuthProvider with ChangeNotifier {
       
       if (response.success && response.data != null) {
         final data = response.data!;
-        final fullName = '${data.firstName} ${data.lastName}'.trim();
+        final fullName = '${data.fullName}'.trim();
         if (fullName.isNotEmpty) {
           await SecureStorageService.storeUserName(fullName);
         }

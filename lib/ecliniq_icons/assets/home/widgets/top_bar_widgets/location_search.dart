@@ -126,9 +126,9 @@ class _LocationBottomSheetState extends State<LocationBottomSheet> {
           ),
 
           EcliniqText(
-            'Setting your location helps us provide better services by finding the best doctors and hospitals near you.',
+            'We use your location to show nearby clinics and improve appointment booking experience.',
             textAlign: TextAlign.center,
-            style: EcliniqTextStyles.responsiveHeadlineXLMedium(context).copyWith(
+            style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
               color: Color(0xff626060),
             ),
           ),
