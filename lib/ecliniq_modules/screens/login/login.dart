@@ -340,6 +340,39 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
     } catch (e) {}
   }
 
+  Widget _buildNameInitial() {
+    final initial = (_userName != null && _userName!.isNotEmpty)
+        ? _userName![0].toUpperCase()
+        : '';
+
+    return Container(
+      width: 80,
+      height: 80,
+      decoration: BoxDecoration(
+        color: const Color(0xFFFEEAD1),
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.white.withOpacity(0.1),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Center(
+        child: Text(
+          initial,
+          style: const TextStyle(
+            color: Colors.orange,
+            fontSize: 40,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Rubik',
+          ),
+        ),
+      ),
+    );
+  }
+
   void _onPhoneNumberChanged() {
     final phone = _phoneController.text.trim();
     setState(() {
@@ -1992,21 +2025,36 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                       height: 94,
                                       child: Center(
                                         child: ClipOval(
-                                          child: SvgPicture.asset(
-                                            'lib/ecliniq_icons/assets/Group.svg',
-                                            width: 80,
-                                            fit: BoxFit.contain,
-                                            errorBuilder:
-                                                (context, error, stackTrace) =>
-                                                    Image.asset(
-                                                      EcliniqIcons
-                                                          .userCircle
-                                                          .assetPath,
-                                                      width: 72,
-                                                      height: 72,
-                                                      fit: BoxFit.cover,
+                                          child: (_userProfilePhoto != null &&
+                                                  _userProfilePhoto!.isNotEmpty)
+                                              ? Image.network(
+                                                  _userProfilePhoto!,
+                                                  width: 80,
+                                                  height: 80,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (context,
+                                                          error,
+                                                          stackTrace) =>
+                                                      _buildNameInitial(),
+                                                )
+                                              : (_userName != null &&
+                                                      _userName!.isNotEmpty)
+                                                  ? _buildNameInitial()
+                                                  : SvgPicture.asset(
+                                                      'lib/ecliniq_icons/assets/Group.svg',
+                                                      width: 80,
+                                                      fit: BoxFit.contain,
+                                                      errorBuilder: (context,
+                                                              error,
+                                                              stackTrace) =>
+                                                          Image.asset(
+                                                        EcliniqIcons.userCircle
+                                                            .assetPath,
+                                                        width: 72,
+                                                        height: 72,
+                                                        fit: BoxFit.cover,
+                                                      ),
                                                     ),
-                                          ),
                                         ),
                                       ),
                                     ),

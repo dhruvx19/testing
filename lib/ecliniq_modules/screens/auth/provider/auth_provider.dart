@@ -363,6 +363,7 @@ class AuthProvider with ChangeNotifier {
         }
 
         await SessionService.setOnboardingComplete(true);
+        await syncUserProfile();
 
         _profilePhotoKey = null;
         notifyListeners();
