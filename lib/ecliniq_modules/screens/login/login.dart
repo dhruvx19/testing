@@ -1807,11 +1807,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      _isBiometricEnabled
-                          ? (_isLoading
-                                ? 'Authenticating...'
-                                : 'Use ${BiometricService.getBiometricTypeName()}')
-                          : 'Use ${BiometricService.getBiometricTypeName()}',
+                      'Use ${BiometricService.getBiometricTypeName()}',
                       style:
                           EcliniqTextStyles.responsiveHeadlineBMedium(
                             context,
@@ -2002,36 +1998,42 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                       height: 94,
                                       child: Center(
                                         child: ClipOval(
-                                          child: (_userProfilePhoto != null &&
+                                          child:
+                                              (_userProfilePhoto != null &&
                                                   _userProfilePhoto!.isNotEmpty)
                                               ? Image.network(
                                                   _userProfilePhoto!,
                                                   width: 94,
                                                   height: 94,
                                                   fit: BoxFit.cover,
-                                                  errorBuilder: (context,
-                                                          error,
-                                                          stackTrace) =>
-                                                      _buildNameInitial(),
+                                                  errorBuilder:
+                                                      (
+                                                        context,
+                                                        error,
+                                                        stackTrace,
+                                                      ) => _buildNameInitial(),
                                                 )
                                               : (_userName != null &&
-                                                      _userName!.isNotEmpty)
-                                                  ? _buildNameInitial()
-                                                  : SvgPicture.asset(
-                                                      'lib/ecliniq_icons/assets/Group.svg',
-                                                      width: 80,
-                                                      fit: BoxFit.contain,
-                                                      errorBuilder: (context,
-                                                              error,
-                                                              stackTrace) =>
-                                                          Image.asset(
-                                                        EcliniqIcons.userCircle
+                                                    _userName!.isNotEmpty)
+                                              ? _buildNameInitial()
+                                              : SvgPicture.asset(
+                                                  'lib/ecliniq_icons/assets/Group.svg',
+                                                  width: 80,
+                                                  fit: BoxFit.contain,
+                                                  errorBuilder:
+                                                      (
+                                                        context,
+                                                        error,
+                                                        stackTrace,
+                                                      ) => Image.asset(
+                                                        EcliniqIcons
+                                                            .userCircle
                                                             .assetPath,
                                                         width: 72,
                                                         height: 72,
                                                         fit: BoxFit.cover,
                                                       ),
-                                                    ),
+                                                ),
                                         ),
                                       ),
                                     ),
