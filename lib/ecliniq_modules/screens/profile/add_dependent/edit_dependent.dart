@@ -271,14 +271,18 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
     if (backendValue.toUpperCase() == 'SELF') return 'Self';
     // Special case for AUNTY -> Aunt
     if (backendValue.toUpperCase() == 'AUNTY') return 'Aunt';
-    
+
     // Capitalize first letter, lowercase rest
-    return backendValue[0].toUpperCase() + backendValue.substring(1).toLowerCase();
+    return backendValue[0].toUpperCase() +
+        backendValue.substring(1).toLowerCase();
   }
 
   void _uploadPhoto(AddDependentProvider provider) async {
-    final bool hasPhoto = provider.selectedProfilePhoto != null ||
-        (provider.photoUrl != null && provider.photoUrl!.isNotEmpty && !provider.photoDeleted);
+    final bool hasPhoto =
+        provider.selectedProfilePhoto != null ||
+        (provider.photoUrl != null &&
+            provider.photoUrl!.isNotEmpty &&
+            !provider.photoDeleted);
 
     final String? action = await EcliniqBottomSheet.show<String>(
       context: context,
@@ -354,7 +358,9 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
       // Upload profile photo if a new one is selected
       String? photoKey;
       if (provider.selectedProfilePhoto != null) {
-        photoKey = await authProvider.uploadProfileImage(provider.selectedProfilePhoto!);
+        photoKey = await authProvider.uploadProfileImage(
+          provider.selectedProfilePhoto!,
+        );
         if (photoKey == null) {
           setState(() {
             _isSaving = false;
@@ -370,10 +376,13 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
         firstName: provider.firstName,
         lastName: provider.lastName,
         gender: provider.gender,
-        relation: provider.selectedRelation, // Use selectedRelation (UI format) instead of relation (backend format)
+        relation: provider
+            .selectedRelation, // Use selectedRelation (UI format) instead of relation (backend format)
         phone: provider.contactNumber.isEmpty ? null : provider.contactNumber,
         emailId: provider.email.isEmpty ? null : provider.email,
-        bloodGroup: _apiBloodGroup(provider.bloodGroup), // Convert UI format (A+) to API format (A_POSITIVE)
+        bloodGroup: _apiBloodGroup(
+          provider.bloodGroup,
+        ), // Convert UI format (A+) to API format (A_POSITIVE)
         height: provider.height,
         weight: provider.weight,
         dob: provider.dateOfBirth != null
@@ -470,7 +479,6 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
         dependentId: dependentId,
       );
 
-
       if (response.success) {
         if (widget.onDependentDeleted != null) {
           widget.onDependentDeleted!();
@@ -496,7 +504,6 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
         );
       }
     } catch (e) {
-      
       CustomErrorSnackBar.show(
         context: context,
         title: 'Error',
@@ -564,7 +571,10 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
                     maxHeight: MediaQuery.of(context).size.height * 0.55,
-                    minHeight: EcliniqTextStyles.getResponsiveHeight(context, 400.0),
+                    minHeight: EcliniqTextStyles.getResponsiveHeight(
+                      context,
+                      400.0,
+                    ),
                   ),
                   child: SingleChildScrollView(
                     padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(
@@ -583,15 +593,11 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                                 Container(
                                   width: EcliniqTextStyles.getResponsiveSize(
                                     context,
-                                    150.0,
-                                    minSize: 120.0,
-                                    maxSize: 180.0,
+                                    120.0,
                                   ),
                                   height: EcliniqTextStyles.getResponsiveSize(
                                     context,
-                                    150.0,
-                                    minSize: 120.0,
-                                    maxSize: 180.0,
+                                    120.0,
                                   ),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
@@ -606,62 +612,80 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                                             ),
                                             fit: BoxFit.cover,
                                           )
-                                        : (provider.photoUrl != null && provider.photoUrl!.isNotEmpty && !provider.photoDeleted)
-                                            ? DecorationImage(
-                                                image: NetworkImage(provider.photoUrl!),
-                                                fit: BoxFit.cover,
-                                              )
-                                            : null,
-                                    color: (provider.selectedProfilePhoto == null && (provider.photoUrl == null || provider.photoDeleted))
+                                        : (provider.photoUrl != null &&
+                                              provider.photoUrl!.isNotEmpty &&
+                                              !provider.photoDeleted)
+                                        ? DecorationImage(
+                                            image: NetworkImage(
+                                              provider.photoUrl!,
+                                            ),
+                                            fit: BoxFit.cover,
+                                          )
+                                        : null,
+                                    color:
+                                        (provider.selectedProfilePhoto ==
+                                                null &&
+                                            (provider.photoUrl == null ||
+                                                provider.photoDeleted))
                                         ? const Color(0xffF8FAFF)
                                         : null,
                                   ),
-                                  child: (provider.selectedProfilePhoto == null && (provider.photoUrl == null || provider.photoDeleted))
+                                  child:
+                                      (provider.selectedProfilePhoto == null &&
+                                          (provider.photoUrl == null ||
+                                              provider.photoDeleted))
                                       ? Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                              crossAxisAlignment: CrossAxisAlignment.center,
                                           children: [
                                             SvgPicture.asset(
                                               EcliniqIcons.add.assetPath,
-                                              width: EcliniqTextStyles.getResponsiveIconSize(
-                                                context,
-                                                48.0,
-                                              ),
-                                              height: EcliniqTextStyles.getResponsiveIconSize(
-                                                context,
-                                                48.0,
-                                              ),
+                                              width:
+                                                  EcliniqTextStyles.getResponsiveIconSize(
+                                                    context,
+                                                    48.0,
+                                                  ),
+                                              height:
+                                                  EcliniqTextStyles.getResponsiveIconSize(
+                                                    context,
+                                                    48.0,
+                                                  ),
                                               colorFilter: ColorFilter.mode(
                                                 Color(0xff2372EC),
                                                 BlendMode.srcIn,
                                               ),
                                             ),
                                             EcliniqText(
-                                              'Upload Photo',
-                                              style: EcliniqTextStyles.headlineXMedium.copyWith(
-                                                color: Color(0xff2372EC),
-                                              ),
+                                              'Upload\n Photo',
+                                              style: EcliniqTextStyles
+                                                  .headlineXMedium
+                                                  .copyWith(
+                                                    color: Color(0xff2372EC),
+                                                  ),
                                             ),
                                           ],
                                         )
                                       : null,
                                 ),
-                                if (provider.selectedProfilePhoto != null || (provider.photoUrl != null && provider.photoUrl!.isNotEmpty && !provider.photoDeleted))
+                                if (provider.selectedProfilePhoto != null ||
+                                    (provider.photoUrl != null &&
+                                        provider.photoUrl!.isNotEmpty &&
+                                        !provider.photoDeleted))
                                   Positioned(
                                     bottom: 0,
                                     right: 0,
                                     child: Container(
-                                      width: EcliniqTextStyles.getResponsiveSize(
-                                        context,
-                                        40.0,
-                                        minSize: 36.0,
-                                        maxSize: 44.0,
-                                      ),
-                                      height: EcliniqTextStyles.getResponsiveSize(
-                                        context,
-                                        40.0,
-                                        minSize: 36.0,
-                                        maxSize: 44.0,
-                                      ),
+                                      width:
+                                          EcliniqTextStyles.getResponsiveSize(
+                                            context,
+                                            42.0,
+                                          ),
+                                      height:
+                                          EcliniqTextStyles.getResponsiveSize(
+                                            context,
+                                            42.0,
+                                          ),
                                       decoration: BoxDecoration(
                                         color: Primitives.brightBlue,
                                         shape: BoxShape.circle,
@@ -670,12 +694,19 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                                           width: 3,
                                         ),
                                       ),
-                                      child: Icon(
-                                        Icons.edit,
-                                        color: Colors.white,
-                                        size: EcliniqTextStyles.getResponsiveIconSize(
-                                          context,
-                                          20.0,
+                                      child: Center(
+                                        child: SvgPicture.asset(
+                                          EcliniqIcons.refreshed.assetPath,
+                                          width:
+                                              EcliniqTextStyles.getResponsiveIconSize(
+                                                context,
+                                                28.0,
+                                              ),
+                                          height:
+                                              EcliniqTextStyles.getResponsiveIconSize(
+                                                context,
+                                                28.0,
+                                              ),
                                         ),
                                       ),
                                     ),
@@ -822,7 +853,9 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(
                               EcliniqTextStyles.getResponsiveBorderRadius(
-                                  context, 4.0),
+                                context,
+                                4.0,
+                              ),
                             ),
                           ),
                           child: Center(
@@ -830,9 +863,9 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                                 ? SizedBox(
                                     height:
                                         EcliniqTextStyles.getResponsiveHeight(
-                                      context,
-                                      32,
-                                    ),
+                                          context,
+                                          32,
+                                        ),
                                     width: EcliniqTextStyles.getResponsiveWidth(
                                       context,
                                       32,
@@ -844,14 +877,16 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                                   )
                                 : SvgPicture.asset(
                                     EcliniqIcons.delete.assetPath,
-                                    width: EcliniqTextStyles.getResponsiveIconSize(
-                                      context,
-                                      32,
-                                    ),
-                                    height: EcliniqTextStyles.getResponsiveIconSize(
-                                      context,
-                                      32,
-                                    ),
+                                    width:
+                                        EcliniqTextStyles.getResponsiveIconSize(
+                                          context,
+                                          32,
+                                        ),
+                                    height:
+                                        EcliniqTextStyles.getResponsiveIconSize(
+                                          context,
+                                          32,
+                                        ),
                                     colorFilter: ColorFilter.mode(
                                       _isDeleting
                                           ? const Color(0xffD6D6D6)
@@ -885,7 +920,8 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                               baseHeight: 52,
                             ),
                             decoration: BoxDecoration(
-                              color: provider.isFormValid &&
+                              color:
+                                  provider.isFormValid &&
                                       !_isDeleting &&
                                       !_isSaving
                                   ? Color(0xFF2372EC)
@@ -902,13 +938,14 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                                   ? SizedBox(
                                       height:
                                           EcliniqTextStyles.getResponsiveHeight(
-                                        context,
-                                        20,
-                                      ),
-                                      width: EcliniqTextStyles.getResponsiveWidth(
-                                        context,
-                                        20,
-                                      ),
+                                            context,
+                                            20,
+                                          ),
+                                      width:
+                                          EcliniqTextStyles.getResponsiveWidth(
+                                            context,
+                                            20,
+                                          ),
                                       child: EcliniqLoader(
                                         color: Colors.white,
                                         size: 20,
@@ -917,17 +954,18 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                                   : Text(
                                       'Save',
                                       textAlign: TextAlign.center,
-                                      style: EcliniqTextStyles
-                                              .responsiveTitleXBLarge(
-                                        context,
-                                      ).copyWith(
-                                        color: provider.isFormValid &&
-                                                !_isDeleting &&
-                                                !_isSaving
-                                            ? Colors.white
-                                            : Color(0xffD6D6D6),
-                                        fontWeight: FontWeight.w500,
-                                      ),
+                                      style:
+                                          EcliniqTextStyles.responsiveTitleXBLarge(
+                                            context,
+                                          ).copyWith(
+                                            color:
+                                                provider.isFormValid &&
+                                                    !_isDeleting &&
+                                                    !_isSaving
+                                                ? Colors.white
+                                                : Color(0xffD6D6D6),
+                                            fontWeight: FontWeight.w500,
+                                          ),
                                     ),
                             ),
                           ),

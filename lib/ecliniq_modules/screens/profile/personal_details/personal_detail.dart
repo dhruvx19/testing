@@ -918,114 +918,145 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                             children: [
                               Column(
                                 children: [
-                                      GestureDetector(
-                                        onTap: _selectProfilePhoto,
-                                        child: Stack(
-                                          children: [
-                                            Container(
-                                              width: EcliniqTextStyles.getResponsiveSize(
+                                  GestureDetector(
+                                    onTap: _selectProfilePhoto,
+                                    child: Stack(
+                                      children: [
+                                        Container(
+                                          width:
+                                              EcliniqTextStyles.getResponsiveSize(
                                                 context,
                                                 150.0,
-                                                minSize: 120.0,
-                                                maxSize: 180.0,
+                                               
                                               ),
-                                              height: EcliniqTextStyles.getResponsiveSize(
+                                          height:
+                                              EcliniqTextStyles.getResponsiveSize(
                                                 context,
                                                 150.0,
-                                                minSize: 120.0,
-                                                maxSize: 180.0,
+                                               
                                               ),
-                                              decoration: BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                border: Border.all(
-                                                  color: Color(0xff96BFFF),
-                                                  width: 0.5,
-                                                ),
-                                                image: _selectedProfilePhoto != null
-                                                    ? DecorationImage(
-                                                        image: FileImage(
-                                                          _selectedProfilePhoto!,
-                                                        ),
-                                                        fit: BoxFit.cover,
-                                                      )
-                                                    : (_profilePhotoUrl != null && _profilePhotoUrl!.isNotEmpty)
-                                                        ? DecorationImage(
-                                                            image: NetworkImage(_profilePhotoUrl!),
-                                                            fit: BoxFit.cover,
-                                                          )
-                                                        : null,
-                                                color: (_selectedProfilePhoto == null && (_profilePhotoUrl == null || _profilePhotoUrl!.isEmpty))
-                                                    ? Color(0xffF8FAFF)
-                                                    : null,
-                                              ),
-                                              child: (_selectedProfilePhoto == null && (_profilePhotoUrl == null || _profilePhotoUrl!.isEmpty))
-                                                  ? Column(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment.center,
-                                                      children: [
-                                                        SvgPicture.asset(
-                                                          EcliniqIcons.add.assetPath,
-                                                          width: EcliniqTextStyles.getResponsiveIconSize(
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: Color(0xff96BFFF),
+                                              width: 0.5,
+                                            ),
+                                            image: _selectedProfilePhoto != null
+                                                ? DecorationImage(
+                                                    image: FileImage(
+                                                      _selectedProfilePhoto!,
+                                                    ),
+                                                    fit: BoxFit.cover,
+                                                  )
+                                                : (_profilePhotoUrl != null &&
+                                                      _profilePhotoUrl!
+                                                          .isNotEmpty)
+                                                ? DecorationImage(
+                                                    image: NetworkImage(
+                                                      _profilePhotoUrl!,
+                                                    ),
+                                                    fit: BoxFit.cover,
+                                                  )
+                                                : null,
+                                            color:
+                                                (_selectedProfilePhoto ==
+                                                        null &&
+                                                    (_profilePhotoUrl == null ||
+                                                        _profilePhotoUrl!
+                                                            .isEmpty))
+                                                ? Color(0xffF8FAFF)
+                                                : null,
+                                          ),
+                                          child:
+                                              (_selectedProfilePhoto == null &&
+                                                  (_profilePhotoUrl == null ||
+                                                      _profilePhotoUrl!
+                                                          .isEmpty))
+                                              ? Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    SvgPicture.asset(
+                                                      EcliniqIcons
+                                                          .add
+                                                          .assetPath,
+                                                      width:
+                                                          EcliniqTextStyles.getResponsiveIconSize(
                                                             context,
                                                             48.0,
                                                           ),
-                                                          height: EcliniqTextStyles.getResponsiveIconSize(
+                                                      height:
+                                                          EcliniqTextStyles.getResponsiveIconSize(
                                                             context,
                                                             48.0,
                                                           ),
-                                                          colorFilter: ColorFilter.mode(
+                                                      colorFilter:
+                                                          ColorFilter.mode(
                                                             Color(0xff2372EC),
                                                             BlendMode.srcIn,
                                                           ),
-                                                        ),
-                                                        EcliniqText(
-                                                          'Upload Photo',
-                                                          style: EcliniqTextStyles.headlineXMedium.copyWith(
-                                                            color: Color(0xff2372EC),
+                                                    ),
+                                                    EcliniqText(
+                                                      'Upload Photo',
+                                                      style: EcliniqTextStyles
+                                                          .headlineXMedium
+                                                          .copyWith(
+                                                            color: Color(
+                                                              0xff2372EC,
+                                                            ),
                                                           ),
-                                                        ),
-                                                      ],
-                                                    )
-                                                  : null,
-                                            ),
-                                            if (_selectedProfilePhoto != null || (_profilePhotoUrl != null && _profilePhotoUrl!.isNotEmpty))
-                                              Positioned(
-                                                bottom: 0,
-                                                right: 0,
-                                                child: Container(
-                                                  width: EcliniqTextStyles.getResponsiveSize(
-                                                    context,
-                                                    40.0,
-                                                    minSize: 36.0,
-                                                    maxSize: 44.0,
-                                                  ),
-                                                  height: EcliniqTextStyles.getResponsiveSize(
-                                                    context,
-                                                    40.0,
-                                                    minSize: 36.0,
-                                                    maxSize: 44.0,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    color: Color(0xff2372EC),
-                                                    shape: BoxShape.circle,
-                                                    border: Border.all(
-                                                      color: Colors.white,
-                                                      width: 3,
                                                     ),
+                                                  ],
+                                                )
+                                              : null,
+                                        ),
+                                        if (_selectedProfilePhoto != null ||
+                                            (_profilePhotoUrl != null &&
+                                                _profilePhotoUrl!.isNotEmpty))
+                                          Positioned(
+                                            bottom: 0,
+                                            right: 0,
+                                            child: Container(
+                                              width:
+                                                  EcliniqTextStyles.getResponsiveSize(
+                                                    context,
+                                                    48.0,
                                                   ),
-                                                  child: Icon(
-                                                    Icons.edit,
-                                                    color: Colors.white,
-                                                    size: EcliniqTextStyles.getResponsiveIconSize(
-                                                      context,
-                                                      20.0,
-                                                    ),
+                                              height:
+                                                  EcliniqTextStyles.getResponsiveSize(
+                                                    context,
+                                                    48.0,
                                                   ),
+                                              decoration: BoxDecoration(
+                                                color: Color(0xff2372EC),
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                  color: Colors.white,
+                                                  width: 3,
                                                 ),
                                               ),
-                                          ],
-                                        ),
-                                      ),
+                                              child: Center(
+                                                child: SvgPicture.asset(
+                                                  EcliniqIcons
+                                                      .refreshed
+                                                      .assetPath,
+                                                  width:
+                                                      EcliniqTextStyles.getResponsiveIconSize(
+                                                        context,
+                                                        32.0,
+                                                      ),
+                                                  height:
+                                                      EcliniqTextStyles.getResponsiveIconSize(
+                                                        context,
+                                                        32.0,
+                                                      ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
 
                                   SizedBox(
                                     height:
@@ -1443,7 +1474,9 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                               52,
                             ),
                             child: ElevatedButton(
-                              onPressed: (_isLoading || _isSaving) ? null : _save,
+                              onPressed: (_isLoading || _isSaving)
+                                  ? null
+                                  : _save,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Color(0xff2372EC),
                                 disabledBackgroundColor: _isSaving
@@ -1493,5 +1526,3 @@ class _PersonalDetailsState extends State<PersonalDetails> {
     );
   }
 }
-
-

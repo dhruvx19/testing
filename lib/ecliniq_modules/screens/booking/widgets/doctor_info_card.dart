@@ -400,7 +400,7 @@ class DoctorInfoCard extends StatelessWidget {
                 ],
               ),
               SizedBox(
-                height: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+                height: EcliniqTextStyles.getResponsiveSpacing(context, 2),
               ),
               if (locationAddress != null)
                 Row(
