@@ -32,19 +32,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
 
     try {
-      // 1. Try biometric login if enabled
-      final isBiometricEnabled = await SecureStorageService.isBiometricEnabled();
-      if (isBiometricEnabled && mounted) {
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        final success = await authProvider.loginWithBiometric();
-        
-        if (success && mounted) {
-          EcliniqRouter.pushReplacement(const HomeScreen());
-          return;
-        }
-      }
-      
-      // 2. Fallback to normal flow
+      // 1. Fallback to normal flow
       final initialRoute = await AuthFlowManager.getInitialRoute();
 
       Widget? nextScreen;

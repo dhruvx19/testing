@@ -168,40 +168,43 @@ class _OtpInputScreenState extends State<OtpInputScreen>
             }
           } else {
             
-            final redirectTo = authProvider.redirectTo;
-            final userStatus = authProvider.userStatus;
+            if (redirectTo == 'home') {
+              // Case 3: Existing user re-downloaded or re-authenticating and profile is complete
+              await SessionService.clearFlowState();
+              EcliniqRouter.pushAndRemoveUntil(
+                const HomeScreen(),
+                (route) => false,
+              );
+              return;
+            }
 
-            
-            
+            // Case 1: New user or profile setup needed
             final isNewUser =
                 userStatus == 'new' || redirectTo == 'profile_setup';
 
             if (isNewUser) {
-              
-              
+              // Fresh setup: Set/Reset MPIN then Profile Setup
               await SecureStorageService.deleteMPIN();
 
-              
               await SessionService.saveFlowState('mpin_setup');
               EcliniqRouter.pushAndRemoveUntil(
                 const MPINSet(),
                 (route) => route.isFirst,
               );
             } else {
-              
+              // Existing user but needs MPIN or verification
               final hasMPIN = await SecureStorageService.hasMPIN();
 
               if (!hasMPIN) {
-                
+                // Must set MPIN if missing locally
                 await SessionService.saveFlowState('mpin_setup');
                 EcliniqRouter.pushAndRemoveUntil(
                   const MPINSet(),
                   (route) => route.isFirst,
                 );
               } else {
-                
-                
-                await SessionService.clearFlowState(); 
+                // Go to Login page with MPIN option
+                await SessionService.clearFlowState();
                 EcliniqRouter.pushAndRemoveUntil(
                   LoginPage(
                     phoneNumber: authProvider.phoneNumber,

@@ -21,6 +21,7 @@ class SecureStorageService {
   static const String _keyUserID = 'user_id';
   static const String _keyPhoneNumber = 'phone_number';
   static const String _keyUserName = 'user_name';
+  static const String _keyProfilePhoto = 'profile_photo';
   static const String _keyIsExistingUser = 'is_existing_user';
 
   
@@ -371,6 +372,23 @@ class SecureStorageService {
   static Future<String?> getUserName() async {
     try {
       return await _secureStorage.read(key: _keyUserName);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static Future<bool> storeProfilePhoto(String url) async {
+    try {
+      await _secureStorage.write(key: _keyProfilePhoto, value: url);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  static Future<String?> getProfilePhoto() async {
+    try {
+      return await _secureStorage.read(key: _keyProfilePhoto);
     } catch (e) {
       return null;
     }

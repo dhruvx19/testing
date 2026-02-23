@@ -156,33 +156,19 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
               }
             }
           } else if (isPatient) {
-            if (isMpinSet) {
-              
-              EcliniqRouter.push(
-                LoginPage(
-                  phoneNumber: phone,
-                  initialOtpMode: false,
-                  showSelectionMode: false,
-                ),
-              );
-            } else {
-              
-              final otpSuccess = await authProvider.loginOrRegisterUser(phone);
-              if (mounted) {
-                if (otpSuccess) {
-                  EcliniqRouter.push(
-                    LoginPage(
-                      phoneNumber: phone,
-                      initialOtpMode: true,
-                      showSelectionMode: true,
-                    ),
-                  );
-                } else {
-                  setState(() => _isButtonPressed = false);
-                  _showSnackBar(
-                    authProvider.errorMessage ?? 'Failed to send OTP',
-                  );
-                }
+            // Case 3: Existing user (or needing verification)
+            // Send OTP and go to OtpInputScreen which handles direct Home navigation
+            final otpSuccess = await authProvider.loginOrRegisterUser(phone);
+            if (mounted) {
+              if (otpSuccess) {
+                EcliniqRouter.push(
+                  OtpInputScreen(isForgotPinFlow: widget.isForgotPinFlow),
+                );
+              } else {
+                setState(() => _isButtonPressed = false);
+                _showSnackBar(
+                  authProvider.errorMessage ?? 'Failed to send OTP',
+                );
               }
             }
           } else {

@@ -175,6 +175,7 @@ class _ProfilePageState extends State<ProfilePage>
         final url = body['data']?['publicUrl'];
         if (url is String && url.isNotEmpty) {
           _profilePhotoUrl = url;
+          await SecureStorageService.storeProfilePhoto(url);
           return;
         }
       }
@@ -197,6 +198,7 @@ class _ProfilePageState extends State<ProfilePage>
         final url = body['data']?['downloadUrl'];
         if (url is String && url.isNotEmpty) {
           _profilePhotoUrl = url;
+          await SecureStorageService.storeProfilePhoto(url);
         }
       }
     } catch (_) {}

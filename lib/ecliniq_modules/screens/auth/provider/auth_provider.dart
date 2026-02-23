@@ -10,6 +10,7 @@ import 'package:ecliniq/ecliniq_core/auth/secure_storage.dart';
 import 'package:ecliniq/ecliniq_core/auth/jwt_decoder.dart';
 import 'package:ecliniq/ecliniq_core/notifications/push_notification.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
+import 'package:ecliniq/ecliniq_api/patient_service.dart';
 import 'package:ecliniq/ecliniq_api/src/api_client.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_modules/screens/login/login.dart';
@@ -896,5 +897,73 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+
+  Future<void> syncUserProfile() async {
+    if (_authToken == null) return;
+    
+    try {
+      final patientService = PatientService();
+      final response = await patientService.getPatientDetails(authToken: _authToken!);
+      
+      if (response.success && response.data != null) {
+        final data = response.data!;
+        final fullName = '${data.firstName} ${data.lastName}'.trim();
+        if (fullName.isNotEmpty) {
+          await SecureStorageService.storeUserName(fullName);
+        }
+        
+        if (data.profilePhoto != null && data.profilePhoto!.isNotEmpty) {
+          await _resolveAndStoreProfilePhoto(data.profilePhoto!);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error syncing user profile: $e');
+    }
+  }
+
+  Future<void> _resolveAndStoreProfilePhoto(String key) async {
+    if (_authToken == null) return;
+    
+    // Try Public URL first
+    try {
+      final publicUri = Uri.parse(
+        '${Endpoints.storagePublicUrl}?key=${Uri.encodeComponent(key)}',
+      );
+      final resp = await EcliniqHttpClient.get(
+        publicUri,
+        headers: {'Content-Type': 'application/json'},
+      );
+      if (resp.statusCode == 200) {
+        final body = jsonDecode(resp.body) as Map<String, dynamic>;
+        final url = body['data']?['publicUrl'];
+        if (url is String && url.isNotEmpty) {
+          await SecureStorageService.storeProfilePhoto(url);
+          return;
+        }
+      }
+    } catch (_) {}
+
+    // Fallback to Download URL
+    try {
+      final downloadUri = Uri.parse(
+        '${Endpoints.storageDownloadUrl}?key=${Uri.encodeComponent(key)}',
+      );
+      final resp = await EcliniqHttpClient.get(
+        downloadUri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_authToken',
+          'x-access-token': _authToken!,
+        },
+      );
+      if (resp.statusCode == 200) {
+        final body = jsonDecode(resp.body) as Map<String, dynamic>;
+        final url = body['data']?['downloadUrl'];
+        if (url is String && url.isNotEmpty) {
+          await SecureStorageService.storeProfilePhoto(url);
+        }
+      }
+    } catch (_) {}
   }
 }

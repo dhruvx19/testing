@@ -138,6 +138,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
   bool _userExplicitlyChoseMPIN = false;
   bool _showLoadingOverlay = false;
   String? _userName;
+  String? _userProfilePhoto;
   final TextEditingController _textController = TextEditingController();
   final TextEditingController _otpController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
@@ -178,6 +179,15 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
       }
 
       await _loadUserName();
+      await _loadUserProfilePhoto();
+
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      if ((_userName == null || _userProfilePhoto == null) &&
+          authProvider.authToken != null) {
+        await authProvider.syncUserProfile();
+        await _loadUserName();
+        await _loadUserProfilePhoto();
+      }
 
       await _checkBiometricAvailability();
 
@@ -313,6 +323,16 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
       if (name != null && name.isNotEmpty && mounted) {
         setState(() {
           _userName = name.trim().split(' ').first;
+        });
+      }
+    } catch (e) {}
+  }
+  Future<void> _loadUserProfilePhoto() async {
+    try {
+      final photo = await SecureStorageService.getProfilePhoto();
+      if (photo != null && photo.isNotEmpty && mounted) {
+        setState(() {
+          _userProfilePhoto = photo;
         });
       }
     } catch (e) {}
@@ -1838,6 +1858,30 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                     width: 198,
                                   ),
 
+                                   if (_userProfilePhoto != null &&
+                                      _userProfilePhoto!.isNotEmpty)
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 20.0),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color:
+                                                Colors.white.withOpacity(0.4),
+                                            width: 2,
+                                          ),
+                                        ),
+                                        child: CircleAvatar(
+                                          radius: 40,
+                                          backgroundColor: Colors.white,
+                                          backgroundImage: NetworkImage(
+                                            _userProfilePhoto!,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                   Text(
                                     _userName != null && _userName!.isNotEmpty
                                         ? 'Welcome back, ${_userName!.split(' ').first}!'
