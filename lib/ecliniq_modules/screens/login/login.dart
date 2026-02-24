@@ -347,27 +347,28 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
         : '';
 
     return Container(
-      width: 80,
-      height: 80,
+      width: 94,
+      height: 94,
       decoration: BoxDecoration(
-        color: const Color(0xFFFEEAD1),
+        color: const Color(0xFFFFF7F0),
         shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.white.withOpacity(0.1),
-            blurRadius: 10,
-            spreadRadius: 2,
-          ),
-        ],
+        border: Border.all(color: const Color(0xFFEC7600), width: 0.5),
+        // boxShadow: [
+        //   BoxShadow(
+        //     color: Colors.white.withOpacity(0.1),
+        //     blurRadius: 10,
+        //     spreadRadius: 2,
+        //   ),
+        // ],
       ),
       child: Center(
         child: Text(
           initial,
           style: const TextStyle(
-            color: Colors.orange,
-            fontSize: 40,
-            fontWeight: FontWeight.w600,
-            fontFamily: 'Rubik',
+            color: Color(0xffEC7600),
+            fontSize: 36,
+            fontWeight: FontWeight.w400,
+            fontFamily: 'Regular',
           ),
         ),
       ),
@@ -2056,62 +2057,59 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                   top: -35,
                                   left: 16,
                                   right: 16,
-                                  child: Center(
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withOpacity(
-                                              0.1,
-                                            ),
-                                            blurRadius: 15,
-                                            offset: const Offset(0, 5),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(
+                                            0.1,
                                           ),
-                                        ],
-                                      ),
-                                      width: 94,
-                                      height: 94,
-                                      child: Center(
-                                        child: ClipOval(
-                                          child:
-                                              (_userProfilePhoto != null &&
-                                                  _userProfilePhoto!.isNotEmpty)
-                                              ? Image.network(
-                                                  _userProfilePhoto!,
-                                                  width: 94,
-                                                  height: 94,
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder:
-                                                      (
-                                                        context,
-                                                        error,
-                                                        stackTrace,
-                                                      ) => _buildNameInitial(),
-                                                )
-                                              : (_userName != null &&
-                                                    _userName!.isNotEmpty)
-                                              ? _buildNameInitial()
-                                              : SvgPicture.asset(
-                                                  'lib/ecliniq_icons/assets/Group.svg',
-                                                  width: 80,
-                                                  fit: BoxFit.contain,
-                                                  errorBuilder:
-                                                      (
-                                                        context,
-                                                        error,
-                                                        stackTrace,
-                                                      ) => Image.asset(
-                                                        EcliniqIcons
-                                                            .userCircle
-                                                            .assetPath,
-                                                        width: 72,
-                                                        height: 72,
-                                                        fit: BoxFit.cover,
-                                                      ),
-                                                ),
+                                          blurRadius: 15,
+                                          offset: const Offset(0, 5),
                                         ),
+                                      ],
+                                    ),
+                                   
+                                    child: Center(
+                                      child: ClipOval(
+                                        child:
+                                            (_userProfilePhoto != null &&
+                                                _userProfilePhoto!.isNotEmpty)
+                                            ? Image.network(
+                                                _userProfilePhoto!,
+                                                width: 94,
+                                                height: 94,
+                                                fit: BoxFit.cover,
+                                                errorBuilder:
+                                                    (
+                                                      context,
+                                                      error,
+                                                      stackTrace,
+                                                    ) => _buildNameInitial(),
+                                              )
+                                            : (_userName != null &&
+                                                  _userName!.isNotEmpty)
+                                            ? _buildNameInitial()
+                                            : SvgPicture.asset(
+                                                'lib/ecliniq_icons/assets/Group.svg',
+                                                width: 80,
+                                                fit: BoxFit.contain,
+                                                errorBuilder:
+                                                    (
+                                                      context,
+                                                      error,
+                                                      stackTrace,
+                                                    ) => Image.asset(
+                                                      EcliniqIcons
+                                                          .userCircle
+                                                          .assetPath,
+                                                      width: 72,
+                                                      height: 72,
+                                                      fit: BoxFit.cover,
+                                                    ),
+                                              ),
                                       ),
                                     ),
                                   ),
