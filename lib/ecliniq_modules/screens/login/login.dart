@@ -1390,6 +1390,50 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: () {
+                  setState(() {
+                    _showMPINScreen = false;
+                    _isOTPMode = false;
+                    _userExplicitlyChoseMPIN = false;
+                    _entered = '';
+                    _textController.clear();
+                    _otpController.clear();
+                  });
+                },
+                icon: SvgPicture.asset(
+                  EcliniqIcons.arrowLeft.assetPath,
+                  width: 24,
+                  height: 24,
+                  colorFilter: const ColorFilter.mode(
+                    Color(0xff424242),
+                    BlendMode.srcIn,
+                  ),
+                ),
+              ),
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: () {
+                  EcliniqRouter.push(const LoginTroublePage());
+                },
+                icon: SvgPicture.asset(
+                  EcliniqIcons.questionCircle.assetPath,
+                  width: 24,
+                  height: 24,
+                  colorFilter: const ColorFilter.mode(
+                    Color(0xff424242),
+                    BlendMode.srcIn,
+                  ),
+                ),
+              ),
+            ],
+          ),
           SizedBox(height: requiredSpacing.clamp(16.0, double.infinity)),
 
           const SizedBox(height: 14),
