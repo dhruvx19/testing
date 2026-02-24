@@ -1930,9 +1930,9 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                               ),
                             ),
                             Positioned(
-                              top: MediaQuery.of(context).padding.top + 10,
-                              left: 16,
-                              right: 16,
+                              top: EcliniqTextStyles.getResponsiveSize(context, 50.0),
+                              left: EcliniqTextStyles.getResponsiveSize(context, 2.0),
+                              right: EcliniqTextStyles.getResponsiveSize(context, 8.0),
                               child: _showMPINScreen
                                   ? Row(
                                       mainAxisAlignment:
@@ -1982,8 +1982,8 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                               const SizedBox(width: 4),
                                               Text(
                                                 'Help',
-                                                style: EcliniqTextStyles
-                                                    .responsiveHeadlineXMedium(
+                                                style:
+                                                    EcliniqTextStyles.responsiveHeadlineXMedium(
                                                       context,
                                                     ).copyWith(
                                                       color: Colors.white,
@@ -2061,19 +2061,16 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                   right: 16,
                                   child: Container(
                                     decoration: BoxDecoration(
-                                      
                                       shape: BoxShape.circle,
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withOpacity(
-                                            0.1,
-                                          ),
+                                          color: Colors.black.withOpacity(0.1),
                                           blurRadius: 15,
                                           offset: const Offset(0, 5),
                                         ),
                                       ],
                                     ),
-                                   
+
                                     child: Center(
                                       child: ClipOval(
                                         child:

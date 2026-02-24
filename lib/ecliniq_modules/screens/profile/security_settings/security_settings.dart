@@ -55,7 +55,7 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
     try {
       final isAvailable = await BiometricService.isAvailable();
       final isEnabled = await SecureStorageService.isBiometricEnabled();
-      
+
       if (mounted) {
         setState(() {
           _isBiometricAvailable = isAvailable;
@@ -70,7 +70,6 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
 
   Future<void> _loadUserInfo() async {
     try {
-      
       if (widget.patientData != null) {
         if (widget.patientData!.user?.phone != null) {
           _existingPhone = widget.patientData!.user!.phone;
@@ -80,7 +79,6 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
         }
       }
 
-      
       if (_existingPhone == null) {
         final phone = await SecureStorageService.getPhoneNumber();
         if (phone != null) {
@@ -102,7 +100,6 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
         setState(() {});
       }
     } catch (e) {
-      
     } finally {
       if (mounted) {
         setState(() {
@@ -112,7 +109,6 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
     }
   }
 
-  
   Future<void> _refreshUserInfo() async {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -130,14 +126,12 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
         final user = response.data!.user;
 
         if (mounted) {
-          
           if (user?.phone != null) {
             _existingPhone = user!.phone;
-            
+
             await SecureStorageService.storePhoneNumber(user.phone!);
           }
 
-          
           if (user?.emailId != null) {
             _existingEmail = user!.emailId;
           }
@@ -145,13 +139,10 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
           setState(() {});
         }
       }
-    } catch (e) {
-      
-    }
+    } catch (e) {}
   }
 
   Future<void> onPressedChangeMobileNumber() async {
-    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -159,13 +150,12 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
       builder: (context) => Center(child: EcliniqLoader()),
     );
 
-    
     if (mounted) {
       final result = await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => VerifyExistingAccount(
-            challengeId: null, 
+            challengeId: null,
             maskedContact: null,
             existingPhone: _existingPhone,
             preloadedPhone: _existingPhone,
@@ -177,29 +167,24 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
         ),
       );
 
-      
       if (mounted) {
         Navigator.of(context, rootNavigator: true).pop();
       }
 
-      
       if (result != null &&
           result is Map &&
           result['success'] == true &&
           result['type'] == 'phone') {
-        
         await _refreshUserInfo();
 
         if (mounted) {
-    
-            CustomSuccessSnackBar.show(
-              title: 'Mobile number changed successfully!',
-              subtitle: 'Your mobile number has been updated',
-              context: context,
-    
+          CustomSuccessSnackBar.show(
+            title: 'Mobile number changed successfully!',
+            subtitle: 'Your mobile number has been updated',
+            context: context,
           );
         }
-        
+
         // Return true to indicate data has changed
         _hasDataChanged = true;
       }
@@ -207,7 +192,6 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
   }
 
   Future<void> onPressedChangeEmail() async {
-    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -215,13 +199,12 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
       builder: (context) => Center(child: EcliniqLoader()),
     );
 
-    
     if (mounted) {
       final result = await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => VerifyExistingEmail(
-            challengeId: null, 
+            challengeId: null,
             maskedContact: null,
             existingEmail: _existingEmail,
             preloadedEmail: _existingEmail,
@@ -233,28 +216,24 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
         ),
       );
 
-      
       if (mounted) {
         Navigator.of(context, rootNavigator: true).pop();
       }
 
-      
       if (result != null &&
           result is Map &&
           result['success'] == true &&
           result['type'] == 'email') {
-        
         await _refreshUserInfo();
 
         if (mounted) {
-            CustomSuccessSnackBar.show(
-              title: 'Email changed successfully!',
-              subtitle: 'Your email address has been updated',
-              context: context,
-            
+          CustomSuccessSnackBar.show(
+            title: 'Email changed successfully!',
+            subtitle: 'Your email address has been updated',
+            context: context,
           );
         }
-        
+
         // Return true to indicate data has changed
         _hasDataChanged = true;
       }
@@ -281,14 +260,17 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
           CustomErrorSnackBar.show(
             context: context,
             title: 'M-PIN Required',
-            subtitle: 'Please set up M-PIN first to enable biometric authentication',
+            subtitle:
+                'Please set up M-PIN first to enable biometric authentication',
             duration: const Duration(seconds: 3),
           );
           return;
         }
 
         try {
-          final success = await SecureStorageService.storeMPINWithBiometric(mpin);
+          final success = await SecureStorageService.storeMPINWithBiometric(
+            mpin,
+          );
           if (success) {
             setState(() {
               isOn = true;
@@ -358,7 +340,6 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
     }
 
     Future<void> onPressedChangeMPin() async {
-      
       if (mounted) {
         final result = await Navigator.push(
           context,
@@ -373,22 +354,16 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
           ),
         );
 
-        
         if (result == true) {
           if (mounted) {
-            
             await Future.delayed(const Duration(milliseconds: 100));
             if (mounted && context.mounted) {
-              
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (mounted && context.mounted) {
-     
-           
-                    CustomSuccessSnackBar.show(
-                      title: 'M-PIN changed successfully!',
-                      subtitle: 'Your M-PIN has been updated',
-                      context: context,
-                 
+                  CustomSuccessSnackBar.show(
+                    title: 'M-PIN changed successfully!',
+                    subtitle: 'Your M-PIN has been updated',
+                    context: context,
                   );
                 }
               });
@@ -398,7 +373,6 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
       }
     }
 
-
     return WillPopScope(
       onWillPop: () async {
         Navigator.pop(context, _hasDataChanged);
@@ -407,251 +381,280 @@ class _SecuritySettingsOptionsState extends State<SecuritySettingsOptions> {
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-        surfaceTintColor: Colors.transparent,
-        leadingWidth: 58,
-        titleSpacing: 0,
-        toolbarHeight: 38,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: SvgPicture.asset(
-            EcliniqIcons.backArrow.assetPath,
-            width: EcliniqTextStyles.getResponsiveSize(context, 32.0),
-            height: EcliniqTextStyles.getResponsiveSize(context, 32.0),
+          surfaceTintColor: Colors.transparent,
+          leadingWidth: 58,
+          titleSpacing: 0,
+          toolbarHeight: 38,
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: SvgPicture.asset(
+              EcliniqIcons.backArrow.assetPath,
+              width: EcliniqTextStyles.getResponsiveSize(context, 32.0),
+              height: EcliniqTextStyles.getResponsiveSize(context, 32.0),
+            ),
+            onPressed: () => Navigator.pop(context, _hasDataChanged),
           ),
-          onPressed: () => Navigator.pop(context, _hasDataChanged),
-        ),
-        title: Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            'Security Settings',
-            style: EcliniqTextStyles.responsiveHeadlineMedium(
-              context,
-            ).copyWith(color: Color(0xff424242)),
-          ),
-        ),
-        bottom: PreferredSize(
-          preferredSize: Size.fromHeight(
-            EcliniqTextStyles.getResponsiveSize(context, 1.0),
-          ),
-          child: Container(
-            color: Color(0xFFB8B8B8),
-            height: EcliniqTextStyles.getResponsiveSize(context, 1.0),
-          ),
-        ),
-      ),
-      body: _isInitialLoading
-          ? Center(child: EcliniqLoader(size: 20))
-          : Container(
-              padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+          title: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Security Settings',
+              style: EcliniqTextStyles.responsiveHeadlineMedium(
                 context,
-                horizontal: 20.0,
-                vertical: 0.0,
-              ),
-              child: Column(
-                children: [
-                  _buildTile(
-                    EcliniqIcons.smartphone.assetPath,
-                    'Change Mobile Number',
-                    onPressedChangeMobileNumber,
-                    _isExpanded,
-                    context: context,
-                  ),
-                  Container(
-                    color: Color(0xffD6D6D6),
-                    width: double.infinity,
-                    height: EcliniqTextStyles.getResponsiveSize(context, 0.5),
-                  ),
-                  _buildTile(
-                    EcliniqIcons.mail.assetPath,
-                    'Change Email ID',
-                    onPressedChangeEmail,
-                    _isExpanded,
-                    context: context,
-                  ),
-                  Container(
-                    color: Color(0xffD6D6D6),
-                    width: double.infinity,
-                    height: EcliniqTextStyles.getResponsiveSize(context, 0.5),
-                  ),
-                  _buildTile(
-                    EcliniqIcons.password.assetPath,
-                    'Change M-PIN',
-                    onPressedChangeMPin,
-                    _isExpanded,
-                    context: context,
-                  ),
-                  Container(
-                    color: Color(0xffD6D6D6),
-                    width: double.infinity,
-                    height: EcliniqTextStyles.getResponsiveSize(context, 0.5),
-                  ),
-                  _buildTile(
-                    EcliniqIcons.faceScanSquare.assetPath,
-                    _isBiometricEnabled 
-                        ? 'Change Biometric Permissions' 
-                        : 'Enable Biometric Authentication',
-                    onPressedChangeBiometricPermissions,
-                    _isExpanded,
-                    context: context,
-                    subtitle: !_isBiometricAvailable 
-                        ? 'Not available on this device' 
-                        : (_isBiometricEnabled 
-                            ? 'Biometric is currently enabled' 
-                            : 'Enable biometric for quick access'),
-                  ),
-                  if (_isExpanded) ...[
-                    _buildDropDown(isOn, handleBiometricPermission, context: context),
-                  ],
-
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  Spacer(),
-                  Padding(
-                    padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
-                      context,
-                      horizontal: 0.0,
-                      vertical: 30.0,
+              ).copyWith(color: Color(0xff424242)),
+            ),
+          ),
+          bottom: PreferredSize(
+            preferredSize: Size.fromHeight(
+              EcliniqTextStyles.getResponsiveSize(context, 1.0),
+            ),
+            child: Container(
+              color: Color(0xFFB8B8B8),
+              height: EcliniqTextStyles.getResponsiveSize(context, 1.0),
+            ),
+          ),
+        ),
+        body: _isInitialLoading
+            ? Center(child: EcliniqLoader(size: 20))
+            : Container(
+                padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                  context,
+                  horizontal: 20.0,
+                  vertical: 0.0,
+                ),
+                child: Column(
+                  children: [
+                    _buildTile(
+                      EcliniqIcons.smartphone.assetPath,
+                      'Change Mobile Number',
+                      onPressedChangeMobileNumber,
+                      _isExpanded,
+                      context: context,
                     ),
-                    child: GestureDetector(
-                      onTap: () async {
-                        final result = await EcliniqBottomSheet.show(
-                          context: context,
-                          child: const DeleteAccountBottomSheet(),
-                        );
+                    Container(
+                      color: Color(0xffD6D6D6),
+                      width: double.infinity,
+                      height: EcliniqTextStyles.getResponsiveSize(context, 0.5),
+                    ),
+                    _buildTile(
+                      EcliniqIcons.mail.assetPath,
+                      'Change Email ID',
+                      onPressedChangeEmail,
+                      _isExpanded,
+                      context: context,
+                    ),
+                    Container(
+                      color: Color(0xffD6D6D6),
+                      width: double.infinity,
+                      height: EcliniqTextStyles.getResponsiveSize(context, 0.5),
+                    ),
+                    _buildTile(
+                      EcliniqIcons.password.assetPath,
+                      'Change M-PIN',
+                      onPressedChangeMPin,
+                      _isExpanded,
+                      context: context,
+                    ),
+                    Container(
+                      color: Color(0xffD6D6D6),
+                      width: double.infinity,
+                      height: EcliniqTextStyles.getResponsiveSize(context, 0.5),
+                    ),
+                    _buildTile(
+                      EcliniqIcons.faceScanSquare.assetPath,
 
-                        if (result == true && mounted) {
-                          // User confirmed account deletion
-                          try {
-                            // Show loading dialog
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              barrierColor: Colors.black.withOpacity(0.3),
-                              builder: (context) => Center(child: EcliniqLoader()),
-                            );
+                      'Change Biometric Permissions',
+                      onPressedChangeBiometricPermissions,
+                      _isExpanded,
+                      context: context,
+                    ),
+                    if (_isExpanded) ...[
+                      _buildDropDown(
+                        isOn,
+                        handleBiometricPermission,
+                        context: context,
+                      ),
+                    ],
 
-                            final authProvider = Provider.of<AuthProvider>(context, listen: false);
-                            final authToken = authProvider.authToken;
+                    Spacer(),
+                    Padding(
+                      padding:
+                          EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                            context,
+                            horizontal: 0.0,
+                            vertical: 30.0,
+                          ),
+                      child: GestureDetector(
+                        onTap: () async {
+                          final result = await EcliniqBottomSheet.show(
+                            context: context,
+                            child: const DeleteAccountBottomSheet(),
+                          );
 
-                            // Call delete account API
-                            final deleteResponse = await _authService.deleteAccount(authToken: authToken);
+                          if (result == true && mounted) {
+                            // User confirmed account deletion
+                            try {
+                              // Show loading dialog
+                              showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                barrierColor: Colors.black.withOpacity(0.3),
+                                builder: (context) =>
+                                    Center(child: EcliniqLoader()),
+                              );
 
-                            // Close loading dialog
-                            if (mounted) {
-                              Navigator.of(context, rootNavigator: true).pop();
-                            }
+                              final authProvider = Provider.of<AuthProvider>(
+                                context,
+                                listen: false,
+                              );
+                              final authToken = authProvider.authToken;
 
-                            if (deleteResponse['success'] == true) {
-                              // Clear local data
-                              await authProvider.logout();
+                              // Call delete account API
+                              final deleteResponse = await _authService
+                                  .deleteAccount(authToken: authToken);
 
-                              // Navigate to login page
+                              // Close loading dialog
                               if (mounted) {
-                                EcliniqRouter.pushAndRemoveUntil(const LoginPage(), (route) => false);
-                                
-                                // Show success message on login page
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(deleteResponse['message'] ?? 'Account deleted successfully'),
-                                    backgroundColor: Colors.green,
-                                    duration: const Duration(seconds: 3),
-                                  ),
-                                );
+                                Navigator.of(
+                                  context,
+                                  rootNavigator: true,
+                                ).pop();
                               }
-                            } else {
-                              // Show error message
+
+                              if (deleteResponse['success'] == true) {
+                                // Clear local data
+                                await authProvider.logout();
+
+                                // Navigate to login page
+                                if (mounted) {
+                                  EcliniqRouter.pushAndRemoveUntil(
+                                    const LoginPage(),
+                                    (route) => false,
+                                  );
+
+                                  // Show success message on login page
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        deleteResponse['message'] ??
+                                            'Account deleted successfully',
+                                      ),
+                                      backgroundColor: Colors.green,
+                                      duration: const Duration(seconds: 3),
+                                    ),
+                                  );
+                                }
+                              } else {
+                                // Show error message
+                                if (mounted) {
+                                  CustomErrorSnackBar.show(
+                                    context: context,
+                                    title: 'Failed to delete account',
+                                    subtitle:
+                                        deleteResponse['message'] ??
+                                        'Please try again',
+                                    duration: const Duration(seconds: 3),
+                                  );
+                                }
+                              }
+                            } catch (e) {
+                              // Close loading dialog if open
                               if (mounted) {
+                                Navigator.of(
+                                  context,
+                                  rootNavigator: true,
+                                ).pop();
+
                                 CustomErrorSnackBar.show(
                                   context: context,
-                                  title: 'Failed to delete account',
-                                  subtitle: deleteResponse['message'] ?? 'Please try again',
+                                  title: 'Error',
+                                  subtitle: 'An error occurred: $e',
                                   duration: const Duration(seconds: 3),
                                 );
                               }
                             }
-                          } catch (e) {
-                            // Close loading dialog if open
-                            if (mounted) {
-                              Navigator.of(context, rootNavigator: true).pop();
-                              
-                              CustomErrorSnackBar.show(
-                                context: context,
-                                title: 'Error',
-                                subtitle: 'An error occurred: $e',
-                                duration: const Duration(seconds: 3),
-                              );
-                            }
                           }
-                        }
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        height: EcliniqTextStyles.getResponsiveButtonHeight(
-                          context,
-                          baseHeight: 52.0,
-                        ),
-                        padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
-                          context,
-                          horizontal: 0,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Color(0xFFFFF8F8),
-                          border: Border.all(
-                            color: Color(0xffEB8B85),
-                            width: 0.5,
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          height: EcliniqTextStyles.getResponsiveButtonHeight(
+                            context,
+                            baseHeight: 52.0,
                           ),
-                          borderRadius: BorderRadius.circular(
-                            EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
-                              height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
-                              child: Center(
-                                child: SvgPicture.asset(
-                                  EcliniqIcons.delete.assetPath,
-                                  width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
-                                  height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
-                                  fit: BoxFit.contain,
-                                ),
+                          padding:
+                              EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                                context,
+                                horizontal: 0,
+                                vertical: 12,
+                              ),
+                          decoration: BoxDecoration(
+                            color: Color(0xFFFFF8F8),
+                            border: Border.all(
+                              color: Color(0xffEB8B85),
+                              width: 0.5,
+                            ),
+                            borderRadius: BorderRadius.circular(
+                              EcliniqTextStyles.getResponsiveBorderRadius(
+                                context,
+                                4,
                               ),
                             ),
-                            SizedBox(
-                              width: EcliniqTextStyles.getResponsiveSpacing(context, 8),
-                            ),
-                            Text(
-                              'Delete Account',
-                              style: EcliniqTextStyles
-                                  .responsiveHeadlineBMedium(context)
-                                  .copyWith(
-                                    color: Color(0xffF04248),
-                                    fontWeight: FontWeight.w500,
-                                    height: 1.0,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: EcliniqTextStyles.getResponsiveIconSize(
+                                  context,
+                                  24,
+                                ),
+                                height: EcliniqTextStyles.getResponsiveIconSize(
+                                  context,
+                                  24,
+                                ),
+                                child: Center(
+                                  child: SvgPicture.asset(
+                                    EcliniqIcons.delete.assetPath,
+                                    width:
+                                        EcliniqTextStyles.getResponsiveIconSize(
+                                          context,
+                                          24,
+                                        ),
+                                    height:
+                                        EcliniqTextStyles.getResponsiveIconSize(
+                                          context,
+                                          24,
+                                        ),
+                                    fit: BoxFit.contain,
                                   ),
-                            ),
-                          ],
+                                ),
+                              ),
+                              SizedBox(
+                                width: EcliniqTextStyles.getResponsiveSpacing(
+                                  context,
+                                  8,
+                                ),
+                              ),
+                              Text(
+                                'Delete Account',
+                                style:
+                                    EcliniqTextStyles.responsiveHeadlineBMedium(
+                                      context,
+                                    ).copyWith(
+                                      color: Color(0xffF04248),
+                                      fontWeight: FontWeight.w500,
+                                      height: 1.0,
+                                    ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
       ),
     );
   }
@@ -708,29 +711,43 @@ Widget _buildTile(
                   children: [
                     Text(
                       title,
-                      style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
-                        fontWeight: FontWeight.w400,
-                        color: Color(0xff424242),
-                      ),
+                      style:
+                          EcliniqTextStyles.responsiveHeadlineBMedium(
+                            context,
+                          ).copyWith(
+                            fontWeight: FontWeight.w400,
+                            color: Color(0xff424242),
+                          ),
                     ),
                     if (subtitle != null) ...[
-                      SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 4.0)),
+                      SizedBox(
+                        height: EcliniqTextStyles.getResponsiveSpacing(
+                          context,
+                          4.0,
+                        ),
+                      ),
                       Text(
                         subtitle,
-                        style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
-                          color: Colors.grey.shade600,
-             
-                        ),
+                        style: EcliniqTextStyles.responsiveBodySmall(
+                          context,
+                        ).copyWith(color: Colors.grey.shade600),
                       ),
                     ],
                   ],
                 ),
               ),
-              (title != 'Change Biometric Permissions' && title != 'Enable Biometric Authentication')
+              (title != 'Change Biometric Permissions' &&
+                      title != 'Enable Biometric Authentication')
                   ? SvgPicture.asset(
                       EcliniqIcons.angleRight.assetPath,
-                      width: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
-                      height: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
+                      width: EcliniqTextStyles.getResponsiveIconSize(
+                        context,
+                        24.0,
+                      ),
+                      height: EcliniqTextStyles.getResponsiveIconSize(
+                        context,
+                        24.0,
+                      ),
                       colorFilter: ColorFilter.mode(
                         Color(0xff424242),
                         BlendMode.srcIn,
@@ -739,8 +756,14 @@ Widget _buildTile(
                   : (!isExpanded)
                   ? SvgPicture.asset(
                       EcliniqIcons.angleRight.assetPath,
-                      width: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
-                      height: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
+                      width: EcliniqTextStyles.getResponsiveIconSize(
+                        context,
+                        24.0,
+                      ),
+                      height: EcliniqTextStyles.getResponsiveIconSize(
+                        context,
+                        24.0,
+                      ),
                       colorFilter: ColorFilter.mode(
                         Color(0xff424242),
                         BlendMode.srcIn,
@@ -748,8 +771,14 @@ Widget _buildTile(
                     )
                   : SvgPicture.asset(
                       EcliniqIcons.angleDown.assetPath,
-                      width: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
-                      height: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
+                      width: EcliniqTextStyles.getResponsiveIconSize(
+                        context,
+                        24.0,
+                      ),
+                      height: EcliniqTextStyles.getResponsiveIconSize(
+                        context,
+                        24.0,
+                      ),
                     ),
             ],
           ),
@@ -759,8 +788,11 @@ Widget _buildTile(
   );
 }
 
-Widget _buildDropDown(bool isOn, Future<void> Function() onPressed,
-    {required BuildContext context}) {
+Widget _buildDropDown(
+  bool isOn,
+  Future<void> Function() onPressed, {
+  required BuildContext context,
+}) {
   return Column(
     children: [
       Row(
@@ -771,28 +803,33 @@ Widget _buildDropDown(bool isOn, Future<void> Function() onPressed,
               children: [
                 Text(
                   '${BiometricService.getBiometricTypeName()} Authentication',
-                  style: EcliniqTextStyles.responsiveHeadlineBMedium(context).copyWith(
-                    fontWeight: FontWeight.w400,
-                    color: Color(0xff424242),
-                  ),
+                  style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                      .copyWith(
+                        fontWeight: FontWeight.w400,
+                        color: Color(0xff424242),
+                      ),
                 ),
-                SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 4.0)),
+                SizedBox(
+                  height: EcliniqTextStyles.getResponsiveSpacing(context, 4.0),
+                ),
                 Text(
-                  isOn 
-                      ? 'Biometric authentication is enabled. Toggle to disable.' 
-                      : 'Enable to unlock app quickly without entering M-PIN.',
-                  style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
-                    fontWeight: FontWeight.w400,
-                    color: Color(0xff8E8E8E),
-          
-                  ),
+                  isOn
+                      ? 'Keep it turn ON to unlock app quickly without inputting m-pin. '
+                      : 'Keep it turn ON to unlock app quickly without inputting m-pin. ',
+                  style: EcliniqTextStyles.responsiveBodySmall(context)
+                      .copyWith(
+                        fontWeight: FontWeight.w400,
+                        color: Color(0xff8E8E8E),
+                      ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
-          SizedBox(width: EcliniqTextStyles.getResponsiveSpacing(context, 12.0)),
+          SizedBox(
+            width: EcliniqTextStyles.getResponsiveSpacing(context, 12.0),
+          ),
           SizedBox(
             width: EcliniqTextStyles.getResponsiveSize(context, 40.0),
             height: EcliniqTextStyles.getResponsiveSize(context, 23.0),
@@ -815,13 +852,19 @@ Widget _buildDropDown(bool isOn, Future<void> Function() onPressed,
                       : Alignment.centerLeft,
                   curve: Curves.easeInOut,
                   child: Container(
-                    margin: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 2.0),
+                    margin: EcliniqTextStyles.getResponsiveEdgeInsetsAll(
+                      context,
+                      2.0,
+                    ),
                     width: EcliniqTextStyles.getResponsiveSize(context, 20.0),
                     height: EcliniqTextStyles.getResponsiveSize(context, 20.0),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(
-                        EcliniqTextStyles.getResponsiveBorderRadius(context, 3.0),
+                        EcliniqTextStyles.getResponsiveBorderRadius(
+                          context,
+                          3.0,
+                        ),
                       ),
                     ),
                   ),

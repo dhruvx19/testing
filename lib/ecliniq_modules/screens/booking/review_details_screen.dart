@@ -2164,7 +2164,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
         token: paymentData.token,
         orderId: paymentData.orderId,
         appSchema: 'ecliniq',
-        targetUpiPackage: selectedUPIPackage,
       );
 
       if (result.success || result.status != 'INCOMPLETE') {

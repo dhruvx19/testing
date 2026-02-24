@@ -734,6 +734,7 @@ class AuthProvider with ChangeNotifier {
           await Future.wait([
             SessionService.storeTokens(authToken: _authToken!),
             SecureStorageService.storeUserInfo(userIdToStore, phoneNumber),
+            SecureStorageService.storeMPIN(mpin),
           ]);
 
           // Register device token after successful MPIN login

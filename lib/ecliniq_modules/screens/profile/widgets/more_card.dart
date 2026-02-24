@@ -45,13 +45,13 @@ class MoreSettingsMenuWidget extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
             decoration: BoxDecoration(
               color: Colors.black.withOpacity(0.5),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(108),
             ),
             child: const Text(
-              'Invite URL Copied',
+              'Invite URL Copied in keyboard',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white,
