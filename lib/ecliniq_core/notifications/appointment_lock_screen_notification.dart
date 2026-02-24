@@ -48,15 +48,16 @@ class AppointmentLockScreenNotification {
         iOS: iosSettings,
       );
 
+      // Disable for iOS for now to prevent crashes/instability in release
+      if (Platform.isIOS) {
+        log('Lock screen notifications disabled for iOS');
+        return;
+      }
+
       await _plugin.initialize(
         initSettings,
         onDidReceiveNotificationResponse: _onNotificationTapped,
       );
-
-      
-      if (Platform.isAndroid) {
-        await _createAndroidChannel();
-      }
 
       _initialized = true;
       log('Appointment lock screen notification service initialized');
@@ -101,6 +102,7 @@ class AppointmentLockScreenNotification {
     required String hospitalName,
     required DateTime appointmentTime,
   }) async {
+    if (Platform.isIOS) return;
     try {
       await init();
 

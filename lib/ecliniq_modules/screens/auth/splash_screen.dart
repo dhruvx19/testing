@@ -26,9 +26,15 @@ class _SplashScreenState extends State<SplashScreen> {
 
   
   Future<void> _navigateToNextScreen() async {
-    // 1. Minimum display time for splash branding
-    // Artificial delay removed for faster startup
-    // await Future.delayed(const Duration(milliseconds: 800));
+    // Wait for AuthProvider to finish its background init before routing.
+    // This replaces the old artificial delay with a real readiness check.
+    final authProvider = context.read<AuthProvider>();
+    // Give the post-frame init a moment to kick off, then poll until ready.
+    await Future.delayed(const Duration(milliseconds: 50));
+    while (!authProvider.isInitialized) {
+      await Future.delayed(const Duration(milliseconds: 50));
+      if (!mounted) return;
+    }
 
     if (!mounted) return;
 

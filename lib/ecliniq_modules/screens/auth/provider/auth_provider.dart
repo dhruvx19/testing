@@ -23,6 +23,7 @@ class AuthProvider with ChangeNotifier {
   bool _isLoading = false;
   bool _isUploadingImage = false;
   bool _isSavingDetails = false;
+  bool _isInitialized = false;
   String? _errorMessage;
   String? _challengeId;
   String? _phoneNumber;
@@ -37,6 +38,7 @@ class AuthProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isUploadingImage => _isUploadingImage;
   bool get isSavingDetails => _isSavingDetails;
+  bool get isInitialized => _isInitialized;
   String? get errorMessage => _errorMessage;
   String? get challengeId => _challengeId;
   String? get phoneNumber => _phoneNumber;
@@ -72,6 +74,9 @@ class AuthProvider with ChangeNotifier {
         // For now, removing it from here to move it to login success points.
       }
     } catch (e) {}
+
+    _isInitialized = true;
+    notifyListeners();
   }
 
   Future<Map<String, dynamic>?> checkUserStatus(String phone) async {

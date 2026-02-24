@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- White background -->
+    <!-- White background matching the Flutter splash screen -->
     <item android:drawable="@android:color/white" />
-    <!-- App logo centered on screen -->
+    <!-- Custom splash logo centered — same image as the Flutter SplashScreen -->
     <item>
         <bitmap
             android:gravity="center"
-            android:src="@mipmap/ic_launcher" />
+            android:src="@drawable/splash_screen" />
     </item>
 </layer-list>

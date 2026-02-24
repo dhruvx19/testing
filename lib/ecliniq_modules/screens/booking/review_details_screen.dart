@@ -2134,6 +2134,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
   }) async {
     setState(() {
       _isProcessingPayment = true;
+      _isBooking = false; // Release the Pay button from loading state
     });
 
     try {

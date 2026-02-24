@@ -14,7 +14,11 @@ class SecureStorageService {
       sharedPreferencesName: 'ecliniq_secure_prefs',
       resetOnError: true, 
     ),
-    iOptions: const IOSOptions(accountName: 'ecliniq_keychain'),
+    iOptions: const IOSOptions(
+      accountName: 'ecliniq_keychain',
+      accessibility: KeychainAccessibility.first_unlock,
+      synchronizable: false,
+    ),
   );
 
   

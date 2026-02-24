@@ -32,6 +32,8 @@
 	<string>Your location is used to show you the closest available doctors and hospitals for quicker bookings and emergency care.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Your location is used to show you the closest available doctors and hospitals for quicker bookings and emergency care.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Your location is used to show you the closest available doctors and hospitals for quicker bookings and emergency care.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Microphone access is used for the voice-to-text search feature to help you find doctors more easily.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
@@ -41,6 +43,10 @@
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Speech recognition is used to enable voice-based searching for doctors and healthcare services.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Face ID is used to securely and quickly log you into your healthcare account.</string>
+	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>UIBackgroundModes</key>
 	<array>
@@ -52,7 +58,7 @@
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 	<key>UIStatusBarStyle</key>
-	<string></string>
+	<string>UIStatusBarStyleDefault</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationLandscapeLeft</string>

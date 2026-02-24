@@ -52,6 +52,7 @@ class PhonePeService {
     String? token,
     String? orderId,
     required String appSchema,
+    String? targetUpiPackage,
   }) async {
     if (!_isInitialized) {
       throw PhonePeException(

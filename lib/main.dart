@@ -18,25 +18,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final authProvider = AuthProvider();
-
-  // Run all heavy initialization tasks in parallel to minimize startup time
-  await Future.wait([
-    Firebase.initializeApp().catchError((e) {
-      debugPrint('Firebase initialization failed: $e');
-      return null;
-    }),
-    authProvider.initialize(),
-    SharedPreferences.getInstance(),
-    EcliniqPushNotifications.init(),
-    AppointmentLockScreenNotification.init(),
-  ]);
-  EcliniqPushNotifications.setNotificationListeners();
-
+  // Only do the bare minimum before runApp so the splash renders immediately.
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+
+  // Create providers early but DON'T await heavy init yet.
+  final authProvider = AuthProvider();
+
   runApp(
     MultiProvider(
       providers: [
@@ -51,6 +41,21 @@ void main() async {
       child: const MyApp(),
     ),
   );
+
+  // Heavy init runs AFTER the first frame so the splash appears immediately.
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    await Future.wait([
+      Firebase.initializeApp().catchError((e) {
+        debugPrint('Firebase initialization failed: $e');
+        return null;
+      }),
+      authProvider.initialize(),
+      SharedPreferences.getInstance(),
+      EcliniqPushNotifications.init(),
+      AppointmentLockScreenNotification.init(),
+    ]);
+    EcliniqPushNotifications.setNotificationListeners();
+  });
 }
 
 class MyApp extends StatefulWidget {
