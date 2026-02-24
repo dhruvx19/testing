@@ -71,6 +71,21 @@
 		<string>ppemerchantsdkv2</string>
 		<string>ppemerchantsdkv3</string>
 		<string>phonepe</string>
+		<string>gpay</string>
+		<string>paytm</string>
+		<string>paytmmp</string>
+		<string>upi</string>
+		<string>tez</string>
+		<string>whatsapp</string>
+		<string>bharatpe</string>
+		<string>credpay</string>
+		<string>freecharge</string>
+		<string>payzapp</string>
+		<string>bhim</string>
+		<string>mobikwik</string>
+		<string>axispay</string>
+		<string>kotak</string>
+		<string>mysbi</string>
 	</array>
 	<key>CFBundleURLTypes</key>
 	<array>

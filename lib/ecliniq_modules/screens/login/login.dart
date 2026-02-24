@@ -464,20 +464,16 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
           _isLoading = false;
           _showLoadingOverlay = false;
         }
-      });
-    }
 
-    _mpinSubmitTimer?.cancel();
-
-    if (v.length == 6) {
-      setState(() {
-        _isLoading = true;
-        _showLoadingOverlay = true;
-      });
-
-      _mpinSubmitTimer = Timer(Duration.zero, () {
-        if (mounted) {
-          _handleOTPLogin(v);
+        if (v.length == 6) {
+          _isLoading = true;
+          _showLoadingOverlay = true;
+          _mpinSubmitTimer?.cancel();
+          _mpinSubmitTimer = Timer(const Duration(milliseconds: 50), () {
+            if (mounted) {
+              _handleOTPLogin(v);
+            }
+          });
         }
       });
     }
@@ -507,11 +503,12 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
         if (success) {
           setState(() {
             _isLoading = false;
+            _showLoadingOverlay = false;
           });
 
           if (_isBiometricAvailable) {
             SecureStorageService.getMPIN().then((mpin) {
-              if (mpin != null && mpin.isNotEmpty) {
+              if (mounted && mpin != null && mpin.isNotEmpty) {
                 _requestBiometricPermission(mpin)
                     .timeout(const Duration(seconds: 1), onTimeout: () {})
                     .catchError((e) {});
