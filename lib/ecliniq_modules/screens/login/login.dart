@@ -508,6 +508,16 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
             _isLoading = false;
           });
 
+          if (_isBiometricAvailable) {
+            SecureStorageService.getMPIN().then((mpin) {
+              if (mpin != null && mpin.isNotEmpty) {
+                _requestBiometricPermission(mpin)
+                    .timeout(const Duration(seconds: 1), onTimeout: () {})
+                    .catchError((e) {});
+              }
+            });
+          }
+
           scheduleMicrotask(() {
             if (!mounted) return;
             try {
@@ -802,7 +812,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
             _isLoading = false;
           });
 
-          if (_isBiometricAvailable && !_isBiometricEnabled) {
+          if (_isBiometricAvailable) {
             _requestBiometricPermission(mpin)
                 .timeout(const Duration(seconds: 1), onTimeout: () {})
                 .catchError((e) {});
@@ -1390,50 +1400,6 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                onPressed: () {
-                  setState(() {
-                    _showMPINScreen = false;
-                    _isOTPMode = false;
-                    _userExplicitlyChoseMPIN = false;
-                    _entered = '';
-                    _textController.clear();
-                    _otpController.clear();
-                  });
-                },
-                icon: SvgPicture.asset(
-                  EcliniqIcons.arrowLeft.assetPath,
-                  width: 24,
-                  height: 24,
-                  colorFilter: const ColorFilter.mode(
-                    Color(0xff424242),
-                    BlendMode.srcIn,
-                  ),
-                ),
-              ),
-              IconButton(
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                onPressed: () {
-                  EcliniqRouter.push(const LoginTroublePage());
-                },
-                icon: SvgPicture.asset(
-                  EcliniqIcons.questionCircle.assetPath,
-                  width: 24,
-                  height: 24,
-                  colorFilter: const ColorFilter.mode(
-                    Color(0xff424242),
-                    BlendMode.srcIn,
-                  ),
-                ),
-              ),
-            ],
-          ),
           SizedBox(height: requiredSpacing.clamp(16.0, double.infinity)),
 
           const SizedBox(height: 14),
@@ -1958,6 +1924,73 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                           fontFamily: 'Rubik',
                                           fontWeight: FontWeight.w400,
                                         ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Positioned(
+                              top: MediaQuery.of(context).padding.top + 10,
+                              left: 16,
+                              right: 16,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  if (_showMPINScreen)
+                                    IconButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          _showMPINScreen = false;
+                                          _isOTPMode = false;
+                                          _userExplicitlyChoseMPIN = false;
+                                          _entered = '';
+                                          _textController.clear();
+                                          _otpController.clear();
+                                        });
+                                      },
+                                      icon: SvgPicture.asset(
+                                        EcliniqIcons.backArrow.assetPath,
+                                        width: 32,
+                                        height: 32,
+                                        colorFilter: const ColorFilter.mode(
+                                          Colors.white,
+                                          BlendMode.srcIn,
+                                        ),
+                                      ),
+                                    )
+                                  else
+                                    const SizedBox(width: 48),
+                                  GestureDetector(
+                                    onTap: () {
+                                      EcliniqRouter.push(
+                                        const LoginTroublePage(),
+                                      );
+                                    },
+                                    child: Row(
+                                      children: [
+                                        SvgPicture.asset(
+                                          EcliniqIcons
+                                              .questionCircleFilled.assetPath,
+                                          width: 24,
+                                          height: 24,
+                                          colorFilter: const ColorFilter.mode(
+                                            Colors.white,
+                                            BlendMode.srcIn,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'Help',
+                                          style:
+                                              EcliniqTextStyles.responsiveHeadlineXMedium(
+                                                context,
+                                              ).copyWith(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w400,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
