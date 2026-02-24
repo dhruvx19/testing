@@ -1933,68 +1933,70 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                               top: MediaQuery.of(context).padding.top + 10,
                               left: 16,
                               right: 16,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  if (_showMPINScreen)
-                                    IconButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          _showMPINScreen = false;
-                                          _isOTPMode = false;
-                                          _userExplicitlyChoseMPIN = false;
-                                          _entered = '';
-                                          _textController.clear();
-                                          _otpController.clear();
-                                        });
-                                      },
-                                      icon: SvgPicture.asset(
-                                        EcliniqIcons.backArrow.assetPath,
-                                        width: 32,
-                                        height: 32,
-                                        colorFilter: const ColorFilter.mode(
-                                          Colors.white,
-                                          BlendMode.srcIn,
-                                        ),
-                                      ),
-                                    )
-                                  else
-                                    const SizedBox(width: 48),
-                                  GestureDetector(
-                                    onTap: () {
-                                      EcliniqRouter.push(
-                                        const LoginTroublePage(),
-                                      );
-                                    },
-                                    child: Row(
+                              child: _showMPINScreen
+                                  ? Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
-                                        SvgPicture.asset(
-                                          EcliniqIcons
-                                              .questionCircleFilled.assetPath,
-                                          width: 24,
-                                          height: 24,
-                                          colorFilter: const ColorFilter.mode(
-                                            Colors.white,
-                                            BlendMode.srcIn,
+                                        IconButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              _showMPINScreen = false;
+                                              _isOTPMode = false;
+                                              _userExplicitlyChoseMPIN = false;
+                                              _entered = '';
+                                              _textController.clear();
+                                              _otpController.clear();
+                                            });
+                                          },
+                                          icon: SvgPicture.asset(
+                                            EcliniqIcons.backArrow.assetPath,
+                                            width: 32,
+                                            height: 32,
+                                            colorFilter: const ColorFilter.mode(
+                                              Colors.white,
+                                              BlendMode.srcIn,
+                                            ),
                                           ),
                                         ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          'Help',
-                                          style:
-                                              EcliniqTextStyles.responsiveHeadlineXMedium(
-                                                context,
-                                              ).copyWith(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w400,
+                                        GestureDetector(
+                                          onTap: () {
+                                            EcliniqRouter.push(
+                                              const LoginTroublePage(),
+                                            );
+                                          },
+                                          child: Row(
+                                            children: [
+                                              SvgPicture.asset(
+                                                EcliniqIcons
+                                                    .questionCircleFilled
+                                                    .assetPath,
+                                                width: 24,
+                                                height: 24,
+                                                colorFilter:
+                                                    const ColorFilter.mode(
+                                                      Colors.white,
+                                                      BlendMode.srcIn,
+                                                    ),
                                               ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                'Help',
+                                                style: EcliniqTextStyles
+                                                    .responsiveHeadlineXMedium(
+                                                      context,
+                                                    ).copyWith(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.w400,
+                                                    ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ],
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                    )
+                                  : const SizedBox.shrink(),
                             ),
                           ],
                         ),
