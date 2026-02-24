@@ -1132,76 +1132,73 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen>
   }
 
   Widget _buildBottomSection() {
-    return SafeArea(
-      top: false,
-      child: Container(
-        color: Colors.white,
-        padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 20.0),
-        child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0x332372EC),
-                  offset: const Offset(7, 4),
-                  blurRadius: 5.3,
-                  spreadRadius: 0,
+    return Container(
+      color: Colors.white,
+      padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 20.0),
+      child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0x332372EC),
+                offset: const Offset(7, 4),
+                blurRadius: 5.3,
+                spreadRadius: 0,
+              ),
+            ],
+          ),
+          height: EcliniqTextStyles.getResponsiveButtonHeight(
+            context,
+            baseHeight: 52.0,
+          ),
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () {
+              if (_doctorDetails == null || _selectedLocation == null) return;
+    
+              final clinicId = _selectedLocation!.type == 'Clinic'
+                  ? _selectedLocation!.id
+                  : null;
+              final hospitalId = _selectedLocation!.type == 'Hospital'
+                  ? _selectedLocation!.id
+                  : null;
+    
+              EcliniqRouter.push(
+                ClinicVisitSlotScreen(
+                  doctorId: _doctorDetails!.userId,
+                  clinicId: clinicId,
+                  hospitalId: hospitalId,
+                  doctorName: _doctorDetails!.name,
+                  doctorSpecialization:
+                      _doctorDetails!.specializations?.firstOrNull,
                 ),
-              ],
-            ),
-            height: EcliniqTextStyles.getResponsiveButtonHeight(
-              context,
-              baseHeight: 52.0,
-            ),
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                if (_doctorDetails == null || _selectedLocation == null) return;
-
-                final clinicId = _selectedLocation!.type == 'Clinic'
-                    ? _selectedLocation!.id
-                    : null;
-                final hospitalId = _selectedLocation!.type == 'Hospital'
-                    ? _selectedLocation!.id
-                    : null;
-
-                EcliniqRouter.push(
-                  ClinicVisitSlotScreen(
-                    doctorId: _doctorDetails!.userId,
-                    clinicId: clinicId,
-                    hospitalId: hospitalId,
-                    doctorName: _doctorDetails!.name,
-                    doctorSpecialization:
-                        _doctorDetails!.specializations?.firstOrNull,
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xff2372EC),
-                foregroundColor: Colors.white,
-
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(
-                    EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
-                  ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color(0xff2372EC),
+              foregroundColor: Colors.white,
+    
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(
+                  EcliniqTextStyles.getResponsiveBorderRadius(context, 4.0),
                 ),
               ),
-              child: Text(
-                'Book Appointment',
-                style: EcliniqTextStyles.responsiveHeadlineBMedium(
-                  context,
-                ).copyWith(fontWeight: FontWeight.w500),
-              ),
+            ),
+            child: Text(
+              'Book Appointment',
+              style: EcliniqTextStyles.responsiveHeadlineBMedium(
+                context,
+              ).copyWith(fontWeight: FontWeight.w500),
             ),
           ),
-          SizedBox(
-            height: EcliniqTextStyles.getResponsiveSpacing(context, 8.0),
-          ),
-        ],
-      ),
-      ),
+        ),
+        SizedBox(
+          height: EcliniqTextStyles.getResponsiveSpacing(context, 8.0),
+        ),
+      ],
+    ),
     );
   }
 

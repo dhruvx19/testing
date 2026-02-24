@@ -128,8 +128,6 @@ class _FeedbackBottomSheetState extends State<FeedbackBottomSheet> {
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       child: SingleChildScrollView(
-        child: SafeArea(
-        top: false,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,7 +144,7 @@ class _FeedbackBottomSheetState extends State<FeedbackBottomSheet> {
                 ),
               ),
             ),
-
+        
             
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -192,9 +190,9 @@ class _FeedbackBottomSheetState extends State<FeedbackBottomSheet> {
                 ],
               ),
             ),
-
+        
             const SizedBox(height: 20),
-
+        
             
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -235,19 +233,18 @@ class _FeedbackBottomSheetState extends State<FeedbackBottomSheet> {
                 ],
               ),
             ),
-
+        
             const SizedBox(height: 24),
-
+        
             
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: _buildSubmitButton(),
             ),
-
+        
             const SizedBox(height: 24),
           ],
         ),
-      ),
       ),
     );
   }

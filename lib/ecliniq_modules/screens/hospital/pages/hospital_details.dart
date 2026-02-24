@@ -785,56 +785,53 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen>
   }
 
   Widget _buildBottomSection() {
-    return SafeArea(
-      top: false,
-      child: Container(
-        color: Colors.white,
-        padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16.0),
-        child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: Color(0x332372EC),
-                  offset: Offset(
-                    EcliniqTextStyles.getResponsiveSize(context, 7.0),
-                    EcliniqTextStyles.getResponsiveSize(context, 4.0),
-                  ),
-                  blurRadius: EcliniqTextStyles.getResponsiveSize(context, 5.3),
-                  spreadRadius: 0,
+    return Container(
+      color: Colors.white,
+      padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16.0),
+      child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x332372EC),
+                offset: Offset(
+                  EcliniqTextStyles.getResponsiveSize(context, 7.0),
+                  EcliniqTextStyles.getResponsiveSize(context, 4.0),
                 ),
-              ],
-            ),
-            height: EcliniqTextStyles.getResponsiveButtonHeight(
-              context,
-              baseHeight: 52.0,
-            ),
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xff2372EC),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(
-                    EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
-                  ),
+                blurRadius: EcliniqTextStyles.getResponsiveSize(context, 5.3),
+                spreadRadius: 0,
+              ),
+            ],
+          ),
+          height: EcliniqTextStyles.getResponsiveButtonHeight(
+            context,
+            baseHeight: 52.0,
+          ),
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () {},
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xff2372EC),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(
+                  EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
                 ),
               ),
-              child: Text(
-                'Book Appointment',
-                style: EcliniqTextStyles.responsiveHeadlineBMedium(
-                  context,
-                ).copyWith(fontWeight: FontWeight.w500),
-              ),
+            ),
+            child: Text(
+              'Book Appointment',
+              style: EcliniqTextStyles.responsiveHeadlineBMedium(
+                context,
+              ).copyWith(fontWeight: FontWeight.w500),
             ),
           ),
-          SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 8.0)),
-        ],
-      ),
-      ),
+        ),
+        SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 8.0)),
+      ],
+    ),
     );
   }
 

@@ -793,51 +793,48 @@ class _NotificationScreenState extends State<NotificationScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(2),
-                    ),
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  'Filter Notifications',
-                  style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
-                    color: const Color(0xff424242),
-                  ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Filter Notifications',
+                style: EcliniqTextStyles.responsiveHeadlineMedium(context).copyWith(
+                  color: const Color(0xff424242),
                 ),
-                const SizedBox(height: 16),
-                _buildFilterOption('All Notifications', NotificationType.values),
-                _buildFilterOption('Consultations', [
-                  NotificationType.consultationCompleted,
-                ]),
-                _buildFilterOption('Bookings', [
-                  NotificationType.bookingConfirmed,
-                  NotificationType.bookingRequestReceived,
-                ]),
-                
-                
-                
-                
-                
-                
-                
-                
-                const SizedBox(height: 16),
-              ],
-            ),
+              ),
+              const SizedBox(height: 16),
+              _buildFilterOption('All Notifications', NotificationType.values),
+              _buildFilterOption('Consultations', [
+                NotificationType.consultationCompleted,
+              ]),
+              _buildFilterOption('Bookings', [
+                NotificationType.bookingConfirmed,
+                NotificationType.bookingRequestReceived,
+              ]),
+              
+              
+              
+              
+              
+              
+              
+              
+              const SizedBox(height: 16),
+            ],
           ),
         );
       },

@@ -1448,72 +1448,69 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                       ),
 
                       // Fixed Save Button at bottom
-                      SafeArea(
-                        top: false,
-                        child: Container(
-                          padding:
-                              EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
-                                context,
-                                horizontal: 16,
-                                vertical: 24,
-                              ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 8,
-                                offset: Offset(0, -2),
-                              ),
-                            ],
-                          ),
-                          child: SizedBox(
-                            width: double.infinity,
-                            height: EcliniqTextStyles.getResponsiveSize(
+                      Container(
+                        padding:
+                            EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
                               context,
-                              52,
+                              horizontal: 16,
+                              vertical: 24,
                             ),
-                            child: ElevatedButton(
-                              onPressed: (_isLoading || _isSaving)
-                                  ? null
-                                  : _save,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Color(0xff2372EC),
-                                disabledBackgroundColor: _isSaving
-                                    ? Color(0xff2372EC)
-                                    : EcliniqColors.light.strokeNeutralSubtle
-                                          .withOpacity(0.5),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    EcliniqTextStyles.getResponsiveBorderRadius(
-                                      context,
-                                      4,
-                                    ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 8,
+                              offset: Offset(0, -2),
+                            ),
+                          ],
+                        ),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: EcliniqTextStyles.getResponsiveSize(
+                            context,
+                            52,
+                          ),
+                          child: ElevatedButton(
+                            onPressed: (_isLoading || _isSaving)
+                                ? null
+                                : _save,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xff2372EC),
+                              disabledBackgroundColor: _isSaving
+                                  ? Color(0xff2372EC)
+                                  : EcliniqColors.light.strokeNeutralSubtle
+                                        .withOpacity(0.5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  EcliniqTextStyles.getResponsiveBorderRadius(
+                                    context,
+                                    4,
                                   ),
                                 ),
                               ),
-                              child: Center(
-                                child: _isSaving
-                                    ? EcliniqLoader(
-                                        size:
-                                            EcliniqTextStyles.getResponsiveIconSize(
-                                              context,
-                                              24,
-                                            ),
-                                        color: Colors.white,
-                                      )
-                                    : Text(
-                                        'Save',
-                                        textAlign: TextAlign.center,
-                                        style:
-                                            EcliniqTextStyles.responsiveHeadlineMedium(
-                                              context,
-                                            ).copyWith(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                      ),
-                              ),
+                            ),
+                            child: Center(
+                              child: _isSaving
+                                  ? EcliniqLoader(
+                                      size:
+                                          EcliniqTextStyles.getResponsiveIconSize(
+                                            context,
+                                            24,
+                                          ),
+                                      color: Colors.white,
+                                    )
+                                  : Text(
+                                      'Save',
+                                      textAlign: TextAlign.center,
+                                      style:
+                                          EcliniqTextStyles.responsiveHeadlineMedium(
+                                            context,
+                                          ).copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                    ),
                             ),
                           ),
                         ),

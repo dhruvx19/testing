@@ -551,16 +551,13 @@ class _OtpInputScreenState extends State<OtpInputScreen>
                             ),
                           ),
                         ),
-                        SafeArea(
-                          top: false,
-                          child: Container(
-                            padding: const EdgeInsets.only(
-                              right: 18,
-                              left: 18,
-                              bottom: 24,
-                            ),
-                            child: _buildVerifyButton(),
+                        Container(
+                          padding: const EdgeInsets.only(
+                            right: 18,
+                            left: 18,
+                            bottom: 24,
                           ),
+                          child: _buildVerifyButton(),
                         ),
                       ],
                     ),

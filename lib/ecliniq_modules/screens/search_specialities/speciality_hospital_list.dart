@@ -1723,67 +1723,64 @@ class _HospitalSortByBottomSheetState extends State<HospitalSortByBottomSheet> {
           ),
         ),
       ),
-      child: SafeArea(
-        top: false,
-        child: Column(
-        children: [
-          Padding(
+      child: Column(
+      children: [
+        Padding(
+          padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+            context,
+            left: 16,
+            right: 16,
+            top: 22,
+            bottom: 8,
+          ),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Sort By',
+                  style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                      .copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xff424242),
+                      ),
+                ),
+                GestureDetector(
+                  onTap: _resetSort,
+                  child: Text(
+                    'Clear',
+                    style: EcliniqTextStyles.responsiveHeadlineBMedium(
+                      context,
+                    ).copyWith(
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xff2372EC),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
             padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
               context,
               left: 16,
               right: 16,
-              top: 22,
-              bottom: 8,
+              top: 0,
+              bottom: 0,
             ),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Sort By',
-                    style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
-                        .copyWith(
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xff424242),
-                        ),
-                  ),
-                  GestureDetector(
-                    onTap: _resetSort,
-                    child: Text(
-                      'Clear',
-                      style: EcliniqTextStyles.responsiveHeadlineBMedium(
-                        context,
-                      ).copyWith(
-                        fontWeight: FontWeight.w400,
-                        color: Color(0xff2372EC),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            itemCount: sortOptions.length,
+            itemBuilder: (context, index) {
+              final option = sortOptions[index];
+              final isSelected = selectedSortOption == option;
+              return _buildSortOption(option, isSelected);
+            },
           ),
-          Expanded(
-            child: ListView.builder(
-              padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
-                context,
-                left: 16,
-                right: 16,
-                top: 0,
-                bottom: 0,
-              ),
-              itemCount: sortOptions.length,
-              itemBuilder: (context, index) {
-                final option = sortOptions[index];
-                final isSelected = selectedSortOption == option;
-                return _buildSortOption(option, isSelected);
-              },
+        ),
+      ],
             ),
-          ),
-        ],
-      ),
-      ),
     );
   }
 

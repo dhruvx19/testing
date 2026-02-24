@@ -429,66 +429,63 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                   ),
                 ),
               ),
-              SafeArea(
-                top: false,
-                child: Padding(
-                  padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+              Padding(
+                padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+                  context,
+                  left: horizontalPadding,
+                  right: horizontalPadding,
+                  top: 22,
+                  bottom: 40,
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: EcliniqTextStyles.getResponsiveButtonHeight(
                     context,
-                    left: horizontalPadding,
-                    right: horizontalPadding,
-                    top: 22,
-                    bottom: 40,
+                    baseHeight: buttonHeight,
                   ),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: EcliniqTextStyles.getResponsiveButtonHeight(
-                      context,
-                      baseHeight: buttonHeight,
-                    ),
-                    child: GestureDetector(
-                      onTap: provider.isLoading
-                          ? null
-                          : () {
-                              _saveDependent(provider);
-                            },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: provider.isFormValid
-                              ? Color(0xFF2372EC)
-                              : Color(0xFFF9F9F9),
-                          borderRadius: BorderRadius.circular(
-                            EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
-                          ),
+                  child: GestureDetector(
+                    onTap: provider.isLoading
+                        ? null
+                        : () {
+                            _saveDependent(provider);
+                          },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: provider.isFormValid
+                            ? Color(0xFF2372EC)
+                            : Color(0xFFF9F9F9),
+                        borderRadius: BorderRadius.circular(
+                          EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
                         ),
-                        child: Center(
-                          child: provider.isLoading
-                              ? SizedBox(
-                                  height: EcliniqTextStyles.getResponsiveHeight(context, 20),
-                                  width: EcliniqTextStyles.getResponsiveWidth(context, 20),
-                                  child: EcliniqLoader(
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                )
-                              : Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      'Save',
-                                      style: EcliniqTextStyles.responsiveTitleXBLarge(context)
-                                          .copyWith(
-                                            color: provider.isFormValid
-                                                ? Colors.white
-                                                : Color(0xffD6D6D6),
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                    ),
-                                    SizedBox(
-                                      width: EcliniqTextStyles.getResponsiveSpacing(context, 8),
-                                    ),
-                                  ],
+                      ),
+                      child: Center(
+                        child: provider.isLoading
+                            ? SizedBox(
+                                height: EcliniqTextStyles.getResponsiveHeight(context, 20),
+                                width: EcliniqTextStyles.getResponsiveWidth(context, 20),
+                                child: EcliniqLoader(
+                                  color: Colors.white,
+                                  size: 20,
                                 ),
-                        ),
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Save',
+                                    style: EcliniqTextStyles.responsiveTitleXBLarge(context)
+                                        .copyWith(
+                                          color: provider.isFormValid
+                                              ? Colors.white
+                                              : Color(0xffD6D6D6),
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                  ),
+                                  SizedBox(
+                                    width: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+                                  ),
+                                ],
+                              ),
                       ),
                     ),
                   ),

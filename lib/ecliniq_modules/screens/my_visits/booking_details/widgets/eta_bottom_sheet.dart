@@ -22,25 +22,22 @@ class _EtaBottomSheetState extends State<EtaBottomSheet> {
       ),
       width: double.infinity,
       padding: const EdgeInsets.only(left: 16, right: 16, top: 22, bottom: 40),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            EcliniqText(
-              'About Expected Time',
-              style: EcliniqTextStyles.responsiveHeadlineBMedium(
-                context,
-              ).copyWith(fontWeight: FontWeight.w500, color: Color(0xFF424242)),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            _buildBulletPoint(
-              'You can cancel or reschedule your appointment up to 30 minutes before the scheduled appointment time.',
-            ),
-          ],
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          EcliniqText(
+            'About Expected Time',
+            style: EcliniqTextStyles.responsiveHeadlineBMedium(
+              context,
+            ).copyWith(fontWeight: FontWeight.w500, color: Color(0xFF424242)),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          _buildBulletPoint(
+            'You can cancel or reschedule your appointment up to 30 minutes before the scheduled appointment time.',
+          ),
+        ],
       ),
     );
   }
