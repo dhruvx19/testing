@@ -66,6 +66,7 @@ class _ProfilePageState extends State<ProfilePage>
   bool _isDependentsLoading = false;
   String? _errorMessage;
   String? _profilePhotoUrl;
+  String _appVersion = '...';
 
   @override
   void initState() {
@@ -76,6 +77,16 @@ class _ProfilePageState extends State<ProfilePage>
     );
     _fetchPatientDetails();
     _fetchDependents();
+    _fetchAppVersion();
+  }
+
+  Future<void> _fetchAppVersion() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _appVersion = 'v${packageInfo.version}+${packageInfo.buildNumber}';
+      });
+    }
   }
 
   @override
@@ -1080,7 +1091,7 @@ extension _ProfilePageContent on _ProfilePageState {
           const SizedBox(height: 24),
           RepaintBoundary(
             child: MoreSettingsMenuWidget(
-              appVersion: 'v1.0.0',
+              appVersion: _appVersion,
               supportEmail: 'Support@eclinicq.com',
               onReferEarnPressed: () {},
               onHelpSupportPressed: _launchEmailSupport,
@@ -1176,7 +1187,7 @@ extension _ProfilePageContent on _ProfilePageState {
           const SizedBox(height: 4),
           RepaintBoundary(
             child: Text(
-              'v1.0.0',
+              _appVersion,
               style: EcliniqTextStyles.responsiveBodySmallProminent(
                 context,
               ).copyWith(color: Color(0xffB8B8B8), fontWeight: FontWeight.w400),

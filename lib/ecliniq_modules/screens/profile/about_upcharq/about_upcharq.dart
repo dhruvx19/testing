@@ -2,9 +2,32 @@ import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
-class AboutUpcharqPage extends StatelessWidget {
+class AboutUpcharqPage extends StatefulWidget {
   const AboutUpcharqPage({super.key});
+
+  @override
+  State<AboutUpcharqPage> createState() => _AboutUpcharqPageState();
+}
+
+class _AboutUpcharqPageState extends State<AboutUpcharqPage> {
+  String _appVersion = '...';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAppVersion();
+  }
+
+  Future<void> _fetchAppVersion() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _appVersion = 'v${packageInfo.version}+${packageInfo.buildNumber}';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -110,14 +133,14 @@ class AboutUpcharqPage extends StatelessWidget {
             Center(
               child: Column(
                 children: [
-                  Image.asset(
+                   Image.asset(
                     EcliniqIcons.aboutLogo.assetPath,
                     width: EcliniqTextStyles.getResponsiveWidth(context, 187),
                     height: EcliniqTextStyles.getResponsiveHeight(context, 44),
                   ),
                   SizedBox(height: 4),
                   Text(
-                    'v1.0.0',
+                    _appVersion,
                     style:
                         EcliniqTextStyles.responsiveBodySmallProminent(
                           context,
