@@ -8,7 +8,8 @@ import '../../../../../ecliniq_utils/responsive_helper.dart';
 import '../provider/dependent_provider.dart';
 
 class PhysicalInfoCard extends StatefulWidget {
-  const PhysicalInfoCard({super.key});
+  final VoidCallback? onFieldFocused;
+  const PhysicalInfoCard({super.key, this.onFieldFocused});
 
   @override
   State<PhysicalInfoCard> createState() => _PhysicalInfoCardState();
@@ -21,11 +22,19 @@ class _PhysicalInfoCardState extends State<PhysicalInfoCard> {
   final _weightController = TextEditingController();
   final _contactController = TextEditingController();
   final _emailController = TextEditingController();
+  final FocusNode _heightFocusNode = FocusNode(); // ADD THIS
+  final FocusNode _weightFocusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    
+    _heightFocusNode.addListener(() {
+      if (_heightFocusNode.hasFocus) widget.onFieldFocused?.call();
+    });
+    _weightFocusNode.addListener(() {
+      if (_weightFocusNode.hasFocus) widget.onFieldFocused?.call();
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         final provider = Provider.of<AddDependentProvider>(
@@ -50,6 +59,8 @@ class _PhysicalInfoCardState extends State<PhysicalInfoCard> {
     _lastNameController.dispose();
     _contactController.dispose();
     _emailController.dispose();
+    _heightFocusNode.dispose(); // ADD THIS
+    _weightFocusNode.dispose();
     super.dispose();
   }
 
@@ -109,10 +120,11 @@ class _PhysicalInfoCardState extends State<PhysicalInfoCard> {
                 mobileLarge: 32.0,
               ),
               child: _buildTextField(
-                 context:   context,
+                context: context,
                 label: 'Height (cm)',
                 hint: 'Enter Height',
                 controller: _heightController,
+                focusNode: _heightFocusNode,
                 keyboardType: TextInputType.number,
                 onChanged: (value) {
                   final height = int.tryParse(value);
@@ -146,9 +158,10 @@ class _PhysicalInfoCardState extends State<PhysicalInfoCard> {
                 mobileLarge: 32.0,
               ),
               child: _buildTextField(
-                 context:   context,
+                context: context,
                 label: 'Weight (kg)',
                 hint: 'Enter Weight',
+                focusNode: _weightFocusNode,
                 controller: _weightController,
                 keyboardType: TextInputType.number,
                 onChanged: (value) {
@@ -173,16 +186,16 @@ class _PhysicalInfoCardState extends State<PhysicalInfoCard> {
                   children: [
                     Text(
                       'BMI',
-                      style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
-                        color: EcliniqColors.light.textSecondary,
-                      ),
+                      style: EcliniqTextStyles.responsiveHeadlineXMedium(
+                        context,
+                      ).copyWith(color: EcliniqColors.light.textSecondary),
                     ),
                     Spacer(),
                     Text(
                       _calculateBMI(provider.height, provider.weight),
-                      style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
-                        color: EcliniqColors.light.textSecondary,
-                      ),
+                      style: EcliniqTextStyles.responsiveHeadlineXMedium(
+                        context,
+                      ).copyWith(color: EcliniqColors.light.textSecondary),
                     ),
                   ],
                 );
@@ -198,11 +211,12 @@ class _PhysicalInfoCardState extends State<PhysicalInfoCard> {
 Widget _buildTextField({
   required String label,
   required String hint,
+  FocusNode? focusNode,
   required TextEditingController controller,
   TextInputType? keyboardType,
   required Function(String) onChanged,
   List<TextInputFormatter>? inputFormatters,
-  required BuildContext context,  
+  required BuildContext context,
 }) {
   return Row(
     children: [
@@ -212,9 +226,9 @@ Widget _buildTextField({
           children: [
             Text(
               label,
-              style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
-                color: Color(0xff626060),
-              ),
+              style: EcliniqTextStyles.responsiveHeadlineXMedium(
+                context,
+              ).copyWith(color: Color(0xff626060)),
             ),
           ],
         ),
@@ -224,22 +238,23 @@ Widget _buildTextField({
         flex: 1,
         child: TextField(
           controller: controller,
+          focusNode: focusNode,
           keyboardType: keyboardType,
           onChanged: onChanged,
           textAlign: TextAlign.right,
           inputFormatters: inputFormatters,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
-              color: Color(0xffB8B8B8),
-            ),
+            hintStyle: EcliniqTextStyles.responsiveHeadlineXMedium(
+              context,
+            ).copyWith(color: Color(0xffB8B8B8)),
             border: InputBorder.none,
             isDense: true,
             contentPadding: EdgeInsets.zero,
           ),
-          style: EcliniqTextStyles.responsiveHeadlineXMedium(context).copyWith(
-            color: Color(0xff424242),
-          ),
+          style: EcliniqTextStyles.responsiveHeadlineXMedium(
+            context,
+          ).copyWith(color: Color(0xff424242)),
         ),
       ),
     ],

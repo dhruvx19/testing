@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/details/widgets/add_profile_sheet.dart';
@@ -34,6 +35,33 @@ class AddDependentBottomSheet extends StatefulWidget {
 class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
   bool _isExpanded = true;
   bool _isExpandedPhysicalInfo = true;
+  final ScrollController _scrollController = ScrollController();
+  final FocusNode _physicalInfoFocusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _physicalInfoFocusNode.addListener(() {
+      if (_physicalInfoFocusNode.hasFocus) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_scrollController.hasClients) {
+            _scrollController.animateTo(
+              _scrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            );
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _physicalInfoFocusNode.dispose(); // ADD THIS
+    super.dispose();
+  }
 
   void _uploadPhoto(AddDependentProvider provider) async {
     final bool hasPhoto = provider.selectedProfilePhoto != null;
@@ -173,9 +201,12 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+
+    // Auto-scroll to bottom when keyboard opens
+
     final screenSize = ResponsiveHelper.getScreenSize(context);
 
-    
     final horizontalPadding = screenSize.getResponsiveValue(
       mobile: 14.0,
       mobileSmall: 12.0,
@@ -234,201 +265,308 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                 ),
                 child: Text(
                   'Add Dependent',
-                  style: EcliniqTextStyles.responsiveHeadlineXLarge(context).copyWith(
-                    color: Color(0xff424242),
-                    fontWeight: FontWeight.w500,
-         
-                  ),
+                  style: EcliniqTextStyles.responsiveHeadlineXLarge(context)
+                      .copyWith(
+                        color: Color(0xff424242),
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
               ),
               Flexible(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.55,
-                    minHeight: 400,
-                  ),
-                  child: SingleChildScrollView(
-                    padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        
-                        Center(
-                          child: GestureDetector(
-                            onTap: () => _uploadPhoto(provider),
-                            child: Stack(
-                              children: [
-                                Container(
-                                  width: EcliniqTextStyles.getResponsiveWidth(context, 118),
-                                  height: EcliniqTextStyles.getResponsiveHeight(context, 120),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Color(0xff96BFFF),
-                                      width: 0.5,
+                child: NotificationListener<ScrollNotification>(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.55,
+                      minHeight: 400,
+                    ),
+                    child: SingleChildScrollView(
+                      controller: _scrollController,
+                      padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(
+                        context,
+                        16,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Center(
+                            child: GestureDetector(
+                              onTap: () => _uploadPhoto(provider),
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    width: EcliniqTextStyles.getResponsiveWidth(
+                                      context,
+                                      118,
                                     ),
-                                    image: provider.selectedProfilePhoto != null
-                                        ? DecorationImage(
-                                            image: FileImage(
-                                              provider.selectedProfilePhoto!,
-                                            ),
-                                            fit: BoxFit.cover,
-                                          )
-                                        : null,
-                                    color: provider.selectedProfilePhoto == null
-                                        ? const Color(0xffF8FAFF)
+                                    height:
+                                        EcliniqTextStyles.getResponsiveHeight(
+                                          context,
+                                          120,
+                                        ),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Color(0xff96BFFF),
+                                        width: 0.5,
+                                      ),
+                                      image:
+                                          provider.selectedProfilePhoto != null
+                                          ? DecorationImage(
+                                              image: FileImage(
+                                                provider.selectedProfilePhoto!,
+                                              ),
+                                              fit: BoxFit.cover,
+                                            )
+                                          : null,
+                                      color:
+                                          provider.selectedProfilePhoto == null
+                                          ? const Color(0xffF8FAFF)
+                                          : null,
+                                    ),
+                                    child: provider.selectedProfilePhoto == null
+                                        ? (provider.firstName.isNotEmpty
+                                              ? Center(
+                                                  child: Text(
+                                                    provider.firstName[0]
+                                                        .toUpperCase(),
+                                                    style:
+                                                        EcliniqTextStyles.responsiveHeadlineXLarge(
+                                                          context,
+                                                        ).copyWith(
+                                                          color: const Color(
+                                                            0xffEC7600,
+                                                          ),
+                                                          fontWeight:
+                                                              FontWeight.w400,
+                                                          fontSize:
+                                                              EcliniqTextStyles.getResponsiveSize(
+                                                                context,
+                                                                40,
+                                                              ),
+                                                        ),
+                                                  ),
+                                                )
+                                              : Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    SvgPicture.asset(
+                                                      EcliniqIcons
+                                                          .add
+                                                          .assetPath,
+                                                      width:
+                                                          EcliniqTextStyles.getResponsiveIconSize(
+                                                            context,
+                                                            44,
+                                                          ),
+                                                      height:
+                                                          EcliniqTextStyles.getResponsiveIconSize(
+                                                            context,
+                                                            44,
+                                                          ),
+                                                      colorFilter:
+                                                          ColorFilter.mode(
+                                                            const Color(
+                                                              0xff2372EC,
+                                                            ),
+                                                            BlendMode.srcIn,
+                                                          ),
+                                                    ),
+                                                    EcliniqText(
+                                                      'Upload \nPhoto',
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style:
+                                                          EcliniqTextStyles.responsiveTitleXLarge(
+                                                            context,
+                                                          ).copyWith(
+                                                            color: const Color(
+                                                              0xff2372EC,
+                                                            ),
+                                                          ),
+                                                    ),
+                                                  ],
+                                                ))
                                         : null,
                                   ),
-                                   child: provider.selectedProfilePhoto == null
-                                       ? (provider.firstName.isNotEmpty
-                                           ? Center(
-                                               child: Text(
-                                                 provider.firstName[0].toUpperCase(),
-                                                 style: EcliniqTextStyles.responsiveHeadlineXLarge(context).copyWith(
-                                                       color: const Color(0xffEC7600),
-                                                       fontWeight: FontWeight.w400,
-                                                       fontSize: EcliniqTextStyles.getResponsiveSize(context, 40),
-                                                     ),
-                                               ),
-                                             )
-                                           : Column(
-                                               mainAxisAlignment:
-                                                   MainAxisAlignment.center,
-                                               children: [
-                                                 SvgPicture.asset(
-                                                   EcliniqIcons.add.assetPath,
-                                                   width: EcliniqTextStyles.getResponsiveIconSize(context, 44),
-                                                   height: EcliniqTextStyles.getResponsiveIconSize(context, 44),
-                                                   colorFilter: ColorFilter.mode(
-                                                     const Color(0xff2372EC),
-                                                     BlendMode.srcIn,
-                                                   ),
-                                                 ),
-                                                 EcliniqText(
-                                                   'Upload \nPhoto',
-                                                   textAlign: TextAlign.center,
-                                                   style: EcliniqTextStyles.responsiveTitleXLarge(context).copyWith(
-                                                         color: const Color(0xff2372EC),
-                                                       ),
-                                                 ),
-                                               ],
-                                             ))
-                                       : null,
-                                ),
 
-                                
-                                if (provider.selectedProfilePhoto != null)
-                                  Positioned(
-                                    bottom: 0,
-                                    right: 0,
-                                    child: Container(
-                                      width: EcliniqTextStyles.getResponsiveWidth(context, 32),
-                                      height: EcliniqTextStyles.getResponsiveHeight(context, 32),
-                                      decoration: BoxDecoration(
-                                        color: Primitives.brightBlue,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
+                                  if (provider.selectedProfilePhoto != null)
+                                    Positioned(
+                                      bottom: 0,
+                                      right: 0,
+                                      child: Container(
+                                        width:
+                                            EcliniqTextStyles.getResponsiveWidth(
+                                              context,
+                                              32,
+                                            ),
+                                        height:
+                                            EcliniqTextStyles.getResponsiveHeight(
+                                              context,
+                                              32,
+                                            ),
+                                        decoration: BoxDecoration(
+                                          color: Primitives.brightBlue,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.white,
+                                            width: 2,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          Icons.edit,
                                           color: Colors.white,
-                                          width: 2,
+                                          size:
+                                              EcliniqTextStyles.getResponsiveIconSize(
+                                                context,
+                                                16,
+                                              ),
                                         ),
                                       ),
-                                      child: Icon(
-                                        Icons.edit,
-                                        color: Colors.white,
-                                        size: EcliniqTextStyles.getResponsiveIconSize(context, 16),
-                                      ),
                                     ),
-                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(
+                            height: EcliniqTextStyles.getResponsiveSpacing(
+                              context,
+                              16,
+                            ),
+                          ),
+
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _isExpanded = !_isExpanded;
+                              });
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Personal Details',
+                                      style:
+                                          EcliniqTextStyles.responsiveHeadlineMedium(
+                                            context,
+                                          ).copyWith(color: Color(0xff424242)),
+                                    ),
+                                    Text(
+                                      '•',
+                                      style:
+                                          EcliniqTextStyles.responsiveHeadlineLarge(
+                                            context,
+                                          ).copyWith(color: Colors.red),
+                                    ),
+                                  ],
+                                ),
+
+                                SvgPicture.asset(
+                                  width:
+                                      EcliniqTextStyles.getResponsiveIconSize(
+                                        context,
+                                        24,
+                                      ),
+                                  height:
+                                      EcliniqTextStyles.getResponsiveIconSize(
+                                        context,
+                                        24,
+                                      ),
+                                  _isExpanded
+                                      ? EcliniqIcons.arrowUp.assetPath
+                                      : EcliniqIcons.arrowDown.assetPath,
+                                  color: Color(0xff8E8E8E),
+                                ),
                               ],
                             ),
                           ),
-                        ),
 
-                        SizedBox(
-                          height: EcliniqTextStyles.getResponsiveSpacing(context, 16),
-                        ),
-
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _isExpanded = !_isExpanded;
-                            });
-                          },
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    'Personal Details',
-                                    style: EcliniqTextStyles.responsiveHeadlineMedium(context)
-                                        .copyWith(color: Color(0xff424242)),
-                                  ),
-                                  Text(
-                                    '•',
-                                    style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
-                                      color: Colors.red,
-                                 
+                          if (_isExpanded) ...[PersonalDetailsWidget()],
+                          SizedBox(
+                            height: EcliniqTextStyles.getResponsiveSpacing(
+                              context,
+                              24,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _isExpandedPhysicalInfo =
+                                    !_isExpandedPhysicalInfo;
+                              });
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Physical Info',
+                                      style:
+                                          EcliniqTextStyles.responsiveHeadlineMedium(
+                                            context,
+                                          ).copyWith(color: Color(0xff424242)),
                                     ),
-                                  ),
-                                ],
-                              ),
-
-                              SvgPicture.asset(
-                                width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
-                                height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
-                                _isExpanded
-                                    ? EcliniqIcons.arrowUp.assetPath
-                                    : EcliniqIcons.arrowDown.assetPath,
-                                color: Color(0xff8E8E8E),
-                              ),
-                            ],
+                                  ],
+                                ),
+                                SvgPicture.asset(
+                                  width:
+                                      EcliniqTextStyles.getResponsiveIconSize(
+                                        context,
+                                        24,
+                                      ),
+                                  height:
+                                      EcliniqTextStyles.getResponsiveIconSize(
+                                        context,
+                                        24,
+                                      ),
+                                  _isExpandedPhysicalInfo
+                                      ? EcliniqIcons.arrowUp.assetPath
+                                      : EcliniqIcons.arrowDown.assetPath,
+                                  color: Color(0xff8E8E8E),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-
-                        if (_isExpanded) ...[PersonalDetailsWidget()],
-                        SizedBox(
-                          height: EcliniqTextStyles.getResponsiveSpacing(context, 24),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _isExpandedPhysicalInfo =
-                                  !_isExpandedPhysicalInfo;
-                            });
-                          },
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    'Physical Info',
-                                    style: EcliniqTextStyles.responsiveHeadlineMedium(context)
-                                        .copyWith(color: Color(0xff424242)),
+                          if (_isExpandedPhysicalInfo) ...[
+                            PhysicalInfoCard(
+                              onFieldFocused: () {
+                                WidgetsBinding.instance.addPostFrameCallback((
+                                  _,
+                                ) {
+                                  if (_scrollController.hasClients) {
+                                    _scrollController.animateTo(
+                                      _scrollController
+                                          .position
+                                          .maxScrollExtent,
+                                      duration: const Duration(
+                                        milliseconds: 300,
+                                      ),
+                                      curve: Curves.easeOut,
+                                    );
+                                  }
+                                });
+                              },
+                            ),
+                          ],
+                          SizedBox(
+                            height: MediaQuery.of(context).viewInsets.bottom > 0
+                                ? MediaQuery.of(context).viewInsets.bottom
+                                : EcliniqTextStyles.getResponsiveSpacing(
+                                    context,
+                                    20,
                                   ),
-                                ],
-                              ),
-                              SvgPicture.asset(
-                                width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
-                                height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
-                                _isExpandedPhysicalInfo
-                                    ? EcliniqIcons.arrowUp.assetPath
-                                    : EcliniqIcons.arrowDown.assetPath,
-                                color: Color(0xff8E8E8E),
-                              ),
-                            ],
                           ),
-                        ),
-                        if (_isExpandedPhysicalInfo) ...[PhysicalInfoCard()],
-                        SizedBox(
-                          height: EcliniqTextStyles.getResponsiveSpacing(context, 20),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
+
               Padding(
                 padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
                   context,
@@ -455,14 +593,23 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                             ? Color(0xFF2372EC)
                             : Color(0xFFF9F9F9),
                         borderRadius: BorderRadius.circular(
-                          EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
+                          EcliniqTextStyles.getResponsiveBorderRadius(
+                            context,
+                            4,
+                          ),
                         ),
                       ),
                       child: Center(
                         child: provider.isLoading
                             ? SizedBox(
-                                height: EcliniqTextStyles.getResponsiveHeight(context, 20),
-                                width: EcliniqTextStyles.getResponsiveWidth(context, 20),
+                                height: EcliniqTextStyles.getResponsiveHeight(
+                                  context,
+                                  20,
+                                ),
+                                width: EcliniqTextStyles.getResponsiveWidth(
+                                  context,
+                                  20,
+                                ),
                                 child: EcliniqLoader(
                                   color: Colors.white,
                                   size: 20,
@@ -473,8 +620,10 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                                 children: [
                                   Text(
                                     'Save',
-                                    style: EcliniqTextStyles.responsiveTitleXBLarge(context)
-                                        .copyWith(
+                                    style:
+                                        EcliniqTextStyles.responsiveTitleXBLarge(
+                                          context,
+                                        ).copyWith(
                                           color: provider.isFormValid
                                               ? Colors.white
                                               : Color(0xffD6D6D6),
@@ -482,7 +631,11 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                                         ),
                                   ),
                                   SizedBox(
-                                    width: EcliniqTextStyles.getResponsiveSpacing(context, 8),
+                                    width:
+                                        EcliniqTextStyles.getResponsiveSpacing(
+                                          context,
+                                          8,
+                                        ),
                                   ),
                                 ],
                               ),
@@ -491,6 +644,11 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                   ),
                 ),
               ),
+              //   SizedBox(
+              //   height: MediaQuery.of(context).viewInsets.bottom > 0
+              //       ? MediaQuery.of(context).viewInsets.bottom
+              //       : EcliniqTextStyles.getResponsiveSpacing(context, 20),
+              // ),
             ],
           );
         },
