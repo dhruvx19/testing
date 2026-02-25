@@ -10,8 +10,6 @@ import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'dart:io';
 
 class PaymentProcessingScreen extends StatefulWidget {
   final String appointmentId;
@@ -142,28 +140,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
     }
   }
 
-  Future<void> _openUPIApp(String packageName) async {
-    try {
-      if (Platform.isAndroid) {
-        
-        final uri = Uri.parse('package:$packageName');
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-        } else {
-          
-          final intentUri = Uri.parse('intent://#Intent;package=$packageName;end');
-          if (await canLaunchUrl(intentUri)) {
-            await launchUrl(intentUri, mode: LaunchMode.externalApplication);
-          }
-        }
-      }
-    } catch (e) {
-      
-      
-    }
-  }
-
-  Future<void> _startPhonePePayment() async {
+Future<void> _startPhonePePayment() async {
     try {
       
       if (widget.requestPayload == null || widget.requestPayload!.isEmpty) {
@@ -177,26 +154,14 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
         _statusMessage = 'Opening payment app...';
       });
 
-      
-      if (widget.selectedUPIPackage != null) {
-        await _openUPIApp(widget.selectedUPIPackage!);
-        
-        await Future.delayed(const Duration(milliseconds: 300));
-      } else {
-        await Future.delayed(const Duration(milliseconds: 500));
-      }
-
       if (!mounted) return;
 
-      if (widget.requestPayload != null) {
-      } else {
-      }
-
       final result = await _phonePeService.startPayment(
-        requestPayload: widget.requestPayload, 
-        token: widget.token, 
-        orderId: widget.orderId, 
-        appSchema: widget.appSchema, 
+        requestPayload: widget.requestPayload,
+        token: widget.token,
+        orderId: widget.orderId,
+        appSchema: widget.appSchema,
+        targetUpiPackage: widget.selectedUPIPackage,
       );
 
 

@@ -71,9 +71,13 @@ class PhonePeService {
           final decodedBytes = base64Decode(requestPayload);
           final jsonString = utf8.decode(decodedBytes);
 
-          final decodedMap = jsonDecode(jsonString);
+          final decodedMap = jsonDecode(jsonString) as Map<String, dynamic>;
 
-          requestToSend = jsonString;
+          if (targetUpiPackage != null && targetUpiPackage.isNotEmpty) {
+            decodedMap['targetAppPackageName'] = targetUpiPackage;
+          }
+
+          requestToSend = jsonEncode(decodedMap);
         } catch (e) {
           throw PhonePeException(
             'Failed to decode requestPayload from base64: $e',
@@ -93,11 +97,13 @@ class PhonePeService {
           throw PhonePeException('Order ID cannot be empty');
         }
 
-        final payload = {
+        final payload = <String, dynamic>{
           'orderId': orderId,
           'merchantId': _merchantId,
           'token': token,
           'paymentMode': {'type': 'PAY_PAGE'},
+          if (targetUpiPackage != null && targetUpiPackage.isNotEmpty)
+            'targetAppPackageName': targetUpiPackage,
         };
 
         final jsonString = jsonEncode(payload);
