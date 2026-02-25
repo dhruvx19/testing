@@ -94,15 +94,19 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
 
       if (!mounted) return;
 
-      if (appointmentDetail.status.toLowerCase() == 'cancelled') {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => BookingCancelledDetail(
-              appointmentId: widget.appointmentId,
-              appointment: appointmentDetail,
+      // Redirection logic for cancelled/failed status
+      final currentStatus = appointmentDetail.status.toLowerCase();
+      if (currentStatus == 'cancelled' || currentStatus == 'failed') {
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => BookingCancelledDetail(
+                appointmentId: widget.appointmentId,
+                appointment: appointmentDetail,
+              ),
             ),
-          ),
-        );
+          );
+        }
         return;
       }
 
@@ -163,14 +167,17 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
             tokenNo != null &&
             _appointment != null) {
           
-          if (appointmentStatus == 'CANCELLED') {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (context) => BookingCancelledDetail(
-                  appointmentId: widget.appointmentId,
+          final status = appointmentStatus?.toUpperCase();
+          if (status == 'CANCELLED' || status == 'FAILED') {
+            if (mounted) {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => BookingCancelledDetail(
+                    appointmentId: widget.appointmentId,
+                  ),
                 ),
-              ),
-            );
+              );
+            }
             return;
           }
 
@@ -218,6 +225,29 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
 
   @override
   Widget build(BuildContext context) {
+    // Safety check: If we somehow landed here with a cancelled status, redirect immediately
+    if (_appointment != null) {
+      final status = _appointment!.status.toLowerCase();
+      if (status == 'cancelled' || status == 'failed') {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => BookingCancelledDetail(
+                  appointmentId: widget.appointmentId,
+                  appointment: _appointment,
+                ),
+              ),
+            );
+          }
+        });
+        return const Scaffold(
+          backgroundColor: Colors.white,
+          body: Center(child: CircularProgressIndicator()),
+        );
+      }
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -552,24 +582,23 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
             label: 'Cancel Booking',
             icon: EcliniqIcons.rescheduleCancel,
             type: BookingButtonType.cancel,
-            onPressed: () {
-              EcliniqBottomSheet.show(
+            onPressed: () async {
+              final result = await EcliniqBottomSheet.show<bool>(
                 context: context,
                 child: CancelBottomSheet(
                   appointmentId: widget.appointmentId,
-                  onCancelled: () {
-                    if (mounted) {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => BookingCancelledDetail(
-                            appointmentId: widget.appointmentId,
-                          ),
-                        ),
-                      );
-                    }
-                  },
                 ),
               );
+
+              if (result == true && mounted) {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => BookingCancelledDetail(
+                      appointmentId: widget.appointmentId,
+                    ),
+                  ),
+                );
+              }
             },
           ),
           SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 8)),

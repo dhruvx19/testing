@@ -12,7 +12,7 @@ import 'package:provider/provider.dart';
 
 class CancelBottomSheet extends StatefulWidget {
   final String appointmentId;
-  final VoidCallback? onCancelled;
+  final Future<void> Function()? onCancelled;
 
   const CancelBottomSheet({
     super.key,
@@ -68,10 +68,8 @@ class _CancelBottomSheetState extends State<CancelBottomSheet> {
           subtitle: 'Your appointment has been cancelled successfully',
           duration: const Duration(seconds: 3),
         );
-        // Call onCancelled BEFORE pop so parent navigates from its own live context
-        widget.onCancelled?.call();
         if (mounted) {
-          Navigator.of(context).pop();
+          Navigator.of(context).pop(true);
         }
       } else {
         String errorMessage = response.message;
