@@ -9,6 +9,7 @@ class Slot {
   final String slotStatus;
   final DateTime? delayedTime;
   final int maxTokens;
+  final int availableTokens;
   final int bookedTokens;
   final int lastTokenNo;
   final DateTime createdAt;
@@ -25,6 +26,7 @@ class Slot {
     required this.slotStatus,
     this.delayedTime,
     required this.maxTokens,
+    required this.availableTokens,
     required this.bookedTokens,
     required this.lastTokenNo,
     required this.createdAt,
@@ -84,6 +86,9 @@ class Slot {
       slotStatus: toString(json['slotStatus'], ''),
       delayedTime: json['delayedTime'] != null ? parseTime(json['delayedTime']) : null,
       maxTokens: toInt(json['maxTokens'], 0),
+      availableTokens: json['availableTokens'] != null
+          ? toInt(json['availableTokens'], 0)
+          : toInt(json['maxTokens'], 0) - toInt(json['bookedTokens'], 0),
       bookedTokens: toInt(json['bookedTokens'], 0),
       lastTokenNo: toInt(json['lastTokenNo'], 0),
       createdAt: parseTime(json['createdAt']),
@@ -103,6 +108,7 @@ class Slot {
       'slotStatus': slotStatus,
       if (delayedTime != null) 'delayedTime': delayedTime!.toIso8601String(),
       'maxTokens': maxTokens,
+      'availableTokens': availableTokens,
       'bookedTokens': bookedTokens,
       'lastTokenNo': lastTokenNo,
       'createdAt': createdAt.toIso8601String(),
@@ -110,7 +116,6 @@ class Slot {
     };
   }
 
-  int get availableTokens => maxTokens - bookedTokens;
 }
 
 class SlotResponse {

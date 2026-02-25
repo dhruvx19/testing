@@ -259,8 +259,8 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                             child: Stack(
                               children: [
                                 Container(
-                                  width: EcliniqTextStyles.getResponsiveWidth(context, 100),
-                                  height: EcliniqTextStyles.getResponsiveHeight(context, 100),
+                                  width: EcliniqTextStyles.getResponsiveWidth(context, 118),
+                                  height: EcliniqTextStyles.getResponsiveHeight(context, 120),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     border: Border.all(
@@ -276,7 +276,7 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                                           )
                                         : null,
                                     color: provider.selectedProfilePhoto == null
-                                        ? const Color(0xffFFF7ED)
+                                        ? const Color(0xffF8FAFF)
                                         : null,
                                   ),
                                    child: provider.selectedProfilePhoto == null

@@ -506,7 +506,7 @@ class AppointmentBannerWidget extends StatelessWidget {
     final status = banner.status.toUpperCase();
     final type = banner.type.toUpperCase();
 
-    if (type == 'RESCHEDULE' || status == 'CANCELLED') {
+    if (type == 'RESCHEDULE' || status == 'CANCELLED' || status == 'FAILED') {
       detailScreen = BookingCancelledDetail(
         appointmentId: banner.appointmentId,
       );

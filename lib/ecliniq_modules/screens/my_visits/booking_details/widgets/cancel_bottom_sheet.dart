@@ -1,10 +1,11 @@
 import 'package:ecliniq/ecliniq_api/appointment_service.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
-import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/cancelled.dart';
-import 'package:ecliniq/ecliniq_modules/screens/my_visits/booking_details/widgets/common.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/error_snackbar.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/success_snackbar.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
+import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
@@ -40,11 +41,11 @@ class _CancelBottomSheetState extends State<CancelBottomSheet> {
 
       if (authToken == null) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Authentication required. Please login again.'),
-              backgroundColor: Colors.red,
-            ),
+          CustomErrorSnackBar.show(
+            context: context,
+            title: 'Authentication Error',
+            subtitle: 'Authentication required. Please login again.',
+            duration: const Duration(seconds: 4),
           );
           setState(() {
             _isLoading = false;
@@ -60,55 +61,22 @@ class _CancelBottomSheetState extends State<CancelBottomSheet> {
 
       if (!mounted) return;
 
-      
       bool isSuccess = response.success;
       if (response.data != null) {
-        
         isSuccess = isSuccess && response.data!.success;
       }
 
       if (isSuccess) {
-        
+        CustomSuccessSnackBar.show(
+          context: context,
+          title: 'Booking Cancelled',
+          subtitle: 'Your appointment has been cancelled successfully',
+          duration: const Duration(seconds: 3),
+        );
+        // Call onCancelled BEFORE pop so parent navigates from its own live context
+        widget.onCancelled?.call();
         Navigator.of(context).pop();
-        
-        
-        try {
-          final detailResponse = await _appointmentService.getAppointmentDetail(
-            appointmentId: widget.appointmentId,
-            authToken: authToken,
-          );
-
-          if (!mounted) return;
-
-          if (detailResponse.success && detailResponse.data != null) {
-            
-            final appointmentDetail = AppointmentDetailModel.fromApiData(
-              detailResponse.data!,
-            );
-
-            
-            if (mounted) {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => BookingCancelledDetail(
-                    appointmentId: widget.appointmentId,
-                    appointment: appointmentDetail,
-                  ),
-                ),
-              );
-            }
-          } else {
-            
-            widget.onCancelled?.call();
-          }
-        } catch (e) {
-          
-          if (mounted) {
-            widget.onCancelled?.call();
-          }
-        }
       } else {
-        
         String errorMessage = response.message;
         if (response.data != null) {
           if (response.data!.errors != null) {
@@ -119,11 +87,11 @@ class _CancelBottomSheetState extends State<CancelBottomSheet> {
         }
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(errorMessage),
-              backgroundColor: Colors.red,
-            ),
+          CustomErrorSnackBar.show(
+            context: context,
+            title: 'Cancellation Failed',
+            subtitle: errorMessage,
+            duration: const Duration(seconds: 4),
           );
           setState(() {
             _isLoading = false;
@@ -132,11 +100,11 @@ class _CancelBottomSheetState extends State<CancelBottomSheet> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to cancel appointment: $e'),
-            backgroundColor: Colors.red,
-          ),
+        CustomErrorSnackBar.show(
+          context: context,
+          title: 'Error',
+          subtitle: 'Failed to cancel appointment: $e',
+          duration: const Duration(seconds: 4),
         );
         setState(() {
           _isLoading = false;
@@ -200,20 +168,20 @@ class _CancelBottomSheetState extends State<CancelBottomSheet> {
                         color: Color(0xFFFFF8F8),
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Yes',
-                            style: EcliniqTextStyles.responsiveHeadlineMedium(
-                                    context)
-                                .copyWith(
-                              color: Color(0xffF04248),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                        ],
+                      child: Center(
+                        child: _isLoading
+                            ? EcliniqLoader(
+                                size: 20,
+                                color: const Color(0xffF04248),
+                              )
+                            : Text(
+                                'Yes',
+                                style: EcliniqTextStyles.responsiveHeadlineMedium(
+                                        context)
+                                    .copyWith(
+                                  color: Color(0xffF04248),
+                                ),
+                              ),
                       ),
                     ),
                   ),

@@ -473,9 +473,8 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
             '${hospital.city ?? ""}, ${hospital.state ?? ""}';
         // Only update distance if not already provided from previous screen
         if (!shouldPreserveDistance) {
-          _currentDistance = ((hospital.distance ?? 0.0) / 1000).toStringAsFixed(
-            1,
-          );
+          _currentDistance = ((hospital.distance ?? 0.0) / 1000)
+              .toStringAsFixed(1);
         }
       }
     } else if (widget.clinicId != null) {
@@ -490,7 +489,9 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
         _currentLocationAddress = '${clinic.city ?? ""}, ${clinic.state ?? ""}';
         // Only update distance if not already provided from previous screen
         if (!shouldPreserveDistance) {
-          _currentDistance = ((clinic.distance ?? 0.0) / 1000).toStringAsFixed(1);
+          _currentDistance = ((clinic.distance ?? 0.0) / 1000).toStringAsFixed(
+            1,
+          );
         }
       }
     }
@@ -738,9 +739,9 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         surfaceTintColor: Colors.transparent,
-         leadingWidth: EcliniqTextStyles.getResponsiveWidth(context, 54.0),
-          titleSpacing: 0,
-          toolbarHeight: EcliniqTextStyles.getResponsiveHeight(context, 46.0),
+        leadingWidth: EcliniqTextStyles.getResponsiveWidth(context, 54.0),
+        titleSpacing: 0,
+        toolbarHeight: EcliniqTextStyles.getResponsiveHeight(context, 46.0),
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
@@ -794,15 +795,9 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
           preferredSize: Size.fromHeight(
             EcliniqTextStyles.getResponsiveSize(context, 1.0),
           ),
-          child: Transform.translate(
-            offset: Offset(
-              0,
-              -EcliniqTextStyles.getResponsiveSize(context, 8.0),
-            ),
-            child: Container(
-              color: Color(0xFFB8B8B8),
-              height: EcliniqTextStyles.getResponsiveSize(context, 1.0),
-            ),
+          child: Container(
+            color: Color(0xFFB8B8B8),
+            height: EcliniqTextStyles.getResponsiveSize(context, 1.0),
           ),
         ),
       ),
@@ -1030,7 +1025,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                                     ).copyWith(color: Color(0xff626060)),
                               ),
                               Text(
-                                '₹0',
+                                'Pay at Clinic',
                                 style:
                                     EcliniqTextStyles.responsiveHeadlineXMedium(
                                       context,
@@ -1054,12 +1049,12 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                                     ),
                                     const SizedBox(width: 6),
                                     GestureDetector(
-                                       onTap: () {
-                                         EcliniqBottomSheet.show(
-                                           context: context,
-                                           child: const TaxesBottomSheet(),
-                                         );
-                                       },
+                                      onTap: () {
+                                        EcliniqBottomSheet.show(
+                                          context: context,
+                                          child: const TaxesBottomSheet(),
+                                        );
+                                      },
                                       child: SvgPicture.asset(
                                         EcliniqIcons.infoCircleBlack.assetPath,
                                         width: 20,
@@ -1092,19 +1087,19 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                                           ).copyWith(color: Color(0xff626060)),
                                     ),
                                     const SizedBox(width: 6),
-                                     GestureDetector(
-                                       onTap: () {
+                                    GestureDetector(
+                                      onTap: () {
                                         EcliniqBottomSheet.show(
-                                           context: context,
-                                           child: const TaxesBottomSheet(),
-                                         );
-                                       },
-                                       child: SvgPicture.asset(
+                                          context: context,
+                                          child: const TaxesBottomSheet(),
+                                        );
+                                      },
+                                      child: SvgPicture.asset(
                                         EcliniqIcons.infoCircleBlack.assetPath,
                                         width: 20,
                                         height: 20,
-                                                                           ),
-                                     ),
+                                      ),
+                                    ),
                                   ],
                                 ),
                                 Row(
@@ -1273,13 +1268,15 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
     }
 
     // Check if payment method is required for remaining amount
-    if (_serviceFee > 0 && _remainingAmountToPay > 0 && _selectedPaymentMethodPackage == null) {
+    if (_serviceFee > 0 &&
+        _remainingAmountToPay > 0 &&
+        _selectedPaymentMethodPackage == null) {
       CustomErrorSnackBar.show(
         context: context,
         title: 'Payment Method Required',
-        subtitle: _useWallet 
-          ? 'Please select a payment method for the remaining amount of ₹${_remainingAmountToPay.toStringAsFixed(0)}'
-          : 'Please select a payment method',
+        subtitle: _useWallet
+            ? 'Please select a payment method for the remaining amount of ₹${_remainingAmountToPay.toStringAsFixed(0)}'
+            : 'Please select a payment method',
         duration: const Duration(seconds: 4),
       );
       return;
@@ -1939,8 +1936,8 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                               color: _remainingAmountToPay == 0
                                   ? Color(0xff424242)
                                   : (_selectedPaymentMethod != null
-                                      ? Color(0xff424242)
-                                      : Color(0xff8E8E8E)),
+                                        ? Color(0xff424242)
+                                        : Color(0xff8E8E8E)),
                             ),
                         overflow: TextOverflow.ellipsis,
                       ),

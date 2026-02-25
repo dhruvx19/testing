@@ -20,18 +20,65 @@ class DateSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final dates = <DateTime>[];
+    // Derive dates from API response: only dates present in tokenCounts with tokens > 0
+    final List<_DateEntry> entries;
 
-    
-    for (int i = 0; i < 7; i++) {
-      dates.add(now.add(Duration(days: i)));
+    if (isLoading) {
+      // Show shimmer placeholders while loading
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: List.generate(4, (_) {
+            return Padding(
+              padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+                context,
+                right: 10.0,
+              ),
+              child: Shimmer.fromColors(
+                baseColor: Colors.grey.shade300,
+                highlightColor: Colors.grey.shade100,
+                child: Container(
+                  width: EcliniqTextStyles.getResponsiveWidth(context, 130.0),
+                  height: EcliniqTextStyles.getResponsiveHeight(context, 54.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: Colors.grey[300]!),
+                    borderRadius: BorderRadius.circular(
+                      EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
+        ),
+      );
+    }
+
+    if (tokenCounts != null && tokenCounts!.isNotEmpty) {
+      // Only show dates from the API that have available tokens
+      final sortedEntries = tokenCounts!.entries
+          .where((e) => e.value > 0)
+          .map((e) {
+            final d = e.key;
+            return _DateEntry(DateTime(d.year, d.month, d.day), e.value);
+          })
+          .toList()
+        ..sort((a, b) => a.date.compareTo(b.date));
+      entries = sortedEntries;
+    } else {
+      // Fallback: show today only when no API data
+      final now = DateTime.now();
+      entries = [_DateEntry(DateTime(now.year, now.month, now.day), null)];
     }
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: dates.map((date) {
+        children: entries.map((entry) {
+          final date = entry.date;
+          final tokenCount = entry.tokenCount;
+
           final isSelected =
               selectedDateValue != null &&
               date.year == selectedDateValue!.year &&
@@ -40,86 +87,51 @@ class DateSelector extends StatelessWidget {
 
           final label = _formatDateLabel(date);
 
-          
-          int? tokenCount;
-          if (tokenCounts != null && !isLoading) {
-            final dateOnly = DateTime(date.year, date.month, date.day);
-            for (final key in tokenCounts!.keys) {
-              final keyDateOnly = DateTime(key.year, key.month, key.day);
-              if (keyDateOnly == dateOnly) {
-                tokenCount = tokenCounts![key];
-                break;
-              }
-            }
-          }
-
           return Padding(
             padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
               context,
               right: 10.0,
             ),
             child: GestureDetector(
-              onTap: isLoading ? null : () => onDateChanged(date),
-              child: isLoading
-                  ? Shimmer.fromColors(
-                      baseColor: Colors.grey.shade300,
-                      highlightColor: Colors.grey.shade100,
-                      child: Container(
-                        width: EcliniqTextStyles.getResponsiveWidth(context, 100.0),
-                        height: EcliniqTextStyles.getResponsiveHeight(context, 70.0),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: Colors.grey[300]!),
-                          borderRadius: BorderRadius.circular(
-                            EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0),
-                          ),
-                        ),
-                      ),
-                    )
-                  : Container(
-                      padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
-                        context,
-                        horizontal: 16.0,
-                        vertical: 8.0,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? const Color(0xFF2372EC)
-                            : Colors.white,
-                        border: Border.all(
-                          color: isSelected
-                              ? const Color(0xFF2372EC)
-                              : Color(0xffB8B8B8),
-                          width: EcliniqTextStyles.getResponsiveSize(context, 0.5),
-                        ),
-                        borderRadius: BorderRadius.circular(
-                          EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0),
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            label,
-                            style: EcliniqTextStyles.responsiveTitleXBLarge(context).copyWith(
-                              color: isSelected
-                                  ? Colors.white
-                                  : Color(0xff424242),
-                            ),
-                          ),
-                          Text(
-                            tokenCount != null
-                                ? '$tokenCount Tokens Available'
-                                : 'Tap to view slots',
-                            style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
-                              color: isSelected
-                                  ? Colors.white
-                                  : const Color(0xFF3EAF3F),
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
+              onTap: () => onDateChanged(date),
+              child: Container(
+                padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                  context,
+                  horizontal: 16.0,
+                  vertical: 8.0,
+                ),
+                decoration: BoxDecoration(
+                  color: isSelected ? const Color(0xFF2372EC) : Colors.white,
+                  border: Border.all(
+                    color: isSelected
+                        ? const Color(0xFF2372EC)
+                        : const Color(0xffB8B8B8),
+                    width: EcliniqTextStyles.getResponsiveSize(context, 0.5),
+                  ),
+                  borderRadius: BorderRadius.circular(
+                    EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      label,
+                      style: EcliniqTextStyles.responsiveTitleXBLarge(context).copyWith(
+                        color: isSelected ? Colors.white : const Color(0xff424242),
                       ),
                     ),
+                    Text(
+                      tokenCount != null
+                          ? '$tokenCount Tokens Available'
+                          : 'Tap to view slots',
+                      style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
+                        color: isSelected ? Colors.white : const Color(0xFF3EAF3F),
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           );
         }).toList(),
@@ -162,4 +174,11 @@ class DateSelector extends StatelessWidget {
     ];
     return months[month - 1];
   }
+}
+
+class _DateEntry {
+  final DateTime date;
+  final int? tokenCount;
+
+  _DateEntry(this.date, this.tokenCount);
 }

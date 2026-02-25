@@ -19,6 +19,7 @@ import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/button/button.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
+import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/error_snackbar.dart';
 import 'package:ecliniq/ecliniq_utils/widgets/ecliniq_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -194,6 +195,8 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
       );
 
       if (mounted) {
+        DateTime? firstAvailableDate;
+
         setState(() {
           _isLoadingWeeklySlots = false;
           if (response.success) {
@@ -206,8 +209,26 @@ class _ClinicVisitSlotScreenState extends State<ClinicVisitSlotScreen> {
               );
               _weeklyTokenCounts[dateOnly] = weeklySlot.totalAvailableTokens;
             }
+
+            // Auto-select the first available date
+            final availableDates = _weeklyTokenCounts.entries
+                .where((e) => e.value > 0)
+                .map((e) => e.key)
+                .toList()
+              ..sort((a, b) => a.compareTo(b));
+
+            if (availableDates.isNotEmpty) {
+              firstAvailableDate = availableDates.first;
+              selectedDate = firstAvailableDate;
+              selectedDateLabel = _formatDateLabel(firstAvailableDate!);
+            }
           }
         });
+
+        // Re-fetch slots for the auto-selected date
+        if (firstAvailableDate != null) {
+          _fetchSlots();
+        }
       }
     } catch (e) {
       if (mounted) {

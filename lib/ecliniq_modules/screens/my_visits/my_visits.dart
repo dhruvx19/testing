@@ -287,12 +287,12 @@ class _MyVisitsState extends State<MyVisits>
         }
     }
 
-    final result = await Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => detailPage),
     );
 
-    if (result == true && mounted) {
+    if (mounted) {
       _refreshAppointments();
     }
   }

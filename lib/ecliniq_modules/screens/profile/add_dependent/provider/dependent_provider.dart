@@ -65,6 +65,7 @@ class AddDependentProvider extends ChangeNotifier {
 
   bool _isLoading = false;
   bool _isUploadingPhoto = false;
+  bool _isPhotoLoading = false;
   String? _errorMessage;
 
   final PatientService _patientService = PatientService();
@@ -85,6 +86,7 @@ class AddDependentProvider extends ChangeNotifier {
   bool get photoDeleted => _photoDeleted;
   bool get isLoading => _isLoading;
   bool get isUploadingPhoto => _isUploadingPhoto;
+  bool get isPhotoLoading => _isPhotoLoading;
   String? get errorMessage => _errorMessage;
 
   
@@ -142,6 +144,11 @@ class AddDependentProvider extends ChangeNotifier {
 
   void setPhotoUrl(String? url) {
     _photoUrl = url;
+    notifyListeners();
+  }
+
+  void setPhotoLoading(bool value) {
+    _isPhotoLoading = value;
     notifyListeners();
   }
 
@@ -353,11 +360,7 @@ class AddDependentProvider extends ChangeNotifier {
       notifyListeners();
       return true;
       } else {
-        if (response.errors != null) {
-          _errorMessage = response.errors.toString();
-        } else {
-          _errorMessage = response.message;
-        }
+        _errorMessage = response.message.isNotEmpty ? response.message : 'Failed to add dependent';
         _isLoading = false;
         notifyListeners();
         return false;
@@ -387,6 +390,7 @@ class AddDependentProvider extends ChangeNotifier {
     _weight = null;
     _isLoading = false;
     _isUploadingPhoto = false;
+    _isPhotoLoading = false;
     _errorMessage = null;
     _photoDeleted = false;
     notifyListeners();

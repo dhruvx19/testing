@@ -163,13 +163,18 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
     AddDependentProvider provider,
     String photoKey,
   ) async {
+    provider.setPhotoLoading(true);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final authToken = authProvider.authToken;
-    if (authToken == null) return;
+    if (authToken == null) {
+      if (mounted) provider.setPhotoLoading(false);
+      return;
+    }
 
     final photoUrl = await _resolveImageUrl(photoKey, token: authToken);
-    if (photoUrl != null && mounted) {
-      provider.setPhotoUrl(photoUrl);
+    if (mounted) {
+      if (photoUrl != null) provider.setPhotoUrl(photoUrl);
+      provider.setPhotoLoading(false);
     }
   }
 
@@ -630,14 +635,22 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                                         ? const Color(0xffF8FAFF)
                                         : null,
                                   ),
-                                  child:
-                                      (provider.selectedProfilePhoto == null &&
-                                          (provider.photoUrl == null ||
-                                              provider.photoDeleted))
+                                  child: provider.isPhotoLoading
+                                      ? Center(
+                                          child: EcliniqLoader(
+                                            size: 32,
+                                            color: const Color(0xff2372EC),
+                                          ),
+                                        )
+                                      : (provider.selectedProfilePhoto ==
+                                                  null &&
+                                              (provider.photoUrl == null ||
+                                                  provider.photoDeleted))
                                       ? Column(
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
-                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
                                           children: [
                                             SvgPicture.asset(
                                               EcliniqIcons.add.assetPath,

@@ -420,25 +420,12 @@ class _BookingRequestedDetailState extends State<BookingRequestedDetail> {
                 context: context,
                 child: CancelBottomSheet(
                   appointmentId: widget.appointmentId,
-                  onCancelled: () async {
+                  onCancelled: () {
                     if (mounted) {
-                      setState(() {
-                        _isLoading = true;
-                        _errorMessage = null;
-                      });
-                    }
-
-                    await _loadAppointmentDetails();
-
-                    if (mounted &&
-                        _appointment != null &&
-                        (_appointment!.status.toLowerCase() == 'cancelled' ||
-                            _appointment!.status.toLowerCase() == 'failed')) {
                       Navigator.of(context).pushReplacement(
                         MaterialPageRoute(
                           builder: (context) => BookingCancelledDetail(
                             appointmentId: widget.appointmentId,
-                            appointment: _appointment,
                           ),
                         ),
                       );
