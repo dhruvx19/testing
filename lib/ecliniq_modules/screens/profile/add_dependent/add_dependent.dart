@@ -242,11 +242,16 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                 ),
               ),
               Flexible(
-                child: SingleChildScrollView(
-                  padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.55,
+                    minHeight: 400,
+                  ),
+                  child: SingleChildScrollView(
+                    padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
                         
                         Center(
                           child: GestureDetector(
@@ -429,8 +434,8 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                   context,
                   left: horizontalPadding,
                   right: horizontalPadding,
-                  top: 10,
-                  bottom: 10,
+                  top: 22,
+                  bottom: 40,
                 ),
                 child: SizedBox(
                   width: double.infinity,
