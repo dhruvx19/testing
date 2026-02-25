@@ -43,9 +43,8 @@ class _UpcharCoinState extends State<UpcharCoin> {
       return;
     }
 
-    
     await _fetchBalance(authToken);
-    
+
     await _fetchTransactions(authToken);
   }
 
@@ -94,7 +93,6 @@ class _UpcharCoinState extends State<UpcharCoin> {
 
   @override
   Widget build(BuildContext context) {
-    
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -219,22 +217,18 @@ class _UpcharCoinState extends State<UpcharCoin> {
                                           height: 1.0,
                                         ),
                                   ),
-                                  
-                                  
-                                  
-                                  
-                                  
-                                  
-                                  
-                                  Text(
-                                    'Total Coins Balance Available',
-                                    style:
-                                        EcliniqTextStyles.responsiveTitleXLarge(
-                                          context,
-                                        ).copyWith(
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.white,
-                                        ),
+
+                                  FittedBox(
+                                    child: Text(
+                                      'Total Coins Balance Available',
+                                      style:
+                                          EcliniqTextStyles.responsiveTitleXLarge(
+                                            context,
+                                          ).copyWith(
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.white,
+                                          ),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -342,10 +336,7 @@ class _UpcharCoinState extends State<UpcharCoin> {
                   ),
                   Spacer(),
                   Container(
-                    width: EcliniqTextStyles.getResponsiveWidth(
-                      context,
-                      74.0,
-                    ),
+                    width: EcliniqTextStyles.getResponsiveWidth(context, 74.0),
                     height: EcliniqTextStyles.getResponsiveHeight(
                       context,
                       30.0,
@@ -362,10 +353,8 @@ class _UpcharCoinState extends State<UpcharCoin> {
                     child: Center(
                       child: Text(
                         '$_selectedYear',
-                        style:
-                            EcliniqTextStyles.responsiveTitleXLarge(
-                              context,
-                            ).copyWith(
+                        style: EcliniqTextStyles.responsiveTitleXLarge(context)
+                            .copyWith(
                               fontWeight: FontWeight.w400,
                               color: Color(0xff424242),
                             ),
