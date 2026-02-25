@@ -274,9 +274,9 @@ class BookingConfirmedScreen extends StatelessWidget {
                 ),
                 child: OutlinedButton(
                   onPressed: () {
-                    if (appointmentId != null) {
+                    if (appointmentId != null && appointmentId!.isNotEmpty) {
                       Widget detailPage;
-                      switch (bookingStatus) {
+                      switch (bookingStatus?.toLowerCase()) {
                         case 'requested':
                           detailPage = BookingRequestedDetail(appointmentId: appointmentId!);
                           break;

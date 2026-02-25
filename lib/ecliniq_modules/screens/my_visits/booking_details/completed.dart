@@ -297,6 +297,7 @@ class _BookingCompletedDetailState extends State<BookingCompletedDetail> {
                   AppointmentDetailsSection(
                     patient: _appointment!.patient,
                     timeInfo: _appointment!.timeInfo,
+                    clinic: _appointment!.clinic,
                   ),
                   SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 24)),
                   ClinicLocationCard(clinic: _appointment!.clinic),

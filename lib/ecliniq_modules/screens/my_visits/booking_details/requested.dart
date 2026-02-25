@@ -342,6 +342,7 @@ class _BookingRequestedDetailState extends State<BookingRequestedDetail> {
                   AppointmentDetailsSection(
                     patient: _appointment!.patient,
                     timeInfo: _appointment!.timeInfo,
+                    clinic: _appointment!.clinic,
                   ),
                   SizedBox(height: EcliniqTextStyles.getResponsiveSpacing(context, 8)),
                   ClinicLocationCard(clinic: _appointment!.clinic),

@@ -474,6 +474,7 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
                     AppointmentDetailsSection(
                       patient: _appointment!.patient,
                       timeInfo: _appointment!.timeInfo,
+                      clinic: _appointment!.clinic,
                     ),
                     SizedBox(
                       height: EcliniqTextStyles.getResponsiveSpacing(

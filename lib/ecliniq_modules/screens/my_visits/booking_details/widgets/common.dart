@@ -1352,12 +1352,14 @@ class DoctorInfoCard extends StatelessWidget {
 class AppointmentDetailsSection extends StatelessWidget {
   final PatientInfo patient;
   final AppointmentTimeInfo timeInfo;
+  final ClinicInfo clinic;
   final VoidCallback? onEditPatient;
 
   const AppointmentDetailsSection({
     super.key,
     required this.patient,
     required this.timeInfo,
+    required this.clinic,
     this.onEditPatient,
   });
 
@@ -1420,7 +1422,7 @@ class AppointmentDetailsSection extends StatelessWidget {
             height: EcliniqTextStyles.getResponsiveSize(context, 32.0),
           ),
           text: timeInfo.consultationType,
-          subtitle: 'Amore Clinic, 15, Indrayani River Road, Pune - 411047',
+          subtitle: clinic.address.isNotEmpty ? clinic.address : clinic.name,
         ),
       ],
     );

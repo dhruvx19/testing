@@ -835,6 +835,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                       child: AppointmentDetailsSection(
                         patient: _buildPatientInfo(),
                         timeInfo: _buildAppointmentTimeInfo(),
+                        clinic: _buildClinicInfo(),
                         onEditPatient: _openSelectMemberBottomSheet,
                       ),
                     ),
@@ -1420,8 +1421,8 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                       totalAmount: paymentData.totalAmount,
                       walletAmount: paymentData.walletAmount,
                       gatewayAmount: paymentData.gatewayAmount,
-                      appointmentId: appointmentData?.id,
-                      bookingStatus: appointmentData?.status,
+                      appointmentId: appointmentData?.id ?? paymentData.appointmentId,
+                      bookingStatus: appointmentData?.status ?? paymentData.status,
                     ),
                   ),
                 );
@@ -1496,8 +1497,8 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                           totalAmount: paymentData.totalAmount,
                           walletAmount: paymentData.walletAmount,
                           gatewayAmount: paymentData.gatewayAmount,
-                          appointmentId: appointmentData?.id,
-                          bookingStatus: appointmentData?.status,
+                          appointmentId: appointmentData?.id ?? paymentData.appointmentId,
+                          bookingStatus: appointmentData?.status ?? paymentData.status,
                         ),
                       ),
                     );
@@ -1544,8 +1545,8 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                       totalAmount: paymentData.totalAmount,
                       walletAmount: paymentData.walletAmount,
                       gatewayAmount: paymentData.gatewayAmount,
-                      appointmentId: appointmentData?.id,
-                      bookingStatus: appointmentData?.status,
+                      appointmentId: appointmentData?.id ?? paymentData.appointmentId,
+                      bookingStatus: appointmentData?.status ?? paymentData.status,
                     ),
                   ),
                 );
@@ -1555,7 +1556,10 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                   ? response.data as AppointmentData
                   : null;
               final appointmentId =
-                  appointmentData?.id ?? responseDataJson?['id'] ?? '';
+                  appointmentData?.id ??
+                  responseDataJson?['appointmentId']?.toString() ??
+                  responseDataJson?['id']?.toString() ??
+                  '';
 
               final verifyRequest = VerifyAppointmentRequest(
                 appointmentId: appointmentId,
@@ -1568,7 +1572,9 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                 authToken: _authToken,
               );
 
-              final tokenNumber = appointmentData?.tokenNo.toString() ?? '--';
+              final tokenNumber = appointmentData?.tokenNo.toString() ??
+                  responseDataJson?['tokenNo']?.toString() ??
+                  '--';
 
               Navigator.pushReplacement(
                 context,
@@ -1584,10 +1590,9 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                     patientSubtitle: _getCurrentUserSubtitle(),
                     patientBadge:
                         _selectedDependent?.formattedRelation ?? 'You',
-                    appointmentId: appointmentId is String
-                        ? appointmentId
-                        : null,
-                    bookingStatus: appointmentData?.status,
+                    appointmentId: appointmentId.isNotEmpty ? appointmentId : null,
+                    bookingStatus: appointmentData?.status ??
+                        responseDataJson?['status']?.toString(),
                   ),
                 ),
               );
