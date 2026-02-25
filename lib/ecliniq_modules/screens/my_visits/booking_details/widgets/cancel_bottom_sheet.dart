@@ -61,12 +61,7 @@ class _CancelBottomSheetState extends State<CancelBottomSheet> {
 
       if (!mounted) return;
 
-      bool isSuccess = response.success;
-      if (response.data != null) {
-        isSuccess = isSuccess && response.data!.success;
-      }
-
-      if (isSuccess) {
+      if (response.success) {
         CustomSuccessSnackBar.show(
           context: context,
           title: 'Booking Cancelled',
@@ -75,7 +70,9 @@ class _CancelBottomSheetState extends State<CancelBottomSheet> {
         );
         // Call onCancelled BEFORE pop so parent navigates from its own live context
         widget.onCancelled?.call();
-        Navigator.of(context).pop();
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
       } else {
         String errorMessage = response.message;
         if (response.data != null) {
@@ -86,17 +83,15 @@ class _CancelBottomSheetState extends State<CancelBottomSheet> {
           }
         }
 
-        if (mounted) {
-          CustomErrorSnackBar.show(
-            context: context,
-            title: 'Cancellation Failed',
-            subtitle: errorMessage,
-            duration: const Duration(seconds: 4),
-          );
-          setState(() {
-            _isLoading = false;
-          });
-        }
+        CustomErrorSnackBar.show(
+          context: context,
+          title: 'Cancellation Failed',
+          subtitle: errorMessage,
+          duration: const Duration(seconds: 4),
+        );
+        setState(() {
+          _isLoading = false;
+        });
       }
     } catch (e) {
       if (mounted) {

@@ -94,6 +94,18 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
 
       if (!mounted) return;
 
+      if (appointmentDetail.status.toLowerCase() == 'cancelled') {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => BookingCancelledDetail(
+              appointmentId: widget.appointmentId,
+              appointment: appointmentDetail,
+            ),
+          ),
+        );
+        return;
+      }
+
       setState(() {
         _appointment = appointmentDetail;
         _isLoading = false;
@@ -147,9 +159,21 @@ class _BookingConfirmedDetailState extends State<BookingConfirmedDetail> {
         final appointmentStatus = eta['appointmentStatus'] as String?;
         final timestamp = eta['timestamp'] as String?;
 
-        if (appointmentStatus == 'CONFIRMED' &&
+        if ((appointmentStatus == 'CONFIRMED' || appointmentStatus == 'CANCELLED') &&
             tokenNo != null &&
             _appointment != null) {
+          
+          if (appointmentStatus == 'CANCELLED') {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => BookingCancelledDetail(
+                  appointmentId: widget.appointmentId,
+                ),
+              ),
+            );
+            return;
+          }
+
           String? formattedEta;
 
           if (timestamp != null && timestamp.isNotEmpty) {

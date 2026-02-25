@@ -85,6 +85,18 @@ class _BookingRequestedDetailState extends State<BookingRequestedDetail> {
 
       if (!mounted) return;
 
+      if (appointmentDetail.status.toLowerCase() == 'cancelled') {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => BookingCancelledDetail(
+              appointmentId: widget.appointmentId,
+              appointment: appointmentDetail,
+            ),
+          ),
+        );
+        return;
+      }
+
       setState(() {
         _appointment = appointmentDetail;
         _isLoading = false;
