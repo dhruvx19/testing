@@ -50,6 +50,7 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
   bool _isSaving = false;
   final PatientService _patientService = PatientService();
   DependentData? _latestDependentData;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -70,6 +71,12 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
         }
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchAndUpdateWithLatestData(
@@ -573,7 +580,8 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                 ),
               ),
               Flexible(
-                child: ConstrainedBox(
+                child: NotificationListener<ScrollNotification>(
+                  child: ConstrainedBox(
                   constraints: BoxConstraints(
                     maxHeight: MediaQuery.of(context).size.height * 0.55,
                     minHeight: EcliniqTextStyles.getResponsiveHeight(
@@ -582,6 +590,7 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                     ),
                   ),
                   child: SingleChildScrollView(
+                    controller: _scrollController,
                     padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(
                       context,
                       16,
@@ -829,18 +838,35 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                             ],
                           ),
                         ),
-                        if (_isExpandedPhysicalInfo) ...[PhysicalInfoCard()],
-                        SizedBox(
-                          height: EcliniqTextStyles.getResponsiveSpacing(
-                            context,
-                            20,
+                        if (_isExpandedPhysicalInfo) ...[
+                          PhysicalInfoCard(
+                            onFieldFocused: () {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (_scrollController.hasClients) {
+                                  _scrollController.animateTo(
+                                    _scrollController.position.maxScrollExtent,
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeOut,
+                                  );
+                                }
+                              });
+                            },
                           ),
+                        ],
+                        SizedBox(
+                          height: MediaQuery.of(context).viewInsets.bottom > 0
+                              ? MediaQuery.of(context).viewInsets.bottom
+                              : EcliniqTextStyles.getResponsiveSpacing(
+                                  context,
+                                  20,
+                                ),
                         ),
                       ],
                     ),
                   ),
                 ),
               ),
+            ),
 
               // Action Buttons (Delete and Save)
               Padding(
