@@ -573,18 +573,14 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                 ),
               ),
               Flexible(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.7,
+                child: SingleChildScrollView(
+                  padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(
+                    context,
+                    16,
                   ),
-                  child: SingleChildScrollView(
-                    padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(
-                      context,
-                      16,
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                         // Profile photo section
                         Center(
                           child: GestureDetector(
@@ -844,8 +840,8 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
                   context,
                   left: 16,
                   right: 12,
-                  top: 22,
-                  bottom: 40,
+                  top: 10,
+                  bottom: 10,
                 ),
                 child: Row(
                   children: [
