@@ -244,8 +244,7 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
               Flexible(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.55,
-                    minHeight: 400,
+                    maxHeight: MediaQuery.of(context).size.height * 0.7,
                   ),
                   child: SingleChildScrollView(
                     padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(context, 16),

@@ -58,7 +58,8 @@ class EcliniqBottomSheet with WidgetsBindingObserver {
               top: EcliniqTextStyles.getResponsiveSpacing(context, 16.0),
               left: responsiveHorizontalPadding,
               right: responsiveHorizontalPadding,
-              bottom: responsiveBottomPadding,
+              bottom: responsiveBottomPadding +
+                  MediaQuery.of(bottomSheetContext).viewInsets.bottom,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,

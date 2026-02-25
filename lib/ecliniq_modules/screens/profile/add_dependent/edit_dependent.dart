@@ -575,11 +575,7 @@ class _EditDependentBottomSheetState extends State<EditDependentBottomSheet> {
               Flexible(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.55,
-                    minHeight: EcliniqTextStyles.getResponsiveHeight(
-                      context,
-                      400.0,
-                    ),
+                    maxHeight: MediaQuery.of(context).size.height * 0.7,
                   ),
                   child: SingleChildScrollView(
                     padding: EcliniqTextStyles.getResponsiveEdgeInsetsAll(
