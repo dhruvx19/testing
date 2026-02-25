@@ -1,9 +1,11 @@
-
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:phonepe_payment_sdk/phonepe_payment_sdk.dart';
 
 class PaymentMethodBottomSheet extends StatefulWidget {
   final double walletBalance;
@@ -38,7 +40,11 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
   String? _selectedMethod;
   String? _selectedMethodPackage;
   late bool _useWallet;
-  final List<Map<String, dynamic>> _paymentMethods = [
+  bool _isLoadingApps = true;
+  List<Map<String, dynamic>> _paymentMethods = [];
+
+  // All known UPI apps — only shown if installed on the device
+  static final List<Map<String, dynamic>> _knownUpiApps = [
     {
       'name': 'BHIM',
       'packageName': 'in.org.npci.upiapp',
@@ -73,17 +79,66 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
   @override
   void initState() {
     super.initState();
-    
     if (widget.currentSelectedMethod != null &&
         widget.currentSelectedPackage != null) {
       _selectedMethod = widget.currentSelectedMethod;
       _selectedMethodPackage = widget.currentSelectedPackage;
     } else {
-      
       _selectedMethod = 'Gpay';
       _selectedMethodPackage = 'com.google.android.apps.nbu.paisa.user';
     }
     _useWallet = widget.useWallet;
+    _loadInstalledUpiApps();
+  }
+
+  Future<void> _loadInstalledUpiApps() async {
+    try {
+      if (Platform.isAndroid) {
+        final appsJson = await PhonePePaymentSdk.getUpiAppsForAndroid();
+        if (appsJson != null) {
+          final List<dynamic> apps = jsonDecode(appsJson);
+          final installedPackages =
+              apps.map((a) => a['packageName'] as String).toSet();
+
+          final filtered = _knownUpiApps
+              .where((app) =>
+                  installedPackages.contains(app['packageName'] as String))
+              .toList();
+
+          if (mounted) {
+            setState(() {
+              _paymentMethods =
+                  filtered.isNotEmpty ? filtered : List.from(_knownUpiApps.where((a) => a['packageName'] != 'com.phonepe.simulator'));
+              _isLoadingApps = false;
+              // If the previously selected app is not installed, reset to first available
+              if (_selectedMethodPackage != null &&
+                  !_paymentMethods
+                      .any((m) => m['packageName'] == _selectedMethodPackage)) {
+                _selectedMethod = _paymentMethods.isNotEmpty
+                    ? _paymentMethods.first['name'] as String
+                    : null;
+                _selectedMethodPackage = _paymentMethods.isNotEmpty
+                    ? _paymentMethods.first['packageName'] as String
+                    : null;
+              }
+            });
+          }
+          return;
+        }
+      }
+    } catch (_) {
+      // SDK not initialized or unsupported platform — fall back to static list
+    }
+
+    // Fallback: show all known apps except the simulator duplicate
+    if (mounted) {
+      setState(() {
+        _paymentMethods = List.from(
+          _knownUpiApps.where((a) => a['packageName'] != 'com.phonepe.simulator'),
+        );
+        _isLoadingApps = false;
+      });
+    }
   }
 
   void _handleConfirm() {
@@ -211,13 +266,19 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
                   ),
                   const SizedBox(height: 12),
 
-                  ..._paymentMethods.map(
-                    (method) => _buildPaymentMethodCard(
-                      method['packageName'] as String,
-                      method['name'] as String,
-                      method['icon'] as EcliniqIcons,
+                  if (_isLoadingApps)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else
+                    ..._paymentMethods.map(
+                      (method) => _buildPaymentMethodCard(
+                        method['packageName'] as String,
+                        method['name'] as String,
+                        method['icon'] as EcliniqIcons,
+                      ),
                     ),
-                  ),
 
                   const SizedBox(height: 22),
 
@@ -722,7 +783,7 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
   }
 
   String _getIconForPackage(String packageName) {
-    final method = _paymentMethods.firstWhere(
+    final method = _knownUpiApps.firstWhere(
       (m) => m['packageName'] == packageName,
       orElse: () => {'icon': EcliniqIcons.googlePay},
     );
