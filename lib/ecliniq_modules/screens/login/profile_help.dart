@@ -132,11 +132,10 @@ Sent from my ${Platform.isIOS ? 'iPhone' : 'Android device'}''';
         ),
       ),
       backgroundColor: EcliniqScaffold.primaryBlue,
-      body: SizedBox.expand(
-        child: Expanded(
-          child: Container(
-            color: Colors.white,
-            child: Padding(
+      body: Container(
+        color: Colors.white,
+        width: double.infinity,
+        child: Padding(
               padding: const EdgeInsets.only(top: 24.0,left: 18.0,right: 18.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -336,8 +335,6 @@ Sent from my ${Platform.isIOS ? 'iPhone' : 'Android device'}''';
               ),
             ),
           ),
-        ),
-      ),
     );
   }
 }
