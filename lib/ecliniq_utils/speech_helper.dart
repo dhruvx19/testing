@@ -14,8 +14,6 @@ import 'package:speech_to_text/speech_to_text.dart';
 /// `SpeechToText.initialize()` fails silently.
 ///
 /// On iOS an additional [Permission.speech] grant is required.
-/// On Android this is NOT requested because Android has no separate
-/// speech-recognition permission — only RECORD_AUDIO (microphone) applies.
 class SpeechHelper {
   SpeechHelper();
 
@@ -24,19 +22,14 @@ class SpeechHelper {
   bool isListening = false;
 
   // ─── Status strings that mean "no longer listening" ───────────────────────
-  // 'notListening' / 'done' / 'doneNoResult' — standard speech_to_text
-  // 'inactive'  — emitted by Samsung OneUI 5+ and some Xiaomi MIUI ROMs
-  static const _doneStatuses = {'notListening', 'done', 'doneNoResult', 'inactive'};
+  static const _doneStatuses = {
+    'notListening',
+    'done',
+    'doneNoResult',
+    'inactive',
+  };
 
   /// Initialise speech recognition, optionally requesting permissions first.
-  ///
-  /// [requestPermissionsIfNeeded] controls whether system permission dialogs
-  /// are shown when permissions have not yet been granted.
-  ///
-  /// Pass `requestPermissionsIfNeeded: false` when calling from [initState]
-  /// so that no iOS dialogs appear on page load — permissions will only be
-  /// requested when the user explicitly taps the mic button (via
-  /// [startListening], which always passes the default value of `true`).
   Future<bool> initSpeech({
     required VoidCallback onListeningChanged,
     bool Function()? mounted,
@@ -47,36 +40,37 @@ class SpeechHelper {
       final micStatus = requestPermissionsIfNeeded
           ? await Permission.microphone.request()
           : await Permission.microphone.status;
+          
       if (!micStatus.isGranted) {
-        developer.log('Microphone permission denied: $micStatus');
+        developer.log('Microphone permission not granted: $micStatus');
         speechEnabled = false;
         return false;
       }
 
       // 2. Speech recognition — iOS ONLY.
-      //    Android has no separate speech permission; requesting it on Android
-      //    can return unexpected statuses on Samsung / Xiaomi OEM ROMs and
-      //    blocks initialisation unnecessarily.
       if (Platform.isIOS) {
         final speechStatus = requestPermissionsIfNeeded
             ? await Permission.speech.request()
             : await Permission.speech.status;
+            
         if (!speechStatus.isGranted) {
-          developer.log('Speech recognition permission denied: $speechStatus');
+          developer.log('Speech recognition permission not granted: $speechStatus');
           speechEnabled = false;
           return false;
         }
       }
 
-      // 3. Initialise the engine.
-      //    androidNoBluetooth: prevents Samsung devices routing audio through
-      //    Bluetooth, which causes "recognizer_busy" / silent failures.
+      // 3. Small yield to let OS sync permission state before engine init.
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // 4. Initialise the engine.
       speechEnabled = await speechToText.initialize(
         onError: (error) {
           final errorMsg = error.errorMsg.toLowerCase();
           // 'no_match' and 'listen_failed' are benign end-of-session signals.
           if (!errorMsg.contains('no_match') &&
-              !errorMsg.contains('listen_failed')) {
+              !errorMsg.contains('listen_failed') &&
+              !errorMsg.contains('error_busy')) {
             developer.log('Speech recognition error: ${error.errorMsg}');
           }
           if (mounted?.call() ?? true) {
@@ -108,10 +102,6 @@ class SpeechHelper {
   }
 
   /// Start listening for speech input.
-  ///
-  /// Returns `true` if listening started successfully, `false` otherwise.
-  /// [onResult] is called with each speech recognition result.
-  /// [onError] is called when the feature is unavailable or denied.
   Future<bool> startListening({
     required void Function(SpeechRecognitionResult result) onResult,
     void Function(String message)? onError,
@@ -120,30 +110,31 @@ class SpeechHelper {
   }) async {
     if (isListening) return true;
 
+    // Ensure engine is initialized and permissions are granted
     if (!speechEnabled) {
       final success = await initSpeech(
         onListeningChanged: onListeningChanged ?? () {},
         mounted: mounted,
       );
+      
       if (!success) {
-        final micStatus = await Permission.microphone.status;
+        // Double check specific status to give accurate error message
+        final micS = await Permission.microphone.status;
+        final speechS = Platform.isIOS ? await Permission.speech.status : PermissionStatus.granted;
 
-        // On iOS also check the speech-recognition permission.
-        final bool permPermanentlyDenied = micStatus.isPermanentlyDenied ||
-            (Platform.isIOS && (await Permission.speech.status).isPermanentlyDenied);
-        final bool permDenied = micStatus.isDenied ||
-            (Platform.isIOS && (await Permission.speech.status).isDenied);
-
-        if (permPermanentlyDenied) {
-          // Take the user directly to Settings so they can re-enable.
-          await openAppSettings();
-        } else if (permDenied) {
+        if (micS.isPermanentlyDenied || speechS.isPermanentlyDenied) {
+          // One of them is permanently denied
           onError?.call(
-            'Microphone permission is required for voice search. Please allow access.',
+            'Permission is required for voice search. Please enable Microphone and Speech Recognition in Settings.',
+          );
+          await openAppSettings();
+        } else if (micS.isDenied || speechS.isDenied) {
+          onError?.call(
+            'Microphone and Speech Recognition permissions are required for voice search.',
           );
         } else {
           onError?.call(
-            'Speech recognition is not available on this device.',
+            'Speech recognition is not available on this device right now.',
           );
         }
         return false;
@@ -155,14 +146,9 @@ class SpeechHelper {
         onResult: onResult,
         listenFor: const Duration(seconds: 30),
         pauseFor: const Duration(seconds: 3),
-        // Do NOT hardcode localeId — 'en_US' is not guaranteed to be installed
-        // on Samsung / Xiaomi / OPPO devices, causing silent failures.
-        // Omitting it lets the device use its own default language.
         listenOptions: SpeechListenOptions(
           partialResults: true,
           cancelOnError: false,
-          // ListenMode.search is the correct mode for search inputs and
-          // produces better short-phrase results on Samsung OneUI.
           listenMode: ListenMode.search,
         ),
       );
@@ -174,6 +160,12 @@ class SpeechHelper {
       developer.log('Error starting speech recognition: $e');
       isListening = false;
       onListeningChanged?.call();
+      
+      // If we failed to start, it might be because the engine became unavailable
+      if (e.toString().contains('not initialized')) {
+        speechEnabled = false;
+      }
+      
       onError?.call('Error starting voice search: ${e.toString()}');
       return false;
     }
@@ -200,3 +192,4 @@ class SpeechHelper {
     isListening = false;
   }
 }
+
