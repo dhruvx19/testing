@@ -21,6 +21,7 @@ class HealthFilesFilterState extends State<HealthFilesFilter> {
   String? _selectedSortBy;
   final Set<String> _selectedRelatedTo = {};
   final TextEditingController _searchController = TextEditingController();
+  String _localSearchQuery = '';
   final PatientService _patientService = PatientService();
 
   final List<String> _categories = ['Sort By', 'Related To'];
@@ -52,14 +53,18 @@ class HealthFilesFilterState extends State<HealthFilesFilter> {
       _selectedSortBy = null;
       _selectedCategory = 'Sort By';
       _searchController.clear();
+      _localSearchQuery = '';
     });
     
+    _notifyChanges();
+  }
+
+  void _notifyChanges() {
     final result = {
-      'selectedNames': <String>[],
-      'sortBy': null,
+      'selectedNames': _selectedRelatedTo.toList(),
+      'sortBy': _selectedSortBy,
     };
     widget.onApply?.call(result);
-    Navigator.of(context).pop(result);
   }
 
   Future<void> _fetchDependentsAndUser() async {
@@ -167,7 +172,14 @@ class HealthFilesFilterState extends State<HealthFilesFilter> {
             ),
           ),
           
-          SearchBarWidget(onSearch: (String value) {}),
+          SearchBarWidget(
+            onSearch: (String value) {
+              setState(() {
+                _localSearchQuery = value.toLowerCase();
+              });
+            },
+            hintText: 'Search',
+          ),
           SizedBox(
             height: EcliniqTextStyles.getResponsiveSpacing(context, 20),
           ),
@@ -259,79 +271,6 @@ class HealthFilesFilterState extends State<HealthFilesFilter> {
             height: EcliniqTextStyles.getResponsiveSpacing(context, 16),
           ),
           
-          Padding(
-            padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
-              context,
-              horizontal: 16,
-              vertical: 0,
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: _resetFilters,
-                    style: OutlinedButton.styleFrom(
-                      padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
-                        context,
-                        horizontal: 0,
-                        vertical: 14,
-                      ),
-                      side: const BorderSide(color: Color(0xffD6D6D6)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
-                        ),
-                      ),
-                    ),
-                    child: Text(
-                      'Clear',
-                      style: EcliniqTextStyles.responsiveTitleXLarge(context)
-                          .copyWith(
-                            fontWeight: FontWeight.w500,
-                            color: Color(0xff424242),
-                          ),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: EcliniqTextStyles.getResponsiveSpacing(context, 12),
-                ),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      final result = {
-                        'selectedNames': _selectedRelatedTo.toList(),
-                        'sortBy': _selectedSortBy,
-                      };
-                      widget.onApply?.call(result);
-                      Navigator.of(context).pop(result);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
-                        context,
-                        horizontal: 0,
-                        vertical: 14,
-                      ),
-                      backgroundColor: const Color(0xff2372EC),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
-                        ),
-                      ),
-                    ),
-                    child: Text(
-                      'Apply',
-                      style: EcliniqTextStyles.responsiveTitleXLarge(context)
-                          .copyWith(
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
-                          ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
           SizedBox(
             height: EcliniqTextStyles.getResponsiveSpacing(context, 16),
           ),
@@ -353,7 +292,10 @@ class HealthFilesFilterState extends State<HealthFilesFilter> {
           final option = _sortByOptions[index];
           final isSelected = _selectedSortBy == option;
           return InkWell(
-            onTap: () => setState(() => _selectedSortBy = option),
+            onTap: () {
+              setState(() => _selectedSortBy = option);
+              _notifyChanges();
+            },
             child: Padding(
               padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
                 context,
@@ -476,6 +418,15 @@ class HealthFilesFilterState extends State<HealthFilesFilter> {
         itemBuilder: (context, index) {
           final option = _relatedToOptions[index];
           final isSelected = _selectedRelatedTo.contains(option['name']);
+          if (_localSearchQuery.isNotEmpty) {
+            final name = option['name']?.toLowerCase() ?? '';
+            final relation = option['relation']?.toLowerCase() ?? '';
+            if (!name.contains(_localSearchQuery) &&
+                !relation.contains(_localSearchQuery)) {
+              return const SizedBox.shrink();
+            }
+          }
+
           return InkWell(
             onTap: () {
               setState(() {
@@ -485,6 +436,7 @@ class HealthFilesFilterState extends State<HealthFilesFilter> {
                   _selectedRelatedTo.add(option['name']!);
                 }
               });
+              _notifyChanges();
             },
             child: Padding(
               padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(

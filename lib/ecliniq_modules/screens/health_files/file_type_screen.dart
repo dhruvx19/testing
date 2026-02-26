@@ -56,6 +56,7 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
   bool get _isListening => _speechHelper.isListening;
   String _searchQuery = '';
   bool _isSearchMode = false;
+  String? _sortBy;
 
   @override
   void initState() {
@@ -876,34 +877,24 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
       context: context,
       child: HealthFilesFilter(
         initialSelectedNames: _selectedNames,
-        onApply: (result) {},
+        onApply: (result) {
+          if (mounted) {
+            setState(() {
+              final selectedNames = result['selectedNames'] as List<dynamic>?;
+              _sortBy = result['sortBy'] as String?;
+
+              _selectedNames.clear();
+              if (selectedNames != null) {
+                _selectedNames.addAll(
+                  selectedNames.map((name) => name.toString()),
+                );
+              }
+              _selectedRecordFor = null;
+            });
+          }
+        },
       ),
-    ).then((result) {
-      if (mounted) {
-        setState(() {
-          if (result != null) {
-            final selectedNames = result['selectedNames'] as List<dynamic>?;
-            final sortBy = result['sortBy'];
-
-            if (selectedNames == null ||
-                (selectedNames.isEmpty && sortBy == null)) {
-              _selectedNames.clear();
-              _selectedRecordFor = null;
-            } else if (selectedNames.isNotEmpty) {
-              _selectedNames.clear();
-              _selectedNames.addAll(
-                selectedNames.map((name) => name.toString()),
-              );
-
-              _selectedRecordFor = null;
-            } else {
-              _selectedNames.clear();
-              _selectedRecordFor = null;
-            }
-          } else {}
-        });
-      }
-    });
+    );
   }
 
   void _showFileActions(HealthFile file) {
@@ -1253,6 +1244,7 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
                             selectedNames: _selectedNames.isNotEmpty
                                 ? _selectedNames.toList()
                                 : null,
+                            sortBy: _sortBy,
                           );
 
                     return Column(
@@ -1468,7 +1460,9 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
   }
 
   bool _hasActiveFilters() {
-    return _selectedNames.isNotEmpty || _selectedRecordFor != null;
+    return _selectedNames.isNotEmpty ||
+        _selectedRecordFor != null ||
+        _sortBy != null;
   }
 
   Widget _buildEmptyState() {

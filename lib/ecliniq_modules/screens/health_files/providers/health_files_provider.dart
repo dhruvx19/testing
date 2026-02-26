@@ -60,6 +60,7 @@ class HealthFilesProvider extends ChangeNotifier {
     HealthFileType? fileType, {
     String? recordFor,
     List<String>? selectedNames,
+    String? sortBy,
   }) {
     Iterable<HealthFile> files = _allFiles;
 
@@ -82,6 +83,11 @@ class HealthFilesProvider extends ChangeNotifier {
 
     final result = files.toList();
     result.sort((a, b) {
+      if (sortBy == 'Upload Date') {
+        return b.createdAt.compareTo(a.createdAt);
+      }
+      
+      // Default or 'File Date'
       final dateA = a.fileDate ?? a.createdAt;
       final dateB = b.fileDate ?? b.createdAt;
       return dateB.compareTo(dateA);

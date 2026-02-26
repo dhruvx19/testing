@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:developer' as developer;
 
 import 'package:ecliniq/ecliniq_api/health_file_model.dart';
 import 'package:ecliniq/ecliniq_core/notifications/local_notifications.dart';
@@ -381,8 +382,11 @@ class _RecentFileCardState extends State<RecentFileCard> {
 
       if (dialogContext != null && context.mounted) {
         try {
+          // Use the captured context and ensure rootNavigator matches how showDialog was called
           Navigator.of(dialogContext!, rootNavigator: true).pop();
-        } catch (e) {}
+        } catch (e) {
+          developer.log('Error popping delete dialog: $e');
+        }
         dialogContext = null;
       }
 
