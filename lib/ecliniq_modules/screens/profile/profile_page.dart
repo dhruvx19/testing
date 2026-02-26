@@ -1194,7 +1194,7 @@ extension _ProfilePageContent on _ProfilePageState {
             ),
           ),
 
-          TestNotificationWidget(),
+          //TestNotificationWidget(),
         ],
       ),
     );
