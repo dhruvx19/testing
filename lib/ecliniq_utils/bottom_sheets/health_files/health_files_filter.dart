@@ -9,8 +9,14 @@ import 'package:provider/provider.dart';
 class HealthFilesFilter extends StatefulWidget {
   final Function(Map<String, dynamic>)? onApply;
   final Set<String>? initialSelectedNames;
+  final String? initialSelectedSortBy;
 
-  const HealthFilesFilter({super.key, this.onApply, this.initialSelectedNames});
+  const HealthFilesFilter({
+    super.key,
+    this.onApply,
+    this.initialSelectedNames,
+    this.initialSelectedSortBy,
+  });
 
   @override
   State<HealthFilesFilter> createState() => HealthFilesFilterState();
@@ -21,7 +27,6 @@ class HealthFilesFilterState extends State<HealthFilesFilter> {
   String? _selectedSortBy;
   final Set<String> _selectedRelatedTo = {};
   final TextEditingController _searchController = TextEditingController();
-  String _localSearchQuery = '';
   final PatientService _patientService = PatientService();
 
   final List<String> _categories = ['Sort By', 'Related To'];
@@ -34,9 +39,12 @@ class HealthFilesFilterState extends State<HealthFilesFilter> {
   @override
   void initState() {
     super.initState();
-    
+
     if (widget.initialSelectedNames != null) {
       _selectedRelatedTo.addAll(widget.initialSelectedNames!);
+    }
+    if (widget.initialSelectedSortBy != null) {
+      _selectedSortBy = widget.initialSelectedSortBy;
     }
     _fetchDependentsAndUser();
   }
@@ -53,13 +61,17 @@ class HealthFilesFilterState extends State<HealthFilesFilter> {
       _selectedSortBy = null;
       _selectedCategory = 'Sort By';
       _searchController.clear();
-      _localSearchQuery = '';
     });
-    
-    _notifyChanges();
+
+    final result = {
+      'selectedNames': <String>[],
+      'sortBy': null,
+    };
+    widget.onApply?.call(result);
+    Navigator.of(context).pop(result);
   }
 
-  void _notifyChanges() {
+  void _applyFilters() {
     final result = {
       'selectedNames': _selectedRelatedTo.toList(),
       'sortBy': _selectedSortBy,
@@ -172,14 +184,7 @@ class HealthFilesFilterState extends State<HealthFilesFilter> {
             ),
           ),
           
-          SearchBarWidget(
-            onSearch: (String value) {
-              setState(() {
-                _localSearchQuery = value.toLowerCase();
-              });
-            },
-            hintText: 'Search',
-          ),
+          SearchBarWidget(onSearch: (String value) {}),
           SizedBox(
             height: EcliniqTextStyles.getResponsiveSpacing(context, 20),
           ),
@@ -270,10 +275,6 @@ class HealthFilesFilterState extends State<HealthFilesFilter> {
           SizedBox(
             height: EcliniqTextStyles.getResponsiveSpacing(context, 16),
           ),
-          
-          SizedBox(
-            height: EcliniqTextStyles.getResponsiveSpacing(context, 16),
-          ),
         ],
       ),
     );
@@ -294,7 +295,11 @@ class HealthFilesFilterState extends State<HealthFilesFilter> {
           return InkWell(
             onTap: () {
               setState(() => _selectedSortBy = option);
-              _notifyChanges();
+              _applyFilters();
+              Navigator.of(context).pop({
+                'selectedNames': _selectedRelatedTo.toList(),
+                'sortBy': option,
+              });
             },
             child: Padding(
               padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
@@ -418,15 +423,6 @@ class HealthFilesFilterState extends State<HealthFilesFilter> {
         itemBuilder: (context, index) {
           final option = _relatedToOptions[index];
           final isSelected = _selectedRelatedTo.contains(option['name']);
-          if (_localSearchQuery.isNotEmpty) {
-            final name = option['name']?.toLowerCase() ?? '';
-            final relation = option['relation']?.toLowerCase() ?? '';
-            if (!name.contains(_localSearchQuery) &&
-                !relation.contains(_localSearchQuery)) {
-              return const SizedBox.shrink();
-            }
-          }
-
           return InkWell(
             onTap: () {
               setState(() {
@@ -436,7 +432,7 @@ class HealthFilesFilterState extends State<HealthFilesFilter> {
                   _selectedRelatedTo.add(option['name']!);
                 }
               });
-              _notifyChanges();
+              _applyFilters();
             },
             child: Padding(
               padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(

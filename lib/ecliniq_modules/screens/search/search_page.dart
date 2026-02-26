@@ -98,17 +98,13 @@ class _SearchPageState extends State<SearchPage> {
   void initState() {
     super.initState();
     _loadRecentSearches();
-    _initSpeech().then((_) {
-      if (widget.shouldStartVoiceSearch && mounted) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            _toggleVoiceSearch();
-          }
-        });
-      }
-    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _searchFocusNode.requestFocus();
+      _initSpeech().then((_) {
+        if (widget.shouldStartVoiceSearch && mounted) {
+          _toggleVoiceSearch();
+        }
+      });
     });
   }
 

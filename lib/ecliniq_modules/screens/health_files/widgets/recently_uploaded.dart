@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:developer' as developer;
 
 import 'package:ecliniq/ecliniq_api/health_file_model.dart';
 import 'package:ecliniq/ecliniq_core/notifications/local_notifications.dart';
@@ -370,24 +369,27 @@ class _RecentFileCardState extends State<RecentFileCard> {
             return const Center(child: EcliniqLoader());
           },
         );
+        // Wait for the dialog frame to render before starting the operation.
+        await WidgetsBinding.instance.endOfFrame;
       }
 
       final provider = context.read<HealthFilesProvider>();
 
       final success = await provider.deleteFile(file);
 
-      if (success && context.mounted) {
-        await provider.refresh();
+      // Dismiss the dialog BEFORE calling refresh(). On iOS, refresh() triggers
+      // a widget rebuild that removes this card from the tree, unmounting its
+      // context. If we check context.mounted after refresh, it will be false
+      // and the loader dialog will never be dismissed (infinite loading).
+      if (dialogContext != null) {
+        try {
+          Navigator.of(dialogContext!, rootNavigator: true).pop();
+        } catch (e) {}
+        dialogContext = null;
       }
 
-      if (dialogContext != null && context.mounted) {
-        try {
-          // Use the captured context and ensure rootNavigator matches how showDialog was called
-          Navigator.of(dialogContext!, rootNavigator: true).pop();
-        } catch (e) {
-          developer.log('Error popping delete dialog: $e');
-        }
-        dialogContext = null;
+      if (success && context.mounted) {
+        await provider.refresh();
       }
 
       if (!context.mounted) return;
@@ -407,7 +409,7 @@ class _RecentFileCardState extends State<RecentFileCard> {
         );
       }
     } catch (e) {
-      if (dialogContext != null && context.mounted) {
+      if (dialogContext != null) {
         try {
           Navigator.of(dialogContext!, rootNavigator: true).pop();
         } catch (_) {}

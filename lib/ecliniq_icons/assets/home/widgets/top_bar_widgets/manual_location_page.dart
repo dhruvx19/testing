@@ -76,7 +76,9 @@ class _ManualLocationPageState extends State<ManualLocationPage> {
     super.initState();
     _filteredCities = _otherCities;
     _searchController.addListener(_onSearchChanged);
-    _initSpeech();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initSpeech();
+    });
   }
 
   @override

@@ -77,8 +77,10 @@ class _SurgeryListState extends State<SurgeryList> {
   @override
   void initState() {
     super.initState();
-    _initSpeech();
     _searchController.addListener(_onSearchChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initSpeech();
+    });
   }
 
   @override

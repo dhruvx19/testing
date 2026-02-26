@@ -90,7 +90,9 @@ class _SelectLocationPageState extends State<SelectLocationPage> {
     super.initState();
     _filteredCities = _otherCities;
     _searchController.addListener(_onSearchChanged);
-    _initSpeech();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initSpeech();
+    });
   }
 
   @override

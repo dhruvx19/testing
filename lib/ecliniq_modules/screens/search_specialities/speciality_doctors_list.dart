@@ -87,10 +87,10 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
     }
     _loadLocationAndFetch();
     _searchController.addListener(_onSearchChanged);
-    _initSpeech();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToCategory(_selectedCategory);
+      _initSpeech();
     });
   }
 
@@ -1416,29 +1416,33 @@ class _SpecialityDoctorsListState extends State<SpecialityDoctorsList> {
                       ),
                       if (_getDistanceText(doctor) != 'Nearby') ...[
                         const SizedBox(width: 8),
-                        Container(
-                          padding:EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
-                            context,
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Color(0xffF9F9F9),
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(
-                              color: Color(0xffB8B8B8),
-                              width: 0.5,
+                        Flexible(
+                          child: Container(
+                            padding:EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                              context,
+                              horizontal: 8,
+                              vertical: 4,
                             ),
-                          ),
-                          child: Text(
-                            _getDistanceText(doctor),
-                            style:
-                                EcliniqTextStyles.responsiveTitleXLarge(
-                                  context,
-                                ).copyWith(
-                                  color: Color(0xff424242),
-                                  fontWeight: FontWeight.w400,
-                                ),
+                            decoration: BoxDecoration(
+                              color: Color(0xffF9F9F9),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(
+                                color: Color(0xffB8B8B8),
+                                width: 0.5,
+                              ),
+                            ),
+                            child: FittedBox(
+                              child: Text(
+                                _getDistanceText(doctor),
+                                style:
+                                    EcliniqTextStyles.responsiveTitleXLarge(
+                                      context,
+                                    ).copyWith(
+                                      color: Color(0xff424242),
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                              ),
+                            ),
                           ),
                         ),
                       ],

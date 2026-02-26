@@ -43,6 +43,7 @@ class FileTypeScreen extends StatefulWidget {
 class _FileTypeScreenState extends State<FileTypeScreen> {
   String? _selectedRecordFor;
   final Set<String> _selectedNames = {};
+  String? _activeSortBy;
   final List<String> _recordForOptions = ['All'];
   HealthFileType? _selectedFileType;
 
@@ -56,7 +57,6 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
   bool get _isListening => _speechHelper.isListening;
   String _searchQuery = '';
   bool _isSearchMode = false;
-  String? _sortBy;
 
   @override
   void initState() {
@@ -68,8 +68,8 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
       provider.loadFiles().then((_) {
         _updateRecordForOptions();
       });
+      _initSpeech();
     });
-    _initSpeech();
   }
 
   @override
@@ -877,21 +877,23 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
       context: context,
       child: HealthFilesFilter(
         initialSelectedNames: _selectedNames,
+        initialSelectedSortBy: _activeSortBy,
         onApply: (result) {
-          if (mounted) {
-            setState(() {
-              final selectedNames = result['selectedNames'] as List<dynamic>?;
-              _sortBy = result['sortBy'] as String?;
-
+          if (!mounted) return;
+          setState(() {
+            final selectedNames = result['selectedNames'] as List<dynamic>?;
+            if (selectedNames == null || selectedNames.isEmpty) {
               _selectedNames.clear();
-              if (selectedNames != null) {
-                _selectedNames.addAll(
-                  selectedNames.map((name) => name.toString()),
-                );
-              }
               _selectedRecordFor = null;
-            });
-          }
+            } else {
+              _selectedNames.clear();
+              _selectedNames.addAll(
+                selectedNames.map((name) => name.toString()),
+              );
+              _selectedRecordFor = null;
+            }
+            _activeSortBy = result['sortBy'] as String?;
+          });
         },
       ),
     );
@@ -1236,7 +1238,7 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
               Expanded(
                 child: Consumer<HealthFilesProvider>(
                   builder: (context, provider, child) {
-                    final files = _isSearchMode
+                    final rawFiles = _isSearchMode
                         ? provider.searchResults
                         : provider.getFilesByType(
                             _selectedFileType,
@@ -1244,14 +1246,19 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
                             selectedNames: _selectedNames.isNotEmpty
                                 ? _selectedNames.toList()
                                 : null,
-                            sortBy: _sortBy,
                           );
+                    // Apply Sort By: "Upload Date" sorts by createdAt,
+                    // "File Date" (default) sorts by fileDate ?? createdAt.
+                    final files = _activeSortBy == 'Upload Date'
+                        ? (List.of(rawFiles)
+                          ..sort((a, b) => b.createdAt.compareTo(a.createdAt)))
+                        : rawFiles;
 
                     return Column(
                       children: [
                         if (!_isSearchMode) _buildFileTypeTabs(),
 
-                        if (files.isNotEmpty && !_isSearchMode)
+                        if (!_isSearchMode && (files.isNotEmpty || _hasActiveFilters()))
                           Padding(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16.0,
@@ -1314,34 +1321,36 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
                                     ],
                                   ),
                                 ),
-                                const SizedBox(width: 8),
-                                Container(
-                                  width: 0.5,
-                                  height: 20,
-                                  color: const Color(0xFFD6D6D6),
-                                ),
-                                const SizedBox(width: 8),
-                                GestureDetector(
-                                  onTap: _toggleSelectionMode,
-                                  child: SvgPicture.asset(
-                                    _isSelectionMode
-                                        ? EcliniqIcons.deselect.assetPath
-                                        : EcliniqIcons.select.assetPath,
-                                    width: 24,
-                                    height: 24,
+                                if (files.isNotEmpty) ...[
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    width: 0.5,
+                                    height: 20,
+                                    color: const Color(0xFFD6D6D6),
                                   ),
-                                ),
-                                const Spacer(),
-                                Text(
-                                  '${files.length} ${files.length == 1 ? 'File' : 'Files'}',
-                                  style:
-                                      EcliniqTextStyles.responsiveTitleXLarge(
-                                        context,
-                                      ).copyWith(
-                                        color: Color(0xFF424242),
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                ),
+                                  const SizedBox(width: 8),
+                                  GestureDetector(
+                                    onTap: _toggleSelectionMode,
+                                    child: SvgPicture.asset(
+                                      _isSelectionMode
+                                          ? EcliniqIcons.deselect.assetPath
+                                          : EcliniqIcons.select.assetPath,
+                                      width: 24,
+                                      height: 24,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    '${files.length} ${files.length == 1 ? 'File' : 'Files'}',
+                                    style:
+                                        EcliniqTextStyles.responsiveTitleXLarge(
+                                          context,
+                                        ).copyWith(
+                                          color: Color(0xFF424242),
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                  ),
+                                ],
                               ],
                             ),
                           ),
@@ -1462,11 +1471,13 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
   bool _hasActiveFilters() {
     return _selectedNames.isNotEmpty ||
         _selectedRecordFor != null ||
-        _sortBy != null;
+        _activeSortBy != null;
   }
 
   Widget _buildEmptyState() {
-    final hasFilter = _selectedNames.isNotEmpty || _selectedRecordFor != null;
+    final hasFilter = _selectedNames.isNotEmpty ||
+        _selectedRecordFor != null ||
+        _activeSortBy != null;
 
     return Center(
       child: Column(
@@ -1579,98 +1590,3 @@ class _FileViewerScreen extends StatelessWidget {
   }
 }
 
-class _FilterBottomSheet extends StatelessWidget {
-  final List<String> options;
-  final String selectedOption;
-
-  const _FilterBottomSheet({
-    required this.options,
-    required this.selectedOption,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Filter by Person',
-            style: EcliniqTextStyles.responsiveHeadlineLarge(
-              context,
-            ).copyWith(fontWeight: FontWeight.bold, color: Color(0xFF424242)),
-          ),
-          const SizedBox(height: 20),
-          Flexible(
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: options.length,
-              itemBuilder: (context, index) {
-                final option = options[index];
-                final isSelected = option == selectedOption;
-
-                return Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () => Navigator.pop(context, option),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                      margin: const EdgeInsets.only(bottom: 8),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? const Color(0xFFE3F2FD)
-                            : Colors.white,
-                        border: Border.all(
-                          color: isSelected
-                              ? const Color(0xFF2B7FFF)
-                              : const Color(0xFFE0E0E0),
-                          width: isSelected ? 2 : 1,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              option,
-                              style:
-                                  EcliniqTextStyles.responsiveTitleXLarge(
-                                    context,
-                                  ).copyWith(
-                                    fontWeight: isSelected
-                                        ? FontWeight.w600
-                                        : FontWeight.w400,
-                                    color: const Color(0xFF424242),
-                                  ),
-                            ),
-                          ),
-                          if (isSelected)
-                            const Icon(
-                              Icons.check_circle,
-                              color: Color(0xFF2B7FFF),
-                              size: 24,
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          const SizedBox(height: 16),
-        ],
-      ),
-    );
-  }
-}

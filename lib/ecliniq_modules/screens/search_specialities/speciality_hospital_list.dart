@@ -87,10 +87,10 @@ class _SpecialityHospitalListState extends State<SpecialityHospitalList> {
 
     _loadLocationAndFetch();
     _searchController.addListener(_onSearchChanged);
-    _initSpeech();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToCategory(_selectedCategory);
+      _initSpeech();
     });
   }
 

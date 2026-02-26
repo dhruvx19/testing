@@ -68,7 +68,9 @@ class _HospitalDoctorsScreenState extends State<HospitalDoctorsScreen> {
     super.initState();
     _fetchDoctors();
     _searchController.addListener(_onSearchChanged);
-    _initSpeech();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initSpeech();
+    });
   }
 
   Future<void> _initSpeech() async {

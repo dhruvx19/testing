@@ -40,8 +40,10 @@ class _MyDoctorsState extends State<MyDoctors> {
   void initState() {
     super.initState();
     _fetchFavouriteDoctors();
-    _initSpeech();
     _searchController.addListener(_onSearchChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initSpeech();
+    });
   }
 
   @override
