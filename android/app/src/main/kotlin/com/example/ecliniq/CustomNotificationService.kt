@@ -125,14 +125,12 @@ class CustomNotificationService(private val context: Context) {
             null
         }
         
-        try {
-            if (notificationManager != null) {
-                notificationManager.notify(notificationId, notification)
-            } else {
-                NotificationManagerCompat.from(context).notify(notificationId, notification)
-            }
-        } catch (e: SecurityException) {
-            e.printStackTrace()
+        // Note: SecurityException is re-thrown so MainActivity can surface it via result.error
+        // which triggers the flutter_local_notifications fallback path in Dart
+        if (notificationManager != null) {
+            notificationManager.notify(notificationId, notification)
+        } else {
+            NotificationManagerCompat.from(context).notify(notificationId, notification)
         }
     }
 

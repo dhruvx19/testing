@@ -1,14 +1,20 @@
 package com.example.ecliniq
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterFragmentActivity() {
     private val CHANNEL = "com.example.ecliniq/custom_notifications"
+    private val NOTIFICATION_PERMISSION_REQUEST_CODE = 1001
     private lateinit var customNotificationService: CustomNotificationService
 
     override fun attachBaseContext(newBase: Context) {
@@ -17,6 +23,22 @@ class MainActivity : FlutterFragmentActivity() {
         configuration.fontScale = 1.0f
         val context = newBase.createConfigurationContext(configuration)
         super.attachBaseContext(context)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // Request POST_NOTIFICATIONS permission on Android 13+ (API 33)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    NOTIFICATION_PERMISSION_REQUEST_CODE
+                )
+            }
+        }
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -78,6 +100,14 @@ class MainActivity : FlutterFragmentActivity() {
                         result.success(true)
                     } catch (e: Exception) {
                         result.error("ERROR", "Failed to dismiss notification: ${e.message}", null)
+                    }
+                }
+                "areNotificationsEnabled" -> {
+                    try {
+                        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+                        result.success(manager.areNotificationsEnabled())
+                    } catch (e: Exception) {
+                        result.success(false)
                     }
                 }
                 else -> {

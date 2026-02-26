@@ -23,15 +23,28 @@ import 'package:ecliniq/ecliniq_core/notifications/local_notifications.dart';
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   log('Handling background message: ${message.messageId}');
   log('Background message data: ${message.data}');
-  
-  
+
   try {
     await LocalNotifications.init();
     await AppointmentLockScreenNotification.init();
-    
+
     final data = message.data;
-    
-    
+
+    // ── SLOT_LIVE_UPDATE: silent lock screen update (NO popup banner) ─────────
+    // IMPORTANT for backend team: send as DATA-ONLY FCM message.
+    // Do NOT include a "notification" field in the FCM payload — if you do,
+    // Firebase will automatically show a system popup banner regardless.
+    // Correct FCM server payload shape:
+    //   { "data": { "notificationType": "SLOT_LIVE_UPDATE", "yourToken": "15",
+    //               "currentToken": "10", "estimatedTime": "12:30 PM", ... },
+    //     "android": { "priority": "high" }  }   <-- NO "notification" key
+    final notificationType = data['notificationType'] as String?;
+    if (notificationType == 'SLOT_LIVE_UPDATE') {
+      await EcliniqPushNotifications._handleSlotLiveUpdateFromData(data);
+      return;
+    }
+
+    // ── Legacy payload format: appointment_token_update ──────────────────────
     final type = data['type'] as String?;
     if (type == 'appointment_token_update' || type == 'token_update') {
       final appointmentId = data['appointmentId'] as String?;
@@ -44,13 +57,13 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       final doctorName = data['doctorName'] as String? ?? 'Doctor';
       final hospitalName = data['hospitalName'] as String? ?? 'Clinic';
       final appointmentTimeStr = data['appointmentTime'] as String?;
-      
+
       if (appointmentId != null && userToken != null) {
         try {
           final appointmentTime = appointmentTimeStr != null
               ? DateTime.parse(appointmentTimeStr)
               : DateTime.now();
-          
+
           final appointmentData = api_models.AppointmentData(
             id: appointmentId,
             patientId: '',
@@ -62,7 +75,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
             createdAt: DateTime.now(),
             updatedAt: DateTime.now(),
           );
-          
+
           await AppointmentLockScreenNotification.updateNotification(
             appointment: appointmentData,
             currentRunningToken: currentRunningToken,
@@ -74,12 +87,8 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
           log('Error updating lock screen notification in background: $e');
         }
       }
-      return; 
+      return;
     }
-    
-    
-    
-    
   } catch (e) {
     log('Error handling background notification: $e');
   }
@@ -236,7 +245,14 @@ class EcliniqPushNotifications {
       log('Notification body: ${message.notification?.body}');
       log('Notification data: ${message.data}');
       
-      
+      // Handle new SLOT_LIVE_UPDATE format
+      final notificationType = message.data['notificationType'] as String?;
+      if (notificationType == 'SLOT_LIVE_UPDATE') {
+        _handleSlotLiveUpdateFromData(message.data);
+        return;
+      }
+
+      // Legacy token update
       _handleAppointmentTokenUpdate(message);
     });
   }
@@ -303,9 +319,107 @@ class EcliniqPushNotifications {
     }
   }
 
-  
-  
-  
+  // ── New handler: SLOT_LIVE_UPDATE payload ──────────────────────────────────
+  //
+  // Backend FCM payload structure expected:
+  // data: {
+  //   "notificationType": "SLOT_LIVE_UPDATE",
+  //   "appointmentId": "...",
+  //   "doctorName": "Dr. Milind Chauhan",
+  //   "yourToken": "15",
+  //   "currentToken": "10",
+  //   "estimatedTime": "12:30 PM",
+  //   "waitTimeMinutes": "50",
+  //   "timeline": "{\"start\":1,\"current\":10,\"yourNo\":15}"
+  // }
+  static Future<void> _handleSlotLiveUpdateFromData(
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      final appointmentId = data['appointmentId'] as String?;
+      final doctorName = data['doctorName'] as String? ?? 'Your Doctor';
+      final hospitalName = data['hospitalName'] as String? ?? 'eClinic-Q';
+      final yourToken =
+          data['yourToken'] != null
+              ? int.tryParse(data['yourToken'].toString())
+              : null;
+      final currentToken =
+          data['currentToken'] != null
+              ? int.tryParse(data['currentToken'].toString())
+              : null;
+      final estimatedTimeStr = data['estimatedTime'] as String?;
+      final waitTimeMinutes =
+          data['waitTimeMinutes'] != null
+              ? int.tryParse(data['waitTimeMinutes'].toString())
+              : null;
+
+      if (appointmentId == null || yourToken == null) {
+        log(
+          'SLOT_LIVE_UPDATE: Missing required fields (appointmentId / yourToken)',
+        );
+        return;
+      }
+
+      // Parse estimatedTime from a human-readable string like "12:30 PM"
+      // Fall back to now + waitTimeMinutes if not parseable as ISO.
+      DateTime appointmentTime;
+      if (estimatedTimeStr != null) {
+        final iso = DateTime.tryParse(estimatedTimeStr);
+        if (iso != null) {
+          appointmentTime = iso;
+        } else {
+          // estimatedTimeStr is like "12:30 PM" — reconstruct a DateTime for today
+          try {
+            final now = DateTime.now();
+            final parts = estimatedTimeStr.split(' ');
+            final timeParts = parts[0].split(':');
+            int hour = int.parse(timeParts[0]);
+            final minute = int.parse(timeParts[1]);
+            final isPM = parts.length > 1 && parts[1].toUpperCase() == 'PM';
+            if (isPM && hour != 12) hour += 12;
+            if (!isPM && hour == 12) hour = 0;
+            appointmentTime = DateTime(now.year, now.month, now.day, hour, minute);
+          } catch (_) {
+            appointmentTime = DateTime.now().add(
+              Duration(minutes: waitTimeMinutes ?? 30),
+            );
+          }
+        }
+      } else {
+        appointmentTime = DateTime.now().add(
+          Duration(minutes: waitTimeMinutes ?? 30),
+        );
+      }
+
+      final appointmentData = api_models.AppointmentData(
+        id: appointmentId,
+        patientId: '',
+        bookedFor: 'SELF',
+        doctorId: '',
+        doctorSlotScheduleId: '',
+        tokenNo: yourToken,
+        status: 'CONFIRMED',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      await AppointmentLockScreenNotification.updateNotification(
+        appointment: appointmentData,
+        currentRunningToken: currentToken,
+        doctorName: doctorName,
+        hospitalName: hospitalName,
+        appointmentTime: appointmentTime,
+      );
+
+      log(
+        'SLOT_LIVE_UPDATE: notification updated — token $currentToken/$yourToken for $doctorName',
+      );
+    } catch (e) {
+      log('Error handling SLOT_LIVE_UPDATE: $e');
+    }
+  }
+
+  // ── Legacy handler ──────────────────────────────────────────────────────────
   static Future<void> _handleAppointmentTokenUpdate(RemoteMessage message) async {
     try {
       final data = message.data;
@@ -484,5 +598,26 @@ class EcliniqPushNotifications {
     }
   }
 
-}
+  /// For testing only — simulates a backend SLOT_LIVE_UPDATE FCM push
+  /// so you can verify lock screen updates without a real FCM message.
+  static Future<void> simulateSlotLiveUpdate({
+    required int yourToken,
+    required int currentToken,
+    String doctorName = 'Dr. Milind Chauhan',
+    String hospitalName = 'eClinic-Q',
+    String estimatedTime = '12:30 PM',
+  }) async {
+    final waitMinutes = yourToken > currentToken ? (yourToken - currentToken) * 2 : 0;
+    await _handleSlotLiveUpdateFromData({
+      'notificationType': 'SLOT_LIVE_UPDATE',
+      'appointmentId': 'test-appointment-${DateTime.now().millisecondsSinceEpoch}',
+      'doctorName': doctorName,
+      'hospitalName': hospitalName,
+      'yourToken': yourToken.toString(),
+      'currentToken': currentToken.toString(),
+      'estimatedTime': estimatedTime,
+      'waitTimeMinutes': waitMinutes.toString(),
+    });
+  }
 
+}

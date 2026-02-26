@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:ecliniq/ecliniq_core/notifications/appointment_notification_test_helper.dart';
 import 'package:ecliniq/ecliniq_core/notifications/appointment_lock_screen_notification.dart';
+import 'package:ecliniq/ecliniq_core/notifications/push_notification.dart'
+    show EcliniqPushNotifications;
 
 
 
@@ -20,6 +22,9 @@ class TestNotificationWidget extends StatefulWidget {
 
 class _TestNotificationWidgetState extends State<TestNotificationWidget> {
   bool _isLoading = false;
+  // Simulate FCM SLOT_LIVE_UPDATE state
+  int _simCurrentToken = 10;
+  int _simYourToken = 15;
 
   Future<void> _testNotification(String testName, Future<void> Function() test) async {
     setState(() => _isLoading = true);
@@ -145,6 +150,90 @@ class _TestNotificationWidgetState extends State<TestNotificationWidget> {
                             ),
                     icon: const Icon(Icons.play_arrow),
                     label: const Text('Run All Tests'),
+                  ),
+
+                  const SizedBox(height: 24),
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  // ── Simulate FCM SLOT_LIVE_UPDATE ──────────────────────────
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      '🔴 Simulate FCM Live Update',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepOrange,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Calls the same handler a real backend FCM push would trigger. No popup banner — lock screen only.',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Current Token: $_simCurrentToken',
+                                style: const TextStyle(fontSize: 13)),
+                            Slider(
+                              value: _simCurrentToken.toDouble(),
+                              min: 1,
+                              max: 50,
+                              divisions: 49,
+                              label: '$_simCurrentToken',
+                              onChanged: (v) =>
+                                  setState(() => _simCurrentToken = v.round()),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Your Token: $_simYourToken',
+                                style: const TextStyle(fontSize: 13)),
+                            Slider(
+                              value: _simYourToken.toDouble(),
+                              min: 1,
+                              max: 80,
+                              divisions: 79,
+                              label: '$_simYourToken',
+                              onChanged: (v) =>
+                                  setState(() => _simYourToken = v.round()),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _isLoading
+                          ? null
+                          : () => _testNotification(
+                                'Simulate FCM SLOT_LIVE_UPDATE',
+                                () => EcliniqPushNotifications.simulateSlotLiveUpdate(
+                                  yourToken: _simYourToken,
+                                  currentToken: _simCurrentToken,
+                                ),
+                              ),
+                      icon: const Icon(Icons.cell_tower),
+                      label: const Text('Simulate FCM Live Update'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepOrange,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
                   ),
                   if (Platform.isIOS) ...[
                     const SizedBox(height: 16),

@@ -59,6 +59,9 @@ class AppointmentLockScreenNotification {
         onDidReceiveNotificationResponse: _onNotificationTapped,
       );
 
+      // Ensure the Android notification channel is registered for the fallback path
+      await _createAndroidChannel();
+
       _initialized = true;
       log('Appointment lock screen notification service initialized');
     } catch (e) {
