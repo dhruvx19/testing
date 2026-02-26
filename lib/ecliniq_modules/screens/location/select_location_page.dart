@@ -104,6 +104,7 @@ class _SelectLocationPageState extends State<SelectLocationPage> {
 
   Future<void> _initSpeech() async {
     await _speechHelper.initSpeech(
+      requestPermissionsIfNeeded: false,
       onListeningChanged: () {
         if (mounted) setState(() {});
       },

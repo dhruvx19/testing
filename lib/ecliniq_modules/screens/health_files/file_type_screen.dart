@@ -82,6 +82,7 @@ class _FileTypeScreenState extends State<FileTypeScreen> {
 
   Future<void> _initSpeech() async {
     await _speechHelper.initSpeech(
+      requestPermissionsIfNeeded: false,
       onListeningChanged: () {
         if (mounted) setState(() {});
       },

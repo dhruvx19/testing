@@ -70,6 +70,7 @@ class _HealthFilesState extends State<HealthFiles> {
 
   Future<void> _initSpeech() async {
     await _speechHelper.initSpeech(
+      requestPermissionsIfNeeded: false,
       onListeningChanged: () {
         if (mounted) setState(() {});
       },

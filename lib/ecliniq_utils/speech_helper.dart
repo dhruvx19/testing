@@ -28,14 +28,25 @@ class SpeechHelper {
   // 'inactive'  — emitted by Samsung OneUI 5+ and some Xiaomi MIUI ROMs
   static const _doneStatuses = {'notListening', 'done', 'doneNoResult', 'inactive'};
 
-  /// Initialise speech recognition after explicitly requesting permissions.
+  /// Initialise speech recognition, optionally requesting permissions first.
+  ///
+  /// [requestPermissionsIfNeeded] controls whether system permission dialogs
+  /// are shown when permissions have not yet been granted.
+  ///
+  /// Pass `requestPermissionsIfNeeded: false` when calling from [initState]
+  /// so that no iOS dialogs appear on page load — permissions will only be
+  /// requested when the user explicitly taps the mic button (via
+  /// [startListening], which always passes the default value of `true`).
   Future<bool> initSpeech({
     required VoidCallback onListeningChanged,
     bool Function()? mounted,
+    bool requestPermissionsIfNeeded = true,
   }) async {
     try {
       // 1. Microphone — required on every platform.
-      final micStatus = await Permission.microphone.request();
+      final micStatus = requestPermissionsIfNeeded
+          ? await Permission.microphone.request()
+          : await Permission.microphone.status;
       if (!micStatus.isGranted) {
         developer.log('Microphone permission denied: $micStatus');
         speechEnabled = false;
@@ -47,7 +58,9 @@ class SpeechHelper {
       //    can return unexpected statuses on Samsung / Xiaomi OEM ROMs and
       //    blocks initialisation unnecessarily.
       if (Platform.isIOS) {
-        final speechStatus = await Permission.speech.request();
+        final speechStatus = requestPermissionsIfNeeded
+            ? await Permission.speech.request()
+            : await Permission.speech.status;
         if (!speechStatus.isGranted) {
           developer.log('Speech recognition permission denied: $speechStatus');
           speechEnabled = false;
