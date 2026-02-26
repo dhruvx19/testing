@@ -185,72 +185,66 @@ class _HealthFilesState extends State<HealthFiles> {
 
     if (confirmed != true || !mounted) return;
 
-    BuildContext? dialogContext;
+    bool dialogDismissed = false;
 
+    void dismissDialog() {
+      if (dialogDismissed || !mounted) return;
+      dialogDismissed = true;
+      Navigator.of(context, rootNavigator: true).pop();
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: EcliniqLoader()),
+    );
+
+    // Wait for the dialog frame to render before starting the operation,
+    // so Navigator.pop() always finds an active dialog route.
+    await WidgetsBinding.instance.endOfFrame;
+
+    bool success = false;
     try {
-      if (mounted) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (ctx) {
-            dialogContext = ctx;
-            return const Center(child: EcliniqLoader());
-          },
-        );
+      if (!mounted) {
+        dismissDialog();
+        return;
       }
 
       final provider = context.read<HealthFilesProvider>();
-
-      final success = await provider.deleteFile(file);
+      success = await provider.deleteFile(file);
 
       if (success && mounted) {
         await provider.refresh();
       }
-
-      if (dialogContext != null && mounted) {
-        try {
-          Navigator.of(dialogContext!, rootNavigator: true).pop();
-        } catch (e) {}
-        dialogContext = null;
-      }
-
-      if (!mounted) return;
-
-      if (success) {
-        CustomSuccessSnackBar.show(
-          context: context,
-          title: 'Success',
-          subtitle: 'File deleted successfully',
-          duration: const Duration(seconds: 2),
-        );
-      } else {
-        SnackBarHelper.showErrorSnackBar(
-          context,
-          'Failed to delete file. Please try again.',
-          duration: const Duration(seconds: 2),
-        );
-      }
     } catch (e) {
-      if (dialogContext != null && mounted) {
-        try {
-          Navigator.of(dialogContext!, rootNavigator: true).pop();
-        } catch (_) {}
-        dialogContext = null;
-      }
+      dismissDialog();
 
       if (!mounted) return;
-
       SnackBarHelper.showErrorSnackBar(
         context,
         'Error deleting file: ${e.toString()}',
         duration: const Duration(seconds: 3),
       );
-    } finally {
-      if (dialogContext != null && mounted) {
-        try {
-          Navigator.of(dialogContext!, rootNavigator: true).pop();
-        } catch (_) {}
-      }
+      return;
+    }
+
+    dismissDialog();
+
+    if (!mounted) return;
+
+    if (success) {
+      CustomSuccessSnackBar.show(
+        context: context,
+        title: 'Success',
+        subtitle: 'File deleted successfully',
+        duration: const Duration(seconds: 2),
+      );
+    } else {
+      SnackBarHelper.showErrorSnackBar(
+        context,
+        'Failed to delete file. Please try again.',
+        duration: const Duration(seconds: 2),
+      );
     }
   }
 

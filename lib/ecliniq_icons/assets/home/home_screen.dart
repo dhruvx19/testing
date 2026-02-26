@@ -28,7 +28,6 @@ import 'package:ecliniq/ecliniq_ui/lib/widgets/bottom_sheet/bottom_sheet.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/scaffold/scaffold.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/snackbar/error_snackbar.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/text/text.dart';
-import 'package:ecliniq/ecliniq_utils/speech_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:page_transition/page_transition.dart';
@@ -53,13 +52,10 @@ class _HomeScreenState extends State<HomeScreen>
   static const String _bannersCacheKey = 'cached_appointment_banners';
 
   final TextEditingController _searchController = TextEditingController();
-  final SpeechHelper _speechHelper = SpeechHelper();
-  bool get _isListening => _speechHelper.isListening;
 
   @override
   void initState() {
     super.initState();
-    _initSpeech();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkAndShowLocationSheet();
       _initializeDoctors();
@@ -74,25 +70,7 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void dispose() {
     _searchController.dispose();
-    _speechHelper.cancel();
     super.dispose();
-  }
-
-  Future<void> _initSpeech() async {
-    await _speechHelper.initSpeech(
-      onListeningChanged: () {
-        if (mounted) setState(() {});
-      },
-      mounted: () => mounted,
-    );
-  }
-
-  void _stopListening() async {
-    await _speechHelper.stopListening(
-      onListeningChanged: () {
-        if (mounted) setState(() {});
-      },
-    );
   }
 
   Future<void> _performSearchAndNavigate(String query) async {
@@ -133,9 +111,6 @@ class _HomeScreenState extends State<HomeScreen>
 
   void _clearSearch() {
     _searchController.clear();
-    if (_isListening) {
-      _stopListening();
-    }
   }
 
   void _checkAndShowLocationSheet() {
@@ -413,7 +388,7 @@ class _HomeScreenState extends State<HomeScreen>
               child: SearchBarWidget(
                 controller: _searchController,
                 hintText: 'Search Doctors',
-                isListening: _isListening,
+                isListening: false,
                 onTap: () {
                   EcliniqRouter.push(
                     const SearchPage(),
