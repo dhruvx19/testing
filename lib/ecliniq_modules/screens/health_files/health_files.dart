@@ -186,17 +186,28 @@ class _HealthFilesState extends State<HealthFiles> {
     if (confirmed != true || !mounted) return;
 
     bool dialogDismissed = false;
+    BuildContext? dialogContext;
 
     void dismissDialog() {
       if (dialogDismissed || !mounted) return;
+      if (dialogContext != null && context.mounted) {
+        try {
+          Navigator.of(dialogContext!, rootNavigator: true).pop();
+        } catch (e) {
+          developer.log('Error dismissing dialog: $e');
+        }
+        dialogContext = null;
+      }
       dialogDismissed = true;
-      Navigator.of(context, rootNavigator: true).pop();
     }
 
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const Center(child: EcliniqLoader()),
+      builder: (ctx) {
+        dialogContext = ctx;
+        return const Center(child: EcliniqLoader());
+      },
     );
 
     // Wait for the dialog frame to render before starting the operation,
@@ -228,7 +239,11 @@ class _HealthFilesState extends State<HealthFiles> {
       return;
     }
 
-    dismissDialog();
+    try {
+      dismissDialog();
+    } catch (e) {
+      developer.log('Error dismissing delete loader: $e');
+    }
 
     if (!mounted) return;
 
