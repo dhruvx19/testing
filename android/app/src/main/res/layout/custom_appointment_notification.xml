@@ -3,52 +3,77 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="20dp"
+    android:padding="16dp"
     android:background="@drawable/notification_background">
 
-    <!-- Hospital/Clinic Name (equivalent to Restaurant Name) -->
-    <TextView
-        android:id="@+id/hospital_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="eClinic-Q"
-        android:textFontWeight="500"
-        android:textSize="12sp"
-        android:textColor="#424242" />
+    <!-- Top Row: title and Logo -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <!-- Doctor Name and Status (equivalent to Status Title) -->
-    <TextView
-        android:id="@+id/doctor_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Dr. Milind Chauhan"
-        android:textFontWeight="600"
-        android:textSize="24sp"
-        android:textColor="#424242" />
+        <TextView
+            android:id="@+id/notification_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:text="Your appointment with"
+            android:textColor="#757575"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textFontWeight="500" />
 
-    <!-- Time Info Row (equivalent to Status Type and Time) -->
+        <ImageView
+            android:id="@+id/app_logo"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ecliniq_logo" />
+    </RelativeLayout>
+
+    <!-- Doctor and Time Row -->
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
+        android:gravity="bottom"
         android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/doctor_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Dr. Milind Chauhan"
+            android:textColor="#212121"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textFontWeight="700"
+            android:ellipsize="end"
+            android:maxLines="1" />
 
         <TextView
             android:id="@+id/status_type"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginBottom="2dp"
             android:text="On time"
             android:textColor="#91CA97"
-            android:textSize="16sp" />
+            android:textSize="14sp"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/estimated_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text=" | Arriving in 8 minutes"
-            android:textSize="16sp"
-            android:textColor="#424242" />
+            android:layout_marginStart="8dp"
+            android:layout_marginBottom="2dp"
+            android:text="8 min"
+            android:textColor="#424242"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textFontWeight="500" />
     </LinearLayout>
 
     <!-- Expected Time -->
@@ -56,81 +81,143 @@
         android:id="@+id/expected_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="2dp"
         android:text="Expected Time: 12:30PM"
-        android:textSize="14sp"
-        android:textColor="#2372EC" />
+        android:textColor="#2372EC"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:textFontWeight="500" />
 
-    <!-- Progress Line with Icons and Token Circles (Zomato Style) -->
+    <!-- Progress Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:gravity="center_vertical"
-        android:weightSum="1"
-        android:orientation="horizontal">
+        android:layout_marginTop="16dp"
+        android:orientation="vertical">
 
-        <!-- Restaurant Icon at Start -->
-        <ImageView
-            android:id="@+id/restaurant_icon"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_checkpoint_restaurant" />
+        <!-- Circles and Lines -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="32dp">
 
-        <!-- Line Segment 1 -->
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="4dp"
-            android:layout_weight="0.25"
-            android:alpha="0.4"
-            android:background="@drawable/shape_line" />
+            <!-- Connecting Line (Backdrop) -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:background="#EEEEEE" />
 
-        <!-- Current Token Circle -->
-        <TextView
-            android:id="@+id/current_token"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:background="@drawable/token_circle_dark_small"
-            android:gravity="center"
-            android:text="74"
-            android:textColor="#FFFFFF"
-            android:textSize="10sp"
-            android:fontFamily="sans-serif" />
+            <!-- Proportional Container -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="32dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:weightSum="100">
 
-        <!-- Line Segment 2 -->
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="4dp"
-            android:layout_weight="0.25"
-            android:alpha="0.4"
-            android:background="@drawable/shape_line" />
+                <TextView
+                    android:id="@+id/start_circle"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/token_circle_grey_32"
+                    android:gravity="center"
+                    android:text="S"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textFontWeight="700" />
 
-        <!-- Your Token Circle -->
-        <TextView
-            android:id="@+id/your_token"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:background="@drawable/token_circle_blue_small"
-            android:gravity="center"
-            android:text="76"
-            android:textColor="#FFFFFF"
-            android:textSize="10sp"
-            android:fontFamily="sans-serif" />
+                <View
+                    android:id="@+id/spacer1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="50" />
 
-        <!-- Line Segment 3 -->
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="4dp"
-            android:layout_weight="0.5"
-            android:alpha="0.2"
-            android:background="@drawable/shape_line"
-            android:backgroundTint="@android:color/darker_gray" />
+                <TextView
+                    android:id="@+id/current_token"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/token_circle_dark_32"
+                    android:gravity="center"
+                    android:text="74"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textFontWeight="700" />
 
-        <!-- Home Icon at End -->
-        <ImageView
-            android:id="@+id/home_icon"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_checkpoint_home" />
+                <View
+                    android:id="@+id/spacer2"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="50" />
+
+                <TextView
+                    android:id="@+id/your_token"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/token_circle_blue_32"
+                    android:gravity="center"
+                    android:text="76"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textFontWeight="700" />
+            </LinearLayout>
+        </RelativeLayout>
+
+        <!-- Labels -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal"
+            android:weightSum="100">
+
+            <TextView
+                android:id="@+id/label_start"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Start"
+                android:textColor="#9E9E9E"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:textFontWeight="500" />
+
+            <View
+                android:id="@+id/spacer_label1"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="50" />
+
+            <TextView
+                android:id="@+id/label_current"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Current"
+                android:textColor="#9E9E9E"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:textFontWeight="500" />
+
+            <View
+                android:id="@+id/spacer_label2"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="50" />
+
+            <TextView
+                android:id="@+id/label_your"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Your No"
+                android:textColor="#9E9E9E"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:textFontWeight="500" />
+        </LinearLayout>
     </LinearLayout>
+
 </LinearLayout>
+

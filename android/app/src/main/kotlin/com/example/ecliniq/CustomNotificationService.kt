@@ -63,6 +63,7 @@ class CustomNotificationService(private val context: Context) {
             context.packageName,
             R.layout.custom_appointment_notification_small
         )
+        // Set small view title: "eClinic-Q • Your Appointment with Dr. Name"
         smallView.setTextViewText(
             R.id.notification_title,
             "$hospitalName • Your Appointment with $doctorName"
@@ -75,18 +76,39 @@ class CustomNotificationService(private val context: Context) {
         )
 
         // Set text values for expanded view
-        expandedView.setTextViewText(R.id.hospital_name, hospitalName)
+        // Note: notification_label is static "Your appointment with" in XML
         expandedView.setTextViewText(R.id.doctor_name, doctorName)
         
-        // Set status type and time
-        expandedView.setTextViewText(R.id.status_type, "On time")
-        expandedView.setTextViewText(R.id.estimated_time, " | Arriving in $timeInfo")
+        // Status type (hidden by default in XML, can be shown if needed)
+        // expandedView.setViewVisibility(R.id.status_type, android.view.View.GONE)
+        
+        // Time info (e.g. "8 min")
+        expandedView.setTextViewText(R.id.estimated_time, timeInfo.replace("in ", ""))
+        
+        // Expected Time (e.g. "Expected Time: 12:30 PM")
         expandedView.setTextViewText(R.id.expected_time, "Expected Time: $expectedTime")
         
-        // Set token values
-        // expandedView.setTextViewText(12, "S") // Removed: Invalid ID '12'
+        // Token values in circles
         expandedView.setTextViewText(R.id.current_token, currentToken.toString())
         expandedView.setTextViewText(R.id.your_token, userToken.toString())
+        
+        // Start circle text is set to "S" in XML but we can set it here too
+        expandedView.setTextViewText(R.id.start_circle, "S")
+
+        // Calculate progress weights for logical placement
+        // range: Start (assuming token 1 or 0) to userToken
+        val startToken = if (currentToken > 0 && currentToken < userToken) 1 else 0
+        val totalRange = (userToken - startToken).coerceAtLeast(1)
+        val progress = (currentToken - startToken).coerceIn(0, totalRange)
+        
+        val weight1 = (progress.toFloat() / totalRange.toFloat() * 100).toInt().coerceIn(1, 99)
+        val weight2 = 100 - weight1
+
+        // Set weights for spacers to move the current_token circle
+        expandedView.setInt(R.id.spacer1, "setLayoutWeight", weight1)
+        expandedView.setInt(R.id.spacer2, "setLayoutWeight", weight2)
+        expandedView.setInt(R.id.spacer_label1, "setLayoutWeight", weight1)
+        expandedView.setInt(R.id.spacer_label2, "setLayoutWeight", weight2)
 
         // Create intent for notification tap
         val intent = Intent(context, MainActivity::class.java).apply {

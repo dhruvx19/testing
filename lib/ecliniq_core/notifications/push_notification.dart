@@ -39,7 +39,9 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     //               "currentToken": "10", "estimatedTime": "12:30 PM", ... },
     //     "android": { "priority": "high" }  }   <-- NO "notification" key
     final notificationType = data['notificationType'] as String?;
-    if (notificationType == 'SLOT_LIVE_UPDATE') {
+    final type = data['type'] as String?; // Support 'type' field as well
+
+    if (notificationType == 'SLOT_LIVE_UPDATE' || type == 'ACTIVE' || type == 'SLOT_LIVE_UPDATE') {
       await EcliniqPushNotifications._handleSlotLiveUpdateFromData(data);
       return;
     }
@@ -245,9 +247,10 @@ class EcliniqPushNotifications {
       log('Notification body: ${message.notification?.body}');
       log('Notification data: ${message.data}');
       
-      // Handle new SLOT_LIVE_UPDATE format
+      // Handle new SLOT_LIVE_UPDATE or ACTIVE format
       final notificationType = message.data['notificationType'] as String?;
-      if (notificationType == 'SLOT_LIVE_UPDATE') {
+      final type = message.data['type'] as String?;
+      if (notificationType == 'SLOT_LIVE_UPDATE' || type == 'ACTIVE' || type == 'SLOT_LIVE_UPDATE') {
         _handleSlotLiveUpdateFromData(message.data);
         return;
       }
@@ -339,10 +342,10 @@ class EcliniqPushNotifications {
       final appointmentId = data['appointmentId'] as String?;
       final doctorName = data['doctorName'] as String? ?? 'Your Doctor';
       final hospitalName = data['hospitalName'] as String? ?? 'eClinic-Q';
-      final yourToken =
-          data['yourToken'] != null
-              ? int.tryParse(data['yourToken'].toString())
-              : null;
+      // Support both 'yourToken' and 'tokenNumber'
+      final yourTokenStr = data['yourToken']?.toString() ?? data['tokenNumber']?.toString();
+      final yourToken = yourTokenStr != null ? int.tryParse(yourTokenStr) : null;
+
       final currentToken =
           data['currentToken'] != null
               ? int.tryParse(data['currentToken'].toString())
