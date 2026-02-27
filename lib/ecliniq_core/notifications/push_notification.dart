@@ -47,7 +47,6 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     }
 
     // ── Legacy payload format: appointment_token_update ──────────────────────
-    final type = data['type'] as String?;
     if (type == 'appointment_token_update' || type == 'token_update') {
       final appointmentId = data['appointmentId'] as String?;
       final currentRunningToken = data['currentRunningToken'] != null
