@@ -25,10 +25,13 @@ class DateSelector extends StatelessWidget {
 
     if (isLoading) {
       // Show shimmer placeholders while loading
-      return SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: List.generate(4, (_) {
+      return SizedBox(
+        height: EcliniqTextStyles.getResponsiveHeight(context, 75.0),
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: 4,
+          physics: const ClampingScrollPhysics(),
+          itemBuilder: (context, index) {
             return Padding(
               padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
                 context,
@@ -38,8 +41,8 @@ class DateSelector extends StatelessWidget {
                 baseColor: Colors.grey.shade300,
                 highlightColor: Colors.grey.shade100,
                 child: Container(
-                  width: EcliniqTextStyles.getResponsiveWidth(context, 130.0),
-                  height: EcliniqTextStyles.getResponsiveHeight(context, 54.0),
+                  width: EcliniqTextStyles.getResponsiveWidth(context, 160.0),
+                  height: EcliniqTextStyles.getResponsiveHeight(context, 75.0),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border.all(color: Colors.grey[300]!),
@@ -50,7 +53,7 @@ class DateSelector extends StatelessWidget {
                 ),
               ),
             );
-          }),
+          },
         ),
       );
     }
@@ -72,69 +75,77 @@ class DateSelector extends StatelessWidget {
       entries = [_DateEntry(DateTime(now.year, now.month, now.day), null)];
     }
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: entries.map((entry) {
-          final date = entry.date;
-          final tokenCount = entry.tokenCount;
-
-          final isSelected =
-              selectedDateValue != null &&
-              date.year == selectedDateValue!.year &&
-              date.month == selectedDateValue!.month &&
-              date.day == selectedDateValue!.day;
-
-          final label = _formatDateLabel(date);
-
-          return Padding(
-            padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
-              context,
-              right: 10.0,
-            ),
-            child: GestureDetector(
-              onTap: () => onDateChanged(date),
-              child: Container(
-                padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
-                  context,
-                  horizontal: 16.0,
-                  vertical: 8.0,
-                ),
-                decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF2372EC) : Colors.white,
-                  border: Border.all(
-                    color: isSelected
-                        ? const Color(0xFF2372EC)
-                        : const Color(0xffB8B8B8),
-                    width: EcliniqTextStyles.getResponsiveSize(context, 0.5),
+    return SizedBox(
+      height: EcliniqTextStyles.getResponsiveHeight(context, 75.0),
+      child: GestureDetector(
+        onVerticalDragStart: (_) {}, // Consumes vertical drag to prevent parent sheet closure
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: entries.length,
+          physics: const ClampingScrollPhysics(),
+          itemBuilder: (context, index) {
+            final entry = entries[index];
+            final date = entry.date;
+            final tokenCount = entry.tokenCount;
+    
+            final isSelected =
+                selectedDateValue != null &&
+                date.year == selectedDateValue!.year &&
+                date.month == selectedDateValue!.month &&
+                date.day == selectedDateValue!.day;
+    
+            final label = _formatDateLabel(date);
+    
+            return Padding(
+              padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+                context,
+                right: 10.0,
+              ),
+              child: GestureDetector(
+                onTap: () => onDateChanged(date),
+                child: Container(
+                  padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
+                    context,
+                    horizontal: 16.0,
+                    vertical: 8.0,
                   ),
-                  borderRadius: BorderRadius.circular(
-                    EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0),
+                  decoration: BoxDecoration(
+                    color: isSelected ? const Color(0xFF2372EC) : Colors.white,
+                    border: Border.all(
+                      color: isSelected
+                          ? const Color(0xFF2372EC)
+                          : const Color(0xffB8B8B8),
+                      width: EcliniqTextStyles.getResponsiveSize(context, 0.5),
+                    ),
+                    borderRadius: BorderRadius.circular(
+                      EcliniqTextStyles.getResponsiveBorderRadius(context, 8.0),
+                    ),
                   ),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      label,
-                      style: EcliniqTextStyles.responsiveTitleXBLarge(context).copyWith(
-                        color: isSelected ? Colors.white : const Color(0xff424242),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        label,
+                        style: EcliniqTextStyles.responsiveTitleXBLarge(context).copyWith(
+                          color: isSelected ? Colors.white : const Color(0xff424242),
+                        ),
                       ),
-                    ),
-                    Text(
-                      tokenCount != null
-                          ? '$tokenCount Tokens Available'
-                          : 'Tap to view slots',
-                      style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
-                        color: isSelected ? Colors.white : const Color(0xFF3EAF3F),
-                        fontWeight: FontWeight.w400,
+                      Text(
+                        tokenCount != null
+                            ? '$tokenCount Tokens Available'
+                            : 'Tap to view slots',
+                        style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
+                          color: isSelected ? Colors.white : const Color(0xFF3EAF3F),
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-          );
-        }).toList(),
+            );
+          },
+        ),
       ),
     );
   }

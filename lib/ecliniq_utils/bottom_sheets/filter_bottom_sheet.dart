@@ -33,6 +33,9 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
   String? selectedExperience;
   double distanceRange = 50;
   String _searchQuery = '';
+  final SpeechHelper _speechHelper = SpeechHelper();
+  bool get _isListening => _speechHelper.isListening;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -70,6 +73,41 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
         distanceRange = (filters['distance'] as num).toDouble();
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSpeechResult(SpeechRecognitionResult result) {
+    setState(() {
+      _searchQuery = result.recognizedWords;
+      _searchController.text = _searchQuery;
+    });
+  }
+
+  void _onSpeechError(String error) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error)),
+      );
+    }
+  }
+
+  void _toggleVoiceSearch() async {
+    if (_isListening) {
+      await _speechHelper.stopListening();
+    } else {
+      await _speechHelper.startListening(
+        onResult: _onSpeechResult,
+        onError: _onSpeechError,
+        onListeningChanged: () => setState(() {}),
+        mounted: () => mounted,
+      );
+    }
+    setState(() {});
   }
 
   void _resetFilters() {
@@ -283,11 +321,15 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
             ),
           ),
           SearchBarWidget(
+            controller: _searchController,
+            isListening: _isListening,
+            onVoiceSearch: _toggleVoiceSearch,
             onSearch: (String value) {
               setState(() {
                 _searchQuery = value.toLowerCase();
               });
             },
+            hintText: 'Search $selectedTab',
           ),
           SizedBox(height: EcliniqTextStyles.getResponsiveSize(context, 18)),
           Container(height: 0.5, color: Color(0xffD6D6D6)),
@@ -300,6 +342,7 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
                 SizedBox(
                   width: EcliniqTextStyles.getResponsiveSize(context, 136),
                   child: ListView.builder(
+                    physics: const ClampingScrollPhysics(),
                     itemCount: filterTabs.length,
                     itemBuilder: (context, index) {
                       final tab = filterTabs[index];
@@ -426,6 +469,7 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
     }
 
     return ListView.builder(
+      physics: const ClampingScrollPhysics(),
       padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
         context,
         horizontal: 0,
@@ -522,6 +566,7 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
     }
 
     return ListView.builder(
+      physics: const ClampingScrollPhysics(),
       padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
         context,
         horizontal: 0,
@@ -597,6 +642,7 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
 
   Widget _buildAvailabilityList() {
     return ListView.builder(
+      physics: const ClampingScrollPhysics(),
       padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
         context,
         horizontal: 0,
@@ -664,6 +710,7 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
 
   Widget _buildGenderList() {
     return ListView.builder(
+      physics: const ClampingScrollPhysics(),
       padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
         context,
         horizontal: 0,
@@ -732,6 +779,7 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
 
   Widget _buildExperienceList() {
     return ListView.builder(
+      physics: const ClampingScrollPhysics(),
       padding: EcliniqTextStyles.getResponsiveEdgeInsetsSymmetric(
         context,
         horizontal: 0,
@@ -1094,7 +1142,28 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
 
                         fontWeight: FontWeight.w400,
                       ),
-                ),
+                    suffixIcon: query.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, color: Color(0xff626060)),
+                            onPressed: () {
+                              _controller.clear();
+                              search('');
+                              widget.onClear?.call();
+                            },
+                          )
+                        : IconButton(
+                            icon: SvgPicture.asset(
+                              EcliniqIcons.microphone.assetPath,
+                              width: 24,
+                              height: 24,
+                              colorFilter: ColorFilter.mode(
+                                _isListening ? const Color(0xFF2372EC) : const Color(0xff626060),
+                                BlendMode.srcIn,
+                              ),
+                            ),
+                            onPressed: _handleVoiceSearch,
+                          ),
+                  ),
                 onChanged: search,
                 textInputAction: TextInputAction.search,
                 style: EcliniqTextStyles.responsiveTitleXLarge(

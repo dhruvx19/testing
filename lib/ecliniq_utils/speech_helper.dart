@@ -122,22 +122,39 @@ class SpeechHelper {
         final micS = await Permission.microphone.status;
         final speechS = Platform.isIOS ? await Permission.speech.status : PermissionStatus.granted;
 
+        developer.log('Initialization failed. Status: mic=$micS, speech=$speechS');
+
         if (micS.isPermanentlyDenied || speechS.isPermanentlyDenied) {
           // One of them is permanently denied
           onError?.call(
-            'Permission is required for voice search. Please enable Microphone and Speech Recognition in Settings.',
+            'Microphone and Speech Recognition permissions are required for voice search. Please Enable both in Settings.',
           );
+          // Wait briefly so user can read message before settings opens
+          await Future.delayed(const Duration(milliseconds: 800));
           await openAppSettings();
+        } else if (micS.isGranted && speechS.isGranted) {
+           // If they are granted but initialization still failed, try one more time
+           // sometimes it needs a moment to catch up.
+           await Future.delayed(const Duration(milliseconds: 300));
+           final retrySuccess = await speechToText.initialize(options: [SpeechToText.androidNoBluetooth]);
+           if (retrySuccess) {
+             speechEnabled = true;
+             // Continue to the listen() call below
+           } else {
+             onError?.call('Speech recognition is not available on this device right now. Please try again later.');
+             return false;
+           }
         } else if (micS.isDenied || speechS.isDenied) {
           onError?.call(
             'Microphone and Speech Recognition permissions are required for voice search.',
           );
         } else {
           onError?.call(
-            'Speech recognition is not available on this device right now.',
+            'Voice search is not ready. Please try again in a moment.',
           );
         }
-        return false;
+
+        if (!speechEnabled) return false;
       }
     }
 
