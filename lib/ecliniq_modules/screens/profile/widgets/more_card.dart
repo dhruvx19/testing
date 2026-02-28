@@ -113,21 +113,21 @@ class MoreSettingsMenuWidget extends StatelessWidget {
           _MoreMenuItem(
             icon: EcliniqIcons.questionMark.assetPath,
             title: 'Help & Support',
-            subtitle: 'Send us Email on : Support@upcharq.com\nCall us on: +91 92092 70968',
+            subtitle:
+                'Send us Email on : Support@upcharq.com\nCall us on: +91 92092 70968',
             onTap: onHelpSupportPressed,
           ),
 
           _buildDivider(),
 
-          _MoreMenuItem(
-            icon: EcliniqIcons.phone.assetPath,
-            title: 'Contact Us',
-            subtitle: 'Call us on : +91 92092 70968',
-            onTap: onContactUsPressed,
-          ),
+          // _MoreMenuItem(
+          //   icon: EcliniqIcons.phone.assetPath,
+          //   title: 'Contact Us',
+          //   subtitle: 'Call us on : +91 92092 70968',
+          //   onTap: onContactUsPressed,
+          // ),
 
-          _buildDivider(),
-
+          // _buildDivider(),
           _MoreMenuItem(
             icon: EcliniqIcons.clipboard.assetPath,
             title: 'Terms & Conditions',
