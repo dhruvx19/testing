@@ -114,7 +114,7 @@ class MoreSettingsMenuWidget extends StatelessWidget {
             icon: EcliniqIcons.questionMark.assetPath,
             title: 'Help & Support',
             subtitle:
-                'Send us Email on : Support@upcharq.com\nCall us on: +91 92092 70968',
+                'Send us Email on : Support@upcharq.com\nCall us on: +91 92091 70968',
             onTap: onHelpSupportPressed,
           ),
 
