@@ -162,97 +162,42 @@ class _DatePickerBottomSheetState extends State<DatePickerBottomSheet> {
     int flex = 1,
     TextAlign textAlign = TextAlign.center,
   }) {
-    double dragDistance = 0;
-    final double dragThreshold = 30.0;
-
     return Expanded(
       flex: flex,
-      child: GestureDetector(
-        onVerticalDragStart: (details) {
-          dragDistance = 0;
-        },
-        onVerticalDragUpdate: (details) {
-          dragDistance += details.delta.dy;
-
-          if (dragDistance.abs() >= dragThreshold) {
-            if (dragDistance > 0) {
-              
-              int newIndex = selectedIndex - 1;
-              if (newIndex < 0) {
-                newIndex = itemCount - 1; 
-              }
-              if (isItemEnabled?.call(newIndex) ?? true) {
-                onTap(newIndex);
-                dragDistance = 0;
-              }
-            } else {
-              
-              int newIndex = selectedIndex + 1;
-              if (newIndex >= itemCount) {
-                newIndex = 0; 
-              }
-              if (isItemEnabled?.call(newIndex) ?? true) {
-                onTap(newIndex);
-                dragDistance = 0;
-              }
+      child: SizedBox(
+        height: EcliniqTextStyles.getResponsiveSize(context, 160.0),
+        child: ListWheelScrollView.useDelegate(
+          itemExtent: EcliniqTextStyles.getResponsiveSize(context, 36.0),
+          perspective: 0.005,
+          diameterRatio: 1.2,
+          physics: const FixedExtentScrollPhysics(),
+          onSelectedItemChanged: (index) {
+            if (isItemEnabled?.call(index) ?? true) {
+              onTap(index);
             }
-          }
-        },
-        onVerticalDragEnd: (details) {
-          dragDistance = 0;
-        },
-        child: Column(
-          children: List.generate(7, (index) {
-            final offset = index - 3;
-            
-            int actualIndex = (selectedIndex + offset) % itemCount;
-            if (actualIndex < 0) {
-              actualIndex += itemCount;
-            }
+          },
+          childDelegate: ListWheelChildBuilderDelegate(
+            childCount: itemCount,
+            builder: (context, index) {
+              final isSelected = index == selectedIndex;
+              final isEnabled = isItemEnabled?.call(index) ?? true;
 
-            final isEnabled = isItemEnabled?.call(actualIndex) ?? true;
-
-            double fontSize;
-            Color textColor;
-            switch (offset.abs()) {
-              case 0: 
-                fontSize = 20;
-                textColor = Color(0xff424242);
-                break;
-              case 1: 
-                fontSize = 16;
-                textColor = Color(0xffB8B8B8);
-                break;
-              case 2: 
-                fontSize = 14;
-                textColor = Color(0xffD6D6D6);
-                break;
-              case 3: 
-                fontSize = 12;
-                textColor = Color(0xffD6D6D6);
-                break;
-              default:
-                fontSize = 12;
-                textColor = Color(0xffD6D6D6);
-            }
-
-            return GestureDetector(
-              onTap: isEnabled ? () => onTap(actualIndex) : null,
-              child: Container(
-                height: EcliniqTextStyles.getResponsiveSize(context, 28.0),
+              return Container(
                 alignment: Alignment.center,
                 child: Text(
-                  itemBuilder(actualIndex),
+                  itemBuilder(index),
                   textAlign: textAlign,
                   style: TextStyle(
-                    fontSize: EcliniqTextStyles.getResponsiveSize(context, fontSize),
-                    fontWeight: FontWeight.w400,
-                    color: textColor,
+                    fontSize: EcliniqTextStyles.getResponsiveSize(context, isSelected ? 20.0 : 16.0),
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                    color: isEnabled
+                        ? (isSelected ? const Color(0xff424242) : const Color(0xffB8B8B8))
+                        : const Color(0xffD6D6D6),
                   ),
                 ),
-              ),
-            );
-          }),
+              );
+            },
+          ),
         ),
       ),
     );

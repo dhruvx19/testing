@@ -11,23 +11,30 @@ class CustomErrorSnackBar {
     Duration? duration,
   }) {
     final overlayState = Overlay.of(context);
-    late final OverlayEntry overlayEntry;
+    late OverlayEntry overlayEntry;
+    bool dismissed = false;
+
     overlayEntry = OverlayEntry(
       builder: (context) => _ErrorSnackBarOverlay(
         title: title,
         subtitle: subtitle,
         duration: duration ?? const Duration(seconds: 15),
         onDismiss: () {
-          overlayEntry.remove();
+          if (!dismissed) {
+            dismissed = true;
+            overlayEntry.remove();
+          }
         },
       ),
     );
 
     overlayState.insert(overlayEntry);
 
-    
     Future.delayed(duration ?? const Duration(seconds: 15), () {
-      overlayEntry.remove();
+      if (!dismissed) {
+        dismissed = true;
+        overlayEntry.remove();
+      }
     });
   }
 }

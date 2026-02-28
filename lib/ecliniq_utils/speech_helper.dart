@@ -61,17 +61,18 @@ class SpeechHelper {
       }
 
       // 3. Small yield to let OS sync permission state before engine init.
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 500));
 
       // 4. Initialise the engine.
       speechEnabled = await speechToText.initialize(
         onError: (error) {
           final errorMsg = error.errorMsg.toLowerCase();
-          // 'no_match' and 'listen_failed' are benign end-of-session signals.
+          developer.log('Speech recognition error: ${error.errorMsg} (Permanent: ${error.permanent})');
+          
           if (!errorMsg.contains('no_match') &&
               !errorMsg.contains('listen_failed') &&
               !errorMsg.contains('error_busy')) {
-            developer.log('Speech recognition error: ${error.errorMsg}');
+            // Log non-benign errors
           }
           if (mounted?.call() ?? true) {
             isListening = false;
@@ -89,7 +90,7 @@ class SpeechHelper {
             onListeningChanged();
           }
         },
-        options: [SpeechToText.androidNoBluetooth],
+        options: Platform.isAndroid ? [SpeechToText.androidNoBluetooth] : [],
       );
 
       developer.log('Speech recognition initialized: $speechEnabled');
@@ -125,33 +126,24 @@ class SpeechHelper {
         developer.log('Initialization failed. Status: mic=$micS, speech=$speechS');
 
         if (micS.isPermanentlyDenied || speechS.isPermanentlyDenied) {
-          // One of them is permanently denied
           onError?.call(
-            'Microphone and Speech Recognition permissions are required for voice search. Please Enable both in Settings.',
+            'Microphone and Speech Recognition permissions are required. Please enable them in Settings.',
           );
-          // Wait briefly so user can read message before settings opens
-          await Future.delayed(const Duration(milliseconds: 800));
+          await Future.delayed(const Duration(milliseconds: 1000));
           await openAppSettings();
         } else if (micS.isGranted && speechS.isGranted) {
-           // If they are granted but initialization still failed, try one more time
-           // sometimes it needs a moment to catch up.
-           await Future.delayed(const Duration(milliseconds: 300));
-           final retrySuccess = await speechToText.initialize(options: [SpeechToText.androidNoBluetooth]);
+           await Future.delayed(const Duration(milliseconds: 500));
+           final retrySuccess = await speechToText.initialize(
+             options: Platform.isAndroid ? [SpeechToText.androidNoBluetooth] : [],
+           );
            if (retrySuccess) {
              speechEnabled = true;
-             // Continue to the listen() call below
            } else {
-             onError?.call('Speech recognition is not available on this device right now. Please try again later.');
+             onError?.call('Speech service is currently unavailable. Please restart the app or try again.');
              return false;
            }
-        } else if (micS.isDenied || speechS.isDenied) {
-          onError?.call(
-            'Microphone and Speech Recognition permissions are required for voice search.',
-          );
         } else {
-          onError?.call(
-            'Voice search is not ready. Please try again in a moment.',
-          );
+          onError?.call('Please grant microphone permissions to use voice search.');
         }
 
         if (!speechEnabled) return false;
@@ -159,14 +151,18 @@ class SpeechHelper {
     }
 
     try {
+      // Small delay before listening to ensure previous sessions are cleared
+      await Future.delayed(const Duration(milliseconds: 100));
+      
       await speechToText.listen(
         onResult: onResult,
         listenFor: const Duration(seconds: 30),
-        pauseFor: const Duration(seconds: 3),
+        pauseFor: const Duration(seconds: 5),
         listenOptions: SpeechListenOptions(
           partialResults: true,
           cancelOnError: false,
           listenMode: ListenMode.search,
+          onDevice: false, // Usually faster and more accurate if cloud is used
         ),
       );
 
@@ -178,12 +174,11 @@ class SpeechHelper {
       isListening = false;
       onListeningChanged?.call();
       
-      // If we failed to start, it might be because the engine became unavailable
       if (e.toString().contains('not initialized')) {
         speechEnabled = false;
       }
       
-      onError?.call('Error starting voice search: ${e.toString()}');
+      onError?.call('Could not start voice search. Please try again.');
       return false;
     }
   }
