@@ -15,7 +15,10 @@ import 'package:speech_to_text/speech_to_text.dart';
 ///
 /// On iOS an additional [Permission.speech] grant is required.
 class SpeechHelper {
-  SpeechHelper();
+  // Singleton pattern
+  static final SpeechHelper _instance = SpeechHelper._internal();
+  factory SpeechHelper() => _instance;
+  SpeechHelper._internal();
 
   final SpeechToText speechToText = SpeechToText();
   bool speechEnabled = false;
@@ -186,7 +189,9 @@ class SpeechHelper {
   /// Stop listening for speech input.
   Future<void> stopListening({VoidCallback? onListeningChanged}) async {
     try {
-      await speechToText.stop();
+      if (speechToText.isListening) {
+        await speechToText.stop();
+      }
     } catch (e) {
       developer.log('Error stopping speech recognition: $e');
     }
