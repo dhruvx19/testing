@@ -321,8 +321,7 @@ class _DoctorFilterBottomSheetState extends State<DoctorFilterBottomSheet> {
             ),
           ),
           SearchBarWidget(
-            controller: _searchController,
-            isListening: _isListening,
+            
             onVoiceSearch: _toggleVoiceSearch,
             onSearch: (String value) {
               setState(() {
