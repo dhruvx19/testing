@@ -15,6 +15,7 @@ class MoreSettingsMenuWidget extends StatelessWidget {
   final VoidCallback? onLogoutPressed;
   final VoidCallback? onFeedbackPressed;
   final VoidCallback? onDeleteAccountPressed;
+  final VoidCallback? onContactUsPressed;
   final String appVersion;
   final String supportEmail;
 
@@ -29,6 +30,7 @@ class MoreSettingsMenuWidget extends StatelessWidget {
     this.onLogoutPressed,
     this.onDeleteAccountPressed,
     this.onFeedbackPressed,
+    this.onContactUsPressed,
     this.appVersion = 'v1.0.0',
     this.supportEmail = 'Support@eclinicq.com',
   });
@@ -111,8 +113,17 @@ class MoreSettingsMenuWidget extends StatelessWidget {
           _MoreMenuItem(
             icon: EcliniqIcons.questionMark.assetPath,
             title: 'Help & Support',
-            subtitle: 'Send us Email on : Support@upcharq.com',
+            subtitle: 'Send us Email on : Support@upcharq.com\nCall us on: +91 92092 70968',
             onTap: onHelpSupportPressed,
+          ),
+
+          _buildDivider(),
+
+          _MoreMenuItem(
+            icon: EcliniqIcons.phone.assetPath,
+            title: 'Contact Us',
+            subtitle: 'Call us on : +91 92092 70968',
+            onTap: onContactUsPressed,
           ),
 
           _buildDivider(),

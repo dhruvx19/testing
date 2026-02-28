@@ -502,6 +502,30 @@ Sent from my ${Platform.isIOS ? 'iPhone' : 'Android device'}''';
       }
     }
   }
+  
+  Future<void> _launchPhoneCall() async {
+    final Uri phoneUri = Uri(
+      scheme: 'tel',
+      path: '9209270968',
+    );
+    try {
+      if (await canLaunchUrl(phoneUri)) {
+        await launchUrl(phoneUri);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Could not launch phone dialer')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error launching dialer: $e')),
+        );
+      }
+    }
+  }
 
   String? _encodeQueryParameters(Map<String, String> params) {
     return params.entries
@@ -1095,6 +1119,7 @@ extension _ProfilePageContent on _ProfilePageState {
               supportEmail: 'Support@eclinicq.com',
               onReferEarnPressed: () {},
               onHelpSupportPressed: _launchEmailSupport,
+              onContactUsPressed: _launchPhoneCall,
               onTermsPressed: () {
                 EcliniqRouter.push(TermsAndConditionsPage());
               },

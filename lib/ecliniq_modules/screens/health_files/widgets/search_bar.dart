@@ -171,6 +171,27 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
                   horizontal: 20.0,
                   vertical: 14.0,
                 ),
+                suffixIcon: query.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, color: Color(0xff626060)),
+                        onPressed: () {
+                          _controller.clear();
+                          search('');
+                          widget.onClear?.call();
+                        },
+                      )
+                    : IconButton(
+                        icon: SvgPicture.asset(
+                          EcliniqIcons.microphone.assetPath,
+                          width: 24,
+                          height: 24,
+                          colorFilter: const ColorFilter.mode(
+                            Color(0xff626060),
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                        onPressed: _handleVoiceSearch,
+                      ),
               ),
               onChanged: search,
               textInputAction: TextInputAction.search,
