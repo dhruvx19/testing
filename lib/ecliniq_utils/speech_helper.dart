@@ -7,13 +7,6 @@ import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
 /// A shared helper that handles microphone permission and speech recognition.
-///
-/// Explicitly requests [Permission.microphone] via `permission_handler` before
-/// initialising `speech_to_text`. This fixes issues on Samsung, OnePlus and
-/// Xiaomi devices where the implicit permission request inside
-/// `SpeechToText.initialize()` fails silently.
-///
-/// On iOS an additional [Permission.speech] grant is required.
 class SpeechHelper {
   SpeechHelper();
 
@@ -21,7 +14,6 @@ class SpeechHelper {
   bool speechEnabled = false;
   bool isListening = false;
 
-  // ─── Status strings that mean "no longer listening" ───────────────────────
   static const _doneStatuses = {
     'notListening',
     'done',
@@ -29,58 +21,82 @@ class SpeechHelper {
     'inactive',
   };
 
-  /// Initialise speech recognition, optionally requesting permissions first.
+  /// Request all required permissions upfront and return whether all granted.
+  Future<bool> _requestPermissions() async {
+    if (Platform.isIOS) {
+      // Request both together on iOS
+      final statuses = await [
+        Permission.microphone,
+        Permission.speech,
+      ].request();
+
+      final micGranted = statuses[Permission.microphone]?.isGranted ?? false;
+      final speechGranted = statuses[Permission.speech]?.isGranted ?? false;
+
+      developer.log('iOS permissions — mic: $micGranted, speech: $speechGranted');
+
+      if (!micGranted || !speechGranted) {
+        // Check if permanently denied
+        final micDenied = statuses[Permission.microphone]?.isPermanentlyDenied ?? false;
+        final speechDenied = statuses[Permission.speech]?.isPermanentlyDenied ?? false;
+
+        if (micDenied || speechDenied) {
+          developer.log('Permissions permanently denied — opening settings');
+          await openAppSettings();
+        }
+        return false;
+      }
+      return true;
+    } else {
+      // Android — only microphone needed
+      final micStatus = await Permission.microphone.request();
+      developer.log('Android mic permission: $micStatus');
+
+      if (!micStatus.isGranted) {
+        if (micStatus.isPermanentlyDenied) {
+          await openAppSettings();
+        }
+        return false;
+      }
+      return true;
+    }
+  }
+
+  /// Initialise speech recognition.
   Future<bool> initSpeech({
     required VoidCallback onListeningChanged,
     bool Function()? mounted,
     bool requestPermissionsIfNeeded = true,
   }) async {
     try {
-      // 1. Microphone — required on every platform.
-      final micStatus = requestPermissionsIfNeeded
-          ? await Permission.microphone.request()
-          : await Permission.microphone.status;
-          
-      if (!micStatus.isGranted) {
-        developer.log('Microphone permission not granted: $micStatus');
-        speechEnabled = false;
-        return false;
-      }
-
-      // 2. Speech recognition — iOS ONLY.
-      if (Platform.isIOS) {
-        final speechStatus = requestPermissionsIfNeeded
-            ? await Permission.speech.request()
-            : await Permission.speech.status;
-            
-        if (!speechStatus.isGranted) {
-          developer.log('Speech recognition permission not granted: $speechStatus');
+      if (requestPermissionsIfNeeded) {
+        final granted = await _requestPermissions();
+        if (!granted) {
           speechEnabled = false;
           return false;
         }
       }
 
-      // 3. Small yield to let OS sync permission state before engine init.
+      // Small yield to let OS sync permission state before engine init.
       await Future.delayed(const Duration(milliseconds: 500));
 
-      // 4. Initialise the engine.
       speechEnabled = await speechToText.initialize(
         onError: (error) {
           final errorMsg = error.errorMsg.toLowerCase();
-          developer.log('Speech recognition error: ${error.errorMsg} (Permanent: ${error.permanent})');
-          
-          if (!errorMsg.contains('no_match') &&
-              !errorMsg.contains('listen_failed') &&
-              !errorMsg.contains('error_busy')) {
-            // Log non-benign errors
-          }
+          developer.log('Speech error: ${error.errorMsg} (permanent: ${error.permanent})');
+
           if (mounted?.call() ?? true) {
             isListening = false;
             onListeningChanged();
           }
+
+          // If permanently failed, reset so next call re-initializes
+          if (error.permanent) {
+            speechEnabled = false;
+          }
         },
         onStatus: (status) {
-          developer.log('Speech recognition status: $status');
+          developer.log('Speech status: $status');
           if (mounted?.call() ?? true) {
             if (_doneStatuses.contains(status)) {
               isListening = false;
@@ -93,10 +109,10 @@ class SpeechHelper {
         options: Platform.isAndroid ? [SpeechToText.androidNoBluetooth] : [],
       );
 
-      developer.log('Speech recognition initialized: $speechEnabled');
+      developer.log('Speech initialized: $speechEnabled');
       return speechEnabled;
     } catch (e) {
-      developer.log('Error initializing speech recognition: $e');
+      developer.log('Error initializing speech: $e');
       speechEnabled = false;
       return false;
     }
@@ -111,49 +127,42 @@ class SpeechHelper {
   }) async {
     if (isListening) return true;
 
-    // Ensure engine is initialized and permissions are granted
     if (!speechEnabled) {
       final success = await initSpeech(
         onListeningChanged: onListeningChanged ?? () {},
         mounted: mounted,
       );
-      
+
       if (!success) {
-        // Double check specific status to give accurate error message
-        final micS = await Permission.microphone.status;
-        final speechS = Platform.isIOS ? await Permission.speech.status : PermissionStatus.granted;
+        developer.log('Speech init failed after permission check');
 
-        developer.log('Initialization failed. Status: mic=$micS, speech=$speechS');
+        if (Platform.isIOS) {
+          final micStatus = await Permission.microphone.status;
+          final speechStatus = await Permission.speech.status;
+          developer.log('iOS status — mic: $micStatus, speech: $speechStatus');
 
-        if (micS.isPermanentlyDenied || speechS.isPermanentlyDenied) {
-          onError?.call(
-            'Microphone and Speech Recognition permissions are required. Please enable them in Settings.',
-          );
-          await Future.delayed(const Duration(milliseconds: 1000));
-          await openAppSettings();
-        } else if (micS.isGranted && speechS.isGranted) {
-           await Future.delayed(const Duration(milliseconds: 500));
-           final retrySuccess = await speechToText.initialize(
-             options: Platform.isAndroid ? [SpeechToText.androidNoBluetooth] : [],
-           );
-           if (retrySuccess) {
-             speechEnabled = true;
-           } else {
-             onError?.call('Speech service is currently unavailable. Please restart the app or try again.');
-             return false;
-           }
+          if (micStatus.isPermanentlyDenied || speechStatus.isPermanentlyDenied) {
+            onError?.call('Please enable Microphone and Speech Recognition in Settings > Privacy.');
+            await openAppSettings();
+          } else {
+            onError?.call('Could not start voice search. Please try again.');
+          }
         } else {
-          onError?.call('Please grant microphone permissions to use voice search.');
+          final micStatus = await Permission.microphone.status;
+          if (micStatus.isPermanentlyDenied) {
+            onError?.call('Please enable Microphone in Settings > Privacy.');
+            await openAppSettings();
+          } else {
+            onError?.call('Could not start voice search. Please try again.');
+          }
         }
-
-        if (!speechEnabled) return false;
+        return false;
       }
     }
 
     try {
-      // Small delay before listening to ensure previous sessions are cleared
       await Future.delayed(const Duration(milliseconds: 100));
-      
+
       await speechToText.listen(
         onResult: onResult,
         listenFor: const Duration(seconds: 30),
@@ -162,7 +171,7 @@ class SpeechHelper {
           partialResults: true,
           cancelOnError: false,
           listenMode: ListenMode.search,
-          onDevice: false, // Usually faster and more accurate if cloud is used
+          onDevice: false,
         ),
       );
 
@@ -170,14 +179,14 @@ class SpeechHelper {
       onListeningChanged?.call();
       return true;
     } catch (e) {
-      developer.log('Error starting speech recognition: $e');
+      developer.log('Error starting listening: $e');
       isListening = false;
       onListeningChanged?.call();
-      
+
       if (e.toString().contains('not initialized')) {
         speechEnabled = false;
       }
-      
+
       onError?.call('Could not start voice search. Please try again.');
       return false;
     }
@@ -188,7 +197,7 @@ class SpeechHelper {
     try {
       await speechToText.stop();
     } catch (e) {
-      developer.log('Error stopping speech recognition: $e');
+      developer.log('Error stopping speech: $e');
     }
     isListening = false;
     onListeningChanged?.call();
@@ -199,9 +208,8 @@ class SpeechHelper {
     try {
       await speechToText.cancel();
     } catch (e) {
-      developer.log('Error cancelling speech recognition: $e');
+      developer.log('Error cancelling speech: $e');
     }
     isListening = false;
   }
 }
-
