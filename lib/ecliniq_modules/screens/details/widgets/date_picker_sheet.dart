@@ -29,6 +29,10 @@ class _DatePickerBottomSheetState extends State<DatePickerBottomSheet> {
   late int selectedYear;
   bool _isButtonPressed = false;
 
+  late FixedExtentScrollController _dayController;
+  late FixedExtentScrollController _monthController;
+  late FixedExtentScrollController _yearController;
+
   final List<String> months = [
     'January',
     'February',
@@ -47,10 +51,34 @@ class _DatePickerBottomSheetState extends State<DatePickerBottomSheet> {
   @override
   void initState() {
     super.initState();
+    final effectiveMaxDate = widget.maximumDate ?? DateTime.now();
+    final effectiveMinDate = widget.minimumDate ?? DateTime(1900);
+
     selectedDate = widget.initialDate;
+    if (selectedDate.isAfter(effectiveMaxDate)) {
+      selectedDate = effectiveMaxDate;
+    } else if (selectedDate.isBefore(effectiveMinDate)) {
+      selectedDate = effectiveMinDate;
+    }
+
     selectedDay = selectedDate.day;
     selectedMonth = selectedDate.month;
     selectedYear = selectedDate.year;
+
+    final minYear = effectiveMinDate.year;
+    _dayController = FixedExtentScrollController(initialItem: selectedDay - 1);
+    _monthController =
+        FixedExtentScrollController(initialItem: selectedMonth - 1);
+    _yearController =
+        FixedExtentScrollController(initialItem: selectedYear - minYear);
+  }
+
+  @override
+  void dispose() {
+    _dayController.dispose();
+    _monthController.dispose();
+    _yearController.dispose();
+    super.dispose();
   }
 
   int _getDaysInMonth(int year, int month) {
@@ -58,20 +86,64 @@ class _DatePickerBottomSheetState extends State<DatePickerBottomSheet> {
   }
 
   bool _isDateInRange(DateTime date) {
-    if (widget.minimumDate != null && date.isBefore(widget.minimumDate!)) {
-      return false;
-    }
-    if (widget.maximumDate != null && date.isAfter(widget.maximumDate!)) {
-      return false;
-    }
+    final minDate = widget.minimumDate ?? DateTime(1900);
+    final maxDate = widget.maximumDate ?? DateTime.now();
+
+    final dateOnly = DateTime(date.year, date.month, date.day);
+    final minDateOnly = DateTime(minDate.year, minDate.month, minDate.day);
+    final maxDateOnly = DateTime(maxDate.year, maxDate.month, maxDate.day);
+
+    if (dateOnly.isBefore(minDateOnly)) return false;
+    if (dateOnly.isAfter(maxDateOnly)) return false;
+
     return true;
   }
 
   void _updateSelectedDate() {
-    final daysInMonth = _getDaysInMonth(selectedYear, selectedMonth);
-    if (selectedDay > daysInMonth) {
-      selectedDay = daysInMonth;
+    final effectiveMaxDate = widget.maximumDate ?? DateTime.now();
+    final effectiveMinDate = widget.minimumDate ?? DateTime(1900);
+
+    // 1. Validate and cap Year
+    if (selectedYear > effectiveMaxDate.year) {
+      selectedYear = effectiveMaxDate.year;
+      if (_yearController.hasClients) {
+        _yearController.jumpToItem(selectedYear - effectiveMinDate.year);
+      }
+    } else if (selectedYear < effectiveMinDate.year) {
+      selectedYear = effectiveMinDate.year;
+      if (_yearController.hasClients) {
+        _yearController.jumpToItem(0);
+      }
     }
+
+    // 2. Validate and cap Month
+    int maxMonth = 12;
+    if (selectedYear == effectiveMaxDate.year) {
+      maxMonth = effectiveMaxDate.month;
+    }
+
+    if (selectedMonth > maxMonth) {
+      selectedMonth = maxMonth;
+      if (_monthController.hasClients) {
+        _monthController.jumpToItem(selectedMonth - 1);
+      }
+    }
+
+    // 3. Validate and cap Day
+    final daysInMonth = _getDaysInMonth(selectedYear, selectedMonth);
+    int maxDay = daysInMonth;
+    if (selectedYear == effectiveMaxDate.year &&
+        selectedMonth == effectiveMaxDate.month) {
+      maxDay = effectiveMaxDate.day;
+    }
+
+    if (selectedDay > maxDay) {
+      selectedDay = maxDay;
+      if (_dayController.hasClients) {
+        _dayController.jumpToItem(selectedDay - 1);
+      }
+    }
+
     selectedDate = DateTime(selectedYear, selectedMonth, selectedDay);
   }
 
@@ -154,6 +226,7 @@ class _DatePickerBottomSheetState extends State<DatePickerBottomSheet> {
   }
 
   Widget _buildLinearPicker({
+    required FixedExtentScrollController controller,
     required int itemCount,
     required int selectedIndex,
     required Function(int) onTap,
@@ -165,12 +238,15 @@ class _DatePickerBottomSheetState extends State<DatePickerBottomSheet> {
     return Expanded(
       flex: flex,
       child: SizedBox(
-        height: EcliniqTextStyles.getResponsiveSize(context, 160.0),
+        height: EcliniqTextStyles.getResponsiveSize(context, 180.0),
         child: ListWheelScrollView.useDelegate(
-          itemExtent: EcliniqTextStyles.getResponsiveSize(context, 36.0),
+          controller: controller,
+          itemExtent: EcliniqTextStyles.getResponsiveSize(context, 44.0),
           perspective: 0.005,
-          diameterRatio: 1.2,
+          diameterRatio: 1.5,
           physics: const FixedExtentScrollPhysics(),
+          useMagnifier: true,
+          magnification: 1.2,
           onSelectedItemChanged: (index) {
             if (isItemEnabled?.call(index) ?? true) {
               onTap(index);
@@ -188,7 +264,7 @@ class _DatePickerBottomSheetState extends State<DatePickerBottomSheet> {
                   itemBuilder(index),
                   textAlign: textAlign,
                   style: TextStyle(
-                    fontSize: EcliniqTextStyles.getResponsiveSize(context, isSelected ? 20.0 : 16.0),
+                    fontSize: EcliniqTextStyles.getResponsiveSize(context, 18.0),
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                     color: isEnabled
                         ? (isSelected ? const Color(0xff424242) : const Color(0xffB8B8B8))
@@ -205,8 +281,19 @@ class _DatePickerBottomSheetState extends State<DatePickerBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveMaxDate = widget.maximumDate ?? DateTime.now();
     final minYear = widget.minimumDate?.year ?? 1900;
-    final maxYear = widget.maximumDate?.year ?? DateTime.now().year;
+    final maxYear = effectiveMaxDate.year;
+
+    int monthCount = 12;
+    if (selectedYear >= maxYear) {
+      monthCount = effectiveMaxDate.month;
+    }
+
+    int dayCount = _getDaysInMonth(selectedYear, selectedMonth);
+    if (selectedYear >= maxYear && selectedMonth >= effectiveMaxDate.month) {
+      dayCount = effectiveMaxDate.day;
+    }
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -270,10 +357,8 @@ class _DatePickerBottomSheetState extends State<DatePickerBottomSheet> {
                     Row(
                       children: [
                         _buildLinearPicker(
-                          itemCount: _getDaysInMonth(
-                            selectedYear,
-                            selectedMonth,
-                          ),
+                          controller: _dayController,
+                          itemCount: dayCount,
                           selectedIndex: selectedDay - 1,
                           onTap: (index) {
                             setState(() {
@@ -293,7 +378,8 @@ class _DatePickerBottomSheetState extends State<DatePickerBottomSheet> {
                           },
                         ),
                         _buildLinearPicker(
-                          itemCount: 12,
+                          controller: _monthController,
+                          itemCount: monthCount,
                           selectedIndex: selectedMonth - 1,
                           onTap: (index) {
                             setState(() {
@@ -313,6 +399,7 @@ class _DatePickerBottomSheetState extends State<DatePickerBottomSheet> {
                           flex: 0,
                         ),
                         _buildLinearPicker(
+                          controller: _yearController,
                           itemCount: maxYear - minYear + 1,
                           selectedIndex: selectedYear - minYear,
                           onTap: (index) {
