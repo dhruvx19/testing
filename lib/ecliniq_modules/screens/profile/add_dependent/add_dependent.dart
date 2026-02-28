@@ -410,17 +410,23 @@ class _AddDependentBottomSheetState extends State<AddDependentBottomSheet> {
                                           shape: BoxShape.circle,
                                           border: Border.all(
                                             color: Colors.white,
-                                            width: 2,
+                                            width: 3,
                                           ),
                                         ),
-                                        child: Icon(
-                                          Icons.edit,
-                                          color: Colors.white,
-                                          size:
-                                              EcliniqTextStyles.getResponsiveIconSize(
-                                                context,
-                                                16,
-                                              ),
+                                        child: Center(
+                                          child: SvgPicture.asset(
+                                            EcliniqIcons.refreshed.assetPath,
+                                            width:
+                                                EcliniqTextStyles.getResponsiveIconSize(
+                                                  context,
+                                                  28.0,
+                                                ),
+                                            height:
+                                                EcliniqTextStyles.getResponsiveIconSize(
+                                                  context,
+                                                  28.0,
+                                                ),
+                                          ),
                                         ),
                                       ),
                                     ),
