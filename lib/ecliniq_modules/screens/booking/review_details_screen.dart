@@ -1370,6 +1370,16 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
       } else {
         final isDependent =
             _selectedDependent != null && !_selectedDependent!.isSelf;
+        final paymentModeType = (_selectedPaymentMethodPackage != null &&
+                _selectedPaymentMethodPackage != 'standard_pay_page')
+            ? 'UPI_INTENT'
+            : 'PAY_PAGE';
+
+        print('===== PAYMENT DEBUG =====');
+        print('_selectedPaymentMethodPackage: $_selectedPaymentMethodPackage');
+        print('Derived paymentModeType: $paymentModeType');
+        print('=========================');
+
         final request = BookAppointmentRequest(
           patientId: finalPatientId,
           doctorId: widget.doctorId,
@@ -1381,16 +1391,19 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
           bookedFor: isDependent ? 'DEPENDENT' : 'SELF',
           dependentId: isDependent ? _selectedDependent!.id : null,
           useWallet: _useWallet,
-          paymentModeType: (_selectedPaymentMethodPackage != null &&
-                  _selectedPaymentMethodPackage != 'standard_pay_page')
-              ? 'UPI_INTENT'
-              : 'PAY_PAGE',
+          paymentModeType: paymentModeType,
         );
 
         final response = await _appointmentService.bookAppointment(
           request: request,
           authToken: _authToken,
         );
+
+        print('===== PAYMENT RESPONSE =====');
+        print('Response success: ${response.success}');
+        print('Response data includes intentUrl: ${response.data is Map ? (response.data as Map).containsKey('payment') ? (response.data as Map)['payment']['intentUrl'] : 'No payment data' : 'N/A'}');
+        print('Response data includes token (SDK): ${response.data is Map ? (response.data as Map).containsKey('payment') ? (response.data as Map)['payment']['token'] : 'No payment data' : 'N/A'}');
+        print('============================');
 
         if (mounted) {
           if (response.success && response.data != null) {
