@@ -2164,11 +2164,42 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
         requestPayload: paymentData.requestPayload,
         token: paymentData.token,
         orderId: paymentData.orderId,
+        targetUpiPackage: selectedUPIPackage,
         appSchema: 'ecliniq',
         targetUpiPackage: selectedUPIPackage,
       );
 
-      if (result.success || result.status != 'INCOMPLETE') {
+      final isCancelled = result.status.contains('CANCEL') || result.status == 'INCOMPLETE';
+      final isFailed = result.status.contains('FAIL') || result.status == 'ERROR';
+
+      if (isCancelled) {
+        if (mounted) {
+          setState(() {
+            _isProcessingPayment = false;
+          });
+
+          CustomErrorSnackBar.show(
+            context: context,
+            title: 'Payment Cancelled',
+            subtitle: 'Payment was cancelled. You can try booking again.',
+            duration: const Duration(seconds: 4),
+          );
+        }
+      } else if (isFailed) {
+         if (mounted) {
+          setState(() {
+            _isProcessingPayment = false;
+          });
+
+          CustomErrorSnackBar.show(
+            context: context,
+            title: 'Payment Failed',
+            subtitle: 'The transaction could not be completed.',
+            duration: const Duration(seconds: 4),
+          );
+        }
+      } else {
+        // Only poll if it might be successful or pending
         final statusData = await _paymentService.pollPaymentUntilComplete(
           paymentData.merchantTransactionId,
           onStatusUpdate: (status) {},
@@ -2239,19 +2270,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
               duration: const Duration(seconds: 4),
             );
           }
-        }
-      } else {
-        if (mounted) {
-          setState(() {
-            _isProcessingPayment = false;
-          });
-
-          CustomErrorSnackBar.show(
-            context: context,
-            title: 'Payment Cancelled',
-            subtitle: 'Payment was cancelled. You can try booking again.',
-            duration: const Duration(seconds: 4),
-          );
         }
       }
     } catch (e) {

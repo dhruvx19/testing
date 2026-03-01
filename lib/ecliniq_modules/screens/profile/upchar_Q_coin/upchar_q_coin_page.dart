@@ -1,7 +1,9 @@
 import 'package:ecliniq/ecliniq_api/models/wallet.dart';
 import 'package:ecliniq/ecliniq_api/wallet_service.dart';
+import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
+import 'package:ecliniq/ecliniq_modules/screens/login/profile_help.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/colors.g.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/styles.dart';
 import 'package:ecliniq/ecliniq_ui/lib/widgets/shimmer/shimmer_loading.dart';
@@ -126,26 +128,31 @@ class _UpcharCoinState extends State<UpcharCoin> {
           ),
         ),
         actions: [
-          Row(
-            children: [
-              SvgPicture.asset(
-                EcliniqIcons.questionCircleFilled.assetPath,
-                width: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
-                height: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
-              ),
-              Text(
-                ' Help',
-                style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
-                    .copyWith(
-                      color: EcliniqColors.light.textPrimary,
-
-                      fontWeight: FontWeight.w400,
-                    ),
-              ),
-              SizedBox(
-                width: EcliniqTextStyles.getResponsiveSpacing(context, 20.0),
-              ),
-            ],
+          GestureDetector(
+            onTap: () {
+              EcliniqRouter.push(ProfileHelpPage());
+            },
+            child: Row(
+              children: [
+                SvgPicture.asset(
+                  EcliniqIcons.questionCircleFilled.assetPath,
+                  width: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
+                  height: EcliniqTextStyles.getResponsiveIconSize(context, 24.0),
+                ),
+                Text(
+                  ' Help',
+                  style: EcliniqTextStyles.responsiveHeadlineBMedium(context)
+                      .copyWith(
+                        color: EcliniqColors.light.textPrimary,
+            
+                        fontWeight: FontWeight.w400,
+                      ),
+                ),
+                SizedBox(
+                  width: EcliniqTextStyles.getResponsiveSpacing(context, 20.0),
+                ),
+              ],
+            ),
           ),
         ],
       ),

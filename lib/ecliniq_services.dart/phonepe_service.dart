@@ -60,8 +60,13 @@ class PhonePeService {
       );
     }
 
-    if (requestPayload != null) {
-    } else {}
+    if (requestPayload != null && requestPayload.isNotEmpty) {
+      // Backend provided payload
+    } else if (token != null && orderId != null) {
+      // Building payload manually
+    } else {
+      throw PhonePeException('Either requestPayload or (token + orderId) must be provided');
+    }
 
     try {
       String requestToSend;
@@ -71,9 +76,14 @@ class PhonePeService {
           final decodedBytes = base64Decode(requestPayload);
           final jsonString = utf8.decode(decodedBytes);
 
-          final decodedMap = jsonDecode(jsonString) as Map<String, dynamic>;
+          final decodedMap = json.decode(jsonString) as Map<String, dynamic>;
 
           if (targetUpiPackage != null && targetUpiPackage.isNotEmpty) {
+            decodedMap['paymentMode'] = {
+              'type': 'UPI_INTENT',
+              'targetAppPackageName': targetUpiPackage,
+              'targetApp': targetUpiPackage,
+            };
             decodedMap['targetAppPackageName'] = targetUpiPackage;
           }
 
@@ -101,12 +111,20 @@ class PhonePeService {
           'orderId': orderId,
           'merchantId': _merchantId,
           'token': token,
-          'paymentMode': {'type': 'PAY_PAGE'},
+          'paymentMode': (targetUpiPackage != null && targetUpiPackage.isNotEmpty)
+              ? {
+                  'type': 'UPI_INTENT',
+                  'targetAppPackageName': targetUpiPackage,
+                  'targetApp': targetUpiPackage,
+                }
+              : {
+                  'type': 'PAY_PAGE',
+                },
           if (targetUpiPackage != null && targetUpiPackage.isNotEmpty)
             'targetAppPackageName': targetUpiPackage,
         };
 
-        final jsonString = jsonEncode(payload);
+        final jsonString = json.encode(payload);
 
         requestToSend = jsonString;
       }
@@ -150,7 +168,6 @@ class PhonePeService {
         );
       }
 
-      e.toString().toLowerCase();
       if (errorString.contains('cannot be converted to jsonobject') ||
           errorString.contains('jsonobject')) {
         throw PhonePeException(
