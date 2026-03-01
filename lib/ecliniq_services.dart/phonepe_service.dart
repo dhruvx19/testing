@@ -71,62 +71,59 @@ class PhonePeService {
     try {
       String requestToSend;
 
-      if (requestPayload != null && requestPayload.isNotEmpty) {
+      // For UPI_INTENT with dynamic selection, we build the payload fresh
+      // as it's more reliable than hacking a backend-provided PAY_PAGE payload.
+      if (targetUpiPackage != null &&
+          targetUpiPackage.isNotEmpty &&
+          token != null &&
+          orderId != null) {
+        final payload = <String, dynamic>{
+          'orderId': orderId,
+          'token': token,
+          'merchantId': _merchantId,
+          'paymentMode': {
+            'type': 'UPI_INTENT',
+            if (Platform.isAndroid) 'targetAppPackageName': targetUpiPackage,
+            if (Platform.isIOS) 'targetApp': targetUpiPackage,
+          },
+          // Android specifically expects this in the root as well
+          if (Platform.isAndroid) 'targetAppPackageName': targetUpiPackage,
+        };
+        requestToSend = jsonEncode(payload);
+      } else if (requestPayload != null && requestPayload.isNotEmpty) {
+        // Fallback or non-intent payment (e.g. standard Pay Page)
         try {
           final decodedBytes = base64Decode(requestPayload);
           final jsonString = utf8.decode(decodedBytes);
-
           final decodedMap = json.decode(jsonString) as Map<String, dynamic>;
 
           if (targetUpiPackage != null && targetUpiPackage.isNotEmpty) {
-            decodedMap['paymentMode'] = {
-              'type': 'UPI_INTENT',
-              'targetAppPackageName': targetUpiPackage,
-              'targetApp': targetUpiPackage,
-            };
-            decodedMap['targetAppPackageName'] = targetUpiPackage;
+            final paymentMode =
+                (decodedMap['paymentMode'] as Map<String, dynamic>?) ?? {};
+            paymentMode['type'] = 'UPI_INTENT';
+            if (Platform.isAndroid) {
+              paymentMode['targetAppPackageName'] = targetUpiPackage;
+              decodedMap['targetAppPackageName'] = targetUpiPackage;
+            } else {
+              paymentMode['targetApp'] = targetUpiPackage;
+            }
+            decodedMap['paymentMode'] = paymentMode;
           }
-
           requestToSend = jsonEncode(decodedMap);
         } catch (e) {
-          throw PhonePeException(
-            'Failed to decode requestPayload from base64: $e',
-          );
+          throw PhonePeException('Failed to decode requestPayload: $e');
         }
-      } else {
-        if (_merchantId == null || _merchantId!.isEmpty) {
-          throw PhonePeException(
-            'Merchant ID not available. Please initialize SDK with merchantId first.',
-          );
-        }
-
-        if (token == null || token.isEmpty) {
-          throw PhonePeException('Payment token cannot be empty');
-        }
-        if (orderId == null || orderId.isEmpty) {
-          throw PhonePeException('Order ID cannot be empty');
-        }
-
+      } else if (token != null && orderId != null) {
+        // Standard Manual build
         final payload = <String, dynamic>{
           'orderId': orderId,
           'merchantId': _merchantId,
           'token': token,
-          'paymentMode': (targetUpiPackage != null && targetUpiPackage.isNotEmpty)
-              ? {
-                  'type': 'UPI_INTENT',
-                  'targetAppPackageName': targetUpiPackage,
-                  'targetApp': targetUpiPackage,
-                }
-              : {
-                  'type': 'PAY_PAGE',
-                },
-          if (targetUpiPackage != null && targetUpiPackage.isNotEmpty)
-            'targetAppPackageName': targetUpiPackage,
+          'paymentMode': {'type': 'PAY_PAGE'},
         };
-
-        final jsonString = json.encode(payload);
-
-        requestToSend = jsonString;
+        requestToSend = jsonEncode(payload);
+      } else {
+        throw PhonePeException('Insufficient data to start payment');
       }
 
       final response = await PhonePePaymentSdk.startTransaction(

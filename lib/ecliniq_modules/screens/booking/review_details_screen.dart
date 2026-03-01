@@ -151,6 +151,13 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
     });
 
     if (widget.isReschedule && widget.previousAppointment != null) {}
+
+    // Initialize default payment method (GPay)
+    _selectedPaymentMethod = 'Gpay';
+    _selectedPaymentMethodPackage =
+        Platform.isAndroid
+            ? 'com.google.android.apps.nbu.paisa.user'
+            : 'com.google.Tez';
   }
 
   Future<void> _fetchHospitalAddress() async {
@@ -2166,7 +2173,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
         orderId: paymentData.orderId,
         targetUpiPackage: selectedUPIPackage,
         appSchema: 'ecliniq',
-        targetUpiPackage: selectedUPIPackage,
       );
 
       final isCancelled = result.status.contains('CANCEL') || result.status == 'INCOMPLETE';
@@ -2194,7 +2200,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
           CustomErrorSnackBar.show(
             context: context,
             title: 'Payment Failed',
-            subtitle: 'The transaction could not be completed.',
+            subtitle: result.error ?? 'The transaction could not be completed.',
             duration: const Duration(seconds: 4),
           );
         }

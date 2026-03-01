@@ -47,27 +47,27 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
   static final List<Map<String, dynamic>> _knownUpiApps = [
     {
       'name': 'BHIM',
-      'packageName': 'in.org.npci.upiapp',
+      'packageName':
+          Platform.isAndroid ? 'in.org.npci.upiapp' : 'com.itouchpay.itouchpay',
       'icon': EcliniqIcons.bhimPay,
     },
     {
       'name': 'Gpay',
-      'packageName': 'com.google.android.apps.nbu.paisa.user',
+      'packageName':
+          Platform.isAndroid
+              ? 'com.google.android.apps.nbu.paisa.user'
+              : 'com.google.Tez',
       'icon': EcliniqIcons.googlePay,
     },
     {
       'name': 'PhonePe',
-      'packageName': 'com.phonepe.app',
+      'packageName': Platform.isAndroid ? 'com.phonepe.app' : 'com.phonepe.app',
       'icon': EcliniqIcons.phonePe,
     },
-    // {
-    //   'name': 'PhonePe',
-    //   'packageName': 'com.phonepe.simulator',
-    //   'icon': EcliniqIcons.phonePe,
-    // },
     {
       'name': 'Paytm',
-      'packageName': 'net.one97.paytm',
+      'packageName':
+          Platform.isAndroid ? 'net.one97.paytm' : 'com.one97.paytm',
       'icon': EcliniqIcons.bhimPay,
     },
   ];
