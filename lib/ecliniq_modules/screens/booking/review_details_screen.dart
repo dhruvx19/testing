@@ -2177,19 +2177,28 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
       }
 
       final result = await _phonePeService.startPayment(
-        requestPayload: paymentData.requestPayload,
+        requestPayload: paymentData.token,
         token: paymentData.token,
         orderId: paymentData.orderId,
+        intentUrl: paymentData.intentUrl,       // Android: upi:// deep link
+        iosIntentUrl: paymentData.iosIntentUrl, // iOS: gpay://, phonepe://, etc.
         appSchema: 'ecliniq',
         targetUpiPackage: (selectedUPIPackage != 'standard_pay_page')
             ? selectedUPIPackage
             : null,
       );
 
+      // For UPI Intent deep links, status is 'OPENED' - user goes to UPI app.
+      // We need to poll for payment status after returning from the UPI app.
+      final isDirectIntent = paymentData.intentUrl != null && paymentData.intentUrl!.isNotEmpty;
       final isCancelled = result.status.contains('CANCEL') || result.status == 'INCOMPLETE';
       final isFailed = result.status.contains('FAIL') || result.status == 'ERROR';
 
-      if (isCancelled) {
+      // If the UPI app was launched via deep link, skip straight to polling
+      // as the PhonePe SDK is not involved and the status won't be SUCCESS/CANCEL here.
+      if (isDirectIntent && result.status == 'OPENED') {
+        // Fall-through to polling below
+      } else if (isCancelled) {
         if (mounted) {
           setState(() {
             _isProcessingPayment = false;

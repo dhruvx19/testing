@@ -11,6 +11,8 @@ class BookingPaymentData {
   final String? token;
   final String? orderId;
   final String? requestPayload;
+  final String? intentUrl;
+  final String? iosIntentUrl;
   final DateTime? expiresAt;
 
   BookingPaymentData({
@@ -26,6 +28,8 @@ class BookingPaymentData {
     this.token,
     this.orderId,
     this.requestPayload,
+    this.intentUrl,
+    this.iosIntentUrl,
     this.expiresAt,
   });
 
@@ -48,6 +52,8 @@ class BookingPaymentData {
       token: paymentToken,
       orderId: payment['orderId'] as String?,
       requestPayload: requestPayload,
+      intentUrl: payment['intentUrl'] as String?,
+      iosIntentUrl: payment['iosIntentUrl'] as String?,
       expiresAt: payment['expiresAt'] != null
           ? DateTime.tryParse(payment['expiresAt'] as String)
           : null,
@@ -77,6 +83,8 @@ class BookingPaymentData {
         'token': token,
         'orderId': orderId,
         'requestPayload': requestPayload,
+        'intentUrl': intentUrl,
+        'iosIntentUrl': iosIntentUrl,
         'expiresAt': expiresAt?.toIso8601String(),
       },
     };

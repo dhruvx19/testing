@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:phonepe_payment_sdk/phonepe_payment_sdk.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PhonePeService {
   static final PhonePeService _instance = PhonePeService._internal();
@@ -53,6 +54,8 @@ class PhonePeService {
     String? requestPayload,
     String? token,
     String? orderId,
+    String? intentUrl,
+    String? iosIntentUrl,
     required String appSchema,
     String? targetUpiPackage,
   }) async {
@@ -65,33 +68,36 @@ class PhonePeService {
     try {
       String requestToSend;
 
+      // PRIORITY 0: Direct UPI Intent (Deep Link)
+      // Pick the platform-correct URL: iOS uses app-specific schemes, Android uses upi://
+      final platformIntentUrl = Platform.isIOS ? (iosIntentUrl ?? intentUrl) : intentUrl;
+
+      if (platformIntentUrl != null && platformIntentUrl.isNotEmpty) {
+        final uri = Uri.parse(platformIntentUrl);
+        if (!await canLaunchUrl(uri)) {
+          throw PhonePeException(
+            'No UPI application found on this device to complete the transaction.\n\n'
+            'Please install PhonePe, GPay, or any other UPI app.',
+          );
+        }
+
+        final launched = await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+
+        return PhonePePaymentResult(
+          success: launched,
+          status: launched ? 'OPENED' : 'FAILED',
+          error: launched ? null : 'Failed to launch UPI application',
+        );
+      }
+
       // PRIORITY 1: Use the backend-provided payload if available.
       // This is the safest way as it preserves the token's original signature.
       if (requestPayload != null && requestPayload.isNotEmpty) {
-        try {
-          final decodedBytes = base64Decode(requestPayload);
-          final jsonString = utf8.decode(decodedBytes);
-          final decodedMap = json.decode(jsonString) as Map<String, dynamic>;
-
-          if (targetUpiPackage != null && targetUpiPackage.isNotEmpty) {
-            final paymentMode =
-                (decodedMap['paymentMode'] as Map<String, dynamic>?) ?? {};
-            paymentMode['type'] = 'UPI_INTENT';
-            
-            if (Platform.isAndroid) {
-              paymentMode['targetAppPackageName'] = targetUpiPackage;
-              // Some SDK versions look for it in the root
-              decodedMap['targetAppPackageName'] = targetUpiPackage;
-            } else {
-              paymentMode['targetApp'] = targetUpiPackage;
-            }
-            decodedMap['paymentMode'] = paymentMode;
-          }
-          requestToSend = jsonEncode(decodedMap);
-        } catch (e) {
-          throw PhonePeException('Failed to process backend requestPayload: $e');
-        }
-      } 
+        requestToSend = requestPayload;
+      }
       // PRIORITY 2: Manual build if backend didn't provide a payload blob
       else if (token != null && orderId != null && _merchantId != null) {
         final payload = <String, dynamic>{
@@ -108,7 +114,7 @@ class PhonePeService {
           if (Platform.isAndroid && targetUpiPackage != null)
             'targetAppPackageName': targetUpiPackage,
         };
-        requestToSend = jsonEncode(payload);
+        requestToSend = base64.encode(utf8.encode(jsonEncode(payload)));
       } else {
         throw PhonePeException('Insufficient data (missing payload or merchant context)');
       }

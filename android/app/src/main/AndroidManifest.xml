@@ -100,5 +100,10 @@
         <package android:name="com.whatsapp" />
         <package android:name="com.freecharge.android" />
         <package android:name="com.mobikwik.android" />
+        <!-- Required for canLaunchUrl to work with upi:// deep links -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="upi" />
+        </intent>
     </queries>
 </manifest>
