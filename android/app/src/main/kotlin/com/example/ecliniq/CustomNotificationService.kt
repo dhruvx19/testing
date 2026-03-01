@@ -104,12 +104,6 @@ class CustomNotificationService(private val context: Context) {
         val weight1 = (progress.toFloat() / totalRange.toFloat() * 100).toInt().coerceIn(1, 99)
         val weight2 = 100 - weight1
 
-        // Set weights for spacers to move the current_token circle
-        expandedView.setInt(R.id.spacer1, "setLayoutWeight", weight1)
-        expandedView.setInt(R.id.spacer2, "setLayoutWeight", weight2)
-        expandedView.setInt(R.id.spacer_label1, "setLayoutWeight", weight1)
-        expandedView.setInt(R.id.spacer_label2, "setLayoutWeight", weight2)
-
         // Create intent for notification tap
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -121,9 +115,9 @@ class CustomNotificationService(private val context: Context) {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // Build notification with custom layout (matching Zomato structure)
+        // Build notification with custom layout
         val notification = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(context.applicationInfo.icon) // Use app icon instead of generic dialog info
             .setCustomContentView(smallView) // Collapsed view
             .setCustomBigContentView(expandedView) // Expanded view
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())
@@ -135,9 +129,8 @@ class CustomNotificationService(private val context: Context) {
             .setColor(0xFF2372EC.toInt())
             .setCategory(NotificationCompat.CATEGORY_STATUS)
             .setShowWhen(false)
-            .setOnlyAlertOnce(true) // Don't re-alert on every update
-            .setDefaults(0) // No sound, vibration, or lights
-            .setSilent(true)
+            .setOnlyAlertOnce(true)
+            .setDefaults(Notification.DEFAULT_ALL) // Allow sound/vibration for the first alert
             .build()
 
         // Show notification

@@ -75,12 +75,11 @@ class AppointmentLockScreenNotification {
       _channelId,
       _channelName,
       description: _channelDescription,
-      importance: Importance.high, 
-
-      enableVibration: false,
-      playSound: false,
-      showBadge: false,
-      enableLights: false,
+      importance: Importance.high,
+      enableVibration: true,
+      playSound: true,
+      showBadge: true,
+      enableLights: true,
     );
 
     await _plugin
@@ -258,12 +257,11 @@ class AppointmentLockScreenNotification {
             'hospitalName': hospitalName,
           });
 
-          log('✅ Custom native notification shown on Android');
+          log('✅ Custom native notification request sent to Android');
           _currentAppointmentId = appointment.id;
           return; // Return early — native handler takes care of it
         } catch (e) {
-          log('⚠️ Failed to show custom native notification (falling back to default): $e');
-          // Fall through to flutter_local_notifications below
+          log('⚠️ Native notification channel error (falling back to flutter_local_notifications): $e');
         }
       }
 
