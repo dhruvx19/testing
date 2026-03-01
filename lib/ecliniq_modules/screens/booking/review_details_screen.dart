@@ -1392,6 +1392,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
           dependentId: isDependent ? _selectedDependent!.id : null,
           useWallet: _useWallet,
           paymentModeType: paymentModeType,
+          paymentTargetApp: _selectedPaymentMethodPackage, // Send package to backend
         );
 
         final response = await _appointmentService.bookAppointment(

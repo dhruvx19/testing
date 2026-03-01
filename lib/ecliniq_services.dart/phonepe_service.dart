@@ -68,23 +68,36 @@ class PhonePeService {
     try {
       String requestToSend;
 
+      print('===== PHONEPE SERVICE LOG =====');
+      print('Incoming intentUrl (Android): $intentUrl');
+      print('Incoming iosIntentUrl (iOS): $iosIntentUrl');
+      print('Target App Package: $targetUpiPackage');
+
       // PRIORITY 0: Direct UPI Intent (Deep Link)
       // Pick the platform-correct URL: iOS uses app-specific schemes, Android uses upi://
       final platformIntentUrl = Platform.isIOS ? (iosIntentUrl ?? intentUrl) : intentUrl;
 
+      print('Platform is iOS: ${Platform.isIOS}');
+      print('Resolved platformIntentUrl to use: $platformIntentUrl');
+      print('===============================');
+
       if (platformIntentUrl != null && platformIntentUrl.isNotEmpty) {
         final uri = Uri.parse(platformIntentUrl);
+        print('Checking if can launch: $uri');
         if (!await canLaunchUrl(uri)) {
+          print('FAILED: Cannot launch URI: $uri');
           throw PhonePeException(
             'No UPI application found on this device to complete the transaction.\n\n'
             'Please install PhonePe, GPay, or any other UPI app.',
           );
         }
 
+        print('Attempting to launch URI externally...');
         final launched = await launchUrl(
           uri,
           mode: LaunchMode.externalApplication,
         );
+        print('Launch result: $launched');
 
         return PhonePePaymentResult(
           success: launched,
@@ -93,6 +106,7 @@ class PhonePeService {
         );
       }
 
+      print('No valid intent URL found, falling back to PhonePe SDK flow...');
       // PRIORITY 1: Use the backend-provided payload if available.
       // This is the safest way as it preserves the token's original signature.
       if (requestPayload != null && requestPayload.isNotEmpty) {

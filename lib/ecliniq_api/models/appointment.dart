@@ -9,6 +9,7 @@ class BookAppointmentRequest {
   final String? dependentId;
   final bool useWallet;
   final String paymentModeType; // 'PAY_PAGE' or 'UPI_INTENT'
+  final String? paymentTargetApp; // e.g. 'com.google.Tez'
 
   BookAppointmentRequest({
     required this.patientId,
@@ -21,6 +22,7 @@ class BookAppointmentRequest {
     this.dependentId,
     this.useWallet = false,
     this.paymentModeType = 'PAY_PAGE',
+    this.paymentTargetApp,
   });
 
   Map<String, dynamic> toJson() {
@@ -36,6 +38,7 @@ class BookAppointmentRequest {
         'dependentId': dependentId,
       'useWallet': useWallet,
       'paymentModeType': paymentModeType,
+      if (paymentTargetApp != null) 'paymentTargetApp': paymentTargetApp,
     };
   }
 }
