@@ -24,13 +24,23 @@
     <!-- Required for file picker -->
     <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
     
-    <!-- Notification permission for Android 13+ -->
+    <!-- Notification and Foreground Service permission -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     
     <application
         android:label="Upchar-Q"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        
+        <!-- Foreground Service for Appointment Tracking -->
+        <service
+            android:name=".ApptTrackingService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="specialUse" />
+            
         <activity
             android:name=".MainActivity"
             android:exported="true"

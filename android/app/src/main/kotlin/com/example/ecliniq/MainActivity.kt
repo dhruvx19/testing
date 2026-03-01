@@ -56,6 +56,8 @@ class MainActivity : FlutterFragmentActivity() {
                         val expectedTime = call.argument<String>("expectedTime") ?: ""
                         val currentToken = call.argument<Int>("currentToken") ?: 0
                         val userToken = call.argument<Int>("userToken") ?: 0
+                        val appointmentId = call.argument<String>("appointmentId") ?: ""
+                        val authToken = call.argument<String>("authToken") ?: ""
                         val hospitalName = call.argument<String>("hospitalName") ?: "eClinic-Q"
                         
                         customNotificationService.showCustomNotification(
@@ -65,6 +67,8 @@ class MainActivity : FlutterFragmentActivity() {
                             expectedTime = expectedTime,
                             currentToken = currentToken,
                             userToken = userToken,
+                            appointmentId = appointmentId,
+                            authToken = authToken,
                             hospitalName = hospitalName
                         )
                         result.success(true)
@@ -79,6 +83,8 @@ class MainActivity : FlutterFragmentActivity() {
                         val expectedTime = call.argument<String>("expectedTime") ?: ""
                         val currentToken = call.argument<Int>("currentToken") ?: 0
                         val userToken = call.argument<Int>("userToken") ?: 0
+                        val appointmentId = call.argument<String>("appointmentId") ?: ""
+                        val authToken = call.argument<String>("authToken") ?: ""
                         val hospitalName = call.argument<String>("hospitalName") ?: "eClinic-Q"
                         
                         customNotificationService.updateCustomNotification(
@@ -87,6 +93,8 @@ class MainActivity : FlutterFragmentActivity() {
                             expectedTime = expectedTime,
                             currentToken = currentToken,
                             userToken = userToken,
+                            appointmentId = appointmentId,
+                            authToken = authToken,
                             hospitalName = hospitalName
                         )
                         result.success(true)

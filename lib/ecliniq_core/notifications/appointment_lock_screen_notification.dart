@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:ecliniq/ecliniq_api/models/appointment.dart' as api_models;
+import 'package:ecliniq/ecliniq_core/auth/session_service.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
@@ -240,6 +241,7 @@ class AppointmentLockScreenNotification {
             timeInfoText = 'Your token has been called';
           }
 
+          final authToken = await SessionService.getAuthToken();
           await _customNotificationChannel.invokeMethod('showCustomNotification', {
             'title': title,
             'doctorName': doctorName,
@@ -247,6 +249,8 @@ class AppointmentLockScreenNotification {
             'expectedTime': formattedExpectedTime,
             'currentToken': runningToken,
             'userToken': userToken,
+            'appointmentId': appointment.id,
+            'authToken': authToken,
             'hospitalName': hospitalName,
           });
 
@@ -403,12 +407,15 @@ class AppointmentLockScreenNotification {
           timeInfoText = 'Your token has been called';
         }
 
+        final authToken = await SessionService.getAuthToken();
         await _customNotificationChannel.invokeMethod('updateCustomNotification', {
           'doctorName': doctorName,
           'timeInfo': timeInfoText,
           'expectedTime': formattedExpectedTime,
           'currentToken': runningToken,
           'userToken': userToken,
+          'appointmentId': appointment.id,
+          'authToken': authToken,
           'hospitalName': hospitalName,
         });
 
