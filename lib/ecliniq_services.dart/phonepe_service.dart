@@ -74,7 +74,10 @@ class PhonePeService {
           final decodedMap = jsonDecode(jsonString) as Map<String, dynamic>;
 
           if (targetUpiPackage != null && targetUpiPackage.isNotEmpty) {
-            decodedMap['targetAppPackageName'] = targetUpiPackage;
+            decodedMap['paymentMode'] = {
+              'type': 'UPI_INTENT',
+              'targetAppPackageName': targetUpiPackage
+            };
           }
 
           requestToSend = jsonEncode(decodedMap);
@@ -101,9 +104,14 @@ class PhonePeService {
           'orderId': orderId,
           'merchantId': _merchantId,
           'token': token,
-          'paymentMode': {'type': 'PAY_PAGE'},
-          if (targetUpiPackage != null && targetUpiPackage.isNotEmpty)
-            'targetAppPackageName': targetUpiPackage,
+          'paymentMode': (targetUpiPackage != null && targetUpiPackage.isNotEmpty)
+              ? {
+                  'type': 'UPI_INTENT',
+                  'targetAppPackageName': targetUpiPackage,
+                }
+              : {
+                  'type': 'PAY_PAGE',
+                },
         };
 
         final jsonString = jsonEncode(payload);

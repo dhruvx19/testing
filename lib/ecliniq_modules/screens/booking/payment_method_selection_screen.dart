@@ -65,6 +65,11 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
       'packageName': 'com.phonepe.simulator',
       'icon': EcliniqIcons.phonePe,
     },
+    {
+      'name': 'Paytm',
+      'packageName': 'net.one97.paytm',
+      'icon': EcliniqIcons.bhimPay,
+    },
   ];
 
   final List<Map<String, dynamic>> _cardMethods = [
@@ -93,38 +98,69 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
 
   Future<void> _loadInstalledUpiApps() async {
     try {
+      List<Map<String, dynamic>> availableApps = [];
+
       if (Platform.isAndroid) {
         final appsJson = await PhonePePaymentSdk.getUpiAppsForAndroid();
         if (appsJson != null) {
           final List<dynamic> apps = jsonDecode(appsJson);
-          final installedPackages =
-              apps.map((a) => a['packageName'] as String).toSet();
-
-          final filtered = _knownUpiApps
-              .where((app) =>
-                  installedPackages.contains(app['packageName'] as String))
-              .toList();
-
-          if (mounted) {
-            setState(() {
-              _paymentMethods =
-                  filtered.isNotEmpty ? filtered : List.from(_knownUpiApps.where((a) => a['packageName'] != 'com.phonepe.simulator'));
-              _isLoadingApps = false;
-              // If the previously selected app is not installed, reset to first available
-              if (_selectedMethodPackage != null &&
-                  !_paymentMethods
-                      .any((m) => m['packageName'] == _selectedMethodPackage)) {
-                _selectedMethod = _paymentMethods.isNotEmpty
-                    ? _paymentMethods.first['name'] as String
-                    : null;
-                _selectedMethodPackage = _paymentMethods.isNotEmpty
-                    ? _paymentMethods.first['packageName'] as String
-                    : null;
-              }
-            });
-          }
-          return;
+          availableApps = apps.map((a) {
+            String pkg = a['packageName'] as String;
+            String name = a['applicationName'] as String;
+            
+            final known = _knownUpiApps.cast<Map<String, dynamic>?>().firstWhere(
+                  (k) => k?['packageName'] == pkg,
+                  orElse: () => null,
+                );
+                
+            return {
+              'name': known?['name'] ?? name,
+              'packageName': pkg,
+              'icon': known?['icon'] ?? EcliniqIcons.bhimPay,
+            };
+          }).toList();
         }
+      } else if (Platform.isIOS) {
+        final iosAppsList = await PhonePePaymentSdk.getInstalledUpiAppsForiOS();
+        if (iosAppsList != null) {
+          availableApps = iosAppsList.map((a) {
+            final appMap = Map<String, dynamic>.from(a as Map);
+            String pkg = appMap['packageName'] as String? ?? appMap['applicationName'] as String? ?? 'upi';
+            String name = appMap['applicationName'] as String? ?? pkg;
+            
+            final known = _knownUpiApps.cast<Map<String, dynamic>?>().firstWhere(
+                  (k) => k?['packageName'] == pkg || k?['name']?.toString().toLowerCase() == name.toLowerCase(),
+                  orElse: () => null,
+                );
+                
+            return {
+              'name': known?['name'] ?? name,
+              'packageName': pkg,
+              'icon': known?['icon'] ?? EcliniqIcons.bhimPay,
+            };
+          }).toList();
+        }
+      }
+
+      if (availableApps.isNotEmpty) {
+        if (mounted) {
+          setState(() {
+            _paymentMethods = availableApps;
+            _isLoadingApps = false;
+            // If the previously selected app is not installed, reset to first available
+            if (_selectedMethodPackage == null ||
+                !_paymentMethods
+                    .any((m) => m['packageName'] == _selectedMethodPackage)) {
+              _selectedMethod = _paymentMethods.isNotEmpty
+                  ? _paymentMethods.first['name'] as String
+                  : null;
+              _selectedMethodPackage = _paymentMethods.isNotEmpty
+                  ? _paymentMethods.first['packageName'] as String
+                  : null;
+            }
+          });
+        }
+        return;
       }
     } catch (_) {
       // SDK not initialized or unsupported platform — fall back to static list
@@ -137,6 +173,16 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
           _knownUpiApps.where((a) => a['packageName'] != 'com.phonepe.simulator'),
         );
         _isLoadingApps = false;
+        if (_selectedMethodPackage == null ||
+            !_paymentMethods
+                .any((m) => m['packageName'] == _selectedMethodPackage)) {
+          _selectedMethod = _paymentMethods.isNotEmpty
+              ? _paymentMethods.first['name'] as String
+              : null;
+          _selectedMethodPackage = _paymentMethods.isNotEmpty
+              ? _paymentMethods.first['packageName'] as String
+              : null;
+        }
       });
     }
   }
