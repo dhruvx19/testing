@@ -8,6 +8,7 @@ class BookAppointmentRequest {
   final String bookingType;
   final String? dependentId;
   final bool useWallet;
+  final String paymentModeType; // 'PAY_PAGE' or 'UPI_INTENT'
 
   BookAppointmentRequest({
     required this.patientId,
@@ -19,6 +20,7 @@ class BookAppointmentRequest {
     this.bookingType = 'NEW',
     this.dependentId,
     this.useWallet = false,
+    this.paymentModeType = 'PAY_PAGE',
   });
 
   Map<String, dynamic> toJson() {
@@ -33,6 +35,7 @@ class BookAppointmentRequest {
       if (dependentId != null && dependentId!.isNotEmpty)
         'dependentId': dependentId,
       'useWallet': useWallet,
+      'paymentModeType': paymentModeType,
     };
   }
 }

@@ -70,6 +70,11 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
           Platform.isAndroid ? 'net.one97.paytm' : 'com.one97.paytm',
       'icon': EcliniqIcons.bhimPay,
     },
+    {
+      'name': 'Other (Cards/Netbanking)',
+      'packageName': 'standard_pay_page',
+      'icon': EcliniqIcons.phonePe,
+    },
   ];
 
   // final List<Map<String, dynamic>> _cardMethods = [
@@ -143,6 +148,13 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
       }
 
       if (availableApps.isNotEmpty) {
+        // Always add our "Other" option for Cards/Netbanking
+        availableApps.add({
+          'name': 'Other (Cards/Netbanking)',
+          'packageName': 'standard_pay_page',
+          'icon': EcliniqIcons.phonePe,
+        });
+
         if (mounted) {
           setState(() {
             _paymentMethods = availableApps;

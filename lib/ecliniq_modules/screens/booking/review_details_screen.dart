@@ -1381,6 +1381,10 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
           bookedFor: isDependent ? 'DEPENDENT' : 'SELF',
           dependentId: isDependent ? _selectedDependent!.id : null,
           useWallet: _useWallet,
+          paymentModeType: (_selectedPaymentMethodPackage != null &&
+                  _selectedPaymentMethodPackage != 'standard_pay_page')
+              ? 'UPI_INTENT'
+              : 'PAY_PAGE',
         );
 
         final response = await _appointmentService.bookAppointment(
@@ -2157,10 +2161,13 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
         const merchantId = 'SU2512271831021904206385';
         const isProduction = true;
 
+        // PhonePe flowId must be strictly alphanumeric
+        final safeFlowId = userId.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+
         final initialized = await _phonePeService.initialize(
           isProduction: isProduction,
           merchantId: merchantId,
-          flowId: userId,
+          flowId: safeFlowId,
           enableLogs: !isProduction,
         );
 
@@ -2173,8 +2180,10 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
         requestPayload: paymentData.requestPayload,
         token: paymentData.token,
         orderId: paymentData.orderId,
-        targetUpiPackage: selectedUPIPackage,
         appSchema: 'ecliniq',
+        targetUpiPackage: (selectedUPIPackage != 'standard_pay_page')
+            ? selectedUPIPackage
+            : null,
       );
 
       final isCancelled = result.status.contains('CANCEL') || result.status == 'INCOMPLETE';

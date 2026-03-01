@@ -85,129 +85,115 @@
         android:textStyle="bold" />
 
     <!-- Progress Section -->
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:orientation="vertical">
+        android:layout_marginTop="16dp">
 
-        <!-- Circles and Lines -->
-        <RelativeLayout
+        <!-- Connecting Line Background using ImageView (since View is not allowed in RemoteViews) -->
+        <ImageView
+            android:id="@+id/progress_line"
             android:layout_width="match_parent"
-            android:layout_height="32dp">
+            android:layout_height="4dp"
+            android:layout_marginTop="14dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:alpha="0.3"
+            android:background="@drawable/shape_line"
+            android:backgroundTint="#BDBDBD" />
 
-            <!-- Connecting Line (Backdrop) -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="2dp"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:background="#EEEEEE" />
-
-            <!-- Proportional Container -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="32dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:weightSum="100">
-
-                <TextView
-                    android:id="@+id/start_circle"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:background="@drawable/token_circle_grey_32"
-                    android:gravity="center"
-                    android:text="S"
-                    android:textColor="#FFFFFF"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-
-                <View
-                    android:id="@+id/spacer1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="50" />
-
-                <TextView
-                    android:id="@+id/current_token"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:background="@drawable/token_circle_dark_32"
-                    android:gravity="center"
-                    android:text="74"
-                    android:textColor="#FFFFFF"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-
-                <View
-                    android:id="@+id/spacer2"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="50" />
-
-                <TextView
-                    android:id="@+id/your_token"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:background="@drawable/token_circle_blue_32"
-                    android:gravity="center"
-                    android:text="76"
-                    android:textColor="#FFFFFF"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-        </RelativeLayout>
-
-        <!-- Labels -->
+        <!-- Marker circles -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_height="32dp"
             android:orientation="horizontal"
-            android:weightSum="100">
+            android:gravity="center_vertical">
 
             <TextView
-                android:id="@+id/label_start"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Start"
-                android:textColor="#9E9E9E"
-                android:textSize="10sp"
+                android:id="@+id/start_circle"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="0dp"
+                android:background="@drawable/token_circle_grey_32"
+                android:gravity="center"
+                android:text="S"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
                 android:textStyle="bold" />
 
-            <View
-                android:id="@+id/spacer_label1"
+            <!-- Using ImageView instead of View as a spacer -->
+            <ImageView
                 android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="50" />
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
 
             <TextView
-                android:id="@+id/label_current"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Current"
-                android:textColor="#9E9E9E"
-                android:textSize="10sp"
+                android:id="@+id/your_token"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginEnd="0dp"
+                android:background="@drawable/token_circle_blue_32"
+                android:gravity="center"
+                android:text="76"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
                 android:textStyle="bold" />
 
-            <View
-                android:id="@+id/spacer_label2"
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="50" />
-
-            <TextView
-                android:id="@+id/label_your"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Your No"
-                android:textColor="#9E9E9E"
-                android:textSize="10sp"
-                android:textStyle="bold" />
         </LinearLayout>
-    </LinearLayout>
+
+        <!-- Dynamic Runner Circle (Moves based on progress) -->
+        <TextView
+            android:id="@+id/current_token"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="0dp"
+            android:background="@drawable/token_circle_dark_32"
+            android:gravity="center"
+            android:text="74"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:elevation="2dp" />
+
+    </RelativeLayout>
+
+    <!-- Labels for circles -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp">
+        
+        <TextView
+            android:id="@+id/label_start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:text="Start"
+            android:textColor="#9E9E9E"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/label_your"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:text="Your No"
+            android:textColor="#9E9E9E"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <!-- Current label follows current_token circle -->
+        <TextView
+            android:id="@+id/label_current"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="0dp"
+            android:text="Current"
+            android:textColor="#9E9E9E"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+    </RelativeLayout>
 
 </LinearLayout>
-

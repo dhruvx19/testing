@@ -18,6 +18,11 @@ class PhonePeService {
     required String flowId,
     bool enableLogs = false,
   }) async {
+    // Always update these fields, even if already initialized
+    _merchantId = merchantId;
+    _environment = isProduction ? 'PRODUCTION' : 'SANDBOX';
+    _packageName = isProduction ? 'com.phonepe.app' : 'com.phonepe.simulator';
+
     if (_isInitialized) return true;
 
     if (merchantId.isEmpty) {
@@ -30,10 +35,6 @@ class PhonePeService {
     }
 
     try {
-      _environment = isProduction ? 'PRODUCTION' : 'SANDBOX';
-      _packageName = isProduction ? 'com.phonepe.app' : 'com.phonepe.simulator';
-      _merchantId = merchantId;
-
       final isInitialized = await PhonePePaymentSdk.init(
         _environment,
         merchantId,
@@ -61,38 +62,12 @@ class PhonePeService {
       );
     }
 
-    if (requestPayload != null && requestPayload.isNotEmpty) {
-      // Backend provided payload
-    } else if (token != null && orderId != null) {
-      // Building payload manually
-    } else {
-      throw PhonePeException('Either requestPayload or (token + orderId) must be provided');
-    }
-
     try {
       String requestToSend;
 
-      // For UPI_INTENT with dynamic selection, we build the payload fresh
-      // as it's more reliable than hacking a backend-provided PAY_PAGE payload.
-      if (targetUpiPackage != null &&
-          targetUpiPackage.isNotEmpty &&
-          token != null &&
-          orderId != null) {
-        final payload = <String, dynamic>{
-          'orderId': orderId,
-          'token': token,
-          'merchantId': _merchantId,
-          'paymentMode': {
-            'type': 'UPI_INTENT',
-            if (Platform.isAndroid) 'targetAppPackageName': targetUpiPackage,
-            if (Platform.isIOS) 'targetApp': targetUpiPackage,
-          },
-          // Android specifically expects this in the root as well
-          if (Platform.isAndroid) 'targetAppPackageName': targetUpiPackage,
-        };
-        requestToSend = jsonEncode(payload);
-      } else if (requestPayload != null && requestPayload.isNotEmpty) {
-        // Fallback or non-intent payment (e.g. standard Pay Page)
+      // PRIORITY 1: Use the backend-provided payload if available.
+      // This is the safest way as it preserves the token's original signature.
+      if (requestPayload != null && requestPayload.isNotEmpty) {
         try {
           final decodedBytes = base64Decode(requestPayload);
           final jsonString = utf8.decode(decodedBytes);
@@ -102,8 +77,10 @@ class PhonePeService {
             final paymentMode =
                 (decodedMap['paymentMode'] as Map<String, dynamic>?) ?? {};
             paymentMode['type'] = 'UPI_INTENT';
+            
             if (Platform.isAndroid) {
               paymentMode['targetAppPackageName'] = targetUpiPackage;
+              // Some SDK versions look for it in the root
               decodedMap['targetAppPackageName'] = targetUpiPackage;
             } else {
               paymentMode['targetApp'] = targetUpiPackage;
@@ -112,19 +89,28 @@ class PhonePeService {
           }
           requestToSend = jsonEncode(decodedMap);
         } catch (e) {
-          throw PhonePeException('Failed to decode requestPayload: $e');
+          throw PhonePeException('Failed to process backend requestPayload: $e');
         }
-      } else if (token != null && orderId != null) {
-        // Standard Manual build
+      } 
+      // PRIORITY 2: Manual build if backend didn't provide a payload blob
+      else if (token != null && orderId != null && _merchantId != null) {
         final payload = <String, dynamic>{
           'orderId': orderId,
-          'merchantId': _merchantId,
           'token': token,
-          'paymentMode': {'type': 'PAY_PAGE'},
+          'merchantId': _merchantId,
+          'paymentMode': (targetUpiPackage != null && targetUpiPackage.isNotEmpty)
+              ? {
+                  'type': 'UPI_INTENT',
+                  if (Platform.isAndroid) 'targetAppPackageName': targetUpiPackage,
+                  if (Platform.isIOS) 'targetApp': targetUpiPackage,
+                }
+              : {'type': 'PAY_PAGE'},
+          if (Platform.isAndroid && targetUpiPackage != null)
+            'targetAppPackageName': targetUpiPackage,
         };
         requestToSend = jsonEncode(payload);
       } else {
-        throw PhonePeException('Insufficient data to start payment');
+        throw PhonePeException('Insufficient data (missing payload or merchant context)');
       }
 
       final response = await PhonePePaymentSdk.startTransaction(

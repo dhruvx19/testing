@@ -10,6 +10,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import android.util.TypedValue
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.*
@@ -19,14 +20,18 @@ import java.net.URL
 
 class ApptTrackingService : Service() {
 
-    private val channelId = "appt_live_tracking"
-    private val channelName = "Appointment Live Tracking"
-    private val notificationId = 9999
+    companion object {
+        const val CHANNEL_ID = "appt_live_tracking_v7"
+        const val CHANNEL_NAME = "Live Appointment Tracking"
+        const val NOTIFICATION_ID = 9999
+        private const val TAG = "ApptTrackingService"
+    }
+
     private var serviceJob = Job()
     private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
     private var pollingJob: Job? = null
 
-    // State variables
+    // Persistent state
     private var currentDoctorName = ""
     private var currentHospitalName = ""
     private var currentUserToken = 0
@@ -40,6 +45,9 @@ class ApptTrackingService : Service() {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
+        // Initialize with basic notification to satisfy foreground service requirements immediately
+        val initialNotification = buildNotification()
+        startForeground(NOTIFICATION_ID, initialNotification)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -51,20 +59,26 @@ class ApptTrackingService : Service() {
             return START_NOT_STICKY
         }
 
-        // Extract data
-        currentDoctorName = intent?.getStringExtra("doctorName") ?: currentDoctorName
-        currentHospitalName = intent?.getStringExtra("hospitalName") ?: currentHospitalName
-        currentUserToken = intent?.getIntExtra("userToken", 0) ?: currentUserToken
-        currentTargetToken = intent?.getIntExtra("currentToken", 0) ?: currentTargetToken
-        currentExpectedTime = intent?.getStringExtra("expectedTime") ?: currentExpectedTime
-        currentId = intent?.getStringExtra("appointmentId") ?: currentId
-        authToken = intent?.getStringExtra("authToken") ?: authToken
+        // Update state from intent
+        intent?.let {
+            currentDoctorName = it.getStringExtra("doctorName") ?: currentDoctorName
+            currentHospitalName = it.getStringExtra("hospitalName") ?: currentHospitalName
+            currentUserToken = it.getIntExtra("userToken", 0).takeIf { it > 0 } ?: currentUserToken
+            currentTargetToken = it.getIntExtra("currentToken", 0).takeIf { it > 0 } ?: currentTargetToken
+            currentExpectedTime = it.getStringExtra("expectedTime") ?: currentExpectedTime
+            currentId = it.getStringExtra("appointmentId") ?: currentId
+            authToken = it.getStringExtra("authToken") ?: authToken
+        }
 
         updateNotificationUI()
 
-        // Start polling if we have an ID and token
-        if (currentId.isNotEmpty() && authToken.isNotEmpty() && pollingJob == null) {
-            startPolling()
+        // Manage polling
+        if (currentId.isNotEmpty() && authToken.isNotEmpty()) {
+            if (pollingJob == null) {
+                startPolling()
+            }
+        } else {
+            stopPolling()
         }
 
         return START_STICKY
@@ -75,11 +89,11 @@ class ApptTrackingService : Service() {
         pollingJob = serviceScope.launch(Dispatchers.IO) {
             while (isActive) {
                 try {
-                    pollStatus()
+                    pollStatusBar()
                 } catch (e: Exception) {
-                    Log.e("ApptTrackingService", "Polling error: ${e.message}")
+                    Log.e(TAG, "Polling error: ${e.message}")
                 }
-                delay(30000) // Poll every 30 seconds
+                delay(30000)
             }
         }
     }
@@ -89,38 +103,42 @@ class ApptTrackingService : Service() {
         pollingJob = null
     }
 
-    private suspend fun pollStatus() {
+    private suspend fun pollStatusBar() {
         if (currentId.isEmpty() || authToken.isEmpty()) return
-
+        
         val url = URL("https://api.upcharq.com/api/eta/appointment/$currentId/status")
-        with(url.openConnection() as HttpURLConnection) {
-            requestMethod = "GET"
-            setRequestProperty("Authorization", "Bearer $authToken")
-            setRequestProperty("x-access-token", authToken)
-            setRequestProperty("Content-Type", "application/json")
+        try {
+            val connection = (url.openConnection() as HttpURLConnection).apply {
+                requestMethod = "GET"
+                setRequestProperty("Authorization", "Bearer $authToken")
+                setRequestProperty("x-access-token", authToken)
+                setRequestProperty("Content-Type", "application/json")
+                connectTimeout = 5000
+                readTimeout = 5000
+            }
 
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                val response = inputStream.bufferedReader().use { it.readText() }
+            if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+                val response = connection.inputStream.bufferedReader().use { it.readText() }
                 val json = JSONObject(response)
                 val msg = json.optJSONObject("message")
                 if (msg != null) {
                     val newToken = msg.optInt("tokenNo", currentTargetToken)
-                    if (newToken != currentTargetToken) {
+                    if (newToken != currentTargetToken && newToken > 0) {
                         currentTargetToken = newToken
                         withContext(Dispatchers.Main) {
                             updateNotificationUI()
                         }
                     }
                 }
-            } else {
-                Log.e("ApptTrackingService", "Server error: $responseCode")
             }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to poll API: ${e.message}")
         }
     }
 
-    private fun updateNotificationUI() {
+    private fun buildNotification(): Notification {
         val smallView = RemoteViews(packageName, R.layout.custom_appointment_notification_small).apply {
-            setTextViewText(R.id.notification_title, "$currentHospitalName • Your Appointment with $currentDoctorName")
+            setTextViewText(R.id.notification_title, "$currentHospitalName • $currentDoctorName")
         }
 
         val expandedView = RemoteViews(packageName, R.layout.custom_appointment_notification).apply {
@@ -131,29 +149,33 @@ class ApptTrackingService : Service() {
             setTextViewText(R.id.your_token, currentUserToken.toString())
             setTextViewText(R.id.start_circle, "S")
 
-            val startToken = if (currentTargetToken > 0 && currentTargetToken < currentUserToken) 1 else 0
-            val totalRange = (currentUserToken - startToken).coerceAtLeast(1)
-            val progress = (currentTargetToken - startToken).coerceIn(0, totalRange)
-            val weight1 = (progress.toFloat() / totalRange.toFloat() * 100).toInt().coerceIn(1, 99)
-            val weight2 = 100 - weight1
+            // Dynamic positioning logic matching Zomato's margin approach
+            if (currentUserToken > 0) {
+                val startToken = if (currentTargetToken > 0 && currentTargetToken < currentUserToken) 1 else 0
+                val totalRange = (currentUserToken - startToken).coerceAtLeast(1)
+                val progressFrac = (currentTargetToken - startToken).toFloat() / totalRange.toFloat()
+                
+                // Max margin as proportion of screen width (approx 260dp for safe layout)
+                val maxMarginDp = 260f
+                val progressMarginDp = (progressFrac * maxMarginDp).coerceIn(0f, maxMarginDp)
 
-            setInt(R.id.spacer1, "setLayoutWeight", weight1)
-            setInt(R.id.spacer2, "setLayoutWeight", weight2)
-            setInt(R.id.spacer_label1, "setLayoutWeight", weight1)
-            setInt(R.id.spacer_label2, "setLayoutWeight", weight2)
+                // Use marginStart for compatibility with API 31+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    setViewLayoutMargin(R.id.current_token, RemoteViews.MARGIN_START, progressMarginDp, TypedValue.COMPLEX_UNIT_DIP)
+                    setViewLayoutMargin(R.id.label_current, RemoteViews.MARGIN_START, progressMarginDp, TypedValue.COMPLEX_UNIT_DIP)
+                }
+            }
         }
 
-        val notificationIntent = Intent(this, MainActivity::class.java).apply {
+        val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
         val pendingIntent = PendingIntent.getActivity(
-            this,
-            0,
-            notificationIntent,
+            this, 0, intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val notification = NotificationCompat.Builder(this, channelId)
+        return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setCustomContentView(smallView)
             .setCustomBigContentView(expandedView)
@@ -162,22 +184,25 @@ class ApptTrackingService : Service() {
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setOnlyAlertOnce(true)
+            .setSilent(true)
             .build()
+    }
 
-        startForeground(notificationId, notification)
+    private fun updateNotificationUI() {
+        try {
+            val notification = buildNotification()
+            val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            manager.notify(NOTIFICATION_ID, notification)
+        } catch (e: Exception) {
+            Log.e(TAG, "UI Update Error: ${e.message}")
+        }
     }
 
     private fun calculateTimeInfo(): String {
-        val tokensAhead = if (currentTargetToken > 0 && currentUserToken > currentTargetToken) {
-            currentUserToken - currentTargetToken
-        } else {
-            null
-        }
-        
         return if (currentTargetToken == 0) {
             "Queue not started"
-        } else if (tokensAhead != null && tokensAhead > 0) {
-            "${tokensAhead * 2} min"
+        } else if (currentUserToken > currentTargetToken) {
+            "${(currentUserToken - currentTargetToken) * 2} min"
         } else if (currentUserToken == currentTargetToken) {
             "🎉 Your turn!"
         } else {
@@ -185,25 +210,26 @@ class ApptTrackingService : Service() {
         }
     }
 
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val channel = NotificationChannel(
+                CHANNEL_ID, CHANNEL_NAME,
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Live tracking of appointment token progress"
+                setShowBadge(true)
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+                enableVibration(false)
+                enableLights(false)
+            }
+            manager.createNotificationChannel(channel)
+        }
+    }
+
     override fun onDestroy() {
         stopPolling()
         serviceJob.cancel()
         super.onDestroy()
-    }
-
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            val channel = NotificationChannel(
-                channelId,
-                channelName,
-                NotificationManager.IMPORTANCE_HIGH
-            ).apply {
-                description = "Shows live appointment updates on lock screen"
-                setShowBadge(true)
-                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-            }
-            notificationManager.createNotificationChannel(channel)
-        }
     }
 }
