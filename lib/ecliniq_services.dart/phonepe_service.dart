@@ -29,7 +29,7 @@ class PhonePeService {
     }
 
     try {
-      _environment = 'PRODUCTION';
+      _environment = isProduction ? 'PRODUCTION' : 'SANDBOX';
       _packageName = isProduction ? 'com.phonepe.app' : 'com.phonepe.simulator';
       _merchantId = merchantId;
 
@@ -204,10 +204,10 @@ class PhonePePaymentResult {
     if (result is String) {
       status = result.toUpperCase();
     } else if (result is Map) {
-      status = (result['status'] ?? result['STATUS'] ?? 'INCOMPLETE')
+      status = (result['status'] ?? result['STATUS'] ?? result['resultCode'] ?? 'INCOMPLETE')
           .toString()
           .toUpperCase();
-      error = result['error']?.toString();
+      error = (result['error'] ?? result['message'] ?? result['errorMessage'] ?? result['ERROR'])?.toString();
     } else {
       status = result.toString().toUpperCase();
     }
