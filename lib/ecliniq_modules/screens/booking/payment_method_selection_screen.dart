@@ -60,11 +60,11 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
       'packageName': 'com.phonepe.app',
       'icon': EcliniqIcons.phonePe,
     },
-    {
-      'name': 'PhonePe',
-      'packageName': 'com.phonepe.simulator',
-      'icon': EcliniqIcons.phonePe,
-    },
+    // {
+    //   'name': 'PhonePe',
+    //   'packageName': 'com.phonepe.simulator',
+    //   'icon': EcliniqIcons.phonePe,
+    // },
     {
       'name': 'Paytm',
       'packageName': 'net.one97.paytm',
@@ -72,14 +72,14 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
     },
   ];
 
-  final List<Map<String, dynamic>> _cardMethods = [
-    {
-      'name': 'HDFC Bank',
-      'cardNumber': '**0964',
-      'cardType': 'VISA',
-      'packageName': 'card_hdfc_0964',
-    },
-  ];
+  // final List<Map<String, dynamic>> _cardMethods = [
+  //   {
+  //     'name': 'HDFC Bank',
+  //     'cardNumber': '**0964',
+  //     'cardType': 'VISA',
+  //     'packageName': 'card_hdfc_0964',
+  //   },
+  //];
 
   @override
   void initState() {
