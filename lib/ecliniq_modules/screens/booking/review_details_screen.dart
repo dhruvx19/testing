@@ -2166,7 +2166,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
         orderId: paymentData.orderId,
         targetUpiPackage: selectedUPIPackage,
         appSchema: 'ecliniq',
-        targetUpiPackage: selectedUPIPackage,
       );
 
       final isCancelled = result.status.contains('CANCEL') || result.status == 'INCOMPLETE';
