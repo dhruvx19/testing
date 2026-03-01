@@ -329,24 +329,24 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
                   const SizedBox(height: 22),
 
                   
-                  Text(
-                    'Cards',
-                    style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
-                      color: const Color(0xff424242),
+                  // Text(
+                  //   'Cards',
+                  //   style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
+                  //     color: const Color(0xff424242),
                  
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  //     fontWeight: FontWeight.w600,
+                  //   ),
+                  // ),
                   const SizedBox(height: 12),
 
-                  ..._cardMethods.map(
-                    (card) => _buildCardMethodCard(
-                      card['packageName'] as String,
-                      card['name'] as String,
-                      card['cardNumber'] as String,
-                      card['cardType'] as String,
-                    ),
-                  ),
+                  // ..._cardMethods.map(
+                  //   (card) => _buildCardMethodCard(
+                  //     card['packageName'] as String,
+                  //     card['name'] as String,
+                  //     card['cardNumber'] as String,
+                  //     card['cardType'] as String,
+                  //   ),
+                  // ),
 
                   
                   
