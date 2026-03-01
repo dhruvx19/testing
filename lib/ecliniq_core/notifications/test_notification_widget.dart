@@ -27,11 +27,12 @@ class _TestNotificationWidgetState extends State<TestNotificationWidget> {
   int _simYourToken = 15;
 
   Future<void> _testNotification(String testName, Future<void> Function() test) async {
+    final messenger = ScaffoldMessenger.of(context);
     setState(() => _isLoading = true);
     try {
       await test();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text('✅ $testName completed! Check lock screen.'),
             backgroundColor: Colors.green,
@@ -41,7 +42,7 @@ class _TestNotificationWidgetState extends State<TestNotificationWidget> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text('❌ Error: $e'),
             backgroundColor: Colors.red,
