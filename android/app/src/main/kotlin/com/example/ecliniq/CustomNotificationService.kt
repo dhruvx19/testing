@@ -36,7 +36,6 @@ class CustomNotificationService(private val context: Context) {
             }
             notificationManager.createNotificationChannel(channel)
             android.util.Log.d("CustomNotification", "Channel created: $channelId")
-            }
         }
     }
 

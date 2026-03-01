@@ -20,7 +20,7 @@
             android:text="Your appointment with"
             android:textColor="#757575"
             android:textSize="12sp"
-            android:textStyle="bold"
+            android:textStyle="bold" />
 
         <ImageView
             android:id="@+id/app_logo"
@@ -70,7 +70,7 @@
             android:text="8 min"
             android:textColor="#424242"
             android:textSize="14sp"
-            android:textStyle="bold"
+            android:textStyle="bold" />
     </LinearLayout>
 
     <!-- Expected Time -->
@@ -82,7 +82,7 @@
         android:text="Expected Time: 12:30PM"
         android:textColor="#2372EC"
         android:textSize="13sp"
-        android:textStyle="bold"
+        android:textStyle="bold" />
 
     <!-- Progress Section -->
     <LinearLayout
@@ -122,7 +122,7 @@
                     android:text="S"
                     android:textColor="#FFFFFF"
                     android:textSize="12sp"
-                    android:textStyle="bold"
+                    android:textStyle="bold" />
 
                 <View
                     android:id="@+id/spacer1"
@@ -139,7 +139,7 @@
                     android:text="74"
                     android:textColor="#FFFFFF"
                     android:textSize="12sp"
-                    android:textStyle="bold"
+                    android:textStyle="bold" />
 
                 <View
                     android:id="@+id/spacer2"
@@ -156,7 +156,7 @@
                     android:text="76"
                     android:textColor="#FFFFFF"
                     android:textSize="12sp"
-                    android:textStyle="bold"
+                    android:textStyle="bold" />
             </LinearLayout>
         </RelativeLayout>
 
@@ -175,7 +175,7 @@
                 android:text="Start"
                 android:textColor="#9E9E9E"
                 android:textSize="10sp"
-                android:textStyle="bold"
+                android:textStyle="bold" />
 
             <View
                 android:id="@+id/spacer_label1"
@@ -190,7 +190,7 @@
                 android:text="Current"
                 android:textColor="#9E9E9E"
                 android:textSize="10sp"
-                android:textStyle="bold"
+                android:textStyle="bold" />
 
             <View
                 android:id="@+id/spacer_label2"
@@ -205,7 +205,7 @@
                 android:text="Your No"
                 android:textColor="#9E9E9E"
                 android:textSize="10sp"
-                android:textStyle="bold"
+                android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>
 
