@@ -29,7 +29,7 @@ class PhonePeService {
     }
 
     try {
-      _environment = 'PRODUCTION';
+      _environment = isProduction ? 'PRODUCTION' : 'SANDBOX';
       _packageName = isProduction ? 'com.phonepe.app' : 'com.phonepe.simulator';
       _merchantId = merchantId;
 
@@ -60,8 +60,13 @@ class PhonePeService {
       );
     }
 
-    if (requestPayload != null) {
-    } else {}
+    if (requestPayload != null && requestPayload.isNotEmpty) {
+      // Backend provided payload
+    } else if (token != null && orderId != null) {
+      // Building payload manually
+    } else {
+      throw PhonePeException('Either requestPayload or (token + orderId) must be provided');
+    }
 
     try {
       String requestToSend;
@@ -71,13 +76,15 @@ class PhonePeService {
           final decodedBytes = base64Decode(requestPayload);
           final jsonString = utf8.decode(decodedBytes);
 
-          final decodedMap = jsonDecode(jsonString) as Map<String, dynamic>;
+          final decodedMap = json.decode(jsonString) as Map<String, dynamic>;
 
           if (targetUpiPackage != null && targetUpiPackage.isNotEmpty) {
             decodedMap['paymentMode'] = {
               'type': 'UPI_INTENT',
-              'targetAppPackageName': targetUpiPackage
+              'targetAppPackageName': targetUpiPackage,
+              'targetApp': targetUpiPackage,
             };
+            decodedMap['targetAppPackageName'] = targetUpiPackage;
           }
 
           requestToSend = jsonEncode(decodedMap);
@@ -108,13 +115,16 @@ class PhonePeService {
               ? {
                   'type': 'UPI_INTENT',
                   'targetAppPackageName': targetUpiPackage,
+                  'targetApp': targetUpiPackage,
                 }
               : {
                   'type': 'PAY_PAGE',
                 },
+          if (targetUpiPackage != null && targetUpiPackage.isNotEmpty)
+            'targetAppPackageName': targetUpiPackage,
         };
 
-        final jsonString = jsonEncode(payload);
+        final jsonString = json.encode(payload);
 
         requestToSend = jsonString;
       }
@@ -158,7 +168,6 @@ class PhonePeService {
         );
       }
 
-      e.toString().toLowerCase();
       if (errorString.contains('cannot be converted to jsonobject') ||
           errorString.contains('jsonobject')) {
         throw PhonePeException(
@@ -215,7 +224,7 @@ class PhonePePaymentResult {
       status = (result['status'] ?? result['STATUS'] ?? 'INCOMPLETE')
           .toString()
           .toUpperCase();
-      error = result['error']?.toString();
+      error = (result['error'] ?? result['message'] ?? result['error_message'])?.toString();
     } else {
       status = result.toString().toUpperCase();
     }
