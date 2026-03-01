@@ -6,9 +6,11 @@ import 'package:ecliniq/ecliniq_api/models/patient.dart' as patient_models;
 import 'package:ecliniq/ecliniq_api/patient_service.dart';
 import 'package:ecliniq/ecliniq_api/src/endpoints.dart';
 import 'package:ecliniq/ecliniq_core/auth/secure_storage.dart';
+import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
 import 'package:ecliniq/ecliniq_modules/screens/auth/provider/auth_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/details/widgets/date_picker_sheet.dart';
+import 'package:ecliniq/ecliniq_modules/screens/login/profile_help.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/personal_details/provider/personal_details_provider.dart';
 import 'package:ecliniq/ecliniq_modules/screens/profile/security_settings/security_settings.dart';
 import 'package:ecliniq/ecliniq_ui/lib/tokens/colors.g.dart';
@@ -827,33 +829,38 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                 child: Container(color: Color(0xFFB8B8B8), height: 1.0),
               ),
               actions: [
-                Row(
-                  children: [
-                    SvgPicture.asset(
-                      EcliniqIcons.questionCircleFilled.assetPath,
-                      width: EcliniqTextStyles.getResponsiveIconSize(
-                        context,
-                        24,
+                GestureDetector(
+                  onTap: () {
+              EcliniqRouter.push(ProfileHelpPage());
+            },
+                  child: Row(
+                    children: [
+                      SvgPicture.asset(
+                        EcliniqIcons.questionCircleFilled.assetPath,
+                        width: EcliniqTextStyles.getResponsiveIconSize(
+                          context,
+                          24,
+                        ),
+                        height: EcliniqTextStyles.getResponsiveIconSize(
+                          context,
+                          24,
+                        ),
                       ),
-                      height: EcliniqTextStyles.getResponsiveIconSize(
-                        context,
-                        24,
+                      Text(
+                        ' Help',
+                        style:
+                            EcliniqTextStyles.responsiveHeadlineBMedium(
+                              context,
+                            ).copyWith(
+                              color: EcliniqColors.light.textPrimary,
+                              fontWeight: FontWeight.w400,
+                            ),
                       ),
-                    ),
-                    Text(
-                      ' Help',
-                      style:
-                          EcliniqTextStyles.responsiveHeadlineBMedium(
-                            context,
-                          ).copyWith(
-                            color: EcliniqColors.light.textPrimary,
-                            fontWeight: FontWeight.w400,
-                          ),
-                    ),
-                    SizedBox(
-                      width: EcliniqTextStyles.getResponsiveWidth(context, 20),
-                    ),
-                  ],
+                      SizedBox(
+                        width: EcliniqTextStyles.getResponsiveWidth(context, 20),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

@@ -154,7 +154,7 @@ class MoreSettingsMenuWidget extends StatelessWidget {
 
           _MoreMenuItem(
             icon: EcliniqIcons.infoCircle.assetPath,
-            title: 'About e-Clinic Q',
+            title: 'About Upchar-Q',
             onTap: onAboutPressed,
           ),
 
