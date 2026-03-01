@@ -12,8 +12,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 
 class CustomNotificationService(private val context: Context) {
-    private val channelId = "appointment_tracking"
-    private val channelName = "Appointment Tracking"
+    private val channelId = "appt_push_v5"
+    private val channelName = "Appointments"
     private val notificationId = 9999
 
     init {
@@ -24,27 +24,18 @@ class CustomNotificationService(private val context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             
-            // Check if channel already exists
-            val existingChannel = notificationManager.getNotificationChannel(channelId)
-            
-            // If channel exists but has wrong settings, delete and recreate it
-            // Note: This requires the app to be uninstalled/reinstalled or channel deleted manually
-            // For now, we'll create it with correct settings if it doesn't exist
-            if (existingChannel == null) {
-                val channel = NotificationChannel(
-                    channelId,
-                    channelName,
-                    NotificationManager.IMPORTANCE_HIGH
-                ).apply {
-                    description = "Shows appointment token updates on lock screen"
-                    setShowBadge(false)
-                    enableVibration(false)
-                    enableLights(false)
-                    lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-                    setBypassDnd(false)
-                    enableLights(false)
-                }
-                notificationManager.createNotificationChannel(channel)
+            // Always ensure channel is created/updated
+            val channel = NotificationChannel(
+                channelId,
+                channelName,
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Shows appointment token updates on lock screen"
+                setShowBadge(true)
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            }
+            notificationManager.createNotificationChannel(channel)
+            android.util.Log.d("CustomNotification", "Channel created: $channelId")
             }
         }
     }
@@ -118,34 +109,30 @@ class CustomNotificationService(private val context: Context) {
         // Build notification with custom layout
         val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(android.R.drawable.ic_dialog_info) 
-            .setCustomContentView(smallView) // Collapsed view
-            .setCustomBigContentView(expandedView) // Expanded view
-            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
+            .setContentTitle(title)
+            .setContentText("$doctorName - $timeInfo")
+            .setCustomContentView(smallView)
+            .setCustomBigContentView(expandedView)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
             .setAutoCancel(false)
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setColor(0xFF2372EC.toInt())
-            .setCategory(NotificationCompat.CATEGORY_STATUS)
             .setShowWhen(false)
             .setOnlyAlertOnce(true)
-            .setDefaults(Notification.DEFAULT_ALL) // Allow sound/vibration for the first alert
+            .setDefaults(Notification.DEFAULT_ALL)
             .build()
 
-        // Show notification
-        val notificationManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        } else {
-            null
-        }
+        android.util.Log.d("CustomNotification", "Showing notification with ID $notificationId on channel $channelId")
         
-        // Note: SecurityException is re-thrown so MainActivity can surface it via result.error
-        // which triggers the flutter_local_notifications fallback path in Dart
-        if (notificationManager != null) {
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        try {
             notificationManager.notify(notificationId, notification)
-        } else {
-            NotificationManagerCompat.from(context).notify(notificationId, notification)
+            android.util.Log.d("CustomNotification", "notify() called successfully")
+        } catch (e: Exception) {
+            android.util.Log.e("CustomNotification", "Error calling notify()", e)
+            throw e
         }
     }
 
