@@ -117,7 +117,7 @@ class CustomNotificationService(private val context: Context) {
 
         // Build notification with custom layout
         val notification = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(context.applicationInfo.icon) // Use app icon instead of generic dialog info
+            .setSmallIcon(android.R.drawable.ic_dialog_info) 
             .setCustomContentView(smallView) // Collapsed view
             .setCustomBigContentView(expandedView) // Expanded view
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())
