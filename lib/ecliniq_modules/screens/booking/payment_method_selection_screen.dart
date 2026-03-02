@@ -47,44 +47,39 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
   static final List<Map<String, dynamic>> _knownUpiApps = [
     {
       'name': 'BHIM',
-      'packageName':
-          Platform.isAndroid ? 'in.org.npci.upiapp' : 'com.itouchpay.itouchpay',
+      'packageName': 'in.org.npci.upiapp',
       'icon': EcliniqIcons.bhimPay,
     },
     {
       'name': 'Gpay',
-      'packageName':
-          Platform.isAndroid
-              ? 'com.google.android.apps.nbu.paisa.user'
-              : 'com.google.Tez',
+      'packageName': 'com.google.android.apps.nbu.paisa.user',
       'icon': EcliniqIcons.googlePay,
     },
     {
       'name': 'PhonePe',
-      'packageName': Platform.isAndroid ? 'com.phonepe.app' : 'com.phonepe.app',
+      'packageName': 'com.phonepe.app',
+      'icon': EcliniqIcons.phonePe,
+    },
+    {
+      'name': 'PhonePe',
+      'packageName': 'com.phonepe.simulator',
       'icon': EcliniqIcons.phonePe,
     },
     {
       'name': 'Paytm',
-      'packageName':
-          Platform.isAndroid ? 'net.one97.paytm' : 'com.one97.paytm',
+      'packageName': 'net.one97.paytm',
       'icon': EcliniqIcons.bhimPay,
-    },
-    {
-      'name': 'Other (Cards/Netbanking)',
-      'packageName': 'standard_pay_page',
-      'icon': EcliniqIcons.phonePe,
     },
   ];
 
-  // final List<Map<String, dynamic>> _cardMethods = [
-  //   {
-  //     'name': 'HDFC Bank',
-  //     'cardNumber': '**0964',
-  //     'cardType': 'VISA',
-  //     'packageName': 'card_hdfc_0964',
-  //   },
-  //];
+  final List<Map<String, dynamic>> _cardMethods = [
+    {
+      'name': 'HDFC Bank',
+      'cardNumber': '**0964',
+      'cardType': 'VISA',
+      'packageName': 'card_hdfc_0964',
+    },
+  ];
 
   @override
   void initState() {
@@ -148,13 +143,6 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
       }
 
       if (availableApps.isNotEmpty) {
-        // Always add our "Other" option for Cards/Netbanking
-        availableApps.add({
-          'name': 'Other (Cards/Netbanking)',
-          'packageName': 'standard_pay_page',
-          'icon': EcliniqIcons.phonePe,
-        });
-
         if (mounted) {
           setState(() {
             _paymentMethods = availableApps;
@@ -341,24 +329,24 @@ class _PaymentMethodBottomSheetState extends State<PaymentMethodBottomSheet> {
                   const SizedBox(height: 22),
 
                   
-                  // Text(
-                  //   'Cards',
-                  //   style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
-                  //     color: const Color(0xff424242),
+                  Text(
+                    'Cards',
+                    style: EcliniqTextStyles.responsiveHeadlineLarge(context).copyWith(
+                      color: const Color(0xff424242),
                  
-                  //     fontWeight: FontWeight.w600,
-                  //   ),
-                  // ),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   const SizedBox(height: 12),
 
-                  // ..._cardMethods.map(
-                  //   (card) => _buildCardMethodCard(
-                  //     card['packageName'] as String,
-                  //     card['name'] as String,
-                  //     card['cardNumber'] as String,
-                  //     card['cardType'] as String,
-                  //   ),
-                  // ),
+                  ..._cardMethods.map(
+                    (card) => _buildCardMethodCard(
+                      card['packageName'] as String,
+                      card['name'] as String,
+                      card['cardNumber'] as String,
+                      card['cardType'] as String,
+                    ),
+                  ),
 
                   
                   

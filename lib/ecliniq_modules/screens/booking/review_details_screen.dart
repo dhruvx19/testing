@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:ecliniq/ecliniq_api/appointment_service.dart';
 import 'package:ecliniq/ecliniq_api/doctor_service.dart';
 import 'package:ecliniq/ecliniq_api/hospital_service.dart';
@@ -153,13 +151,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
     });
 
     if (widget.isReschedule && widget.previousAppointment != null) {}
-
-    // Initialize default payment method (GPay)
-    _selectedPaymentMethod = 'Gpay';
-    _selectedPaymentMethodPackage =
-        Platform.isAndroid
-            ? 'com.google.android.apps.nbu.paisa.user'
-            : 'com.google.Tez';
   }
 
   Future<void> _fetchHospitalAddress() async {
@@ -1370,15 +1361,12 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
       } else {
         final isDependent =
             _selectedDependent != null && !_selectedDependent!.isSelf;
-        final paymentModeType = (_selectedPaymentMethodPackage != null &&
-                _selectedPaymentMethodPackage != 'standard_pay_page')
-            ? 'UPI_INTENT'
-            : 'PAY_PAGE';
-
-        print('===== PAYMENT DEBUG =====');
-        print('_selectedPaymentMethodPackage: $_selectedPaymentMethodPackage');
-        print('Derived paymentModeType: $paymentModeType');
-        print('=========================');
+        // Determine payment mode based on selected method
+        // UPI_INTENT: opens a specific UPI app directly (PhonePe, GPay, BHIM, etc.)
+        // PAY_PAGE:   opens PhonePe's payment gateway page (cards, netbanking, etc.)
+        final isUpiIntent = _selectedPaymentMethodPackage != null &&
+            _selectedPaymentMethodPackage != 'standard_pay_page' &&
+            _selectedPaymentMethodPackage != 'WALLET';
 
         final request = BookAppointmentRequest(
           patientId: finalPatientId,
@@ -1391,20 +1379,14 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
           bookedFor: isDependent ? 'DEPENDENT' : 'SELF',
           dependentId: isDependent ? _selectedDependent!.id : null,
           useWallet: _useWallet,
-          paymentModeType: paymentModeType,
-          paymentTargetApp: _selectedPaymentMethodPackage, // Send package to backend
+          paymentModeType: isUpiIntent ? 'UPI_INTENT' : 'PAY_PAGE',
+          paymentTargetApp: isUpiIntent ? _selectedPaymentMethodPackage : null,
         );
 
         final response = await _appointmentService.bookAppointment(
           request: request,
           authToken: _authToken,
         );
-
-        print('===== PAYMENT RESPONSE =====');
-        print('Response success: ${response.success}');
-        print('Response data includes intentUrl: ${response.data is Map ? (response.data as Map).containsKey('payment') ? (response.data as Map)['payment']['intentUrl'] : 'No payment data' : 'N/A'}');
-        print('Response data includes token (SDK): ${response.data is Map ? (response.data as Map).containsKey('payment') ? (response.data as Map)['payment']['token'] : 'No payment data' : 'N/A'}');
-        print('============================');
 
         if (mounted) {
           if (response.success && response.data != null) {
@@ -2105,6 +2087,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
         'icon': EcliniqIcons.googlePay,
       },
       {'packageName': 'com.phonepe.app', 'icon': EcliniqIcons.phonePe},
+      {'packageName': 'com.phonepe.simulator', 'icon': EcliniqIcons.phonePe},
     ];
 
     final method = paymentMethods.firstWhere(
@@ -2175,13 +2158,10 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
         const merchantId = 'SU2512271831021904206385';
         const isProduction = true;
 
-        // PhonePe flowId must be strictly alphanumeric
-        final safeFlowId = userId.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
-
         final initialized = await _phonePeService.initialize(
           isProduction: isProduction,
           merchantId: merchantId,
-          flowId: safeFlowId,
+          flowId: userId,
           enableLogs: !isProduction,
         );
 
@@ -2191,28 +2171,20 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
       }
 
       final result = await _phonePeService.startPayment(
-        requestPayload: paymentData.token,
+        requestPayload: paymentData.requestPayload,
         token: paymentData.token,
         orderId: paymentData.orderId,
-        intentUrl: paymentData.intentUrl,       // Android: upi:// deep link
-        iosIntentUrl: paymentData.iosIntentUrl, // iOS: gpay://, phonepe://, etc.
         appSchema: 'ecliniq',
-        targetUpiPackage: (selectedUPIPackage != 'standard_pay_page')
+        targetUpiPackage: selectedUPIPackage != 'standard_pay_page' &&
+                selectedUPIPackage != 'WALLET'
             ? selectedUPIPackage
             : null,
       );
 
-      // For UPI Intent deep links, status is 'OPENED' - user goes to UPI app.
-      // We need to poll for payment status after returning from the UPI app.
-      final isDirectIntent = paymentData.intentUrl != null && paymentData.intentUrl!.isNotEmpty;
       final isCancelled = result.status.contains('CANCEL') || result.status == 'INCOMPLETE';
       final isFailed = result.status.contains('FAIL') || result.status == 'ERROR';
 
-      // If the UPI app was launched via deep link, skip straight to polling
-      // as the PhonePe SDK is not involved and the status won't be SUCCESS/CANCEL here.
-      if (isDirectIntent && result.status == 'OPENED') {
-        // Fall-through to polling below
-      } else if (isCancelled) {
+      if (isCancelled) {
         if (mounted) {
           setState(() {
             _isProcessingPayment = false;
@@ -2234,7 +2206,7 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
           CustomErrorSnackBar.show(
             context: context,
             title: 'Payment Failed',
-            subtitle: result.error ?? 'The transaction could not be completed.',
+            subtitle: 'The transaction could not be completed.',
             duration: const Duration(seconds: 4),
           );
         }
