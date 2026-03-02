@@ -25,6 +25,12 @@ class ApptTrackingService : Service() {
         const val CHANNEL_NAME = "Live Appointment Tracking"
         const val NOTIFICATION_ID = 9999
         private const val TAG = "ApptTrackingService"
+
+        // Total usable track width in dp (match_parent minus 16dp margin each side = ~260dp on ~360dp screen)
+        // The current circle (32dp) slides within this range, stopping 32dp before the end to avoid overlap
+        private const val TRACK_WIDTH_DP = 260f
+        private const val CIRCLE_DP = 32f
+        private const val USABLE_TRACK_DP = TRACK_WIDTH_DP - CIRCLE_DP  // 228dp max margin
     }
 
     private var serviceJob = Job()
@@ -45,7 +51,6 @@ class ApptTrackingService : Service() {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
-        // Initialize with basic notification to satisfy foreground service requirements immediately
         val initialNotification = buildNotification()
         startForeground(NOTIFICATION_ID, initialNotification)
     }
@@ -59,12 +64,11 @@ class ApptTrackingService : Service() {
             return START_NOT_STICKY
         }
 
-        // Update state from intent
         intent?.let {
             currentDoctorName = it.getStringExtra("doctorName") ?: currentDoctorName
             currentHospitalName = it.getStringExtra("hospitalName") ?: currentHospitalName
-            currentUserToken = it.getIntExtra("userToken", 0).takeIf { it > 0 } ?: currentUserToken
-            currentTargetToken = it.getIntExtra("currentToken", 0).takeIf { it > 0 } ?: currentTargetToken
+            currentUserToken = it.getIntExtra("userToken", 0).takeIf { v -> v > 0 } ?: currentUserToken
+            currentTargetToken = it.getIntExtra("currentToken", 0).takeIf { v -> v > 0 } ?: currentTargetToken
             currentExpectedTime = it.getStringExtra("expectedTime") ?: currentExpectedTime
             currentId = it.getStringExtra("appointmentId") ?: currentId
             authToken = it.getStringExtra("authToken") ?: authToken
@@ -72,11 +76,8 @@ class ApptTrackingService : Service() {
 
         updateNotificationUI()
 
-        // Manage polling
         if (currentId.isNotEmpty() && authToken.isNotEmpty()) {
-            if (pollingJob == null) {
-                startPolling()
-            }
+            if (pollingJob == null) startPolling()
         } else {
             stopPolling()
         }
@@ -105,7 +106,7 @@ class ApptTrackingService : Service() {
 
     private suspend fun pollStatusBar() {
         if (currentId.isEmpty() || authToken.isEmpty()) return
-        
+
         val url = URL("https://api.upcharq.com/api/eta/appointment/$currentId/status")
         try {
             val connection = (url.openConnection() as HttpURLConnection).apply {
@@ -149,20 +150,53 @@ class ApptTrackingService : Service() {
             setTextViewText(R.id.your_token, currentUserToken.toString())
             setTextViewText(R.id.start_circle, "S")
 
-            // Dynamic positioning logic matching Zomato's margin approach
-            if (currentUserToken > 0) {
-                val startToken = if (currentTargetToken > 0 && currentTargetToken < currentUserToken) 1 else 0
-                val totalRange = (currentUserToken - startToken).coerceAtLeast(1)
-                val progressFrac = (currentTargetToken - startToken).toFloat() / totalRange.toFloat()
-                
-                // Max margin as proportion of screen width (approx 260dp for safe layout)
-                val maxMarginDp = 260f
-                val progressMarginDp = (progressFrac * maxMarginDp).coerceIn(0f, maxMarginDp)
+            if (currentUserToken > 0 && currentTargetToken > 0) {
+                // --- Progress fraction ---
+                // Range is token 1 (start) to currentUserToken (your token)
+                val startToken = 1
+                val totalRange = (currentUserToken - startToken).coerceAtLeast(1).toFloat()
+                val progressFrac = ((currentTargetToken - startToken).toFloat() / totalRange)
+                    .coerceIn(0f, 1f)
 
-                // Use marginStart for compatibility with API 31+
+                // --- Current token group margin ---
+                // Moves from 0dp (at Start circle) to USABLE_TRACK_DP (just touching Your No circle)
+                // USABLE_TRACK_DP = TRACK_WIDTH_DP - CIRCLE_DP ensures no overlap
+                val currentMarginDp = progressFrac * USABLE_TRACK_DP
+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    setViewLayoutMargin(R.id.current_token, RemoteViews.MARGIN_START, progressMarginDp, TypedValue.COMPLEX_UNIT_DIP)
-                    setViewLayoutMargin(R.id.label_current, RemoteViews.MARGIN_START, progressMarginDp, TypedValue.COMPLEX_UNIT_DIP)
+                    // Apply margin to the GROUP, not individual children
+                    setViewLayoutMargin(
+                        R.id.current_token_group,
+                        RemoteViews.MARGIN_START,
+                        currentMarginDp,
+                        TypedValue.COMPLEX_UNIT_DIP
+                    )
+
+                    // --- Right grey line width ---
+                    // The grey line covers Current → Your No.
+                    // It is aligned to parent end and its width = (1 - progressFrac) * TRACK_WIDTH_DP
+                    // We keep 16dp end margin (matching the XML) so math aligns with track edges.
+                    val greyLineWidthDp = ((1f - progressFrac) * TRACK_WIDTH_DP).coerceAtLeast(0f)
+                    setViewLayoutWidth(
+                        R.id.progress_line_right,
+                        greyLineWidthDp,
+                        TypedValue.COMPLEX_UNIT_DIP
+                    )
+                }
+            } else {
+                // No progress yet — full grey line, current circle at start
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    setViewLayoutMargin(
+                        R.id.current_token_group,
+                        RemoteViews.MARGIN_START,
+                        0f,
+                        TypedValue.COMPLEX_UNIT_DIP
+                    )
+                    setViewLayoutWidth(
+                        R.id.progress_line_right,
+                        TRACK_WIDTH_DP,
+                        TypedValue.COMPLEX_UNIT_DIP
+                    )
                 }
             }
         }
@@ -199,14 +233,11 @@ class ApptTrackingService : Service() {
     }
 
     private fun calculateTimeInfo(): String {
-        return if (currentTargetToken == 0) {
-            "Queue not started"
-        } else if (currentUserToken > currentTargetToken) {
-            "${(currentUserToken - currentTargetToken) * 2} min"
-        } else if (currentUserToken == currentTargetToken) {
-            "🎉 Your turn!"
-        } else {
-            "Called"
+        return when {
+            currentTargetToken == 0 -> "Queue not started"
+            currentUserToken > currentTargetToken -> "${(currentUserToken - currentTargetToken) * 2} min"
+            currentUserToken == currentTargetToken -> "🎉 Your turn!"
+            else -> "Called"
         }
     }
 

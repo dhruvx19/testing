@@ -22,49 +22,19 @@
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>ecliniq</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
-	<key>NSCameraUsageDescription</key>
-	<string>Camera access is required to take photos of prescriptions and medical reports to save securely in your health records.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Your location is used to show you the closest available doctors and hospitals for quicker bookings and emergency care.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Your location is used to show you the closest available doctors and hospitals for quicker bookings and emergency care.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Your location is used to show you the closest available doctors and hospitals for quicker bookings and emergency care.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Microphone access is used for the voice-to-text search feature to help you find doctors more easily.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Permission is required to save prescriptions and digital medical reports to your photo gallery.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Photo library access allows you to select and upload existing medical reports and prescriptions to your health files.</string>
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Speech recognition is used to enable voice-based searching for doctors and healthcare services.</string>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
-	<key>NSFaceIDUsageDescription</key>
-	<string>Face ID is used to securely and quickly log you into your healthcare account.</string>
-	<key>NSSupportsLiveActivities</key>
-	<true/>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>remote-notification</string>
-		<string>location</string>
-	</array>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
-	<key>UIMainStoryboardFile</key>
-	<string>Main</string>
-	<key>UIStatusBarStyle</key>
-	<string>UIStatusBarStyleDefault</string>
-	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-		<string>UIInterfaceOrientationPortrait</string>
-	</array>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>ppemerchantsdkv1</string>
@@ -87,16 +57,46 @@
 		<string>kotak</string>
 		<string>mysbi</string>
 	</array>
-	<key>CFBundleURLTypes</key>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Camera access is required to take photos of prescriptions and medical reports to save securely in your health records.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Face ID is used to securely and quickly log you into your healthcare account.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Your location is used to show you the closest available doctors and hospitals for quicker bookings and emergency care.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Your location is used to show you the closest available doctors and hospitals for quicker bookings and emergency care.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your location is used to show you the closest available doctors and hospitals for quicker bookings and emergency care.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Microphone access is used for the voice-to-text search feature to help you find doctors more easily.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Permission is required to save prescriptions and digital medical reports to your photo gallery.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Photo library access allows you to select and upload existing medical reports and prescriptions to your health files.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Speech recognition is used to enable voice-based searching for doctors and healthcare services.</string>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UIBackgroundModes</key>
 	<array>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>ecliniq</string>
-			</array>
-		</dict>
+		<string>remote-notification</string>
+		<string>location</string>
+	</array>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleDefault</string>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+		<string>UIInterfaceOrientationPortrait</string>
 	</array>
 </dict>
 </plist>

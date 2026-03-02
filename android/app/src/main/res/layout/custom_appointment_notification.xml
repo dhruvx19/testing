@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp"
+    android:padding="14dp"
     android:background="@drawable/notification_background">
 
     <!-- Top Row: title and Logo -->
@@ -18,14 +18,14 @@
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
             android:text="Your appointment with"
-            android:textColor="#757575"
+            android:textColor="#424242"
             android:textSize="12sp"
-            android:textStyle="bold" />
+            android:fontFamily="sans-serif-light" />
 
         <ImageView
             android:id="@+id/app_logo"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="70dp"
+            android:layout_height="20dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:src="@drawable/ecliniq_logo" />
@@ -36,7 +36,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:gravity="bottom"
+        android:gravity="center_vertical"
         android:orientation="horizontal">
 
         <TextView
@@ -44,9 +44,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Dr. Milind Chauhan"
-            android:textColor="#212121"
-            android:textSize="20sp"
-            android:textStyle="bold"
+            android:textColor="#424242"
+            android:textSize="18sp"
+            android:fontFamily="inter"
             android:ellipsize="end"
             android:maxLines="1" />
 
@@ -54,8 +54,7 @@
             android:id="@+id/status_type"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginBottom="2dp"
+            android:layout_marginStart="4dp"
             android:text="On time"
             android:textColor="#91CA97"
             android:textSize="14sp"
@@ -65,12 +64,11 @@
             android:id="@+id/estimated_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginBottom="2dp"
+            android:layout_marginStart="4dp"
             android:text="8 min"
-            android:textColor="#424242"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            android:textColor="#2372EC"
+            android:textSize="18sp"
+            android:fontFamily="inter" />
     </LinearLayout>
 
     <!-- Expected Time -->
@@ -78,42 +76,62 @@
         android:id="@+id/expected_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
+        android:layout_marginTop="0dp"
         android:text="Expected Time: 12:30PM"
         android:textColor="#2372EC"
-        android:textSize="13sp"
-        android:textStyle="bold" />
+        android:textSize="12sp"
+        android:fontFamily="inter" />
 
-    <!-- Progress Section -->
+    <!--
+        Progress Section:
+        - Left line  (Start → Current): #2372EC blue  — progress already made
+        - Right line (Current → Your No): #8E8E8E grey — remaining queue
+        - Both lines vertically centered at 16dp (half of 32dp circle height)
+        - clipChildren=false prevents circle border clipping
+    -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp">
+        android:layout_marginTop="8dp"
+        android:clipChildren="false"
+        android:clipToPadding="false">
 
-        <!-- Connecting Line Background using ImageView (since View is not allowed in RemoteViews) -->
+        <!-- Base WHITE line (full width): represents completed segment Start → Current -->
         <ImageView
-            android:id="@+id/progress_line"
+            android:id="@+id/progress_line_left"
             android:layout_width="match_parent"
             android:layout_height="4dp"
             android:layout_marginTop="14dp"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:alpha="0.3"
-            android:background="@drawable/shape_line"
-            android:backgroundTint="#BDBDBD" />
+            android:background="#FFFFFF"
+            android:contentDescription="@null" />
 
-        <!-- Marker circles -->
-        <LinearLayout
+        <!-- GREY overlay line aligned to end: represents remaining segment Current → Your No.
+             Width reduced dynamically from code via setViewLayoutWidth as token advances. -->
+        <ImageView
+            android:id="@+id/progress_line_right"
             android:layout_width="match_parent"
-            android:layout_height="32dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:layout_height="4dp"
+            android:layout_marginTop="14dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="16dp"
+            android:background="#8E8E8E"
+            android:contentDescription="@null" />
+
+        <!-- START circle + label -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:clipChildren="false">
 
             <TextView
                 android:id="@+id/start_circle"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
-                android:layout_marginStart="0dp"
                 android:background="@drawable/token_circle_grey_32"
                 android:gravity="center"
                 android:text="S"
@@ -121,17 +139,31 @@
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
-            <!-- Using ImageView instead of View as a spacer -->
-            <ImageView
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1" />
+            <TextView
+                android:id="@+id/label_start"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Start"
+                android:textColor="#424242"
+                android:textSize="10sp"
+                android:fontFamily="sans-serif-light" />
+
+        </LinearLayout>
+
+        <!-- YOUR TOKEN circle + label, pinned right -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:clipChildren="false">
 
             <TextView
                 android:id="@+id/your_token"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
-                android:layout_marginEnd="0dp"
                 android:background="@drawable/token_circle_blue_32"
                 android:gravity="center"
                 android:text="76"
@@ -139,60 +171,52 @@
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
+            <TextView
+                android:id="@+id/label_your"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Your No"
+                android:textColor="#424242"
+                android:textSize="10sp"
+                android:fontFamily="sans-serif-light" />
+
         </LinearLayout>
 
-        <!-- Dynamic Runner Circle (Moves based on progress) -->
-        <TextView
-            android:id="@+id/current_token"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginStart="0dp"
-            android:background="@drawable/token_circle_dark_32"
-            android:gravity="center"
-            android:text="74"
-            android:textColor="#FFFFFF"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:elevation="2dp" />
-
-    </RelativeLayout>
-
-    <!-- Labels for circles -->
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp">
-        
-        <TextView
-            android:id="@+id/label_start"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:text="Start"
-            android:textColor="#9E9E9E"
-            android:textSize="10sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/label_your"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:text="Your No"
-            android:textColor="#9E9E9E"
-            android:textSize="10sp"
-            android:textStyle="bold" />
-
-        <!-- Current label follows current_token circle -->
-        <TextView
-            android:id="@+id/label_current"
+        <!-- CURRENT TOKEN circle + label
+             marginStart on THIS group is set dynamically from Kotlin code -->
+        <LinearLayout
+            android:id="@+id/current_token_group"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="0dp"
-            android:text="Current"
-            android:textColor="#9E9E9E"
-            android:textSize="10sp"
-            android:textStyle="bold" />
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:clipChildren="false"
+            android:elevation="2dp">
+
+            <TextView
+                android:id="@+id/current_token"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@drawable/token_circle_dark_32"
+                android:gravity="center"
+                android:text="74"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/label_current"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Current"
+                android:textColor="#424242"
+                android:textSize="10sp"
+                android:fontFamily="sans-serif-light" />
+
+        </LinearLayout>
 
     </RelativeLayout>
 
