@@ -1361,6 +1361,13 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
       } else {
         final isDependent =
             _selectedDependent != null && !_selectedDependent!.isSelf;
+        // Determine payment mode based on selected method
+        // UPI_INTENT: opens a specific UPI app directly (PhonePe, GPay, BHIM, etc.)
+        // PAY_PAGE:   opens PhonePe's payment gateway page (cards, netbanking, etc.)
+        final isUpiIntent = _selectedPaymentMethodPackage != null &&
+            _selectedPaymentMethodPackage != 'standard_pay_page' &&
+            _selectedPaymentMethodPackage != 'WALLET';
+
         final request = BookAppointmentRequest(
           patientId: finalPatientId,
           doctorId: widget.doctorId,
@@ -1372,6 +1379,8 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
           bookedFor: isDependent ? 'DEPENDENT' : 'SELF',
           dependentId: isDependent ? _selectedDependent!.id : null,
           useWallet: _useWallet,
+          paymentModeType: isUpiIntent ? 'UPI_INTENT' : 'PAY_PAGE',
+          paymentTargetApp: isUpiIntent ? _selectedPaymentMethodPackage : null,
         );
 
         final response = await _appointmentService.bookAppointment(
@@ -2166,6 +2175,10 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
         token: paymentData.token,
         orderId: paymentData.orderId,
         appSchema: 'ecliniq',
+        targetUpiPackage: selectedUPIPackage != 'standard_pay_page' &&
+                selectedUPIPackage != 'WALLET'
+            ? selectedUPIPackage
+            : null,
       );
 
       final isCancelled = result.status.contains('CANCEL') || result.status == 'INCOMPLETE';

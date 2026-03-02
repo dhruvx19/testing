@@ -60,9 +60,6 @@ class PhonePeService {
       );
     }
 
-    if (requestPayload != null) {
-    } else {}
-
     try {
       String requestToSend;
 
@@ -71,13 +68,25 @@ class PhonePeService {
           final decodedBytes = base64Decode(requestPayload);
           final jsonString = utf8.decode(decodedBytes);
 
+          // The backend already encodes the correct paymentMode into the payload.
+          // We only override here as a safety net if somehow the backend sent PAY_PAGE
+          // but the frontend knows a specific UPI app was chosen.
           final decodedMap = jsonDecode(jsonString) as Map<String, dynamic>;
+          final isRealUpiPackage = targetUpiPackage != null &&
+              targetUpiPackage.isNotEmpty &&
+              targetUpiPackage != 'standard_pay_page' &&
+              targetUpiPackage != 'WALLET';
 
-          if (targetUpiPackage != null && targetUpiPackage.isNotEmpty) {
-            decodedMap['paymentMode'] = {
-              'type': 'UPI_INTENT',
-              'targetAppPackageName': targetUpiPackage
-            };
+          if (isRealUpiPackage) {
+            // Only override if the backend payload doesn't already have UPI_INTENT
+            final existingMode = decodedMap['paymentMode'];
+            if (existingMode is! Map ||
+                (existingMode as Map)['type'] != 'UPI_INTENT') {
+              decodedMap['paymentMode'] = {
+                'type': 'UPI_INTENT',
+                'targetAppPackageName': targetUpiPackage,
+              };
+            }
           }
 
           requestToSend = jsonEncode(decodedMap);
