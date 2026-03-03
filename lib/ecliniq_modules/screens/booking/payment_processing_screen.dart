@@ -161,7 +161,6 @@ Future<void> _startPhonePePayment() async {
         token: widget.token,
         orderId: widget.orderId,
         appSchema: widget.appSchema,
-        targetUpiPackage: widget.selectedUPIPackage,
       );
 
 
