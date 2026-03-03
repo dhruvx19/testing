@@ -1,5 +1,5 @@
 class Endpoints {
-  static const String localhost = 'https://upcharq-backend-production.up.railway.app';
+  static const String localhost = 'https://eclinicq-backend-production-3a58.up.railway.app';
   static const String prod = '';
 
   static String get websocketBaseUrl => localhost.replaceAll('/api', '');
