@@ -52,13 +52,15 @@ class PhonePeService {
     String? token,
     String? orderId,
     required String appSchema,
-    String? targetUpiPackage,
   }) async {
     if (!_isInitialized) {
       throw PhonePeException(
         'PhonePe SDK not initialized. Call initialize() first.',
       );
     }
+
+    if (requestPayload != null) {
+    } else {}
 
     try {
       String requestToSend;
@@ -68,28 +70,9 @@ class PhonePeService {
           final decodedBytes = base64Decode(requestPayload);
           final jsonString = utf8.decode(decodedBytes);
 
-          // The backend already encodes the correct paymentMode into the payload.
-          // We only override here as a safety net if somehow the backend sent PAY_PAGE
-          // but the frontend knows a specific UPI app was chosen.
-          final decodedMap = jsonDecode(jsonString) as Map<String, dynamic>;
-          final isRealUpiPackage = targetUpiPackage != null &&
-              targetUpiPackage.isNotEmpty &&
-              targetUpiPackage != 'standard_pay_page' &&
-              targetUpiPackage != 'WALLET';
+          final decodedMap = jsonDecode(jsonString);
 
-          if (isRealUpiPackage) {
-            // Only override if the backend payload doesn't already have UPI_INTENT
-            final existingMode = decodedMap['paymentMode'];
-            if (existingMode is! Map ||
-                (existingMode as Map)['type'] != 'UPI_INTENT') {
-              decodedMap['paymentMode'] = {
-                'type': 'UPI_INTENT',
-                'targetAppPackageName': targetUpiPackage,
-              };
-            }
-          }
-
-          requestToSend = jsonEncode(decodedMap);
+          requestToSend = jsonString;
         } catch (e) {
           throw PhonePeException(
             'Failed to decode requestPayload from base64: $e',
@@ -109,18 +92,11 @@ class PhonePeService {
           throw PhonePeException('Order ID cannot be empty');
         }
 
-        final payload = <String, dynamic>{
+        final payload = {
           'orderId': orderId,
           'merchantId': _merchantId,
           'token': token,
-          'paymentMode': (targetUpiPackage != null && targetUpiPackage.isNotEmpty)
-              ? {
-                  'type': 'UPI_INTENT',
-                  'targetAppPackageName': targetUpiPackage,
-                }
-              : {
-                  'type': 'PAY_PAGE',
-                },
+          'paymentMode': {'type': 'PAY_PAGE'},
         };
 
         final jsonString = jsonEncode(payload);
