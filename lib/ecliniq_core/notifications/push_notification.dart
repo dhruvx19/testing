@@ -613,7 +613,7 @@ class EcliniqPushNotifications {
     final waitMinutes = yourToken > currentToken ? (yourToken - currentToken) * 2 : 0;
     await _handleSlotLiveUpdateFromData({
       'notificationType': 'SLOT_LIVE_UPDATE',
-      'appointmentId': 'test-appointment-${DateTime.now().millisecondsSinceEpoch}',
+      'appointmentId': 'test-appointment-simulate',
       'doctorName': doctorName,
       'hospitalName': hospitalName,
       'yourToken': yourToken.toString(),

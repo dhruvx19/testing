@@ -10,8 +10,6 @@ import 'package:ecliniq/ecliniq_api/payment_service.dart';
 import 'package:ecliniq/ecliniq_api/wallet_service.dart';
 import 'package:ecliniq/ecliniq_core/router/route.dart';
 import 'package:ecliniq/ecliniq_icons/icons.dart';
-import 'package:ecliniq/ecliniq_modules/screens/booking/payment_method_selection_screen.dart'
-    show PaymentMethodBottomSheet;
 import 'package:ecliniq/ecliniq_modules/screens/booking/request_sent.dart';
 import 'package:ecliniq/ecliniq_modules/screens/booking/widgets/doctor_info_card.dart';
 import 'package:ecliniq/ecliniq_modules/screens/login/profile_help.dart';
@@ -108,8 +106,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
   double _consultationFee = 500.0;
   double _serviceFee = 0.0;
   bool _isProcessingPayment = false;
-  String? _selectedPaymentMethod;
-  String? _selectedPaymentMethodPackage;
 
   @override
   void initState() {
@@ -1268,21 +1264,6 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
       return;
     }
 
-    // Check if payment method is required for remaining amount
-    if (_serviceFee > 0 &&
-        _remainingAmountToPay > 0 &&
-        _selectedPaymentMethodPackage == null) {
-      CustomErrorSnackBar.show(
-        context: context,
-        title: 'Payment Method Required',
-        subtitle: _useWallet
-            ? 'Please select a payment method for the remaining amount of ₹${_remainingAmountToPay.toStringAsFixed(0)}'
-            : 'Please select a payment method',
-        duration: const Duration(seconds: 4),
-      );
-      return;
-    }
-
     await _loadPatientId();
 
     final finalPatientId = _currentUserDetails?.userId ?? _patientId;
@@ -1464,61 +1445,40 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                   }
                 }
 
-                String? paymentPackage = _selectedPaymentMethodPackage;
-                if (paymentPackage == null && _serviceFee == 0) {
-                  paymentPackage = 'com.google.android.apps.nbu.paisa.user';
-                }
+                if (_remainingAmountToPay == 0) {
+                  final appointmentData = response.data is AppointmentData
+                      ? response.data as AppointmentData
+                      : null;
+                  final tokenNumber =
+                      appointmentData?.tokenNo.toString() ?? '--';
 
-                if (paymentPackage != null) {
-                  if (paymentPackage == 'WALLET') {
-                    final appointmentData = response.data is AppointmentData
-                        ? response.data as AppointmentData
-                        : null;
-                    final tokenNumber =
-                        appointmentData?.tokenNo.toString() ?? '--';
-
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AppointmentRequestScreen(
-                          doctorName: widget.doctorName,
-                          doctorSpecialization: widget.doctorSpecialization,
-                          selectedSlot: widget.selectedSlot,
-                          selectedDate: widget.selectedDate,
-                          hospitalAddress: _hospitalAddress,
-                          tokenNumber: tokenNumber,
-                          patientName: _getCurrentUserName(),
-                          patientSubtitle: _getCurrentUserSubtitle(),
-                          patientBadge:
-                              _selectedDependent?.formattedRelation ?? 'You',
-                          merchantTransactionId:
-                              paymentData.merchantTransactionId,
-                          paymentMethod: paymentData.provider,
-                          totalAmount: paymentData.totalAmount,
-                          walletAmount: paymentData.walletAmount,
-                          gatewayAmount: paymentData.gatewayAmount,
-                          appointmentId: appointmentData?.id ?? paymentData.appointmentId,
-                          bookingStatus: appointmentData?.status ?? paymentData.status,
-                        ),
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AppointmentRequestScreen(
+                        doctorName: widget.doctorName,
+                        doctorSpecialization: widget.doctorSpecialization,
+                        selectedSlot: widget.selectedSlot,
+                        selectedDate: widget.selectedDate,
+                        hospitalAddress: _hospitalAddress,
+                        tokenNumber: tokenNumber,
+                        patientName: _getCurrentUserName(),
+                        patientSubtitle: _getCurrentUserSubtitle(),
+                        patientBadge:
+                            _selectedDependent?.formattedRelation ?? 'You',
+                        merchantTransactionId:
+                            paymentData.merchantTransactionId,
+                        paymentMethod: paymentData.provider,
+                        totalAmount: paymentData.totalAmount,
+                        walletAmount: paymentData.walletAmount,
+                        gatewayAmount: paymentData.gatewayAmount,
+                        appointmentId: appointmentData?.id ?? paymentData.appointmentId,
+                        bookingStatus: appointmentData?.status ?? paymentData.status,
                       ),
-                    );
-                  } else {
-                    await _processUPIPayment(
-                      paymentData: paymentData,
-                      selectedUPIPackage: paymentPackage,
-                    );
-                  }
-                } else {
-                  setState(() {
-                    _isBooking = false;
-                  });
-
-                  CustomErrorSnackBar.show(
-                    context: context,
-                    title: 'Payment Method Required',
-                    subtitle: 'Please select a payment method',
-                    duration: const Duration(seconds: 4),
+                    ),
                   );
+                } else {
+                  await _processUPIPayment(paymentData: paymentData);
                 }
               } else {
                 final appointmentData = response.data is AppointmentData
@@ -1867,191 +1827,93 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
           Container(height: 0.5, color: const Color(0xffB8B8B8)),
           const SizedBox(height: 8),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: _isBooking || _remainingAmountToPay == 0
-                      ? null
-                      : () => _showPaymentMethodBottomSheet(),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        children: [
-                          if (_remainingAmountToPay > 0) ...[
-                            if (_selectedPaymentMethodPackage != null)
-                              Image.asset(
-                                _getIconForPackage(
-                                  _selectedPaymentMethodPackage!,
-                                ),
-                                width: 20,
-                                height: 20,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return const Icon(
-                                    Icons.payment,
-                                    size: 20,
-                                    color: Color(0xFF2372EC),
-                                  );
-                                },
-                              )
-                            else
-                              Image.asset(
-                                EcliniqIcons.googlePay.assetPath,
-                                width: 20,
-                                height: 20,
-                              ),
-                            const SizedBox(width: 4),
-                          ],
-                          Flexible(
-                            child: Text(
-                              'Pay using',
-                              style: EcliniqTextStyles.responsiveBodySmall(
-                                context,
-                              ).copyWith(color: Color(0xff424242)),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                          ),
-                          if (_remainingAmountToPay > 0) ...[
-                            const SizedBox(width: 4),
-                            SvgPicture.asset(
-                              EcliniqIcons.arrowUp.assetPath,
-                              width: 16,
-                              height: 16,
-                              colorFilter: const ColorFilter.mode(
-                                Color(0xff626060),
-                                BlendMode.srcIn,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      const SizedBox(height: 2),
-
-                      Text(
-                        _remainingAmountToPay == 0
-                            ? 'Upchar-Q Coins'
-                            : (_selectedPaymentMethod ?? 'Google Pay UPI'),
-                        style: EcliniqTextStyles.responsiveBodyMedium(context)
-                            .copyWith(
-                              fontWeight: FontWeight.w300,
-                              color: _remainingAmountToPay == 0
-                                  ? Color(0xff424242)
-                                  : (_selectedPaymentMethod != null
-                                        ? Color(0xff424242)
-                                        : Color(0xff8E8E8E)),
-                            ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+          GestureDetector(
+            onTap: _isBooking ? null : () => _onConfirmVisit(),
+            child: Container(
+              width: double.infinity,
+              height: EcliniqTextStyles.getResponsiveButtonHeight(
+                context,
+                baseHeight: 52.0,
+              ),
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0x4D2372EC),
+                    offset: Offset(2, 2),
+                    blurRadius: 10,
+                    spreadRadius: 0,
                   ),
+                ],
+                color: const Color(0xFF2372EC),
+                borderRadius: BorderRadius.circular(
+                  EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
                 ),
               ),
-              const SizedBox(width: 12),
-
-              GestureDetector(
-                onTap: _isBooking ? null : () => _onConfirmVisit(),
-                child: Container(
-                  height: EcliniqTextStyles.getResponsiveButtonHeight(
-                    context,
-                    baseHeight: 52.0,
-                  ),
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Color(0x4D2372EC),
-                        offset: Offset(2, 2),
-                        blurRadius: 10,
-                        spreadRadius: 0,
-                      ),
-                    ],
-                    color: const Color(0xFF2372EC),
-                    borderRadius: BorderRadius.circular(
-                      EcliniqTextStyles.getResponsiveBorderRadius(context, 4),
-                    ),
-                  ),
-                  child: Padding(
-                    padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
-                      context,
-                      left: 12,
-                      top: 6,
-                      bottom: 6,
-                      right: 12,
-                    ),
-                    child: _isBooking
-                        ? SizedBox(
-                            width: 180,
-                            child: const Center(
-                              child: EcliniqLoader(
-                                size: 24,
-                                color: Colors.white,
-                              ),
-                            ),
-                          )
-                        : Row(
+              child: Padding(
+                padding: EcliniqTextStyles.getResponsiveEdgeInsetsOnly(
+                  context,
+                  left: 12,
+                  top: 6,
+                  bottom: 6,
+                  right: 12,
+                ),
+                child: _isBooking
+                    ? const Center(
+                        child: EcliniqLoader(size: 24, color: Colors.white),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Flexible(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '₹${_remainingAmountToPay.toStringAsFixed(0)}',
-                                      style:
-                                          EcliniqTextStyles.responsiveTitleXBLarge(
-                                            context,
-                                          ).copyWith(
-                                            color: Colors.white,
-                                            height: 1.0,
-                                          ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      'Total',
-                                      style:
-                                          EcliniqTextStyles.responsiveBodyMediumProminent(
-                                            context,
-                                          ).copyWith(
-                                            fontWeight: FontWeight.w300,
-                                            color: Colors.white,
-                                            height: 1.0,
-                                          ),
-                                    ),
-                                  ],
-                                ),
+                              Text(
+                                '₹${_serviceFee.toStringAsFixed(0)}',
+                                style: EcliniqTextStyles.responsiveTitleXBLarge(
+                                  context,
+                                ).copyWith(color: Colors.white, height: 1.0),
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(width: 34),
-
-                              Expanded(
-                                child: Text(
-                                  'Pay & Confirm',
-                                  style:
-                                      EcliniqTextStyles.responsiveTitleXBLarge(
-                                        context,
-                                      ).copyWith(color: Colors.white),
+                              if (_useWallet && _coinDeductionAmount > 0)
+                                Text(
+                                  '- ₹${_coinDeductionAmount.toStringAsFixed(0)} Upchar-Q Coins',
+                                  style: EcliniqTextStyles.responsiveBodyMediumProminent(
+                                    context,
+                                  ).copyWith(
+                                    fontWeight: FontWeight.w300,
+                                    color: const Color(0xFFB3D4FF),
+                                    height: 1.0,
+                                  ),
+                                )
+                              else
+                                Text(
+                                  'Total',
+                                  style: EcliniqTextStyles.responsiveBodyMediumProminent(
+                                    context,
+                                  ).copyWith(
+                                    fontWeight: FontWeight.w300,
+                                    color: Colors.white,
+                                    height: 1.0,
+                                  ),
                                 ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Text(
+                                'Pay & Confirm',
+                                style: EcliniqTextStyles.responsiveTitleXBLarge(
+                                  context,
+                                ).copyWith(color: Colors.white),
                               ),
-
                               Transform.rotate(
                                 angle: 1.5708,
                                 child: SvgPicture.asset(
                                   EcliniqIcons.arrowUp.assetPath,
-                                  width:
-                                      EcliniqTextStyles.getResponsiveIconSize(
-                                        context,
-                                        24,
-                                      ),
-                                  height:
-                                      EcliniqTextStyles.getResponsiveIconSize(
-                                        context,
-                                        24,
-                                      ),
+                                  width: EcliniqTextStyles.getResponsiveIconSize(context, 24),
+                                  height: EcliniqTextStyles.getResponsiveIconSize(context, 24),
                                   colorFilter: const ColorFilter.mode(
                                     Colors.white,
                                     BlendMode.srcIn,
@@ -2060,79 +1922,18 @@ class _ReviewDetailsScreenState extends State<ReviewDetailsScreen> {
                               ),
                             ],
                           ),
-                  ),
-                ),
+                        ],
+                      ),
               ),
-            ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  String _getIconForPackage(String packageName) {
-    final paymentMethods = [
-      {'packageName': 'in.org.npci.upiapp', 'icon': EcliniqIcons.bhimPay},
-      {
-        'packageName': 'com.google.android.apps.nbu.paisa.user',
-        'icon': EcliniqIcons.googlePay,
-      },
-      {'packageName': 'com.phonepe.app', 'icon': EcliniqIcons.phonePe},
-      {'packageName': 'com.phonepe.simulator', 'icon': EcliniqIcons.phonePe},
-    ];
-
-    final method = paymentMethods.firstWhere(
-      (m) => m['packageName'] == packageName,
-      orElse: () => {'icon': EcliniqIcons.googlePay},
-    );
-    return (method['icon'] as EcliniqIcons).assetPath;
-  }
-
-  Future<void> _showPaymentMethodBottomSheet() async {
-    final selectedMethod = await showModalBottomSheet<Map<String, dynamic>>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => PaymentMethodBottomSheet(
-        walletBalance: _walletBalance,
-        useWallet: _useWallet,
-        serviceFee: _serviceFee,
-        isBooking: _isBooking,
-        selectedPaymentMethod: _selectedPaymentMethod,
-        currentSelectedMethod: _selectedPaymentMethod,
-        currentSelectedPackage: _selectedPaymentMethodPackage,
-        onWalletToggle: (value) {
-          setState(() {
-            _useWallet = value;
-          });
-        },
-        onConfirm: () {},
-      ),
-    );
-
-    if (mounted) {
-      setState(() {
-        if (selectedMethod != null) {
-          _selectedPaymentMethod = selectedMethod['name'] as String?;
-          _selectedPaymentMethodPackage =
-              selectedMethod['packageName'] as String?;
-          if (selectedMethod.containsKey('useWallet')) {
-            _useWallet = selectedMethod['useWallet'] as bool;
-          }
-        } else {
-          if (_selectedPaymentMethodPackage == null) {
-            _selectedPaymentMethod = 'Gpay';
-            _selectedPaymentMethodPackage =
-                'com.google.android.apps.nbu.paisa.user';
-          }
-        }
-      });
-    }
-  }
-
   Future<void> _processUPIPayment({
     required BookingPaymentData paymentData,
-    required String selectedUPIPackage,
   }) async {
     setState(() {
       _isProcessingPayment = true;

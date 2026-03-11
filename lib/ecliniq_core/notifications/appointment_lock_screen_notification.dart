@@ -227,6 +227,38 @@ class AppointmentLockScreenNotification {
             '$tokenProgressLine\n$tokenLabelsLine';
       }
 
+      // On iOS, use Live Activity via MethodChannel
+      if (Platform.isIOS) {
+        try {
+          String timeInfoText = '';
+          if (runningToken == 0) {
+            timeInfoText = 'Queue not started yet';
+          } else if (tokensAhead != null && tokensAhead > 0) {
+            timeInfoText = 'in $estimatedMinutes min';
+          } else if (userToken == runningToken) {
+            timeInfoText = '🎉 Your turn!';
+          } else if (userToken < runningToken) {
+            timeInfoText = 'Your token has been called';
+          }
+
+          await _customNotificationChannel.invokeMethod('showCustomNotification', {
+            'appointmentId': appointment.id,
+            'doctorName': doctorName,
+            'timeInfo': timeInfoText,
+            'expectedTime': formattedExpectedTime,
+            'currentToken': runningToken,
+            'userToken': userToken,
+            'hospitalName': hospitalName,
+          });
+
+          log('✅ Live Activity started for iOS');
+          _currentAppointmentId = appointment.id;
+          return;
+        } catch (e) {
+          log('⚠️ Live Activity failed (falling back to flutter_local_notifications): $e');
+        }
+      }
+
       // On Android, use the custom native notification via MethodChannel
       if (Platform.isAndroid) {
         try {
@@ -384,6 +416,46 @@ class AppointmentLockScreenNotification {
       return;
     }
 
+    // On iOS, update via Live Activity MethodChannel
+    if (Platform.isIOS) {
+      try {
+        final userToken = appointment.tokenNo;
+        final runningToken = currentRunningToken ?? 0;
+        final tokensAhead = runningToken > 0 && userToken > runningToken
+            ? userToken - runningToken
+            : null;
+        final estimatedMinutes = tokensAhead != null ? tokensAhead * 2 : 0;
+        final timeFormat = DateFormat('h:mm a');
+        final formattedExpectedTime = timeFormat.format(appointmentTime);
+
+        String timeInfoText = '';
+        if (runningToken == 0) {
+          timeInfoText = 'Queue not started yet';
+        } else if (tokensAhead != null && tokensAhead > 0) {
+          timeInfoText = 'in $estimatedMinutes min';
+        } else if (userToken == runningToken) {
+          timeInfoText = '🎉 Your turn!';
+        } else if (userToken < runningToken) {
+          timeInfoText = 'Your token has been called';
+        }
+
+        await _customNotificationChannel.invokeMethod('updateCustomNotification', {
+          'doctorName': doctorName,
+          'timeInfo': timeInfoText,
+          'expectedTime': formattedExpectedTime,
+          'currentToken': runningToken,
+          'userToken': userToken,
+          'appointmentId': appointment.id,
+          'hospitalName': hospitalName,
+        });
+
+        log('✅ Live Activity updated for iOS');
+        return;
+      } catch (e) {
+        log('⚠️ Live Activity update failed (falling back): $e');
+      }
+    }
+
     // On Android, update via the custom native MethodChannel
     if (Platform.isAndroid) {
       try {
@@ -510,7 +582,13 @@ class AppointmentLockScreenNotification {
 
       return {
         'platform': 'ios',
-  
+        'alert': permissions.isAlertEnabled,
+        'badge': permissions.isBadgeEnabled,
+        'sound': permissions.isSoundEnabled,
+        'allGranted': permissions.isAlertEnabled && permissions.isBadgeEnabled,
+        'message': (permissions.isAlertEnabled && permissions.isBadgeEnabled)
+            ? '✅ Notifications enabled'
+            : '⚠️ Some permissions missing',
       };
     } catch (e) {
       return {'error': e.toString()};

@@ -58,10 +58,16 @@
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_dartobservatory._tcp</string>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>Camera access is required to take photos of prescriptions and medical reports to save securely in your health records.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Face ID is used to securely and quickly log you into your healthcare account.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>The app uses the local network to communicate with development tools and services.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Your location is used to show you the closest available doctors and hospitals for quicker bookings and emergency care.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
@@ -78,6 +84,27 @@
 	<string>Speech recognition is used to enable voice-based searching for doctors and healthcare services.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneClassName</key>
+					<string>UIWindowScene</string>
+					<key>UISceneConfigurationName</key>
+					<string>flutter</string>
+					<key>UISceneDelegateClassName</key>
+					<string>FlutterSceneDelegate</string>
+					<key>UISceneStoryboardFile</key>
+					<string>Main</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>
