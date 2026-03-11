@@ -6,13 +6,9 @@ import 'package:ecliniq/ecliniq_core/notifications/appointment_lock_screen_notif
 import 'package:ecliniq/ecliniq_core/notifications/push_notification.dart'
     show EcliniqPushNotifications;
 
-
-
-
-
-
-
-
+/// Test widget for lock screen notifications.
+/// Allows configuring doctor name, hospital name, current token, and your token
+/// so you can test all states without hardcoded values.
 class TestNotificationWidget extends StatefulWidget {
   const TestNotificationWidget({super.key});
 
@@ -22,9 +18,27 @@ class TestNotificationWidget extends StatefulWidget {
 
 class _TestNotificationWidgetState extends State<TestNotificationWidget> {
   bool _isLoading = false;
-  // Simulate FCM SLOT_LIVE_UPDATE state
+
+  // Configurable fields (no more hardcoded "Dr. Test Doctor" / "Test Hospital")
+  final _doctorNameCtrl = TextEditingController(text: 'Dr. Milind Chauhan');
+  final _hospitalNameCtrl = TextEditingController(text: 'eClinic-Q');
+
+  // Token sliders
   int _simCurrentToken = 10;
   int _simYourToken = 15;
+
+  @override
+  void dispose() {
+    _doctorNameCtrl.dispose();
+    _hospitalNameCtrl.dispose();
+    super.dispose();
+  }
+
+  String get _doctorName =>
+      _doctorNameCtrl.text.trim().isEmpty ? 'Doctor' : _doctorNameCtrl.text.trim();
+
+  String get _hospitalName =>
+      _hospitalNameCtrl.text.trim().isEmpty ? 'eClinic-Q' : _hospitalNameCtrl.text.trim();
 
   Future<void> _testNotification(String testName, Future<void> Function() test) async {
     setState(() => _isLoading = true);
@@ -72,11 +86,41 @@ class _TestNotificationWidgetState extends State<TestNotificationWidget> {
                 fontWeight: FontWeight.bold,
               ),
             ),
+            const SizedBox(height: 12),
+
+            // ── Configurable doctor & hospital name ────────────────────────
+            const Text(
+              'Doctor & Hospital',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.blueGrey),
+            ),
+            const SizedBox(height: 6),
+            TextField(
+              controller: _doctorNameCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Doctor Name',
+                hintText: 'e.g. Dr. Milind Chauhan',
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
+              onChanged: (_) => setState(() {}),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _hospitalNameCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Hospital / Clinic Name',
+                hintText: 'e.g. eClinic-Q',
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
+              onChanged: (_) => setState(() {}),
+            ),
             const SizedBox(height: 16),
+            const Divider(),
+            const SizedBox(height: 8),
+
             if (_isLoading)
-              const Center(
-                child: CircularProgressIndicator(),
-              )
+              const Center(child: CircularProgressIndicator())
             else
               Column(
                 children: [
@@ -84,8 +128,10 @@ class _TestNotificationWidgetState extends State<TestNotificationWidget> {
                     onPressed: () => _testNotification(
                       'Queue Not Started',
                       () => AppointmentNotificationTestHelper.testShowNotification(
-                        userToken: 76,
+                        userToken: _simYourToken,
                         currentRunningToken: 0,
+                        doctorName: _doctorName,
+                        hospitalName: _hospitalName,
                       ),
                     ),
                     icon: const Icon(Icons.notifications_outlined),
@@ -96,20 +142,24 @@ class _TestNotificationWidgetState extends State<TestNotificationWidget> {
                     onPressed: () => _testNotification(
                       'Tokens Ahead',
                       () => AppointmentNotificationTestHelper.testShowNotification(
-                        userToken: 76,
-                        currentRunningToken: 45,
+                        userToken: _simYourToken,
+                        currentRunningToken: _simCurrentToken,
+                        doctorName: _doctorName,
+                        hospitalName: _hospitalName,
                       ),
                     ),
                     icon: const Icon(Icons.queue),
-                    label: const Text('Test: Tokens Ahead (31)'),
+                    label: Text('Test: Tokens Ahead (${(_simYourToken - _simCurrentToken).clamp(0, 9999)})'),
                   ),
                   const SizedBox(height: 8),
                   ElevatedButton.icon(
                     onPressed: () => _testNotification(
                       'Your Turn',
                       () => AppointmentNotificationTestHelper.testUpdateNotification(
-                        userToken: 76,
-                        newRunningToken: 76,
+                        userToken: _simYourToken,
+                        newRunningToken: _simYourToken,
+                        doctorName: _doctorName,
+                        hospitalName: _hospitalName,
                       ),
                     ),
                     icon: const Icon(Icons.check_circle),
@@ -120,8 +170,10 @@ class _TestNotificationWidgetState extends State<TestNotificationWidget> {
                     onPressed: () => _testNotification(
                       'Update Token',
                       () => AppointmentNotificationTestHelper.testUpdateNotification(
-                        userToken: 76,
-                        newRunningToken: 50,
+                        userToken: _simYourToken,
+                        newRunningToken: _simCurrentToken,
+                        doctorName: _doctorName,
+                        hospitalName: _hospitalName,
                       ),
                     ),
                     icon: const Icon(Icons.update),
@@ -146,7 +198,10 @@ class _TestNotificationWidgetState extends State<TestNotificationWidget> {
                         ? null
                         : () => _testNotification(
                               'All Tests',
-                              () => AppointmentNotificationTestHelper.runAllTests(),
+                              () => AppointmentNotificationTestHelper.runAllTests(
+                                doctorName: _doctorName,
+                                hospitalName: _hospitalName,
+                              ),
                             ),
                     icon: const Icon(Icons.play_arrow),
                     label: const Text('Run All Tests'),
@@ -155,7 +210,8 @@ class _TestNotificationWidgetState extends State<TestNotificationWidget> {
                   const SizedBox(height: 24),
                   const Divider(),
                   const SizedBox(height: 8),
-                  // ── Simulate FCM SLOT_LIVE_UPDATE ──────────────────────────
+
+                  // ── Token sliders ──────────────────────────────────────────
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
@@ -183,9 +239,9 @@ class _TestNotificationWidgetState extends State<TestNotificationWidget> {
                                 style: const TextStyle(fontSize: 13)),
                             Slider(
                               value: _simCurrentToken.toDouble(),
-                              min: 1,
-                              max: 50,
-                              divisions: 49,
+                              min: 0,
+                              max: 100,
+                              divisions: 100,
                               label: '$_simCurrentToken',
                               onChanged: (v) =>
                                   setState(() => _simCurrentToken = v.round()),
@@ -203,8 +259,8 @@ class _TestNotificationWidgetState extends State<TestNotificationWidget> {
                             Slider(
                               value: _simYourToken.toDouble(),
                               min: 1,
-                              max: 80,
-                              divisions: 79,
+                              max: 100,
+                              divisions: 99,
                               label: '$_simYourToken',
                               onChanged: (v) =>
                                   setState(() => _simYourToken = v.round()),
@@ -225,6 +281,8 @@ class _TestNotificationWidgetState extends State<TestNotificationWidget> {
                                 () => EcliniqPushNotifications.simulateSlotLiveUpdate(
                                   yourToken: _simYourToken,
                                   currentToken: _simCurrentToken,
+                                  doctorName: _doctorName,
+                                  hospitalName: _hospitalName,
                                 ),
                               ),
                       icon: const Icon(Icons.cell_tower),
@@ -375,4 +433,3 @@ class _TestNotificationWidgetState extends State<TestNotificationWidget> {
     );
   }
 }
-

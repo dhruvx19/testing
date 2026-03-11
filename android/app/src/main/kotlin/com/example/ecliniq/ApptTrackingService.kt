@@ -13,10 +13,6 @@ import android.util.Log
 import android.util.TypedValue
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
-import kotlinx.coroutines.*
-import org.json.JSONObject
-import java.net.HttpURLConnection
-import java.net.URL
 
 class ApptTrackingService : Service() {
 
@@ -33,18 +29,14 @@ class ApptTrackingService : Service() {
         private const val USABLE_TRACK_DP = TRACK_WIDTH_DP - CIRCLE_DP  // 228dp max margin
     }
 
-    private var serviceJob = Job()
-    private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
-    private var pollingJob: Job? = null
-
-    // Persistent state
+    // Persistent state — updated by FCM push data messages via SLOT_LIVE_UPDATE
+    // No HTTP polling; all updates come from the backend via FCM data-only push.
     private var currentDoctorName = ""
     private var currentHospitalName = ""
     private var currentUserToken = 0
     private var currentTargetToken = 0
     private var currentExpectedTime = ""
     private var currentId = ""
-    private var authToken = ""
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -58,7 +50,6 @@ class ApptTrackingService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action
         if (action == "STOP_SERVICE") {
-            stopPolling()
             stopForeground(true)
             stopSelf()
             return START_NOT_STICKY
@@ -68,73 +59,16 @@ class ApptTrackingService : Service() {
             currentDoctorName = it.getStringExtra("doctorName") ?: currentDoctorName
             currentHospitalName = it.getStringExtra("hospitalName") ?: currentHospitalName
             currentUserToken = it.getIntExtra("userToken", 0).takeIf { v -> v > 0 } ?: currentUserToken
-            currentTargetToken = it.getIntExtra("currentToken", 0).takeIf { v -> v > 0 } ?: currentTargetToken
+            // currentToken=0 is valid (queue not started yet), so accept 0
+            val incomingCurrentToken = it.getIntExtra("currentToken", -1)
+            if (incomingCurrentToken >= 0) currentTargetToken = incomingCurrentToken
             currentExpectedTime = it.getStringExtra("expectedTime") ?: currentExpectedTime
             currentId = it.getStringExtra("appointmentId") ?: currentId
-            authToken = it.getStringExtra("authToken") ?: authToken
         }
 
         updateNotificationUI()
 
-        if (currentId.isNotEmpty() && authToken.isNotEmpty()) {
-            if (pollingJob == null) startPolling()
-        } else {
-            stopPolling()
-        }
-
         return START_STICKY
-    }
-
-    private fun startPolling() {
-        pollingJob?.cancel()
-        pollingJob = serviceScope.launch(Dispatchers.IO) {
-            while (isActive) {
-                try {
-                    pollStatusBar()
-                } catch (e: Exception) {
-                    Log.e(TAG, "Polling error: ${e.message}")
-                }
-                delay(30000)
-            }
-        }
-    }
-
-    private fun stopPolling() {
-        pollingJob?.cancel()
-        pollingJob = null
-    }
-
-    private suspend fun pollStatusBar() {
-        if (currentId.isEmpty() || authToken.isEmpty()) return
-
-        val url = URL("https://api.upcharq.com/api/eta/appointment/$currentId/status")
-        try {
-            val connection = (url.openConnection() as HttpURLConnection).apply {
-                requestMethod = "GET"
-                setRequestProperty("Authorization", "Bearer $authToken")
-                setRequestProperty("x-access-token", authToken)
-                setRequestProperty("Content-Type", "application/json")
-                connectTimeout = 5000
-                readTimeout = 5000
-            }
-
-            if (connection.responseCode == HttpURLConnection.HTTP_OK) {
-                val response = connection.inputStream.bufferedReader().use { it.readText() }
-                val json = JSONObject(response)
-                val msg = json.optJSONObject("message")
-                if (msg != null) {
-                    val newToken = msg.optInt("tokenNo", currentTargetToken)
-                    if (newToken != currentTargetToken && newToken > 0) {
-                        currentTargetToken = newToken
-                        withContext(Dispatchers.Main) {
-                            updateNotificationUI()
-                        }
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to poll API: ${e.message}")
-        }
     }
 
     private fun buildNotification(): Notification {
@@ -150,7 +84,7 @@ class ApptTrackingService : Service() {
             setTextViewText(R.id.your_token, currentUserToken.toString())
             setTextViewText(R.id.start_circle, "S")
 
-            if (currentUserToken > 0 && currentTargetToken > 0) {
+            if (currentUserToken > 0) {
                 // --- Progress fraction ---
                 // Range is token 1 (start) to currentUserToken (your token)
                 val startToken = 1
@@ -159,12 +93,10 @@ class ApptTrackingService : Service() {
                     .coerceIn(0f, 1f)
 
                 // --- Current token group margin ---
-                // Moves from 0dp (at Start circle) to USABLE_TRACK_DP (just touching Your No circle)
-                // USABLE_TRACK_DP = TRACK_WIDTH_DP - CIRCLE_DP ensures no overlap
+                // Moves from 0dp (at Start circle) to USABLE_TRACK_DP (at Your No circle)
                 val currentMarginDp = progressFrac * USABLE_TRACK_DP
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    // Apply margin to the GROUP, not individual children
                     setViewLayoutMargin(
                         R.id.current_token_group,
                         RemoteViews.MARGIN_START,
@@ -172,10 +104,7 @@ class ApptTrackingService : Service() {
                         TypedValue.COMPLEX_UNIT_DIP
                     )
 
-                    // --- Right grey line width ---
-                    // The grey line covers Current → Your No.
-                    // It is aligned to parent end and its width = (1 - progressFrac) * TRACK_WIDTH_DP
-                    // We keep 16dp end margin (matching the XML) so math aligns with track edges.
+                    // Right grey line shrinks as current token advances toward your token
                     val greyLineWidthDp = ((1f - progressFrac) * TRACK_WIDTH_DP).coerceAtLeast(0f)
                     setViewLayoutWidth(
                         R.id.progress_line_right,
@@ -248,7 +177,7 @@ class ApptTrackingService : Service() {
                 CHANNEL_ID, CHANNEL_NAME,
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Live tracking of appointment token progress"
+                description = "Live tracking of appointment token progress (FCM-driven)"
                 setShowBadge(true)
                 lockscreenVisibility = Notification.VISIBILITY_PUBLIC
                 enableVibration(false)
@@ -259,8 +188,6 @@ class ApptTrackingService : Service() {
     }
 
     override fun onDestroy() {
-        stopPolling()
-        serviceJob.cancel()
         super.onDestroy()
     }
 }

@@ -127,8 +127,10 @@ class AppointmentNotificationTestHelper {
   }
 
   
-  
-  static Future<void> runAllTests() async {
+  static Future<void> runAllTests({
+    String doctorName = 'Dr. Milind Chauhan',
+    String hospitalName = 'eClinic-Q',
+  }) async {
     log('🧪 Starting comprehensive notification tests...\n');
 
     try {
@@ -137,6 +139,8 @@ class AppointmentNotificationTestHelper {
       await testShowNotification(
         userToken: 76,
         currentRunningToken: 0,
+        doctorName: doctorName,
+        hospitalName: hospitalName,
       );
       await Future.delayed(const Duration(seconds: 3));
 
@@ -145,6 +149,8 @@ class AppointmentNotificationTestHelper {
       await testUpdateNotification(
         userToken: 76,
         newRunningToken: 45,
+        doctorName: doctorName,
+        hospitalName: hospitalName,
       );
       await Future.delayed(const Duration(seconds: 3));
 
@@ -153,6 +159,8 @@ class AppointmentNotificationTestHelper {
       await testUpdateNotification(
         userToken: 76,
         newRunningToken: 76,
+        doctorName: doctorName,
+        hospitalName: hospitalName,
       );
       await Future.delayed(const Duration(seconds: 3));
 
