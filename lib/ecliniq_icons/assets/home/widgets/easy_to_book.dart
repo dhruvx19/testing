@@ -126,7 +126,7 @@ class _EasyWayToBookWidgetState extends State<EasyWayToBookWidget> {
                       backgroundColor: Color(0xFFF2F7FF),
                     ),
                     child: EcliniqText(
-                      'Call Us',
+                      'Request Us',
                       style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                         color: Color(0xFF2372EC),
 

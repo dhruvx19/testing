@@ -20,8 +20,17 @@ android {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
+    signingConfigs {
+    create("release") {
+        storeFile = file("upcharq-release.jks")
+        storePassword = "dhruvbal"
+        keyAlias = "upcharq"
+        keyPassword = "dhruvbal"
+    }
+}
+
     defaultConfig {
-        applicationId = "com.example.ecliniq"
+        applicationId = "com.bloomevera.upcharq"
         minSdk = 24
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -31,7 +40,7 @@ android {
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }

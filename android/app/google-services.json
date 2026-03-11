@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:606619794806:android:abb06c704e574990898e57",
+        "android_client_info": {
+          "package_name": "com.bloomevera.upcharq"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfXmc5-vqxO_pS_NOEqA3Jj6z643fVzqg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:606619794806:android:809c42614d12288b898e57",
         "android_client_info": {
           "package_name": "com.example.ecliniq"

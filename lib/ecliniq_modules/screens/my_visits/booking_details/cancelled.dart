@@ -409,7 +409,7 @@ class _BookingCancelledDetailState extends State<BookingCancelledDetail> {
                     backgroundColor: Color(0xFFF2F7FF),
                   ),
                   child:  Text(
-                    'Call Us',
+                    'Request Us',
                     style: EcliniqTextStyles.responsiveBodySmall(context).copyWith(
                       color: Color(0xFF2372EC),
               

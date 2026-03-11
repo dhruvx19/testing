@@ -345,7 +345,7 @@ class EasyBookingWidget extends StatelessWidget {
             subtitle: const Text('Assisted booking with expert'),
             trailing: TextButton(
               onPressed: onRequestCallback,
-              child: const Text('Call Us'),
+              child: const Text('Request Us'),
             ),
           ),
           CheckboxListTile(
