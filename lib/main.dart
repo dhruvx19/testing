@@ -44,11 +44,13 @@ void main() async {
 
   // Heavy init runs AFTER the first frame so the splash appears immediately.
   WidgetsBinding.instance.addPostFrameCallback((_) async {
+    // Firebase must be initialized before any Firebase-dependent services.
+    try {
+      await Firebase.initializeApp();
+    } catch (e) {
+      debugPrint('Firebase initialization failed: $e');
+    }
     await Future.wait([
-      Firebase.initializeApp().catchError((e) {
-        debugPrint('Firebase initialization failed: $e');
-        return null;
-      }),
       authProvider.initialize(),
       SharedPreferences.getInstance(),
       EcliniqPushNotifications.init(),

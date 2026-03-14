@@ -70,6 +70,57 @@ import ActivityKit
     }
   }
 
+  // Intercept FCM data messages when the app is backgrounded.
+  // The Dart background isolate Firebase creates does NOT have the MethodChannel
+  // registered, so Live Activity updates via Dart fail silently in background.
+  // Handling it here in native code ensures the Live Activity is always updated.
+  override func application(
+    _ application: UIApplication,
+    didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+    fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+  ) {
+    if #available(iOS 16.2, *) {
+      // FCM places data-dict keys at the top level of userInfo on iOS.
+      let notificationType = userInfo["notificationType"] as? String
+      let type = userInfo["type"] as? String
+
+      if notificationType == "SLOT_LIVE_UPDATE" || type == "ACTIVE" || type == "SLOT_LIVE_UPDATE" {
+        let doctorName   = userInfo["doctorName"]   as? String ?? "Your Doctor"
+        let hospitalName = userInfo["hospitalName"] as? String ?? "eClinic-Q"
+        let yourTokenStr    = (userInfo["yourToken"]    as? String) ?? (userInfo["tokenNumber"] as? String) ?? "0"
+        let currentTokenStr =  userInfo["currentToken"] as? String ?? "0"
+        let estimatedTime   =  userInfo["estimatedTime"] as? String ?? ""
+
+        let yourToken    = Int(yourTokenStr)    ?? 0
+        let currentToken = Int(currentTokenStr) ?? 0
+
+        var timeInfo = ""
+        if currentToken == 0 {
+          timeInfo = "Queue not started yet"
+        } else if yourToken > currentToken {
+          timeInfo = "in \((yourToken - currentToken) * 2) min"
+        } else if yourToken == currentToken {
+          timeInfo = "Your turn!"
+        } else {
+          timeInfo = "Your token has been called"
+        }
+
+        LiveActivityService.shared.update(
+          doctorName:   doctorName,
+          timeInfo:     timeInfo,
+          expectedTime: estimatedTime,
+          currentToken: currentToken,
+          userToken:    yourToken,
+          hospitalName: hospitalName
+        )
+      }
+    }
+
+    // Let Firebase route the message to the Dart background isolate as well
+    // (its MethodChannel call will fail gracefully, native update above already ran).
+    super.application(application, didReceiveRemoteNotification: userInfo, fetchCompletionHandler: completionHandler)
+  }
+
   override func userNotificationCenter(
     _ center: UNUserNotificationCenter,
     willPresent notification: UNNotification,

@@ -104,6 +104,20 @@ class EcliniqPushNotifications {
 
   static Future<String?> getToken() async {
     try {
+      // On iOS, Firebase requires an APNS token before it can produce an FCM token.
+      // APNS registration is async and may not be ready immediately after login.
+      if (Platform.isIOS) {
+        String? apnsToken;
+        for (int i = 0; i < 5; i++) {
+          apnsToken = await _messaging.getAPNSToken();
+          if (apnsToken != null) break;
+          await Future.delayed(const Duration(seconds: 2));
+        }
+        if (apnsToken == null) {
+          log('APNS token unavailable after retries, skipping FCM token fetch');
+          return null;
+        }
+      }
       final token = await _messaging.getToken();
       log('FCM Token: $token');
       return token;

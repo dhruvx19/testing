@@ -69,11 +69,15 @@ class LiveActivityService {
         userToken: Int,
         hospitalName: String
     ) {
-        guard let activity = currentActivity else {
+        // Prefer the in-memory reference; fall back to the system's live list
+        // (covers cases where the app process was relaunched in background).
+        let activity = currentActivity ?? Activity<AppointmentAttributes>.activities.first
+        guard let activity = activity else {
             print("No active Live Activity to update")
             return
         }
-        
+        if currentActivity == nil { currentActivity = activity }
+
         let updatedContentState = AppointmentAttributes.ContentState(
             doctorName: doctorName,
             timeInfo: timeInfo,
@@ -82,7 +86,7 @@ class LiveActivityService {
             userToken: userToken,
             hospitalName: hospitalName
         )
-        
+
         Task {
             await activity.update(
                 ActivityContent(state: updatedContentState, staleDate: nil)
